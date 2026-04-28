@@ -145,51 +145,14 @@
     </div>
 
     <!-- XERO SIMULATION -->
-    <div class="sim-wrap">
-      <div class="sim-bar">
-        <div class="sim-dot" style="background:#ef4444"></div>
-        <div class="sim-dot" style="background:#f59e0b"></div>
-        <div class="sim-dot" style="background:#10b981"></div>
-        <div class="sim-url">app.xero.com/invoicing/draft</div>
-      </div>
-      <div class="xero-shell">
-        <div class="xero-nav-col">
-          <div class="xero-brand">
-            <div class="xero-logo">X</div>
-            <div class="xero-brand-name">Xero</div>
-          </div>
-          <div class="xero-ni">🏠 Dashboard</div>
-          <div class="xero-ni active">📄 Invoicing</div>
-          <div class="xero-ni">💰 Banking</div>
-          <div class="xero-ni">📊 Reports</div>
-          <div class="xero-ni">⚙ Settings</div>
-        </div>
-        <div class="xero-main">
-          <div class="xero-page-h">Sales invoices</div>
-          <div class="xero-page-s">Manage and track all your customer invoices</div>
-          <div class="xero-actions">
-            <button class="xero-btn xero-btn-blue pulse-btn" onclick="LL.toast('In the real Xero, this opens a blank invoice form','success')">+ New invoice</button>
-            <button class="xero-btn xero-btn-outline" onclick="LL.toast('Import via CSV — covered in Module 4','success')">Import</button>
-            <button class="xero-btn xero-btn-outline">Send statements</button>
-          </div>
-          <div class="xero-table">
-            <div class="xero-th"><span>Contact / Reference</span><span>Date</span><span>Due date</span><span>Amount</span><span>Status</span></div>
-            <div class="xero-tr" onclick="LL.toast('INV-0047: 14 days overdue. Chase this client first.','error')">
-              <span>Bright Futures Ltd · INV-0047</span><span>12 Apr</span><span>26 Apr</span><span>£4,250.00</span><span class="xst st-over">Overdue</span>
-            </div>
-            <div class="xero-tr" onclick="LL.toast('INV-0048: Due in 1 day. Consider sending a reminder.','success')">
-              <span>TechBuild Solutions · INV-0048</span><span>15 Apr</span><span>29 Apr</span><span>£1,875.50</span><span class="xst st-due">Due</span>
-            </div>
-            <div class="xero-tr" onclick="LL.toast('INV-0049: Paid and reconciled. Nothing to do.','success')">
-              <span>GreenLeaf Organics · INV-0049</span><span>18 Apr</span><span>18 May</span><span>£990.00</span><span class="xst st-paid">Paid</span>
-            </div>
-            <div class="xero-tr" onclick="LL.toast('INV-0050: Net 30 invoice. Due 20 May.','success')">
-              <span>Apex Consultants · INV-0050</span><span>20 Apr</span><span>20 May</span><span>£6,340.00</span><span class="xst st-due">Due</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+   <div class="sim-wrap" style="padding:0; overflow:hidden; border-radius:12px; border:1px solid var(--border); box-shadow: 0 25px 60px rgba(0,0,0,.4);">
+  <iframe 
+    src="xero-invoice-sim.html"
+    style="width:100%; height:720px; border:none; display:block;"
+    title="Xero Invoice Simulation"
+    id="xero-sim-frame">
+  </iframe>
+</div>
 
     <!-- LESSON NOTES -->
     <div class="notes">
