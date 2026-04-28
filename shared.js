@@ -1,6 +1,6 @@
 // LedgerLearn Pro — shared utilities
 const LL = {
-  WORKER_URL: 'https://ledgerlearn.godigitsall.workers.dev',
+  WORKER_URL: 'https://ledgerlearn-api.godigitsall.workers.dev',
 
   // ── Supabase (fill in after project setup) ──────────────────
   SUPABASE_URL: '',       // e.g. https://xxxx.supabase.co
