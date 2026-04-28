@@ -232,6 +232,14 @@ function submitGate() {
   LL.toast('Progress saved! Check your inbox.', 'success');
   setTimeout(() => { window.location.href = 'practice.html'; }, 1200);
 }
+  // Listen for sim completion message
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'lesson-complete' && e.data?.lesson === 'xero-invoice') {
+    markDone();
+    LL.toast('Lesson complete! Moving to practice...', 'success');
+    setTimeout(() => { window.location.href = 'practice.html'; }, 1800);
+  }
+});
 </script>
 </body>
 </html>
