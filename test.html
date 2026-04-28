@@ -8,18 +8,40 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <style>
-.test-wrap { max-width: 800px; margin: 0 auto; padding: 3rem 2rem 4rem; }
+.test-wrap { max-width: 820px; margin: 0 auto; padding: 3rem 2rem 5rem; }
 
-.test-hud {
-  display:grid; grid-template-columns:1fr 1fr 1fr;
-  gap:1rem; margin-bottom:1.25rem;
+/* Level selector */
+.level-selector {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 2rem;
 }
+.ls-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.25rem;
+  cursor: pointer; transition: all .2s; position: relative;
+}
+.ls-card:hover { border-color: var(--accent2); transform: translateY(-2px); }
+.ls-card.active { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,170,.12); }
+.ls-card.locked { opacity: .45; cursor: not-allowed; }
+.ls-card.locked:hover { transform: none; border-color: var(--border); }
+.ls-level { font-family:'JetBrains Mono',monospace; font-size:.62rem; font-weight:600; letter-spacing:.06em; margin-bottom:.4rem; }
+.ls-name  { font-family:'Syne',sans-serif; font-weight:700; font-size:.95rem; margin-bottom:.3rem; }
+.ls-desc  { font-size:.75rem; color:var(--muted); line-height:1.55; }
+.ls-qs    { font-size:.72rem; color:var(--muted); margin-top:.5rem; font-family:'JetBrains Mono',monospace; }
+.ls-lock  { position:absolute; top:.75rem; right:.75rem; font-size:.8rem; }
+
+/* Test HUD */
+.test-hud { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:1.25rem; }
 .hud-cell { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1rem 1.25rem; text-align:center; }
 .hud-label { font-family:'JetBrains Mono',monospace; font-size:.62rem; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; }
 .hud-val { font-family:'Syne',sans-serif; font-weight:800; font-size:2rem; letter-spacing:-.03em; }
 .timer-warning { color:var(--danger); animation:blink 1s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.35} }
 
+/* Question */
+.scenario-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:1.5rem; }
+.sc-header { padding:1rem 1.5rem; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.sc-tag { font-family:'JetBrains Mono',monospace; font-size:.62rem; padding:3px 9px; border-radius:4px; background:var(--accent-dim); color:var(--accent); text-transform:uppercase; letter-spacing:.08em; }
+.sc-body { padding:1.5rem; }
 .sc-context { background:var(--surface2); border-left:3px solid var(--accent); padding:.9rem 1.1rem; border-radius:0 8px 8px 0; font-size:.875rem; color:var(--muted); line-height:1.75; margin-bottom:1.35rem; }
 .sc-context strong { color:var(--text); }
 .sc-question { font-size:1rem; font-weight:500; margin-bottom:1.25rem; line-height:1.65; }
@@ -30,23 +52,30 @@
 .opt-letter { width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;font-family:'JetBrains Mono',monospace;color:var(--muted);transition:all .2s; }
 .selected .opt-letter { border-color:var(--accent); color:var(--accent); }
 
-.scenario-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:1.5rem; }
-.sc-header { padding:1.1rem 1.5rem; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-.sc-tag { font-family:'JetBrains Mono',monospace; font-size:.64rem; padding:3px 9px; border-radius:4px; background:var(--accent-dim); color:var(--accent); text-transform:uppercase; letter-spacing:.08em; }
-.sc-body { padding:1.5rem; }
-
-.test-nav { display:flex; justify-content:space-between; margin-top:1.5rem; align-items:center; }
-.q-dots { display:flex; gap:5px; }
-.q-dot { width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .2s; }
+/* Q nav dots */
+.q-dots { display:flex; gap:5px; flex-wrap:wrap; }
+.q-dot { width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .2s;cursor:pointer; }
 .q-dot.answered { background:var(--accent); }
-.q-dot.current { background:var(--accent2); }
+.q-dot.current { background:var(--accent2); outline:2px solid rgba(59,130,246,.3); }
 
-/* RESULT */
-.result-screen { display:none; text-align:center; padding:3rem 2rem; }
+/* Result */
+.result-screen { display:none; }
 .result-screen.show { display:block; }
-.result-score { font-family:'Syne',sans-serif; font-weight:800; font-size:5rem; letter-spacing:-.05em; line-height:1; margin:1rem 0; }
-.result-score.pass { color:var(--accent); }
-.result-score.fail { color:var(--danger); }
+.result-header { text-align:center; margin-bottom:2rem; }
+.result-score-ring {
+  width:120px; height:120px; border-radius:50%; margin:0 auto 1rem;
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+  border:4px solid var(--accent);
+}
+.result-score-ring.fail { border-color:var(--danger); }
+.result-score-num { font-family:'Syne',sans-serif; font-weight:800; font-size:2.25rem; letter-spacing:-.03em; line-height:1; }
+.result-score-label { font-size:.65rem; color:var(--muted); font-family:'JetBrains Mono',monospace; letter-spacing:.06em; margin-top:2px; }
+.result-title { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; margin-bottom:.5rem; }
+.result-sub { color:var(--muted); font-size:.9rem; line-height:1.7; margin-bottom:1.5rem; }
+.result-breakdown { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:1.25rem 1.5rem; margin-bottom:1.5rem; }
+.breakdown-row { display:flex; justify-content:space-between; align-items:center; padding:.45rem 0; border-bottom:1px solid var(--border); font-size:.875rem; }
+.breakdown-row:last-child { border-bottom:none; }
+.breakdown-row.total { font-weight:500; font-size:.95rem; padding-top:.75rem; }
 
 /* CERTIFICATE */
 .cert-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:200; align-items:center; justify-content:center; padding:1.5rem; overflow-y:auto; }
@@ -54,28 +83,49 @@
 .cert {
   background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
   border:2px solid var(--amber); border-radius:16px; padding:3rem;
-  max-width:680px; width:100%; text-align:center; position:relative;
-  box-shadow:0 40px 80px rgba(0,0,0,.5),0 0 60px rgba(245,158,11,.1);
+  max-width:700px; width:100%; text-align:center; position:relative;
+  box-shadow:0 40px 80px rgba(0,0,0,.5), 0 0 60px rgba(245,158,11,.1);
 }
-.cert-corner { position:absolute; width:55px;height:55px; border-color:var(--amber); border-style:solid; opacity:.5; }
-.cert-corner.tl { top:14px;left:14px; border-width:2px 0 0 2px; }
+.cert-corner { position:absolute; width:55px; height:55px; border-color:var(--amber); border-style:solid; opacity:.5; }
+.cert-corner.tl { top:14px;left:14px;  border-width:2px 0 0 2px; }
 .cert-corner.tr { top:14px;right:14px; border-width:2px 2px 0 0; }
-.cert-corner.bl { bottom:14px;left:14px; border-width:0 0 2px 2px; }
+.cert-corner.bl { bottom:14px;left:14px;  border-width:0 0 2px 2px; }
 .cert-corner.br { bottom:14px;right:14px; border-width:0 2px 2px 0; }
-.cert-issuer { font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--amber); letter-spacing:.2em; text-transform:uppercase; margin-bottom:.9rem; }
-.cert-by { font-size:.85rem; color:rgba(255,255,255,.5); margin-bottom:.4rem; }
-.cert-name { font-family:'Syne',sans-serif; font-size:2.4rem; font-weight:800; color:#fff; letter-spacing:-.02em; margin-bottom:.9rem; }
-.cert-course { display:inline-block; padding:.45rem 1.4rem; border:1px solid var(--amber); border-radius:100px; font-family:'Syne',sans-serif; font-weight:700; font-size:.95rem; color:var(--amber); margin-bottom:1.4rem; }
-.cert-footer { display:grid; grid-template-columns:1fr auto 1fr; gap:2rem; align-items:center; padding-top:1.4rem; border-top:1px solid rgba(255,255,255,.1); margin-top:.8rem; }
+.cert-platform { font-family:'JetBrains Mono',monospace; font-size:.65rem; color:rgba(255,255,255,.4); letter-spacing:.15em; text-transform:uppercase; margin-bottom:.35rem; }
+.cert-issuer { font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--amber); letter-spacing:.18em; text-transform:uppercase; margin-bottom:1rem; }
+.cert-by   { font-size:.85rem; color:rgba(255,255,255,.5); margin-bottom:.4rem; }
+.cert-name { font-family:'Syne',sans-serif; font-size:2.4rem; font-weight:800; color:#fff; letter-spacing:-.02em; margin-bottom:.4rem; }
+.cert-text { font-size:.85rem; color:rgba(255,255,255,.5); margin-bottom:1rem; max-width:400px; margin-left:auto; margin-right:auto; line-height:1.7; }
+.cert-level-badge {
+  display:inline-block; padding:.5rem 1.5rem; margin-bottom:.5rem;
+  border:1px solid var(--amber); border-radius:100px;
+  font-family:'JetBrains Mono',monospace; font-weight:600; font-size:.78rem;
+  color:var(--amber); letter-spacing:.08em; text-transform:uppercase;
+}
+.cert-course { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; color:#fff; margin-bottom:1.5rem; }
+.cert-footer { display:grid; grid-template-columns:1fr auto 1fr; gap:2rem; align-items:center; padding-top:1.4rem; border-top:1px solid rgba(255,255,255,.1); }
 .cert-sig-line { height:1px; background:rgba(255,255,255,.2); margin-bottom:4px; }
-.cert-sig-name { font-size:.72rem; color:rgba(255,255,255,.45); }
-.cert-score-badge { width:66px;height:66px;border-radius:50%;border:2px solid var(--amber);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--amber); }
-.cert-score-n { font-family:'Syne',sans-serif; font-weight:800; font-size:1.2rem; line-height:1; }
-.cert-score-l { font-size:.5rem; letter-spacing:.05em; opacity:.7; }
-.cert-id { font-family:'JetBrains Mono',monospace; font-size:.58rem; color:rgba(255,255,255,.25); margin-top:.9rem; }
+.cert-sig-name { font-size:.7rem; color:rgba(255,255,255,.4); }
+.cert-score-badge { width:68px;height:68px;border-radius:50%;border:2px solid var(--amber);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--amber); }
+.cert-score-n { font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;line-height:1; }
+.cert-score-l { font-size:.5rem;letter-spacing:.05em;opacity:.7; }
+.cert-id { font-family:'JetBrains Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.22);margin-top:.9rem; }
+.cert-share { display:flex;gap:.65rem;justify-content:center;margin-top:1.25rem;flex-wrap:wrap; }
+
+/* Upsell banner */
+.upsell-banner {
+  background:var(--surface2); border:1px solid rgba(245,158,11,.2);
+  border-radius:var(--radius-lg); padding:1.25rem 1.5rem;
+  display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;
+}
+.ub-icon { font-size:1.75rem; flex-shrink:0; }
+.ub-body { flex:1; }
+.ub-title { font-weight:500; font-size:.95rem; margin-bottom:.2rem; }
+.ub-sub   { font-size:.78rem; color:var(--muted); }
 </style>
 </head>
 <body>
+
 <nav class="nav">
   <a href="index.html" class="nav-logo">⬡ Ledger<span>Learn</span></a>
   <ul class="nav-links">
@@ -91,16 +141,55 @@
 <main class="main">
 <div class="test-wrap">
 
-  <div id="test-screen">
-    <div style="margin-bottom:1.5rem">
-      <span class="label">// summative assessment</span>
-      <div class="section-title" style="font-size:1.7rem">Xero Certified Practitioner — Level 1</div>
-      <p class="section-sub" style="margin-top:.4rem;font-size:.875rem">20 questions · Pass mark 70% · 40 minutes · No feedback during test</p>
+  <!-- ── LEVEL SELECTOR (pre-test) ── -->
+  <div id="level-selector-section">
+    <span class="label">// choose your assessment</span>
+    <div class="section-title" style="font-size:1.6rem;margin-bottom:.5rem">Certification assessments</div>
+    <p class="section-sub" style="margin-bottom:1.75rem">Select the level you want to sit. You must pass lower levels before unlocking higher ones.</p>
+
+    <div class="level-selector">
+      <div class="ls-card active" id="ls-l1" onclick="selectLevel('l1')">
+        <div class="ls-level" style="color:#13b5ea">L1 · Xero Associate</div>
+        <div class="ls-name">Xero Associate</div>
+        <div class="ls-desc">Invoicing, bank reconciliation, chart of accounts, contacts, and basic navigation.</div>
+        <div class="ls-qs">20 questions · 40 min · Pass: 70%</div>
+      </div>
+      <div class="ls-card locked" id="ls-l2">
+        <span class="ls-lock">🔒</span>
+        <div class="ls-level" style="color:#60a5fa">L2 · Xero Professional</div>
+        <div class="ls-name">Xero Professional</div>
+        <div class="ls-desc">Bills, VAT returns, financial reporting, bank rules, multi-currency.</div>
+        <div class="ls-qs">25 questions · 50 min · Pass: 70%</div>
+      </div>
+      <div class="ls-card locked" id="ls-l3">
+        <span class="ls-lock">🔒</span>
+        <div class="ls-level" style="color:#a78bfa">L3 · Xero Advisor</div>
+        <div class="ls-name">Xero Advisor</div>
+        <div class="ls-desc">Advisory reporting, client onboarding, practice management, year-end.</div>
+        <div class="ls-qs">30 questions · 60 min · Pass: 75%</div>
+      </div>
+    </div>
+
+    <div style="text-align:center">
+      <button class="btn btn-primary btn-lg" onclick="startTest()" id="start-btn">Start L1 Xero Associate assessment →</button>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:.75rem">Not ready? <a href="practice.html" style="color:var(--accent)">Practise more scenarios →</a> or <a href="placement.html" style="color:var(--accent)">retake placement quiz →</a></p>
+    </div>
+  </div>
+
+  <!-- ── ACTIVE TEST ── -->
+  <div id="test-section" style="display:none">
+    <div style="margin-bottom:1.25rem">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.3rem">
+        <span class="badge" style="background:rgba(19,181,234,.15);color:#13b5ea;font-family:'JetBrains Mono',monospace;font-size:.65rem;padding:3px 10px;border-radius:100px;font-weight:600">L1 · XERO ASSOCIATE</span>
+        <span class="badge badge-amber" style="font-size:.65rem">TIMED ASSESSMENT</span>
+      </div>
+      <div class="section-title" style="font-size:1.5rem">Xero Associate — Certification Test</div>
+      <p style="font-size:.8rem;color:var(--muted);margin-top:.3rem">20 questions · Pass mark 70% · 40 minutes · No feedback shown during test</p>
     </div>
 
     <div class="test-hud">
       <div class="hud-cell"><div class="hud-label">Time remaining</div><div class="hud-val" id="timer" style="color:var(--accent)">40:00</div></div>
-      <div class="hud-cell"><div class="hud-label">Question</div><div class="hud-val"><span id="q-current">1</span><span style="font-size:1.1rem;color:var(--muted);font-weight:400"> / 5</span></div></div>
+      <div class="hud-cell"><div class="hud-label">Question</div><div class="hud-val"><span id="q-current">1</span><span style="color:var(--muted);font-size:1.1rem;font-weight:400"> / <span id="q-total">5</span></span></div></div>
       <div class="hud-cell"><div class="hud-label">Answered</div><div class="hud-val" id="q-answered" style="color:var(--accent)">0</div></div>
     </div>
 
@@ -110,19 +199,36 @@
 
     <div id="question-area"></div>
 
-    <div class="test-nav">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem">
       <button class="btn btn-ghost" onclick="prevQ()" id="btn-prev" style="visibility:hidden">← Back</button>
       <div class="q-dots" id="q-dots"></div>
       <button class="btn btn-primary" onclick="nextQ()" id="btn-next">Next →</button>
     </div>
   </div>
 
-  <div class="result-screen" id="result-screen">
-    <span class="label">// assessment complete</span>
-    <div id="result-msg"></div>
-    <div class="result-score" id="result-score"></div>
-    <p id="result-sub" style="color:var(--muted);margin-bottom:2rem"></p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap" id="result-actions"></div>
+  <!-- ── RESULT ── -->
+  <div id="result-section" class="result-screen">
+    <div class="result-header">
+      <div class="result-score-ring" id="score-ring">
+        <div class="result-score-num" id="result-score-num">0%</div>
+        <div class="result-score-label">SCORE</div>
+      </div>
+      <div class="result-title" id="result-title"></div>
+      <div class="result-sub"   id="result-sub"></div>
+    </div>
+
+    <div class="result-breakdown" id="result-breakdown"></div>
+
+    <div class="upsell-banner" id="upsell-banner" style="display:none">
+      <div class="ub-icon">🚀</div>
+      <div class="ub-body">
+        <div class="ub-title">Ready for the next level? Join ERP.SaaS Academy</div>
+        <div class="ub-sub">Use code <strong style="color:var(--amber)">LEDGER30</strong> for 30% off. Move from bookkeeper to ERP consultant.</div>
+      </div>
+      <a href="https://skool.com/erp-saas-academy" target="_blank" class="btn" style="background:var(--amber);color:#000;font-weight:600;white-space:nowrap">Join Academy →</a>
+    </div>
+
+    <div id="result-actions" style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center"></div>
   </div>
 
 </div>
@@ -130,72 +236,80 @@
 
 <!-- CERTIFICATE -->
 <div class="cert-overlay" id="cert-overlay">
-  <div class="cert" id="cert-box">
+  <div class="cert">
     <div class="cert-corner tl"></div><div class="cert-corner tr"></div>
     <div class="cert-corner bl"></div><div class="cert-corner br"></div>
-    <div class="cert-issuer">LedgerLearn Pro · Verified Certificate</div>
+    <div class="cert-platform">LedgerLearn Pro · Verified Digital Certificate</div>
+    <div class="cert-issuer">by the team behind ERP.SaaS Academy</div>
     <div class="cert-by">This is to certify that</div>
     <div class="cert-name" id="cert-name">—</div>
-    <p style="font-size:.875rem;color:rgba(255,255,255,.55);margin-bottom:1rem;max-width:380px;margin-left:auto;margin-right:auto;line-height:1.7">has successfully completed the summative assessment and demonstrated competency in accounting software operations</p>
-    <div class="cert-course">Xero Certified Practitioner · Level 1</div>
+    <div class="cert-text">has successfully completed the summative assessment and demonstrated competency in Xero accounting software operations</div>
+    <div class="cert-level-badge">L1 · Xero Associate</div>
+    <div class="cert-course">Xero Associate Certification</div>
     <div class="cert-footer">
       <div style="text-align:left">
-        <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:rgba(255,255,255,.65);margin-bottom:4px">LedgerLearn Pro</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:rgba(255,255,255,.6);margin-bottom:4px">LedgerLearn Pro</div>
         <div class="cert-sig-line"></div>
         <div class="cert-sig-name">Platform director</div>
       </div>
-      <div class="cert-score-badge"><div class="cert-score-n" id="cert-score-n">—</div><div class="cert-score-l">SCORE</div></div>
+      <div class="cert-score-badge">
+        <div class="cert-score-n" id="cert-score-n">—</div>
+        <div class="cert-score-l">SCORE</div>
+      </div>
       <div style="text-align:right">
-        <div style="font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:rgba(255,255,255,.65);margin-bottom:4px" id="cert-date">—</div>
+        <div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:4px" id="cert-date">—</div>
         <div class="cert-sig-line"></div>
         <div class="cert-sig-name">Date of issue</div>
       </div>
     </div>
     <div class="cert-id" id="cert-id-txt">—</div>
-    <div style="display:flex;gap:.75rem;justify-content:center;margin-top:1.25rem">
-      <button class="btn btn-ghost" onclick="document.getElementById('cert-overlay').classList.remove('show')">Close</button>
+    <div class="cert-share">
+      <button class="btn btn-ghost" onclick="closeCert()">Close</button>
       <button class="btn btn-primary" onclick="downloadCert()">⬇ Download PDF</button>
-      <a href="https://skool.com/erp-saas-academy" target="_blank" class="btn" style="background:var(--amber);color:#000;font-weight:600">Next level: ERP Academy →</a>
+      <a href="https://linkedin.com" target="_blank" class="btn" style="background:#0077b5;color:#fff;font-weight:600">Share on LinkedIn</a>
+      <a href="https://skool.com/erp-saas-academy" target="_blank" class="btn" style="background:var(--amber);color:#000;font-weight:600">ERP Academy →</a>
     </div>
   </div>
 </div>
 
 <script src="shared.js"></script>
 <script>
+// ── Questions ──────────────────────────────────────────────────
 const QUESTIONS = [
-  {
-    tag:'Xero · Bank Reconciliation', q:'Greenway Consulting\'s Xero bank feed shows a £550 Amazon Business transaction. £400 relates to office supplies (exempt VAT) and £150 to books (20% VAT). What is the correct Xero treatment?',
-    opts:['Code full £550 to Office Supplies at 20% VAT','Code full £550 to Books/Stationery at 20% VAT','Use Add Details → Split: £400 to Office Supplies (No VAT) and £150 to Books (20% VAT input) with correct account codes','Mark as uncategorised and reconcile at year end'],
-    correct:2
-  },
-  {
-    tag:'Xero · VAT Returns', q:'End of Q1 (Jan–Mar): sales £80,000 ex-VAT, purchases with VAT £15,000. Standard accounting basis. What is the VAT payable to HMRC and where in Xero do you file it?',
-    opts:['£16,000 — filed under Accounts Payable → HMRC','£13,000 — filed via Accounting → Tax → VAT Returns, reconciled against bank payment','£3,000 — filed as a VAT refund claim','£19,000 — output plus input combined'],
-    correct:1
-  },
-  {
-    tag:'Xero · Invoicing', q:'A Xero invoice for Hartwell Associates (£3,200 + 20% VAT, net 30) is sent on 25 April. What is the total amount due and the correct due date?',
-    opts:['£3,200 due 25 May','£3,840 due 25 May','£3,840 due 30 April','£3,200 due 30 April'],
-    correct:1
-  },
-  {
-    tag:'Xero · Chart of Accounts', q:'A client wants to track income from software consulting separately from hardware sales in Xero. What is the best approach?',
-    opts:['Use a single Sales account code for all income','Create two separate revenue account codes (e.g. 200 Software Revenue, 201 Hardware Revenue)','Use tracking categories only','Create a new organisation for each income type'],
-    correct:1
-  },
-  {
-    tag:'Xero · Payroll', q:'An employee\'s gross pay is £2,500/month. PAYE income tax is £350 and employee NI is £175. What is the correct net pay and how does Xero record the employer NI liability?',
-    opts:['Net pay £1,975 — employer NI is ignored in Xero','Net pay £1,975 — employer NI posted as a separate payroll liability in the balance sheet','Net pay £2,150 — only PAYE deducted from gross','Net pay £2,500 — payroll is processed outside Xero'],
-    correct:1
-  },
+  { tag:'L1 · Organisation setup', ctx:'You are onboarding a new client to Xero. They are VAT registered in the UK, trading as "Hartwell Consulting Ltd", financial year end 31 March.', q:'Where in Xero do you enter the financial year end date and VAT registration number?', opts:['Accounts → Chart of Accounts → Settings','Settings → General settings → Organisation details','Reports → Financial settings → Year end','Dashboard → Business settings'], correct:1 },
+  { tag:'L1 · Invoicing', ctx:'You create an invoice for TechBuild Solutions for £5,000 + 20% VAT with net 30 payment terms. Today is 1 May 2025.', q:'What is the total amount on the invoice and what is the correct due date?', opts:['£5,000 due 31 May 2025','£6,000 due 31 May 2025','£6,000 due 1 June 2025','£5,000 due 1 June 2025'], correct:1 },
+  { tag:'L1 · Invoice status', ctx:'A bookkeeper has created an invoice in Xero but forgotten to approve it before month end.', q:'Which statement correctly describes the accounting impact of a Draft vs Approved invoice in Xero?', opts:['Both appear identically in Accounts Receivable','Draft invoices have no impact on the ledger — only approved invoices post to Accounts Receivable and aged debtors','Draft invoices still affect the VAT return','Approved invoices are automatically emailed to the client'], correct:1 },
+  { tag:'L1 · Bank reconciliation', ctx:'Greenway Consulting\'s bank statement shows a closing balance of £15,200. Xero shows £14,600. You find one outstanding cheque for £600 issued on 28 April that has not cleared.', q:'What is the reconciling action?', opts:['Post a journal to increase the Xero balance by £600','The outstanding cheque explains the difference — leave it as uncleared. The accounts reconcile correctly once it clears.','Contact the bank to investigate the missing £600','Delete and repost the cheque'], correct:1 },
+  { tag:'L1 · Chart of accounts', ctx:'A client needs to track income from software training separately from their existing general Sales account (code 200).', q:'What is the best approach in Xero?', opts:['Use account 200 for all income to keep things simple','Create a new account code (e.g. 202 — Training revenue) with type Revenue and the appropriate VAT rate','Create a completely new Xero organisation for the training income','Use a manual journal each month to split the income'], correct:1 },
+  { tag:'L1 · VAT', ctx:'Greenway Consulting Ltd is on standard VAT accounting. Q1 sales: £40,000 ex-VAT. Q1 purchases with input VAT: £6,000.', q:'What is the net VAT payable to HMRC for Q1, and where in Xero do you file and record the payment?', opts:['£8,000 — filed under Accounts Payable → HMRC','£2,000 — filed as a VAT refund','£6,000 — output VAT only, filed via Banking → HMRC','£2,000 — filed via Accounting → Tax → VAT Returns, then reconciled against the bank payment to HMRC'], correct:3 },
+  { tag:'L1 · Contacts', ctx:'A customer has changed their email address and payment terms from net 30 to net 14.', q:'In Xero, where do you update this information so it automatically applies to all new invoices for this contact?', opts:['Edit each invoice individually','Contacts → select the contact → Edit → update email and payment terms in the Financial Details tab','Settings → Email templates','Reports → Aged receivables → edit contact'], correct:1 },
+  { tag:'L1 · Account types', ctx:'A client asks you why their P&L shows a healthy profit but the business has a large outstanding loan.', q:'Which financial statement shows the loan balance, and why doesn\'t it appear on the P&L?', opts:['The loan appears on the P&L under Finance costs','The loan balance appears on the Balance Sheet as a Liability — loans are not income or expenses so they don\'t affect P&L. Only the interest payments appear on the P&L.','Both statements show the loan','Neither statement shows loans — they are off-balance sheet'], correct:1 },
+  { tag:'L1 · Bank transactions', ctx:'A £550 Amazon Business payment appears in the Xero bank feed. £400 relates to office supplies (no VAT) and £150 to business books (20% VAT).', q:'What is the correct treatment in Xero?', opts:['Code the full £550 to Office Supplies at 20% VAT','Code the full £550 to Office Supplies with No VAT','Use Add Details → Split: £400 to Office Supplies (No VAT) and £150 to Books/Education (20% VAT input) with correct account codes','Mark as uncategorised and deal with it at year end'], correct:2 },
+  { tag:'L1 · Reconciliation process', ctx:'You are completing bank reconciliation for April. After matching all transactions, the Difference shows £0.00.', q:'What does a Difference of £0.00 mean in Xero bank reconciliation?', opts:['There are no bank transactions to process','Xero\'s bank balance matches the bank statement balance — the books are accurate for this period','All invoices have been paid','There are no outstanding debtors'], correct:1 },
 ];
 
+const PASS_MARK = 70;
 let current = 0, answers = {}, timeLeft = 40*60, timerInterval;
-const total = QUESTIONS.length;
+let selectedLevel = 'l1';
 
-function init() {
-  renderDots();
-  renderQuestion();
+function selectLevel(l) {
+  ['l1','l2','l3'].forEach(x => {
+    const el = document.getElementById('ls-' + x);
+    if (!el.classList.contains('locked')) el.classList.remove('active');
+  });
+  if (!document.getElementById('ls-' + l).classList.contains('locked')) {
+    document.getElementById('ls-' + l).classList.add('active');
+    selectedLevel = l;
+  }
+  const names = { l1:'L1 Xero Associate', l2:'L2 Xero Professional', l3:'L3 Xero Advisor' };
+  document.getElementById('start-btn').textContent = 'Start ' + names[l] + ' assessment →';
+}
+
+function startTest() {
+  document.getElementById('level-selector-section').style.display = 'none';
+  document.getElementById('test-section').style.display = 'block';
+  document.getElementById('q-total').textContent = QUESTIONS.length;
+  renderDots(); renderQuestion();
   timerInterval = setInterval(tick, 1000);
 }
 
@@ -205,6 +319,7 @@ function renderDots() {
   QUESTIONS.forEach((_, i) => {
     const dot = document.createElement('div');
     dot.className = 'q-dot' + (i===current?' current':'') + (answers[i]!==undefined?' answered':'');
+    dot.onclick = () => { current = i; renderQuestion(); };
     d.appendChild(dot);
   });
 }
@@ -213,15 +328,19 @@ function renderQuestion() {
   const q = QUESTIONS[current];
   document.getElementById('q-current').textContent = current + 1;
   document.getElementById('q-answered').textContent = Object.keys(answers).length;
-  document.getElementById('test-progress').style.width = (current/total*100) + '%';
+  document.getElementById('test-progress').style.width = (current / QUESTIONS.length * 100) + '%';
   document.getElementById('btn-prev').style.visibility = current > 0 ? 'visible' : 'hidden';
-  document.getElementById('btn-next').textContent = current === total-1 ? 'Submit test' : 'Next →';
+  document.getElementById('btn-next').textContent = current === QUESTIONS.length-1 ? 'Submit test' : 'Next →';
 
   const sel = answers[current];
   document.getElementById('question-area').innerHTML = `
     <div class="scenario-card">
-      <div class="sc-header"><span class="sc-tag">${q.tag}</span></div>
+      <div class="sc-header">
+        <span class="sc-tag">${q.tag}</span>
+        <span style="font-size:.75rem;color:var(--muted)">Q${current+1} of ${QUESTIONS.length}</span>
+      </div>
       <div class="sc-body">
+        ${q.ctx ? `<div class="sc-context"><strong>Scenario:</strong> ${q.ctx}</div>` : ''}
         <div class="sc-question">${q.q}</div>
         <div class="options" id="opts">
           ${q.opts.map((o,i) => `
@@ -234,57 +353,82 @@ function renderQuestion() {
   renderDots();
 }
 
-function selectOpt(i) {
-  answers[current] = i;
-  renderQuestion();
-}
-
-function prevQ() { if(current>0){current--;renderQuestion();} }
-function nextQ() {
-  if(current < total-1) { current++; renderQuestion(); }
-  else submitTest();
-}
+function selectOpt(i) { answers[current] = i; renderQuestion(); }
+function prevQ() { if (current > 0) { current--; renderQuestion(); } }
+function nextQ() { current < QUESTIONS.length-1 ? (current++, renderQuestion()) : submitTest(); }
 
 function tick() {
   timeLeft--;
-  const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
-  const s = (timeLeft%60).toString().padStart(2,'0');
+  const m = String(Math.floor(timeLeft/60)).padStart(2,'0');
+  const s = String(timeLeft%60).padStart(2,'0');
   const el = document.getElementById('timer');
-  el.textContent = m+':'+s;
-  if(timeLeft < 300) el.classList.add('timer-warning');
-  if(timeLeft <= 0) submitTest();
+  el.textContent = m + ':' + s;
+  if (timeLeft < 300) el.classList.add('timer-warning');
+  if (timeLeft <= 0) submitTest();
 }
 
 function submitTest() {
   clearInterval(timerInterval);
   let score = 0;
-  QUESTIONS.forEach((q,i) => { if(answers[i]===q.correct) score++; });
-  const pct = Math.round(score/total*100);
-  const pass = pct >= 70;
+  const breakdown = [];
+  QUESTIONS.forEach((q, i) => {
+    const correct = answers[i] === q.correct;
+    if (correct) score++;
+    breakdown.push({ tag: q.tag, correct });
+  });
+  const pct  = Math.round(score / QUESTIONS.length * 100);
+  const pass = pct >= PASS_MARK;
 
-  document.getElementById('test-screen').style.display = 'none';
-  const rs = document.getElementById('result-screen');
-  rs.classList.add('show');
+  document.getElementById('test-section').style.display = 'none';
+  document.getElementById('result-section').classList.add('show');
 
-  document.getElementById('result-msg').innerHTML = `<div style="font-size:1.1rem;margin-bottom:.5rem">${pass ? '🎉 You passed!' : '📚 Not quite — keep practising'}</div>`;
-  document.getElementById('result-score').textContent = pct + '%';
-  document.getElementById('result-score').className = 'result-score ' + (pass?'pass':'fail');
+  // Score ring
+  const ring = document.getElementById('score-ring');
+  if (!pass) ring.classList.add('fail');
+  document.getElementById('result-score-num').textContent = pct + '%';
+  document.getElementById('result-title').textContent = pass ? '🎉 You passed — L1 Xero Associate!' : '📚 Not quite — keep practising';
   document.getElementById('result-sub').textContent = pass
-    ? `You scored ${score}/${total}. Your certificate is ready.`
-    : `You scored ${score}/${total}. You need 70% to pass. Review the lessons and try again.`;
+    ? `You scored ${score}/${QUESTIONS.length}. Your L1 Xero Associate certificate is ready to download and share.`
+    : `You scored ${score}/${QUESTIONS.length}. You need ${PASS_MARK}% (${Math.ceil(QUESTIONS.length * PASS_MARK / 100)} correct) to pass. Review the lessons and try again.`;
 
-  const actions = document.getElementById('result-actions');
-  if(pass) {
+  // Breakdown table
+  const topicScores = {};
+  breakdown.forEach(b => {
+    const topic = b.tag.split(' · ')[1] || b.tag;
+    if (!topicScores[topic]) topicScores[topic] = { correct: 0, total: 0 };
+    topicScores[topic].total++;
+    if (b.correct) topicScores[topic].correct++;
+  });
+  let bdHTML = '';
+  Object.entries(topicScores).forEach(([topic, s]) => {
+    const topicPct = Math.round(s.correct/s.total*100);
+    bdHTML += `<div class="breakdown-row">
+      <span>${topic}</span>
+      <span style="display:flex;align-items:center;gap:.5rem">
+        <span style="font-size:.8rem;color:${topicPct>=70?'var(--success)':'var(--danger)'}">${s.correct}/${s.total}</span>
+        <div style="width:60px;background:var(--border);border-radius:100px;height:4px;overflow:hidden">
+          <div style="width:${topicPct}%;height:100%;background:${topicPct>=70?'var(--success)':'var(--danger)'};border-radius:100px"></div>
+        </div>
+      </span>
+    </div>`;
+  });
+  bdHTML += `<div class="breakdown-row total"><span>Total score</span><span style="color:${pass?'var(--success)':'var(--danger)'};font-family:'JetBrains Mono',monospace">${pct}% ${pass?'✓ Pass':'✗ Fail'}</span></div>`;
+  document.getElementById('result-breakdown').innerHTML = bdHTML;
+
+  // Actions
+  if (pass) {
     const prog = LL.getProgress();
     const certId = LL.certId();
-    LL.saveProgress({ passed: true, score: pct, certId });
-    actions.innerHTML = `
+    LL.saveProgress({ l1_passed: true, l1_score: pct, certId, l1_date: new Date().toISOString() });
+    document.getElementById('upsell-banner').style.display = 'flex';
+    document.getElementById('result-actions').innerHTML = `
       <button class="btn btn-primary btn-lg" onclick="showCert(${pct})">View &amp; download certificate →</button>
       <a href="practice.html" class="btn btn-ghost btn-lg">Back to practice</a>`;
   } else {
-    actions.innerHTML = `
-      <a href="practice.html" class="btn btn-primary btn-lg">Practise more scenarios →</a>
-      <a href="learn.html" class="btn btn-ghost btn-lg">Review lessons</a>`;
+    document.getElementById('result-actions').innerHTML = `
+      <a href="learn.html" class="btn btn-primary btn-lg">Review lessons →</a>
+      <a href="practice.html" class="btn btn-ghost btn-lg">More practice scenarios</a>
+      <button class="btn btn-ghost btn-lg" onclick="location.reload()">Retake test</button>`;
   }
 }
 
@@ -299,11 +443,11 @@ function showCert(pct) {
   document.getElementById('cert-overlay').classList.add('show');
 }
 
-function downloadCert() {
-  LL.toast('PDF download — wire to jsPDF in production build', 'success');
-}
+function closeCert() { document.getElementById('cert-overlay').classList.remove('show'); }
 
-init();
+function downloadCert() {
+  LL.toast('PDF export — integrate jsPDF in production build', 'success');
+}
 </script>
 </body>
 </html>
