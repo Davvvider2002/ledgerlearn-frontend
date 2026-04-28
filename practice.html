@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice — LedgerLearn Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.practice-wrap { max-width: 840px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
+
+.score-bar {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem; flex-wrap: wrap;
+}
+.score-cell { text-align: center; }
+.score-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--accent); letter-spacing: -.02em; }
+.score-lbl { font-size: .7rem; color: var(--muted); margin-top: 1px; font-family: 'JetBrains Mono', monospace; letter-spacing: .05em; text-transform: uppercase; }
+.score-div { width: 1px; height: 36px; background: var(--border); }
+
+.gen-row { margin-left: auto; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+
+.scenario-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1.25rem; animation: fadeUp .4s ease both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.sc-header { padding: .9rem 1.5rem; background: var(--surface2); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.sc-tag { font-family: 'JetBrains Mono', monospace; font-size: .62rem; padding: 3px 9px; border-radius: 4px; background: var(--accent-dim); color: var(--accent); text-transform: uppercase; letter-spacing: .08em; }
+.sc-meta { font-size: .75rem; color: var(--muted); display: flex; align-items: center; gap: .5rem; }
+
+.sc-body { padding: 1.5rem; }
+.sc-context { background: var(--surface2); border-left: 3px solid var(--accent); padding: .85rem 1.1rem; border-radius: 0 7px 7px 0; font-size: .875rem; color: var(--muted); line-height: 1.75; margin-bottom: 1.25rem; }
+.sc-context strong { color: var(--text); }
+.sc-question { font-size: .975rem; font-weight: 500; margin-bottom: 1.1rem; line-height: 1.65; }
+
+.options { display: flex; flex-direction: column; gap: .6rem; }
+.opt { display: flex; align-items: flex-start; gap: .75rem; padding: .8rem 1rem; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all .18s; font-size: .875rem; line-height: 1.55; }
+.opt:hover:not(.locked) { border-color: var(--accent2); background: rgba(59,130,246,.05); }
+.opt.selected { border-color: var(--accent); background: rgba(0,212,170,.07); }
+.opt.correct  { border-color: var(--success); background: rgba(16,185,129,.1); }
+.opt.wrong    { border-color: var(--danger);  background: rgba(239,68,68,.08); }
+.opt.locked   { pointer-events: none; }
+.opt-letter { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 700; flex-shrink: 0; font-family: 'JetBrains Mono', monospace; color: var(--muted); transition: all .18s; }
+.selected .opt-letter { border-color: var(--accent); color: var(--accent); }
+.correct  .opt-letter { border-color: var(--success); color: var(--success); background: rgba(16,185,129,.12); }
+.wrong    .opt-letter { border-color: var(--danger);  color: var(--danger); }
+
+.feedback { display: none; margin-top: .9rem; padding: .9rem 1.1rem; border-radius: 8px; font-size: .85rem; line-height: 1.7; }
+.feedback.show { display: block; }
+.fb-correct { background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.25); color: #6ee7b7; }
+.fb-wrong   { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); color: #fca5a5; }
+.fb-loading { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-size: .8rem; }
+
+.ai-badge { font-size: .65rem; padding: 2px 7px; border-radius: 3px; background: rgba(139,92,246,.15); color: #a78bfa; font-family: 'JetBrains Mono', monospace; }
+
+.spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(0,0,0,.2); border-top-color: #000; border-radius: 50%; animation: spin .65s linear infinite; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.worker-status { font-size: .72rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.ws-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+.ws-dot.ok  { background: var(--success); }
+.ws-dot.err { background: var(--danger); }
+
+.cta-bar { text-align: center; padding: 2rem 0 1rem; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-logo">⬡ Ledger<span>Learn</span></a>
+  <ul class="nav-links">
+    <li><a href="learn.html">Learn</a></li>
+    <li><a href="practice.html" class="active">Practice</a></li>
+    <li><a href="test.html">Assessment</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="dashboard.html" class="btn btn-ghost">Dashboard</a>
+  </div>
+</nav>
+
+<main class="main">
+<div class="practice-wrap">
+
+  <div style="margin-bottom:1.5rem">
+    <span class="label">// scenario practice · L1 Xero Associate</span>
+    <div class="section-title" style="font-size:1.5rem">Live scenario practice</div>
+    <p class="section-sub" style="margin-top:.35rem;font-size:.875rem">Answer each question — get instant explanation. No time limit.</p>
+  </div>
+
+  <!-- Score bar -->
+  <div class="score-bar">
+    <div class="score-cell"><div class="score-num" id="sc-correct">0</div><div class="score-lbl">Correct</div></div>
+    <div class="score-div"></div>
+    <div class="score-cell"><div class="score-num" id="sc-total">0</div><div class="score-lbl">Attempted</div></div>
+    <div class="score-div"></div>
+    <div class="score-cell"><div class="score-num" id="sc-pct">—</div><div class="score-lbl">Score</div></div>
+    <div class="gen-row">
+      <div class="worker-status" id="worker-status">
+        <div class="ws-dot" id="ws-dot"></div>
+        <span id="ws-label">Checking AI…</span>
+      </div>
+      <button class="btn btn-primary" id="gen-btn" onclick="generateQuestion()" disabled>
+        + AI question
+      </button>
+    </div>
+  </div>
+
+  <!-- Static question bank -->
+  <div id="questions-container"></div>
+
+  <!-- AI questions injected here -->
+  <div id="ai-questions"></div>
+
+  <div class="cta-bar">
+    <a href="test.html" class="btn btn-primary btn-lg">Ready? Sit the assessment →</a>
+  </div>
+
+</div>
+</main>
+
+<script src="shared.js"></script>
+<script>
+// ── Config ─────────────────────────────────────────────────────
+const WORKER = 'https://ledgerlearn.godigitsall.workers.dev';
+
+// ── Question bank (works offline, no Worker needed) ────────────
+const QUESTION_BANK = [
+  {
+    tag: 'Xero · Invoicing · L1',
+    context: 'You are the bookkeeper for <strong>Greenway Consulting Ltd</strong>. Client <em>Hartwell & Associates</em> approves a proposal for <strong>£3,200 + VAT (20%)</strong>. Payment terms are net 30. Today is 25 April 2025.',
+    question: 'What should the invoice <strong>Total amount</strong> be, and what is the correct <strong>Due Date</strong>?',
+    options: ['£3,200 due 25 May 2025', '£3,840 due 25 May 2025', '£3,840 due 30 April 2025', '£3,200 due 30 April 2025'],
+    correct: 1,
+    explanation: '✅ VAT = £3,200 × 20% = £640. Total = £3,840. Net 30 from 25 April = 25 May. Account code 200 (Sales) with 20% output VAT is correct for professional services.',
+  },
+  {
+    tag: 'Xero · Bank Reconciliation · L1',
+    context: 'You are reconciling <strong>Greenway Consulting\'s</strong> bank account. The bank statement shows <strong>£12,450</strong>. Xero shows <strong>£11,980</strong>. One cheque for <strong>£470</strong> issued 20 April has not yet cleared.',
+    question: 'What is the correct reconciling action?',
+    options: [
+      'Post a journal entry to increase Xero balance by £470',
+      'Contact the bank — this is their error',
+      'Leave the cheque as uncleared in Xero — bank balance minus £470 = £11,980 which matches Xero exactly',
+      'Delete and re-enter the cheque in the next period',
+    ],
+    correct: 2,
+    explanation: '✅ This is a normal timing difference. Bank (£12,450) − uncleared cheque (£470) = £11,980 = Xero balance. The accounts reconcile correctly. No action needed until the cheque clears.',
+  },
+  {
+    tag: 'Xero · VAT · L1',
+    context: '<strong>Greenway Consulting</strong> is on standard UK VAT accounting. Q1 sales: <strong>£80,000 ex-VAT</strong>. Purchases with input VAT: <strong>£15,000</strong>.',
+    question: 'What is the net VAT payable to HMRC for Q1, and where in Xero do you file and record it?',
+    options: [
+      '£16,000 — filed under Accounts Payable → HMRC',
+      '£13,000 — filed via Accounting → Tax → VAT Returns, reconciled against bank payment',
+      '£3,000 — filed as a VAT refund claim',
+      '£19,000 — output plus input combined',
+    ],
+    correct: 1,
+    explanation: '✅ Output VAT = £80,000 × 20% = £16,000. Input VAT = £15,000 × 20% = £3,000. Net payable = £13,000. Filed in Xero via Accounting → Tax → VAT Returns then reconciled against the HMRC bank payment.',
+  },
+  {
+    tag: 'Xero · Chart of Accounts · L1',
+    context: '<strong>Greenway Consulting</strong> wants to track income from software training separately from general consulting fees. Currently all income goes to account <strong>200 — Sales</strong>.',
+    question: 'What is the best approach in Xero?',
+    options: [
+      'Use account 200 for all income to keep it simple',
+      'Create a new Revenue account (e.g. 202 — Training revenue) with the correct tax rate',
+      'Create a separate Xero organisation for training income',
+      'Use a manual journal each month to split the income',
+    ],
+    correct: 1,
+    explanation: '✅ Creating a separate Revenue account (e.g. 202 — Training revenue) is the correct approach. It gives you accurate P&L reporting by income type without duplication. Manual journals are error-prone and unnecessary when the chart of accounts is set up correctly.',
+  },
+  {
+    tag: 'Xero · Split Transaction · L1',
+    context: 'A <strong>£550 Amazon Business</strong> payment appears in the Xero bank feed for <strong>Greenway Consulting</strong>. <strong>£400</strong> relates to office supplies (VAT exempt) and <strong>£150</strong> to business books (20% VAT).',
+    question: 'What is the correct treatment in Xero?',
+    options: [
+      'Code the full £550 to Office Supplies at 20% VAT',
+      'Code the full £550 to Office Supplies with No VAT',
+      'Use Add Details → Split: £400 to Office Supplies (No VAT) and £150 to Books/Education (20% input VAT)',
+      'Mark as uncategorised and deal with it at year end',
+    ],
+    correct: 2,
+    explanation: '✅ Split transactions allow you to allocate different portions to different accounts with different VAT treatments. Coding the full amount to one VAT rate would create an incorrect VAT return — over or under-claiming input tax.',
+  },
+  {
+    tag: 'Xero · Invoice Approval · L1',
+    context: 'A new bookkeeper creates an invoice in Xero but saves it as <strong>Draft</strong> instead of approving it. Month end has arrived.',
+    question: 'What is the accounting impact of leaving the invoice as Draft?',
+    options: [
+      'Draft and Approved invoices have identical accounting impact',
+      'The draft invoice still appears in the aged debtors report',
+      'Draft invoices have no impact on the ledger — only Approved invoices post to Accounts Receivable and affect reports',
+      'Draft invoices are automatically approved at month end',
+    ],
+    correct: 2,
+    explanation: '✅ Draft invoices are outside the nominal ledger entirely. They don\'t appear in Accounts Receivable, aged debtors, or VAT returns. Only Approved invoices post to the ledger. This is a common month-end mistake that causes understated debtors.',
+  },
+];
+
+// ── State ──────────────────────────────────────────────────────
+let correct = 0, attempted = 0;
+let workerOnline = false;
+let aiQCount = 0;
+
+// ── Boot ───────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  renderStaticQuestions();
+  checkWorker();
+});
+
+// ── Render static questions ────────────────────────────────────
+function renderStaticQuestions() {
+  const container = document.getElementById('questions-container');
+  QUESTION_BANK.forEach((q, i) => {
+    container.appendChild(buildCard(q, 'q' + i, false));
+  });
+}
+
+function buildCard(q, id, isAI) {
+  const div = document.createElement('div');
+  div.className = 'scenario-card';
+  div.id = 'card-' + id;
+  div.innerHTML = `
+    <div class="sc-header">
+      <span class="sc-tag">${q.tag}</span>
+      <div class="sc-meta">
+        ${isAI ? '<span class="ai-badge">AI generated</span>' : ''}
+      </div>
+    </div>
+    <div class="sc-body">
+      ${q.context ? `<div class="sc-context">${q.context}</div>` : ''}
+      <div class="sc-question">${q.question}</div>
+      <div class="options" id="opts-${id}">
+        ${q.options.map((o, i) => `
+          <div class="opt" onclick="selectAnswer('${id}',this,${i === q.correct},${i},${q.correct},'${escJ(q.explanation)}','${escJ(o)}')">
+            <div class="opt-letter">${String.fromCharCode(65+i)}</div>
+            <div>${o}</div>
+          </div>`).join('')}
+      </div>
+      <div class="feedback" id="fb-${id}"></div>
+    </div>`;
+  return div;
+}
+
+// ── Answer handler ─────────────────────────────────────────────
+function selectAnswer(id, el, isCorrect, chosenIdx, correctIdx, staticExplanation, chosenText) {
+  const opts = document.getElementById('opts-' + id);
+  if (opts.querySelector('.correct, .wrong')) return; // already answered
+
+  attempted++;
+  if (isCorrect) correct++;
+  updateScore();
+
+  // Lock all options
+  opts.querySelectorAll('.opt').forEach(o => o.classList.add('locked'));
+  el.classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) opts.querySelectorAll('.opt')[correctIdx].classList.add('correct');
+
+  const fb = document.getElementById('fb-' + id);
+  fb.classList.add('show');
+
+  if (staticExplanation) {
+    fb.className = `feedback show ${isCorrect ? 'fb-correct' : 'fb-wrong'}`;
+    fb.textContent = (isCorrect ? '✅ ' : '❌ ') + staticExplanation.replace(/&#39;/g,"'").replace(/&quot;/g,'"');
+    return;
+  }
+
+  // Try Worker for AI-generated question feedback
+  if (workerOnline) {
+    fb.className = 'feedback show fb-loading';
+    fb.innerHTML = '<span class="spinner"></span> Getting AI explanation…';
+    const qText = opts.closest('.sc-body').querySelector('.sc-question').textContent;
+    const correctText = opts.querySelectorAll('.opt')[correctIdx].querySelector('div:last-child').textContent;
+    fetch(WORKER + '/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: qText, selectedAnswer: chosenText, correctAnswer: correctText, isCorrect }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      fb.className = `feedback show ${isCorrect ? 'fb-correct' : 'fb-wrong'}`;
+      fb.textContent = (isCorrect ? '✅ ' : '❌ ') + (data.feedback || 'Good effort!');
+    })
+    .catch(() => {
+      fb.className = `feedback show ${isCorrect ? 'fb-correct' : 'fb-wrong'}`;
+      fb.textContent = isCorrect ? '✅ Correct!' : '❌ Not quite — review the lesson notes.';
+    });
+  } else {
+    fb.className = `feedback show ${isCorrect ? 'fb-correct' : 'fb-wrong'}`;
+    fb.textContent = isCorrect ? '✅ Correct!' : '❌ Not quite — review the lesson notes.';
+  }
+}
+
+function updateScore() {
+  document.getElementById('sc-correct').textContent = correct;
+  document.getElementById('sc-total').textContent   = attempted;
+  document.getElementById('sc-pct').textContent     = attempted ? Math.round(correct/attempted*100) + '%' : '—';
+}
+
+// ── Worker health check ────────────────────────────────────────
+async function checkWorker() {
+  const dot   = document.getElementById('ws-dot');
+  const label = document.getElementById('ws-label');
+  const btn   = document.getElementById('gen-btn');
+  try {
+    const res = await fetch(WORKER + '/health', { signal: AbortSignal.timeout(5000) });
+    if (res.ok) {
+      workerOnline = true;
+      dot.className   = 'ws-dot ok';
+      label.textContent = 'AI online';
+      btn.disabled    = false;
+      btn.textContent = '+ AI question';
+    } else {
+      throw new Error('not ok');
+    }
+  } catch {
+    workerOnline = false;
+    dot.className   = 'ws-dot err';
+    label.textContent = 'AI offline';
+    btn.disabled    = true;
+    btn.textContent = 'AI unavailable';
+  }
+}
+
+// ── Generate AI question ───────────────────────────────────────
+async function generateQuestion() {
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+
+  try {
+    const res = await fetch(WORKER + '/api/generate-scenario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ track: 'Xero', module: 'Invoicing and bank reconciliation', difficulty: 'intermediate' }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Worker returned ' + res.status);
+    }
+
+    const q = await res.json();
+    aiQCount++;
+    const id = 'ai' + aiQCount;
+    const card = buildCard({
+      tag:         'Xero · AI Generated · L1',
+      context:     q.context,
+      question:    q.question,
+      options:     q.options,
+      correct:     q.correct_index,
+      explanation: q.explanation,
+    }, id, true);
+    document.getElementById('ai-questions').appendChild(card);
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    LL.toast('New AI question generated!', 'success');
+  } catch (err) {
+    LL.toast('AI question failed: ' + err.message, 'error');
+    console.error('Worker error:', err);
+  }
+
+  btn.disabled  = false;
+  btn.textContent = '+ AI question';
+}
+
+function escJ(s) {
+  return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"&#39;").replace(/"/g,"&quot;").replace(/\n/g,' ');
+}
+</script>
+</body>
+</html>
