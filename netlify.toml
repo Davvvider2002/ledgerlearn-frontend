@@ -1,5 +1,9 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/xero-invoice-sim.html"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
