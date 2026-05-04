@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Congratulations! — LedgerLearn Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --navy:#0B1F3A;--gold:#D4A843;--gold-light:#f0c860;
+  --teal:#1DA98A;--teal-light:#26c9a5;--teal-pale:#e1f7f2;
+  --white:#fff;--off-white:#f8f7f4;
+  --text-dark:#0B1F3A;--text-muted:#6b87a3;--border:rgba(11,31,58,0.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;overflow-x:hidden;}
+
+/* Animated background */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse at 20% 50%,rgba(29,169,138,0.12) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 20%,rgba(212,168,67,0.08) 0%,transparent 55%);
+  pointer-events:none;
+}
+
+/* Confetti particles */
+.confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;}
+.particle{
+  position:absolute;top:-10px;
+  width:8px;height:8px;border-radius:2px;
+  animation:fall linear infinite;
+}
+@keyframes fall{
+  0%{transform:translateY(-10px) rotate(0deg);opacity:1;}
+  100%{transform:translateY(110vh) rotate(720deg);opacity:0;}
+}
+
+.page-card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:20px;
+  padding:3rem 2.5rem;
+  max-width:680px;width:100%;
+  position:relative;z-index:1;
+  text-align:center;
+  backdrop-filter:blur(12px);
+  animation:slideUp 0.6s 0.1s ease both;
+}
+
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+.trophy{
+  font-size:4rem;margin-bottom:1rem;
+  display:block;
+  animation:bounce 1s 0.5s ease both;
+}
+@keyframes bounce{
+  0%{transform:scale(0)}
+  60%{transform:scale(1.2)}
+  80%{transform:scale(0.95)}
+  100%{transform:scale(1)}
+}
+
+.pass-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(29,169,138,0.15);
+  border:1px solid rgba(29,169,138,0.35);
+  color:var(--teal-light);
+  font-size:0.75rem;font-weight:600;
+  padding:5px 14px;border-radius:100px;
+  margin-bottom:1.25rem;
+  letter-spacing:0.04em;
+}
+
+.pass-badge::before{
+  content:'';width:6px;height:6px;background:var(--teal-light);border-radius:50%;
+}
+
+h1{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1.8rem,4vw,2.6rem);
+  font-weight:800;color:var(--white);
+  letter-spacing:-0.03em;line-height:1.1;
+  margin-bottom:0.75rem;
+}
+
+h1 span{color:var(--gold);}
+
+.sub{
+  font-size:1rem;color:rgba(255,255,255,0.55);
+  line-height:1.7;font-weight:300;
+  margin-bottom:2rem;
+  max-width:480px;margin-left:auto;margin-right:auto;
+}
+
+/* Score display */
+.score-row{
+  display:flex;align-items:center;justify-content:center;gap:2rem;
+  margin-bottom:2rem;flex-wrap:wrap;
+}
+
+.score-item{text-align:center;}
+
+.score-num{
+  font-family:'Syne',sans-serif;
+  font-size:2.2rem;font-weight:800;
+  color:var(--gold);line-height:1;
+  display:block;margin-bottom:0.25rem;
+}
+
+.score-num.teal{color:var(--teal-light);}
+
+.score-label{
+  font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;
+  color:rgba(255,255,255,0.35);font-weight:500;
+}
+
+.score-divider{
+  width:1px;height:40px;
+  background:rgba(255,255,255,0.1);
+}
+
+/* Cert preview card */
+.cert-preview{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(212,168,67,0.2);
+  border-radius:12px;padding:1.5rem;
+  margin-bottom:2rem;
+  text-align:left;
+  position:relative;overflow:hidden;
+}
+
+.cert-preview::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--navy),var(--gold) 40%,var(--teal));
+}
+
+.cert-preview-top{
+  display:flex;align-items:center;gap:12px;margin-bottom:1rem;
+}
+
+.cert-hex-badge{
+  width:40px;height:40px;border-radius:10px;
+  background:rgba(212,168,67,0.15);
+  border:1px solid rgba(212,168,67,0.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;flex-shrink:0;
+}
+
+.cert-preview-title{
+  font-family:'Syne',sans-serif;
+  font-size:1rem;font-weight:700;color:var(--white);
+  margin-bottom:2px;
+}
+
+.cert-preview-sub{font-size:0.78rem;color:rgba(255,255,255,0.45);}
+
+.cert-detail-row{
+  display:flex;gap:1rem;flex-wrap:wrap;
+}
+
+.cert-detail{
+  flex:1;min-width:120px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:7px;padding:0.6rem 0.9rem;
+}
+
+.cert-detail-label{
+  font-size:0.62rem;text-transform:uppercase;
+  letter-spacing:0.08em;color:rgba(255,255,255,0.35);
+  font-weight:500;margin-bottom:0.2rem;
+}
+
+.cert-detail-value{
+  font-size:0.82rem;font-weight:600;color:var(--white);
+  word-break:break-all;
+}
+
+.cert-detail-value.gold{color:var(--gold);}
+
+/* Action buttons */
+.action-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;
+  margin-bottom:1.25rem;
+}
+
+.act-btn{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  padding:13px 16px;border-radius:9px;
+  font-family:'DM Sans',sans-serif;font-size:0.875rem;font-weight:600;
+  cursor:pointer;text-decoration:none;border:none;
+  transition:all 0.2s;
+}
+
+.act-btn.gold-btn{background:var(--gold);color:var(--navy);}
+.act-btn.gold-btn:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 8px 24px rgba(212,168,67,0.35);}
+
+.act-btn.li-btn{background:#0A66C2;color:var(--white);}
+.act-btn.li-btn:hover{background:#0d77db;transform:translateY(-2px);}
+
+.act-btn.ghost-btn{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  color:rgba(255,255,255,0.7);
+  grid-column:1/-1;
+}
+.act-btn.ghost-btn:hover{background:rgba(255,255,255,0.1);color:var(--white);}
+
+/* Upsell */
+.upsell-card{
+  background:linear-gradient(135deg,#0d2744,#0a1f38);
+  border:1px solid rgba(212,168,67,0.2);
+  border-radius:12px;padding:1.25rem 1.5rem;
+  display:flex;align-items:center;gap:1.25rem;
+  text-align:left;flex-wrap:wrap;
+}
+
+.upsell-text{flex:1;}
+
+.upsell-badge{
+  display:inline-block;
+  background:rgba(212,168,67,0.15);color:var(--gold);
+  font-size:0.62rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.07em;padding:2px 8px;border-radius:3px;
+  margin-bottom:0.4rem;
+}
+
+.upsell-text h3{
+  font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;
+  color:var(--white);margin-bottom:0.2rem;
+}
+
+.upsell-text p{font-size:0.78rem;color:rgba(255,255,255,0.45);font-weight:300;}
+
+.upsell-cta{
+  background:var(--gold);color:var(--navy);
+  font-weight:700;font-size:0.8rem;
+  padding:10px 18px;border-radius:7px;
+  text-decoration:none;white-space:nowrap;flex-shrink:0;
+  transition:all 0.2s;
+}
+
+.upsell-cta:hover{background:var(--gold-light);transform:translateY(-1px);}
+
+/* Loading overlay */
+#gen-overlay{
+  display:none;position:fixed;inset:0;z-index:999;
+  background:rgba(7,18,36,0.85);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;flex-direction:column;gap:1rem;
+}
+
+.gen-spinner{
+  width:48px;height:48px;
+  border:3px solid rgba(212,168,67,0.2);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.gen-text{
+  font-family:'Syne',sans-serif;font-size:1rem;font-weight:600;
+  color:var(--white);
+}
+
+@media(max-width:480px){
+  .action-grid{grid-template-columns:1fr;}
+  .act-btn.ghost-btn{grid-column:auto;}
+  .score-divider{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- Confetti -->
+<div class="confetti" id="confetti"></div>
+
+<!-- Loading overlay -->
+<div id="gen-overlay" style="display:none;flex-direction:column;">
+  <div class="gen-spinner"></div>
+  <div class="gen-text">Generating your certificate…</div>
+</div>
+
+<div class="page-card">
+  <span class="trophy">🏆</span>
+  <div class="pass-badge">Assessment passed</div>
+  <h1>You're <span>certified!</span></h1>
+  <p class="sub">You've passed the Xero L1 assessment. Your certificate is ready to download and share on LinkedIn right now.</p>
+
+  <!-- Score summary -->
+  <div class="score-row">
+    <div class="score-item">
+      <span class="score-num" id="disp-score">85%</span>
+      <span class="score-label">Your score</span>
+    </div>
+    <div class="score-divider"></div>
+    <div class="score-item">
+      <span class="score-num teal">70%</span>
+      <span class="score-label">Pass mark</span>
+    </div>
+    <div class="score-divider"></div>
+    <div class="score-item">
+      <span class="score-num" id="disp-date" style="font-size:1.1rem;margin-top:0.4rem;">Today</span>
+      <span class="score-label">Issue date</span>
+    </div>
+  </div>
+
+  <!-- Cert preview -->
+  <div class="cert-preview">
+    <div class="cert-preview-top">
+      <div class="cert-hex-badge">📜</div>
+      <div>
+        <div class="cert-preview-title" id="disp-cert-title">Xero Certified Practitioner — Level 1</div>
+        <div class="cert-preview-sub">Associate · Xero Cloud Accounting · LedgerLearn Pro</div>
+      </div>
+    </div>
+    <div class="cert-detail-row">
+      <div class="cert-detail">
+        <div class="cert-detail-label">Issued to</div>
+        <div class="cert-detail-value" id="disp-name">—</div>
+      </div>
+      <div class="cert-detail">
+        <div class="cert-detail-label">Certificate ID</div>
+        <div class="cert-detail-value gold" id="disp-cert-id">LLP-XCP1-2025-0001</div>
+      </div>
+      <div class="cert-detail">
+        <div class="cert-detail-label">Verify at</div>
+        <div class="cert-detail-value" style="font-size:0.68rem;">ledgerlearn-frontend.netlify.app/verify</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="action-grid">
+    <button class="act-btn gold-btn" id="btn-download">
+      📄 Download PDF
+    </button>
+    <button class="act-btn li-btn" id="btn-linkedin">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      Share on LinkedIn
+    </button>
+    <a href="/dashboard" class="act-btn ghost-btn">← Back to dashboard</a>
+  </div>
+
+  <!-- Upsell -->
+  <div class="upsell-card">
+    <div class="upsell-text">
+      <div class="upsell-badge">Next step</div>
+      <h3>Ready to turn this into consulting income?</h3>
+      <p>ERP.SaaS Academy teaches you to land $5,000+ projects. Use code <strong style="color:var(--gold)">LEDGER30</strong> for 30% off.</p>
+    </div>
+    <a href="https://skool.com/erp-saas-academy" class="upsell-cta" target="_blank">Join Academy →</a>
+  </div>
+
+</div>
+
+<script src="/certificate.js"></script>
+<script>
+  // ── Spawn confetti ──────────────────────────────────────
+  const colors = ['#D4A843','#1DA98A','#ffffff','#f0c860','#26c9a5'];
+  const container = document.getElementById('confetti');
+  for (let i = 0; i < 60; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left: ${Math.random()*100}%;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      width: ${4+Math.random()*6}px;
+      height: ${4+Math.random()*6}px;
+      border-radius: ${Math.random()>0.5?'50%':'2px'};
+      animation-duration: ${2.5+Math.random()*3}s;
+      animation-delay: ${Math.random()*2}s;
+      opacity: ${0.6+Math.random()*0.4};
+    `;
+    container.appendChild(p);
+  }
+
+  // ── Load cert data from localStorage ────────────────────
+  let certData = {};
+  try {
+    const progress = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+    const user     = JSON.parse(localStorage.getItem('ll_user')     || '{}');
+    certData = progress.certificate || {};
+
+    // Fallbacks
+    if (!certData.candidateName && user.name) certData.candidateName = user.name;
+    if (!certData.certId) certData.certId = 'LLP-XCP1-2025-' + Math.floor(1000+Math.random()*9000);
+    if (!certData.issueDate) certData.issueDate = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+    if (!certData.score) certData.score = 85;
+    if (!certData.certTitle) certData.certTitle = 'Xero Certified Practitioner — Level 1';
+
+  } catch(e) {}
+
+  // ── Populate UI ──────────────────────────────────────────
+  document.getElementById('disp-name').textContent    = certData.candidateName || 'Candidate';
+  document.getElementById('disp-cert-id').textContent = certData.certId        || '—';
+  document.getElementById('disp-score').textContent   = (certData.score || '—') + '%';
+  document.getElementById('disp-date').textContent    = certData.issueDate     || 'Today';
+  document.getElementById('disp-cert-title').textContent = certData.certTitle  || 'Xero Certified Practitioner — Level 1';
+
+  // ── Download button ──────────────────────────────────────
+  document.getElementById('btn-download').addEventListener('click', async () => {
+    const overlay = document.getElementById('gen-overlay');
+    overlay.style.display = 'flex';
+    // Small delay so overlay renders before jsPDF blocks the thread
+    await new Promise(r => setTimeout(r, 100));
+    try {
+      LedgerCert.generate({ ...certData, action: 'download' });
+    } catch(e) { console.error(e); }
+    overlay.style.display = 'none';
+  });
+
+  // ── LinkedIn button ──────────────────────────────────────
+  document.getElementById('btn-linkedin').addEventListener('click', () => {
+    LedgerCert.shareLinkedIn({
+      certTitle: certData.certTitle,
+      certId:    certData.certId,
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickBooks Certification — LedgerLearn Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#0B1F3A; --navy-mid:#132d52;
+    --gold:#D4A843; --gold-light:#f0c860; --gold-pale:#fdf3dc;
+    --teal:#1DA98A; --teal-light:#26c9a5; --teal-pale:#e1f7f2;
+    --qb-blue:#2B5BE8; --qb-blue-dark:#1a3ab5; --qb-blue-pale:#eef2ff;
+    --white:#fff; --off-white:#f8f7f4;
+    --text-dark:#0B1F3A; --text-mid:#3d5a7a; --text-muted:#6b87a3;
+    --border:rgba(11,31,58,0.1);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body { font-family:'DM Sans',sans-serif; background:var(--off-white); color:var(--text-dark); }
+
+  nav {
+    background:var(--navy); height:60px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 2rem;
+    border-bottom:1px solid rgba(212,168,67,0.2);
+    position:sticky; top:0; z-index:50;
+  }
+
+  .nav-logo { display:flex; align-items:center; gap:9px; text-decoration:none; }
+  .nav-hex { width:28px;height:28px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+  .nav-brand { font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--white); }
+  .nav-brand span { color:var(--gold); }
+  .nav-links { display:flex;gap:1.5rem;list-style:none;align-items:center; }
+  .nav-links a { color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.85rem;transition:color 0.2s; }
+  .nav-links a:hover { color:var(--white); }
+
+  /* HERO */
+  .hero {
+    background:var(--navy);
+    padding:80px 2rem 60px;
+    text-align:center;
+    position:relative; overflow:hidden;
+  }
+
+  .hero::before {
+    content:'';
+    position:absolute;top:0;left:0;right:0;bottom:0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(43,91,232,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(212,168,67,0.08) 0%, transparent 55%);
+    pointer-events:none;
+  }
+
+  .hero-inner { max-width:640px; margin:0 auto; position:relative; z-index:1; }
+
+  .hero-badge {
+    display:inline-flex;align-items:center;gap:7px;
+    background:rgba(212,168,67,0.12);
+    border:1px solid rgba(212,168,67,0.3);
+    color:var(--gold);
+    font-size:0.75rem;font-weight:600;
+    padding:5px 14px;border-radius:100px;
+    margin-bottom:1.5rem;
+    letter-spacing:0.04em;
+  }
+
+  .hero-badge::before {
+    content:'';width:6px;height:6px;
+    background:var(--gold);border-radius:50%;
+    animation:blink 2s infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+  .qb-logo-big {
+    width:72px;height:72px;
+    background:linear-gradient(135deg,#2B5BE8,#1a3ab5);
+    border-radius:18px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;
+    color:var(--white);
+    margin:0 auto 1.5rem;
+    box-shadow:0 12px 32px rgba(43,91,232,0.35);
+  }
+
+  .hero h1 {
+    font-family:'Syne',sans-serif;
+    font-size:clamp(2rem,4vw,2.8rem);
+    font-weight:800;color:var(--white);
+    letter-spacing:-0.03em;line-height:1.1;
+    margin-bottom:1rem;
+  }
+
+  .hero h1 span { color:var(--gold); }
+
+  .hero p {
+    font-size:1rem;
+    color:rgba(255,255,255,0.55);
+    line-height:1.7;font-weight:300;
+    margin-bottom:2.5rem;
+  }
+
+  /* WAITLIST FORM */
+  .waitlist-card {
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:16px;
+    padding:2rem;
+    max-width:420px;
+    margin:0 auto;
+    backdrop-filter:blur(8px);
+  }
+
+  .waitlist-card h3 {
+    font-family:'Syne',sans-serif;
+    font-size:1rem;font-weight:700;
+    color:var(--white);text-align:center;
+    margin-bottom:0.4rem;
+  }
+
+  .waitlist-card .sub {
+    font-size:0.8rem;color:rgba(255,255,255,0.4);
+    text-align:center;margin-bottom:1.25rem;font-weight:300;
+  }
+
+  .wl-input {
+    width:100%;
+    background:rgba(255,255,255,0.07);
+    border:1px solid rgba(255,255,255,0.14);
+    border-radius:8px;
+    padding:12px 15px;
+    font-family:'DM Sans',sans-serif;
+    font-size:0.9rem;color:var(--white);
+    outline:none;margin-bottom:10px;
+    transition:border-color 0.2s;
+    box-sizing:border-box;
+  }
+
+  .wl-input::placeholder { color:rgba(255,255,255,0.28); }
+  .wl-input:focus { border-color:rgba(212,168,67,0.5); }
+
+  .wl-submit {
+    width:100%;
+    background:var(--gold);color:var(--navy);
+    border:none;border-radius:8px;
+    padding:13px;
+    font-family:'DM Sans',sans-serif;
+    font-size:0.95rem;font-weight:700;
+    cursor:pointer;
+    transition:background 0.2s,transform 0.15s,box-shadow 0.2s;
+  }
+
+  .wl-submit:hover {
+    background:var(--gold-light);
+    transform:translateY(-1px);
+    box-shadow:0 6px 20px rgba(212,168,67,0.35);
+  }
+
+  .wl-note {
+    font-size:0.72rem;color:rgba(255,255,255,0.25);
+    text-align:center;margin-top:0.75rem;
+  }
+
+  .wl-success {
+    text-align:center;padding:1rem;
+    display:none;
+  }
+
+  .wl-success .tick {
+    font-size:2.5rem;margin-bottom:0.75rem;display:block;
+  }
+
+  .wl-success h4 {
+    font-family:'Syne',sans-serif;
+    font-size:1.1rem;font-weight:700;
+    color:var(--gold);margin-bottom:0.4rem;
+  }
+
+  .wl-success p {
+    font-size:0.82rem;color:rgba(255,255,255,0.45);font-weight:300;line-height:1.6;
+  }
+
+  /* WHAT'S COMING */
+  .content-section { padding:60px 2rem; max-width:900px; margin:0 auto; }
+
+  .section-label {
+    font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;
+    color:var(--teal);font-weight:600;margin-bottom:0.6rem;
+  }
+
+  .section-title {
+    font-family:'Syne',sans-serif;
+    font-size:clamp(1.6rem,3vw,2rem);
+    font-weight:700;color:var(--navy);
+    letter-spacing:-0.02em;margin-bottom:0.75rem;
+  }
+
+  .section-sub {
+    font-size:0.95rem;color:var(--text-muted);
+    line-height:1.7;max-width:520px;font-weight:300;
+    margin-bottom:2.5rem;
+  }
+
+  .modules-grid {
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:1rem;
+  }
+
+  .module-card {
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:12px;padding:1.5rem;
+    position:relative;overflow:hidden;
+  }
+
+  .module-card::before {
+    content:'';
+    position:absolute;top:0;left:0;right:0;height:3px;
+    background:var(--qb-blue);
+  }
+
+  .module-num {
+    font-family:'Syne',sans-serif;
+    font-size:0.7rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:0.1em;
+    color:var(--qb-blue);margin-bottom:0.5rem;
+  }
+
+  .module-card h4 {
+    font-family:'Syne',sans-serif;
+    font-size:0.95rem;font-weight:700;
+    color:var(--navy);margin-bottom:0.5rem;
+  }
+
+  .module-card p {
+    font-size:0.8rem;color:var(--text-muted);
+    line-height:1.6;font-weight:300;
+  }
+
+  .module-tag {
+    display:inline-block;
+    margin-top:0.75rem;
+    font-size:0.68rem;font-weight:600;
+    padding:2px 8px;border-radius:4px;
+    background:var(--qb-blue-pale);color:var(--qb-blue);
+  }
+
+  /* XERO BRIDGE SECTION */
+  .bridge-section {
+    background:var(--white);
+    border-top:1px solid var(--border);
+    padding:60px 2rem;
+  }
+
+  .bridge-inner {
+    max-width:900px;margin:0 auto;
+    display:flex;align-items:center;gap:3rem;
+    flex-wrap:wrap;
+  }
+
+  .bridge-text { flex:1;min-width:280px; }
+
+  .bridge-text h3 {
+    font-family:'Syne',sans-serif;
+    font-size:1.3rem;font-weight:700;
+    color:var(--navy);margin-bottom:0.75rem;
+    letter-spacing:-0.01em;
+  }
+
+  .bridge-text p {
+    font-size:0.9rem;color:var(--text-muted);
+    line-height:1.7;margin-bottom:1.25rem;font-weight:300;
+  }
+
+  .btn-teal {
+    background:var(--teal);color:var(--white);
+    font-weight:600;font-size:0.9rem;
+    padding:12px 22px;border-radius:8px;
+    text-decoration:none;
+    display:inline-flex;align-items:center;gap:7px;
+    transition:background 0.2s,transform 0.15s;
+  }
+
+  .btn-teal:hover { background:var(--teal-light);transform:translateY(-1px); }
+
+  .xero-preview {
+    flex-shrink:0;
+    background:linear-gradient(135deg,#0a3d2e,#0f5540);
+    border-radius:14px;padding:1.5rem;
+    width:260px;
+  }
+
+  .xero-preview-title {
+    font-family:'Syne',sans-serif;
+    font-size:0.75rem;font-weight:700;
+    color:rgba(255,255,255,0.5);
+    text-transform:uppercase;letter-spacing:0.08em;
+    margin-bottom:1rem;
+  }
+
+  .xero-levels { display:flex;flex-direction:column;gap:8px; }
+
+  .xero-level {
+    display:flex;align-items:center;gap:10px;
+    padding:9px 11px;border-radius:7px;
+    background:rgba(255,255,255,0.06);
+  }
+
+  .xero-level.available { background:rgba(29,169,138,0.15); }
+
+  .xl-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0; }
+  .xl-dot.done { background:var(--teal-light); }
+  .xl-dot.open { background:var(--gold); }
+  .xl-dot.locked { background:rgba(255,255,255,0.2); }
+
+  .xl-name { flex:1;font-size:0.8rem;color:rgba(255,255,255,0.7); }
+  .xl-price { font-size:0.72rem;font-weight:600;color:var(--gold); }
+  .xl-free { font-size:0.72rem;font-weight:600;color:var(--teal-light); }
+
+  @media(max-width:600px){
+    nav .nav-links{display:none;}
+    .bridge-inner{flex-direction:column;}
+    .xero-preview{width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-hex"></div>
+    <span class="nav-brand">Ledger<span>Learn</span> Pro</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/learn">Learn</a></li>
+    <li><a href="/practice">Practice</a></li>
+    <li><a href="/test">Assessment</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">In development · Launching 2025</div>
+    <div class="qb-logo-big">QB</div>
+    <h1>QuickBooks certification<br>is <span>coming to LedgerLearn</span></h1>
+    <p>The most-used accounting software in the US, Philippines, and Canada — now getting a full certification track. Be first in line when it launches.</p>
+
+    <div class="waitlist-card">
+      <h3>Join the QuickBooks waitlist</h3>
+      <p class="sub">Get early access + a founding member discount when we launch</p>
+
+      <div id="wl-form-wrap">
+        <input type="text" class="wl-input" id="wl-name" placeholder="Your full name" />
+        <input type="email" class="wl-input" id="wl-email" placeholder="Your email address" required />
+        <button class="wl-submit" onclick="handleWaitlist()">Notify me when QB launches →</button>
+        <p class="wl-note">No spam. One email when it's ready. Unsubscribe anytime.</p>
+      </div>
+
+      <div class="wl-success" id="wl-success">
+        <span class="tick">✅</span>
+        <h4>You're on the list!</h4>
+        <p>We'll email you the moment QuickBooks L1 goes live — and you'll get first access at a founding member rate.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S COMING -->
+<div class="content-section">
+  <div class="section-label">What's inside QB L1</div>
+  <h2 class="section-title">Everything in the Xero track — built for QuickBooks</h2>
+  <p class="section-sub">The same progressive certification format, adapted for QuickBooks Online — the platform dominating US, Philippines, and Canadian bookkeeping markets.</p>
+
+  <div class="modules-grid">
+    <div class="module-card">
+      <div class="module-num">Module 1</div>
+      <h4>Dashboard & company setup</h4>
+      <p>Navigate the QuickBooks interface, set up a company file, configure chart of accounts, and manage settings.</p>
+      <span class="module-tag">Guided walkthrough</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">Module 2</div>
+      <h4>Invoices, estimates & sales</h4>
+      <p>Create and send invoices, set up recurring billing, record payments, and manage customer accounts.</p>
+      <span class="module-tag">Live simulation</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">Module 3</div>
+      <h4>Bills, expenses & vendors</h4>
+      <p>Record vendor bills, track expenses, manage purchase orders, and run accounts payable workflows.</p>
+      <span class="module-tag">Live simulation</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">Module 4</div>
+      <h4>Bank feeds & reconciliation</h4>
+      <p>Connect bank accounts, categorise transactions, match feeds, and perform month-end reconciliation.</p>
+      <span class="module-tag">Live simulation</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">Module 5</div>
+      <h4>Payroll basics</h4>
+      <p>Set up employees, run a payroll, record payroll taxes, and generate payroll reports.</p>
+      <span class="module-tag">Guided walkthrough</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">Module 6</div>
+      <h4>Financial reports & tax prep</h4>
+      <p>Generate P&amp;L, balance sheet, and cash flow statements. Prepare for tax filing with QuickBooks reports.</p>
+      <span class="module-tag">Live simulation</span>
+    </div>
+  </div>
+</div>
+
+<!-- XERO BRIDGE -->
+<section class="bridge-section">
+  <div class="bridge-inner">
+    <div class="bridge-text">
+      <h3>While you wait — get Xero certified</h3>
+      <p>Xero is the dominant platform in the UK, South Africa, Australia, and New Zealand. If you work with clients in those markets, a Xero certification puts you ahead of 90% of applicants.</p>
+      <p>The first module is completely free. No card needed to start.</p>
+      <a href="/learn" class="btn-teal">
+        Start Xero L1 — free
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7.5 4l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+    <div class="xero-preview">
+      <div class="xero-preview-title">Xero certification track</div>
+      <div class="xero-levels">
+        <div class="xero-level available">
+          <div class="xl-dot done"></div>
+          <span class="xl-name">L1 Associate — 6 lessons</span>
+          <span class="xl-free">Free start</span>
+        </div>
+        <div class="xero-level">
+          <div class="xl-dot open"></div>
+          <span class="xl-name">L2 Professional</span>
+          <span class="xl-price">$49</span>
+        </div>
+        <div class="xero-level">
+          <div class="xl-dot locked"></div>
+          <span class="xl-name">L3 Advisor</span>
+          <span class="xl-price">$49</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  async function handleWaitlist() {
+    const name = document.getElementById('wl-name').value.trim();
+    const email = document.getElementById('wl-email').value.trim();
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if (!emailValid) {
+      document.getElementById('wl-email').style.borderColor = 'rgba(255,100,100,0.6)';
+      return;
+    }
+
+    // Save to localStorage
+    try {
+      const existing = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+      existing.qbWaitlist = { name, email, ts: Date.now() };
+      localStorage.setItem('ll_progress', JSON.stringify(existing));
+    } catch(e) {}
+
+    // Push to Brevo list 4 (QB Waitlist)
+    if (window.BREVO) {
+      await window.BREVO.addContact(email, name, window.BREVO.config.lists.qb, {
+        SOURCE: 'quickbooks-page',
+      });
+    }
+
+    document.getElementById('wl-form-wrap').style.display = 'none';
+    document.getElementById('wl-success').style.display = 'block';
+  }
+
+  // Pre-fill from localStorage if user is known
+  try {
+    const user = JSON.parse(localStorage.getItem('ll_user') || '{}');
+    if (user.name) document.getElementById('wl-name').value = user.name;
+    if (user.email) document.getElementById('wl-email').value = user.email;
+  } catch(e) {}
+</script>
+<script src="/brevo.js"></script>
+</body>
+</html>
