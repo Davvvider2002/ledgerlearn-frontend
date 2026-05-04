@@ -426,7 +426,7 @@ body { background: var(--off-white); }
   <div class="ll-footer-inner">
     <div class="ll-footer-brand">Ledger<span>Learn</span> Pro</div>
     <ul class="ll-footer-links">
-      <li><a href="/learn">Learn</a></li>
+      <li><a href="/learn" id="nav-learn-link">Learn</a></li>
       <li><a href="/practice">Practice</a></li>
       <li><a href="/test">Assessment</a></li>
       <li><a href="/verify">Verify</a></li>
@@ -678,7 +678,69 @@ function dismissGate() {
 }
 
 // ── Start ─────────────────────────────────────────────────
-init();
+  init();
 </script>
+
+ <script>
+// Smart routing — send new visitors to placement quiz first
+(function() {
+  const progress = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+  const hasPlacement = progress.placementResult;
+  const hasStarted   = progress.completedLessons && progress.completedLessons.length > 0;
+  const hasSkipped   = progress.skippedPlacement;
+
+  // Update nav link for other pages too
+  const navLink = document.getElementById('nav-learn-link');
+  if (navLink && !hasPlacement && !hasStarted && !hasSkipped) {
+    navLink.href = '/placement';
+    navLink.title = 'Take placement quiz first';
+  }
+
+  // If this IS the learn page and user is brand new — redirect
+  const isLearnPage = window.location.pathname.includes('/learn');
+  if (isLearnPage && !hasPlacement && !hasStarted && !hasSkipped) {
+    // Show a prompt rather than hard redirect — gives user choice
+    const banner = document.createElement('div');
+    banner.style.cssText = `
+      background:#0B1F3A;border-bottom:2px solid #D4A843;
+      padding:0.85rem 1.5rem;display:flex;align-items:center;
+      justify-content:space-between;gap:1rem;flex-wrap:wrap;
+    `;
+    banner.innerHTML = `
+      <div>
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:#1DA98A;font-weight:600;margin-bottom:2px;">New here?</div>
+        <div style="font-size:0.85rem;color:rgba(255,255,255,0.85);">
+          Take the <strong style="color:#D4A843">2-minute placement quiz</strong> first — we'll tell you exactly where to start.
+        </div>
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-shrink:0;">
+        <a href="/placement"
+           style="background:#D4A843;color:#0B1F3A;padding:7px 16px;border-radius:6px;font-size:0.8rem;font-weight:700;text-decoration:none;">
+          Take quiz →
+        </a>
+        <button onclick="skipPlacement()"
+                style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);padding:7px 14px;border-radius:6px;font-size:0.78rem;cursor:pointer;font-family:inherit;">
+          Skip — start at Lesson 1
+        </button>
+      </div>
+    `;
+
+    // Insert below the nav
+    const nav = document.querySelector('nav.ll-nav') || document.querySelector('nav');
+    if (nav && nav.parentNode) {
+      nav.parentNode.insertBefore(banner, nav.nextSibling);
+    }
+  }
+})();
+
+function skipPlacement() {
+  const progress = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+  progress.skippedPlacement = true;
+  localStorage.setItem('ll_progress', JSON.stringify(progress));
+  // Remove the banner
+  document.querySelector('[style*="New here"]')?.closest('div')?.remove();
+}
+   
+</script> 
 </body>
 </html>
