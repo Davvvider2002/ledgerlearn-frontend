@@ -1,9 +1,47 @@
+# LedgerLearn Pro — Netlify Configuration
+# =========================================
+# Place this file in the ROOT of your GitHub repo.
+
+[build]
+  publish   = "."
+  functions = "netlify/functions"
+
+# ── Pretty URLs (no .html extension needed) ──────────────
+[[redirects]]
+  from = "/dashboard" ; to = "/dashboard.html" ; status = 200
+[[redirects]]
+  from = "/learn"     ; to = "/learn.html"      ; status = 200
+[[redirects]]
+  from = "/practice"  ; to = "/practice.html"   ; status = 200
+[[redirects]]
+  from = "/test"      ; to = "/test.html"        ; status = 200
+[[redirects]]
+  from = "/verify"    ; to = "/verify.html"      ; status = 200
+[[redirects]]
+  from = "/quickbooks"; to = "/quickbooks.html"  ; status = 200
+[[redirects]]
+  from = "/certificate-success"; to = "/certificate-success.html"; status = 200
+
+# ── 404 fallback ─────────────────────────────────────────
+[[redirects]]
+  from = "/*" ; to = "/index.html" ; status = 404
+
+# ── Security headers ─────────────────────────────────────
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Content-Type-Options = "nosniff"
+    X-Frame-Options            = "SAMEORIGIN"
+    X-Content-Type-Options     = "nosniff"
+    Referrer-Policy            = "strict-origin-when-cross-origin"
+    Permissions-Policy         = "camera=(), microphone=(), geolocation=()"
+
+# ── Cache static assets ──────────────────────────────────
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
 
 [[headers]]
-  for = "/xero-invoice-sim.html"
+  for = "/*.js"
   [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
+    Cache-Control = "public, max-age=86400"

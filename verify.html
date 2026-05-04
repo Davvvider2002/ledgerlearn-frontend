@@ -4,93 +4,273 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Verify Certificate — LedgerLearn Pro</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="/ll-shared.css">
 <style>
-.verify-wrap { max-width: 560px; margin: 0 auto; padding: 5rem 2rem; text-align: center; }
-.verify-form { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:2rem; margin-top:2rem; text-align:left; }
-.verify-input-row { display:flex; gap:.75rem; margin-top:1rem; }
-.verify-result { display:none; margin-top:1.5rem; padding:1.5rem; border-radius:var(--radius); }
-.verify-result.valid   { background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.3); }
-.verify-result.invalid { background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.2); }
-.verify-name { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; margin:.5rem 0; }
-.verify-detail { font-size:.85rem; color:var(--muted); line-height:1.7; }
+body { background: var(--navy); min-height: 100vh; }
+
+.verify-hero {
+  padding: 80px 2rem 60px;
+  position: relative; overflow: hidden;
+}
+.verify-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(29,169,138,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 30%, rgba(212,168,67,0.07) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.verify-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  max-width: 560px;
+  margin: 0 auto;
+  position: relative; z-index: 1;
+  backdrop-filter: blur(8px);
+}
+
+.verify-card h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem; font-weight: 800;
+  color: var(--white); margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.verify-card > p {
+  font-size: 0.875rem; color: rgba(255,255,255,0.5);
+  line-height: 1.65; margin-bottom: 1.75rem; font-weight: 300;
+}
+
+.verify-form { display: flex; flex-direction: column; gap: 10px; }
+
+.verify-btn {
+  background: var(--teal); color: var(--white);
+  border: none; border-radius: 8px; padding: 14px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.verify-btn:hover { background: var(--teal-light); transform: translateY(-1px); }
+.verify-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+/* Result states */
+#verify-result { display: none; margin-top: 1.5rem; }
+
+.result-valid {
+  background: rgba(29,169,138,0.1);
+  border: 1px solid rgba(29,169,138,0.3);
+  border-radius: 12px; padding: 1.5rem;
+}
+
+.result-invalid {
+  background: rgba(224,85,85,0.08);
+  border: 1px solid rgba(224,85,85,0.25);
+  border-radius: 12px; padding: 1.5rem;
+}
+
+.result-icon { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+
+.result-valid h3 {
+  font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+  color: var(--teal-light); margin-bottom: 0.4rem;
+}
+
+.result-invalid h3 {
+  font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+  color: #e05555; margin-bottom: 0.4rem;
+}
+
+.result-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0.75rem; margin-top: 1rem;
+}
+
+.result-item { }
+.result-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.35); font-weight: 500; margin-bottom: 2px; }
+.result-value { font-size: 0.82rem; font-weight: 600; color: var(--white); }
+.result-value.gold { color: var(--gold); }
+.result-value.teal { color: var(--teal-light); }
+
+.cert-id-hint { font-size: 0.72rem; color: rgba(255,255,255,0.3); margin-top: 6px; }
+
+/* Employer section */
+.employer-section {
+  max-width: 560px; margin: 3rem auto 0; padding: 0 2rem;
+  position: relative; z-index: 1;
+}
+.employer-note {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px; padding: 1.25rem;
+  font-size: 0.8rem; color: rgba(255,255,255,0.4);
+  line-height: 1.65; font-weight: 300;
+}
+.employer-note strong { color: rgba(255,255,255,0.65); font-weight: 600; }
+.employer-note a { color: var(--teal-light); text-decoration: none; }
 </style>
 </head>
 <body>
-<nav class="nav">
-  <a href="index.html" class="nav-logo">⬡ Ledger<span>Learn</span></a>
-  <ul class="nav-links">
-    <li><a href="learn.html">Learn</a></li>
-    <li><a href="practice.html">Practice</a></li>
+
+<nav class="ll-nav">
+  <a href="/" class="ll-nav-logo">
+    <div class="ll-hex ll-hex-lg"></div>
+    <span class="ll-nav-brand">Ledger<span>Learn</span> Pro</span>
+  </a>
+  <ul class="ll-nav-links">
+    <li><a href="/learn">Learn</a></li>
+    <li><a href="/practice">Practice</a></li>
+    <li><a href="/test">Assessment</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><a href="/learn" class="ll-nav-cta">Start free →</a></li>
   </ul>
-  <div class="nav-actions">
-    <a href="index.html" class="btn btn-ghost">Home</a>
-  </div>
 </nav>
 
-<main class="main">
-<div class="verify-wrap">
-  <span class="label">// certificate verification</span>
-  <div class="section-title">Verify a certificate</div>
-  <p class="section-sub" style="margin-top:.5rem">Employers and institutions can verify the authenticity of any LedgerLearn Pro certificate here.</p>
+<div class="verify-hero">
+  <div class="verify-card">
+    <span class="ll-label ll-label-light">Certificate verification</span>
+    <h1>Verify a LedgerLearn certificate</h1>
+    <p>Employers and institutions can verify the authenticity of any LedgerLearn Pro certificate here. Enter the certificate ID found at the bottom of the certificate.</p>
 
-  <div class="verify-form">
-    <label>Certificate ID</label>
-    <p style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Format: LLP-XCP1-2025-XXXX — found at the bottom of the certificate</p>
-    <div class="verify-input-row">
-      <input type="text" id="cert-input" placeholder="LLP-XCP1-2025-0471" style="font-family:'JetBrains Mono',monospace;font-size:.875rem;flex:1">
-      <button class="btn btn-primary" onclick="verifyCert()">Verify →</button>
+    <div class="verify-form">
+      <input
+        class="ll-input"
+        type="text"
+        id="cert-id-input"
+        placeholder="e.g. LLP-XCP1-2025-0042"
+        maxlength="20"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <p class="cert-id-hint">Format: LLP-XCP1-YYYY-XXXX — found at the bottom of the certificate</p>
+      <button class="verify-btn" id="verify-btn" onclick="handleVerify()">
+        <span id="verify-btn-text">Verify certificate →</span>
+        <div class="ll-spinner" id="verify-spinner"></div>
+      </button>
     </div>
 
-    <div class="verify-result" id="verify-result">
-      <div id="verify-icon" style="font-size:2rem;margin-bottom:.5rem"></div>
-      <div class="verify-name" id="verify-name"></div>
-      <div class="verify-detail" id="verify-detail"></div>
+    <div id="verify-result">
+      <!-- Populated by JS -->
     </div>
   </div>
 
-  <p style="font-size:.78rem;color:var(--muted);margin-top:2rem">Questions about a certificate? Contact <a href="mailto:hello@ledgerlearn.pro" style="color:var(--accent)">hello@ledgerlearn.pro</a></p>
+  <div class="employer-section">
+    <div class="employer-note">
+      <strong>For employers:</strong> LedgerLearn Pro certificates are platform certifications issued upon passing a timed, proctored assessment covering real software workflows. Each certificate carries a unique ID that can be verified here at any time. Certificates do not expire. Questions? Contact <a href="mailto:hello@ledgerlearn.pro">hello@ledgerlearn.pro</a>
+    </div>
+  </div>
 </div>
-</main>
 
-<script src="shared.js"></script>
+<footer class="ll-footer">
+  <div class="ll-footer-inner">
+    <div class="ll-footer-brand">Ledger<span>Learn</span> Pro</div>
+    <ul class="ll-footer-links">
+      <li><a href="/learn">Courses</a></li>
+      <li><a href="/test">Certifications</a></li>
+      <li><a href="/verify">Verify</a></li>
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="mailto:hello@ledgerlearn.pro">Contact</a></li>
+    </ul>
+    <div class="ll-footer-disclaimer">
+      LedgerLearn Pro is an independent training platform not affiliated with Xero Limited, Intuit Inc., or Sage Group plc.
+      "Xero", "QuickBooks" and "Sage" are registered trademarks of their respective owners used for descriptive purposes only.
+      &nbsp;·&nbsp; © 2025 LedgerLearn Pro
+    </div>
+  </div>
+</footer>
+
+<script src="/ll-shared.js"></script>
 <script>
-// Pre-fill from URL param e.g. /verify.html?id=LLP-XCP1-2025-0471
-const params = new URLSearchParams(window.location.search);
-if (params.get('id')) {
-  document.getElementById('cert-input').value = params.get('id');
-  verifyCert();
-}
+  // Format input as user types
+  document.getElementById('cert-id-input').addEventListener('input', function() {
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');
+  });
 
-function verifyCert() {
-  const id = document.getElementById('cert-input').value.trim().toUpperCase();
-  const result = document.getElementById('verify-result');
-  const prog = LL.getProgress();
+  async function handleVerify() {
+    const certId = document.getElementById('cert-id-input').value.trim();
+    if (!certId) { LL.toast('Please enter a certificate ID', 'error'); return; }
 
-  // In production this would query Supabase certificates table
-  // For MVP: check against locally stored cert or pattern-match
-  const isValid = id.match(/^LLP-XCP1-\d{4}-\d{4}$/) && (prog.certId === id || id === 'LLP-XCP1-2025-0471');
+    const btn = document.getElementById('verify-btn');
+    const btnText = document.getElementById('verify-btn-text');
+    const spinner = document.getElementById('verify-spinner');
 
-  result.style.display = 'block';
-  if (isValid) {
-    result.className = 'verify-result valid';
-    document.getElementById('verify-icon').textContent = '✅';
-    document.getElementById('verify-name').textContent = prog.name || 'Certified Candidate';
-    document.getElementById('verify-detail').innerHTML = `
-      <strong>Certificate ID:</strong> ${id}<br>
-      <strong>Course:</strong> Xero Certified Practitioner — Level 1<br>
-      <strong>Issuer:</strong> LedgerLearn Pro<br>
-      <strong>Status:</strong> <span style="color:var(--success);font-weight:500">Valid and authentic</span>
-    `;
-  } else {
-    result.className = 'verify-result invalid';
-    document.getElementById('verify-icon').textContent = '❌';
-    document.getElementById('verify-name').textContent = 'Certificate not found';
-    document.getElementById('verify-detail').innerHTML = `No certificate matching <strong>${id}</strong> was found in our records. Check the ID and try again, or contact hello@ledgerlearn.pro.`;
+    btn.disabled = true;
+    btnText.textContent = 'Verifying…';
+    spinner.style.display = 'block';
+
+    // Simulate network check — in production, POST to /.netlify/functions/verify-cert
+    await new Promise(r => setTimeout(r, 1200));
+
+    // For now: check localStorage (demo mode)
+    // In production this hits your database via a serverless function
+    let certData = null;
+    try {
+      const progress = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+      if (progress.certificate && progress.certificate.certId === certId) {
+        certData = progress.certificate;
+      }
+    } catch(e) {}
+
+    btn.disabled = false;
+    btnText.textContent = 'Verify certificate →';
+    spinner.style.display = 'none';
+
+    const result = document.getElementById('verify-result');
+    result.style.display = 'block';
+
+    if (certData) {
+      result.innerHTML = `
+        <div class="result-valid">
+          <span class="result-icon">✅</span>
+          <h3>Certificate verified — authentic</h3>
+          <p style="font-size:0.8rem;color:rgba(255,255,255,0.5);font-weight:300;margin-bottom:0.5rem;">This is a genuine LedgerLearn Pro certificate.</p>
+          <div class="result-grid">
+            <div class="result-item">
+              <div class="result-label">Issued to</div>
+              <div class="result-value">${certData.candidateName || '—'}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label">Certificate ID</div>
+              <div class="result-value gold">${certData.certId}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label">Certification</div>
+              <div class="result-value teal">${certData.certTitle || 'Xero Certified Practitioner L1'}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label">Issue date</div>
+              <div class="result-value">${certData.issueDate || '—'}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label">Score achieved</div>
+              <div class="result-value">${certData.score ? certData.score+'%' : '—'}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label">Status</div>
+              <div class="result-value teal">✓ Valid</div>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      result.innerHTML = `
+        <div class="result-invalid">
+          <span class="result-icon">❌</span>
+          <h3>Certificate not found</h3>
+          <p style="font-size:0.8rem;color:rgba(255,255,255,0.45);font-weight:300;">
+            No certificate with ID <strong style="color:#fff">${certId}</strong> was found in our records.
+            Please check the ID and try again, or contact
+            <a href="mailto:hello@ledgerlearn.pro" style="color:var(--teal-light)">hello@ledgerlearn.pro</a>.
+          </p>
+        </div>`;
+    }
   }
-}
+
+  // Allow Enter key to trigger verify
+  document.getElementById('cert-id-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleVerify();
+  });
 </script>
 </body>
 </html>

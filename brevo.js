@@ -1,76 +1,69 @@
 /**
- * LedgerLearn — Brevo Integration
- * ================================
- * Shared module for all Brevo API calls across LedgerLearn.
+ * LedgerLearn — Brevo Client
+ * ===========================
+ * Sends signups to the Netlify serverless function at /.netlify/functions/subscribe
+ * which then calls Brevo securely using a server-side environment variable.
  *
- * SETUP: Replace YOUR_BREVO_API_KEY below with your real key.
- * Generate at: app.brevo.com → avatar → SMTP & API → API Keys
+ * NO API KEY IN THIS FILE. Safe to commit to GitHub.
  *
- * NEVER paste your real key in chat or commit it to a public repo.
- * For production, move the key to a Netlify environment variable.
+ * Usage (same interface as before):
+ *   await window.BREVO.addContact(email, name, listId, { SOURCE: 'learn-gate' });
  */
 
-const BREVO_CONFIG = {
-  apiKey: 'YOUR_BREVO_API_KEY',   // ← paste your new key here only
-  lists: {
+(function () {
+
+  const LISTS = {
     xero:    3,   // LedgerLearn — Xero Signups
     qb:      4,   // LedgerLearn — QB Waitlist
     general: 5,   // LedgerLearn — General
-  },
-  endpoint: 'https://api.brevo.com/v3/contacts',
-};
-
-/**
- * addContactToBrevo
- * @param {string} email      - required
- * @param {string} name       - optional
- * @param {number} listId     - use BREVO_CONFIG.lists.*
- * @param {object} attributes - optional extra fields e.g. { SOURCE: 'xero-gate' }
- * @returns {Promise<{ok: boolean, status: number, body: any}>}
- */
-async function addContactToBrevo(email, name = '', listId, attributes = {}) {
-  if (!email || !listId) {
-    console.warn('[Brevo] Missing email or listId');
-    return { ok: false, status: 0, body: null };
-  }
-
-  const payload = {
-    email: email.toLowerCase().trim(),
-    listIds: [listId],
-    updateEnabled: true,   // update contact if already exists
-    attributes: {
-      ...attributes,
-      ...(name ? { FIRSTNAME: name.split(' ')[0], LASTNAME: name.split(' ').slice(1).join(' ') } : {}),
-    },
   };
 
-  try {
-    const res = await fetch(BREVO_CONFIG.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': BREVO_CONFIG.apiKey,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const body = await res.json().catch(() => ({}));
-
-    if (res.ok || res.status === 204) {
-      console.log('[Brevo] Contact added:', email, '→ list', listId);
-      return { ok: true, status: res.status, body };
-    } else {
-      console.error('[Brevo] API error:', res.status, body);
-      return { ok: false, status: res.status, body };
+  /**
+   * addContact — sends a signup to the secure Netlify function
+   * @param {string} email
+   * @param {string} name
+   * @param {number} listId   — use BREVO.config.lists.*
+   * @param {object} attrs    — optional e.g. { SOURCE: 'learn-gate' }
+   */
+  async function addContact(email, name, listId, attrs = {}) {
+    if (!email || !listId) {
+      console.warn('[BREVO] Missing email or listId — skipping');
+      return { ok: false };
     }
-  } catch (err) {
-    console.error('[Brevo] Network error:', err);
-    return { ok: false, status: 0, body: null };
-  }
-}
 
-// Export for use in other scripts on the same page
-window.BREVO = {
-  config: BREVO_CONFIG,
-  addContact: addContactToBrevo,
-};
+    try {
+      const res = await fetch('/.netlify/functions/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          name:   name || '',
+          listId,
+          source: attrs.SOURCE || 'unknown',
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (data.ok) {
+        console.log('[BREVO] ✓ Contact saved:', email, '→ list', listId);
+      } else {
+        console.warn('[BREVO] ✗ Failed:', data.error || 'unknown error');
+      }
+
+      return data;
+
+    } catch (err) {
+      // Never crash the page — silently log and move on
+      console.warn('[BREVO] Network error — contact not saved:', err.message);
+      return { ok: false };
+    }
+  }
+
+  // Expose globally
+  window.BREVO = {
+    config: { lists: LISTS },
+    addContact,
+  };
+
+})();
