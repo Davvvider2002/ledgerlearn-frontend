@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickBooks Invoice Simulation — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;
+  --qb-green:#2CA01C;--qb-dark:#0A3622;--qb-blue:#0077C5;
+  --qb-sidebar:#2D6A4F;--qb-nav:#1B4332;
+  --qb-border:#D1D5DB;--qb-text:#1F2937;--qb-label:#6B7280;
+  --qb-input-bg:#fff;--qb-bg:#F3F4F6;
+  --success:#16A34A;--error:#DC2626;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--qb-bg);min-height:100vh;}
+
+/* LedgerLearn bar */
+.ll-topbar{background:var(--navy);padding:0 1.5rem;height:46px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:100;}
+.ll-topbar-left{display:flex;align-items:center;gap:10px;}
+.ll-hex{width:20px;height:20px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.ll-title{font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:#fff;}
+.ll-title span{color:var(--gold);}
+.ll-badge{background:rgba(43,91,232,0.25);border:1px solid rgba(43,91,232,0.4);color:#93B4FF;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 8px;border-radius:100px;}
+.ll-btn{padding:4px 12px;border-radius:4px;font-size:0.72rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:all 0.15s;}
+.ll-btn-gold{background:var(--gold);color:var(--navy);}
+.ll-btn-ghost{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.15);}
+
+/* Task bar */
+.task-bar{background:#1B4332;padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,0.1);}
+.task-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:#6EE7B7;font-weight:600;margin-bottom:2px;}
+.task-instr{font-size:0.82rem;color:rgba(255,255,255,0.85);line-height:1.4;}
+.task-instr strong{color:#FCD34D;}
+.task-dots{display:flex;gap:4px;}
+.task-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s;}
+.task-dot.done{background:#34D399;}
+.task-dot.active{background:#FCD34D;transform:scale(1.3);}
+.hint-btn{background:rgba(252,211,77,0.15);border:1px solid rgba(252,211,77,0.3);color:#FCD34D;font-size:0.7rem;font-weight:600;padding:4px 10px;border-radius:4px;cursor:pointer;flex-shrink:0;}
+
+/* Score bar */
+.score-bar{background:#0A3622;padding:0.5rem 1.5rem;display:flex;align-items:center;gap:1.25rem;}
+.sc-item{text-align:center;}
+.sc-num{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#34D399;display:block;}
+.sc-label{font-size:0.58rem;text-transform:uppercase;letter-spacing:0.07em;color:rgba(255,255,255,0.35);}
+.sc-div{width:1px;height:28px;background:rgba(255,255,255,0.1);}
+
+/* QB layout */
+.qb-shell{display:flex;min-height:calc(100vh - 130px);}
+
+/* QB sidebar */
+.qb-sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--qb-sidebar);
+  display:flex;flex-direction:column;
+}
+.qb-sidebar-header{
+  padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);
+  display:flex;align-items:center;gap:8px;
+}
+.qb-logo-mark{
+  width:32px;height:32px;border-radius:6px;
+  background:var(--qb-green);
+  display:flex;align-items:center;justify-content:center;
+}
+.qb-logo-text{font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;color:#fff;}
+.qb-logo-text small{display:block;font-size:0.6rem;color:rgba(255,255,255,0.5);font-family:'DM Sans',sans-serif;font-weight:400;}
+.qb-nav-section{padding:0.5rem 0;}
+.qb-nav-label{font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.4);font-weight:600;padding:0.4rem 1rem;}
+.qb-nav-item{
+  display:flex;align-items:center;gap:8px;
+  padding:0.5rem 1rem;font-size:0.8rem;
+  color:rgba(255,255,255,0.7);cursor:pointer;
+  transition:all 0.15s;border-left:3px solid transparent;
+}
+.qb-nav-item:hover{background:rgba(255,255,255,0.08);color:#fff;}
+.qb-nav-item.active{background:rgba(255,255,255,0.12);color:#fff;border-left-color:#34D399;}
+.qb-nav-item-icon{font-size:0.9rem;width:20px;text-align:center;}
+.qb-new-btn{
+  margin:0.75rem;background:var(--qb-green);color:#fff;
+  border:none;border-radius:6px;padding:10px;
+  font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background 0.15s;
+}
+.qb-new-btn:hover{background:#238f17;}
+
+/* QB main */
+.qb-main{flex:1;background:var(--qb-bg);overflow-y:auto;}
+
+/* QB page header */
+.qb-page-header{
+  background:#fff;border-bottom:1px solid var(--qb-border);
+  padding:1rem 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:0.75rem;
+}
+.qb-page-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--qb-text);}
+.qb-page-actions{display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;}
+.qb-btn{
+  height:34px;padding:0 16px;border-radius:4px;
+  font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;
+  cursor:pointer;transition:all 0.15s;border:none;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.qb-btn-green{background:var(--qb-green);color:#fff;}
+.qb-btn-green:hover{background:#238f17;}
+.qb-btn-outline{background:#fff;color:var(--qb-text);border:1px solid var(--qb-border);}
+.qb-btn-outline:hover{background:#f9fafb;}
+.qb-btn-blue{background:var(--qb-blue);color:#fff;}
+.qb-btn-blue:hover{background:#005fa3;}
+
+/* QB form */
+.qb-form-area{padding:1.25rem;}
+.qb-form-card{background:#fff;border:1px solid var(--qb-border);border-radius:8px;overflow:hidden;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.qb-form-section{padding:1.25rem 1.5rem;border-bottom:1px solid var(--qb-border);}
+.qb-form-section:last-child{border-bottom:none;}
+.qb-section-label{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--qb-label);margin-bottom:1rem;}
+.qb-field-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:0.85rem;}
+.qb-field-grid:last-child{margin-bottom:0;}
+.qb-field{display:flex;flex-direction:column;gap:4px;}
+.qb-label{font-size:0.75rem;font-weight:500;color:var(--qb-label);}
+.qb-req{color:var(--error);margin-left:2px;}
+.qb-input{
+  height:34px;padding:0 10px;
+  border:1px solid var(--qb-border);border-radius:4px;
+  font-family:'DM Sans',sans-serif;font-size:0.83rem;color:var(--qb-text);
+  background:var(--qb-input-bg);outline:none;
+  transition:border-color 0.15s,box-shadow 0.15s;
+}
+.qb-input:focus{border-color:var(--qb-blue);box-shadow:0 0 0 3px rgba(0,119,197,0.12);}
+.qb-input.valid{border-color:var(--success);}
+.qb-input.error{border-color:var(--error);}
+.qb-select{
+  height:34px;padding:0 26px 0 10px;
+  border:1px solid var(--qb-border);border-radius:4px;
+  font-family:'DM Sans',sans-serif;font-size:0.83rem;color:var(--qb-text);
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%236B7280'/%3E%3C/svg%3E") no-repeat right 9px center;
+  -webkit-appearance:none;outline:none;cursor:pointer;
+  transition:border-color 0.15s;
+}
+.qb-select:focus{border-color:var(--qb-blue);}
+.qb-textarea{padding:8px 10px;border:1px solid var(--qb-border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.83rem;color:var(--qb-text);resize:vertical;min-height:56px;outline:none;transition:border-color 0.15s;}
+.qb-textarea:focus{border-color:var(--qb-blue);}
+
+/* QB line items */
+.qb-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+.qb-table th{background:#f9fafb;border-bottom:2px solid var(--qb-border);padding:8px 10px;text-align:left;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--qb-label);}
+.qb-table td{padding:5px 8px;border-bottom:1px solid #f3f4f6;vertical-align:middle;}
+.qb-table tr:hover td{background:#fafafa;}
+.qb-table input,.qb-table select{
+  width:100%;height:30px;padding:0 6px;
+  border:1px solid transparent;border-radius:3px;
+  font-family:'DM Sans',sans-serif;font-size:0.8rem;color:var(--qb-text);
+  background:transparent;outline:none;transition:all 0.15s;
+}
+.qb-table input:focus,.qb-table select:focus{
+  border-color:var(--qb-blue);background:#fff;
+  box-shadow:0 0 0 2px rgba(0,119,197,0.1);
+}
+.qb-table input[type=number]{text-align:right;}
+.add-product-btn{background:none;border:none;cursor:pointer;color:var(--qb-blue);font-size:0.78rem;font-weight:600;padding:0.6rem 1rem;display:flex;align-items:center;gap:4px;font-family:'DM Sans',sans-serif;transition:color 0.15s;}
+.add-product-btn:hover{color:#005fa3;}
+.del-btn{background:none;border:none;cursor:pointer;color:#d1d5db;font-size:1rem;padding:3px;border-radius:3px;transition:color 0.15s;}
+.del-btn:hover{color:var(--error);}
+
+/* Totals */
+.qb-totals{display:flex;justify-content:flex-end;padding:1rem 1.5rem;}
+.qb-totals-inner{width:260px;}
+.qb-total-row{display:flex;justify-content:space-between;padding:4px 0;font-size:0.82rem;border-bottom:1px solid #f3f4f6;}
+.qb-total-row:last-child{border-bottom:none;padding-top:8px;font-size:0.95rem;font-weight:700;color:var(--qb-text);}
+.qb-total-label{color:var(--qb-label);}
+
+/* QB bottom bar */
+.qb-bottom-bar{
+  background:#fff;border-top:1px solid var(--qb-border);
+  padding:1rem 1.5rem;
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+}
+
+/* Message inbox widget */
+.qb-message{
+  background:#EFF6FF;border:1px solid #BFDBFE;
+  border-radius:6px;padding:0.75rem 1rem;
+  display:flex;gap:8px;align-items:flex-start;
+  font-size:0.78rem;color:#1E40AF;margin-bottom:1rem;
+  display:none;
+}
+.qb-message.show{display:flex;}
+
+/* Feedback */
+.fb-overlay{position:fixed;inset:0;z-index:200;background:rgba(11,31,58,0.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem;}
+.fb-overlay.show{display:flex;}
+.fb-card{background:#fff;border-radius:14px;padding:2rem;max-width:460px;width:100%;box-shadow:0 32px 80px rgba(0,0,0,0.4);animation:slideUp 0.3s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fb-icon{font-size:2.5rem;text-align:center;margin-bottom:0.75rem;}
+.fb-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--navy);text-align:center;margin-bottom:0.5rem;}
+.fb-body{font-size:0.875rem;color:#3d5a7a;line-height:1.7;margin-bottom:1.25rem;text-align:center;}
+.fb-actions{display:flex;gap:0.75rem;justify-content:center;}
+.fb-btn{padding:10px 22px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.875rem;font-weight:600;cursor:pointer;border:none;transition:all 0.15s;}
+.fb-primary{background:var(--teal);color:#fff;}
+.fb-secondary{background:rgba(11,31,58,0.07);color:var(--navy);}
+
+@media(max-width:700px){
+  .qb-sidebar{display:none;}
+  .task-bar{flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<!-- LedgerLearn bar -->
+<div class="ll-topbar">
+  <div class="ll-topbar-left">
+    <div class="ll-hex"></div>
+    <span class="ll-title">Ledger<span>Learn</span> Pro</span>
+    <span class="ll-badge">QuickBooks Simulation</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.5rem;">
+    <a href="/sim-xero-invoice" class="ll-btn ll-btn-ghost">Xero sim</a>
+    <a href="/learn" class="ll-btn ll-btn-ghost">← Lessons</a>
+    <a href="/test" class="ll-btn ll-btn-gold">Assessment →</a>
+  </div>
+</div>
+
+<!-- Task bar -->
+<div class="task-bar">
+  <div style="flex:1">
+    <div class="task-label">Task <span id="task-num">1</span> of 6 · QuickBooks Online Invoice</div>
+    <div class="task-instr" id="task-instr">Loading…</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <div class="task-dots" id="task-dots"></div>
+    <span style="font-size:0.7rem;color:rgba(255,255,255,0.4)" id="task-count">0/6</span>
+  </div>
+  <button class="hint-btn" onclick="showHint()">💡 Hint</button>
+</div>
+
+<!-- Score bar -->
+<div class="score-bar">
+  <div class="sc-item"><span class="sc-num" id="sc-c">0</span><span class="sc-label">Correct</span></div>
+  <div class="sc-div"></div>
+  <div class="sc-item"><span class="sc-num" id="sc-t">0</span><span class="sc-label">Attempted</span></div>
+  <div class="sc-div"></div>
+  <div class="sc-item"><span class="sc-num" id="sc-p">—</span><span class="sc-label">Score</span></div>
+</div>
+
+<!-- QB shell -->
+<div class="qb-shell">
+
+  <!-- Sidebar -->
+  <div class="qb-sidebar">
+    <div class="qb-sidebar-header">
+      <div class="qb-logo-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      </div>
+      <div class="qb-logo-text">QuickBooks<small>Online · Demo</small></div>
+    </div>
+    <button class="qb-new-btn">+ New</button>
+    <div class="qb-nav-section">
+      <div class="qb-nav-label">Customers</div>
+      <div class="qb-nav-item active"><span class="qb-nav-item-icon">📄</span> Invoices</div>
+      <div class="qb-nav-item"><span class="qb-nav-item-icon">💰</span> Payments</div>
+      <div class="qb-nav-item"><span class="qb-nav-item-icon">👤</span> Customers</div>
+    </div>
+    <div class="qb-nav-section">
+      <div class="qb-nav-label">Vendors</div>
+      <div class="qb-nav-item"><span class="qb-nav-item-icon">📋</span> Bills</div>
+      <div class="qb-nav-item"><span class="qb-nav-item-icon">💳</span> Expenses</div>
+    </div>
+    <div class="qb-nav-section">
+      <div class="qb-nav-label">Accounting</div>
+      <div class="qb-nav-item"><span class="qb-nav-item-icon">🏦</span> Banking</div>
+      <div class="qb-nav-item"><span class="qb-nav-item-icon">📊</span> Reports</div>
+      <div class="qb-nav-item"><span class="qb-nav-item-icon">📈</span> Chart of Accounts</div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="qb-main">
+    <div class="qb-page-header">
+      <div class="qb-page-title">Invoice</div>
+      <div class="qb-page-actions">
+        <button class="qb-btn qb-btn-outline" onclick="saveQuote()">Save as quote</button>
+        <button class="qb-btn qb-btn-outline" onclick="printPreview()">Print / Preview</button>
+        <button class="qb-btn qb-btn-blue" id="btn-save-send" onclick="saveSend()">Save and send</button>
+        <button class="qb-btn qb-btn-green" id="btn-save" onclick="saveInvoice()">Save and close</button>
+      </div>
+    </div>
+
+    <div class="qb-form-area">
+      <div class="qb-message" id="qb-message">
+        <span>ℹ️</span>
+        <span id="qb-message-text"></span>
+      </div>
+
+      <div class="qb-form-card">
+
+        <!-- Customer & billing -->
+        <div class="qb-form-section">
+          <div class="qb-field-grid">
+            <div class="qb-field" style="flex:2">
+              <label class="qb-label">Customer<span class="qb-req">*</span></label>
+              <input class="qb-input" type="text" id="qb-customer"
+                placeholder="Search or add a customer"
+                oninput="onFieldInput(this,'customer')" list="qb-customers" autocomplete="off"/>
+              <datalist id="qb-customers">
+                <option value="Johnson & Associates">
+                <option value="Riverside Medical Group">
+                <option value="Mountain View Tech">
+                <option value="Pacific Coast Retail">
+                <option value="Summit Financial Services">
+              </datalist>
+            </div>
+            <div class="qb-field">
+              <label class="qb-label">Email</label>
+              <input class="qb-input" type="email" id="qb-email" placeholder="customer@email.com"/>
+            </div>
+          </div>
+          <div class="qb-field-grid">
+            <div class="qb-field">
+              <label class="qb-label">Invoice date<span class="qb-req">*</span></label>
+              <input class="qb-input" type="date" id="qb-date" oninput="onFieldInput(this,'date')"/>
+            </div>
+            <div class="qb-field">
+              <label class="qb-label">Due date<span class="qb-req">*</span></label>
+              <input class="qb-input" type="date" id="qb-duedate" oninput="onFieldInput(this,'duedate')"/>
+            </div>
+            <div class="qb-field">
+              <label class="qb-label">Invoice no.</label>
+              <input class="qb-input" type="text" id="qb-invnum" value="1001"/>
+            </div>
+            <div class="qb-field">
+              <label class="qb-label">Terms</label>
+              <select class="qb-select" id="qb-terms" onchange="applyTerms()">
+                <option value="">Select terms</option>
+                <option value="net15">Net 15</option>
+                <option value="net30" selected>Net 30</option>
+                <option value="net60">Net 60</option>
+                <option value="due-receipt">Due on receipt</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products/services -->
+        <div class="qb-form-section">
+          <div class="qb-section-label">Products / Services</div>
+          <table class="qb-table" id="qb-line-table">
+            <thead>
+              <tr>
+                <th style="width:40%">Product/Service</th>
+                <th style="width:15%">Description</th>
+                <th style="width:8%">Qty</th>
+                <th style="width:12%">Rate ($)</th>
+                <th style="width:10%">Tax</th>
+                <th style="width:12%;text-align:right">Amount</th>
+                <th style="width:3%"></th>
+              </tr>
+            </thead>
+            <tbody id="qb-line-body"></tbody>
+          </table>
+          <button class="add-product-btn" onclick="addQBLine()">+ Add product/service</button>
+        </div>
+
+        <!-- Totals -->
+        <div class="qb-totals">
+          <div class="qb-totals-inner">
+            <div class="qb-total-row"><span class="qb-total-label">Subtotal</span><span id="qb-subtotal">$0.00</span></div>
+            <div class="qb-total-row"><span class="qb-total-label">Tax (8.5%)</span><span id="qb-tax">$0.00</span></div>
+            <div class="qb-total-row"><span class="qb-total-label">Total</span><span id="qb-total">$0.00</span></div>
+            <div class="qb-total-row"><span class="qb-total-label">Balance due</span><span id="qb-balance" style="color:var(--error)">$0.00</span></div>
+          </div>
+        </div>
+
+        <!-- Notes & attachment -->
+        <div class="qb-form-section">
+          <div class="qb-field-grid">
+            <div class="qb-field">
+              <label class="qb-label">Message on invoice</label>
+              <textarea class="qb-textarea" id="qb-message-field" placeholder="Thank you for your business!"></textarea>
+            </div>
+            <div class="qb-field">
+              <label class="qb-label">Message on statement</label>
+              <textarea class="qb-textarea" id="qb-statement" placeholder="e.g. Please remit payment within 30 days."></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="qb-bottom-bar">
+        <div style="display:flex;gap:0.5rem;">
+          <button class="qb-btn qb-btn-outline" style="color:#dc2626;border-color:#dc2626;" onclick="resetSim()">Discard</button>
+          <button class="qb-btn qb-btn-outline" onclick="saveDraft()">Save draft</button>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+          <button class="qb-btn qb-btn-blue" onclick="saveSend()">Save and send</button>
+          <button class="qb-btn qb-btn-green" onclick="saveInvoice()">Save and close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback overlay -->
+<div class="fb-overlay" id="fb-overlay">
+  <div class="fb-card">
+    <div class="fb-icon" id="fb-icon">✅</div>
+    <div class="fb-title" id="fb-title"></div>
+    <div class="fb-body" id="fb-body"></div>
+    <div class="fb-actions">
+      <button class="fb-btn fb-secondary" onclick="closeFb()">Review</button>
+      <button class="fb-btn fb-primary" id="fb-next" onclick="nextTask()" style="display:none">Next task →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TASKS = [
+  { instr:'Enter a <strong>customer name</strong> in the Customer field. Try "Johnson & Associates" or any company name.', hint:'Click the Customer field at the top and type a business name. In live QuickBooks, this searches your customer list or lets you add a new customer.' },
+  { instr:'Set the <strong>Invoice Date</strong> to today and select <strong>Net 30</strong> payment terms — this sets the due date automatically.', hint:'Click Invoice date and select today. Then change the Terms dropdown to "Net 30" and QuickBooks will auto-calculate the due date as 30 days from today.' },
+  { instr:'Add a <strong>product or service line item</strong> — enter a service name, quantity of <strong>3</strong>, and rate of <strong>$250</strong>.', hint:'In the Products/Services table, click the Product/Service field, type what you\'re billing for, set Qty to 3 and Rate to 250. QuickBooks calculates the amount.' },
+  { instr:'Enable <strong>tax on your line item</strong> by checking the Tax checkbox. US businesses collect sales tax on applicable sales.', hint:'In the line items table, check the Tax checkbox on your line item. This applies the default sales tax rate (8.5% in this simulation) to that line.' },
+  { instr:'Add a <strong>message to the customer</strong> in the "Message on invoice" field — e.g. "Thank you for your business. Payment due within 30 days."', hint:'Scroll to the Message on invoice field at the bottom and type a payment message. This appears on the PDF invoice your customer receives.' },
+  { instr:'Click <strong>Save and send</strong> to save the invoice and email it to the customer. This is the final step to complete an invoice in QuickBooks.', hint:'Click the blue "Save and send" button. In a live QuickBooks account, this opens an email dialog to send the invoice with a Pay Now button.' },
+];
+
+let state = { task:0, correct:0, total:0, completed:[], saved:false };
+let qbLineCount = 0;
+
+function init() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('qb-date').value = today;
+  const due = new Date(); due.setDate(due.getDate()+30);
+  document.getElementById('qb-duedate').value = due.toISOString().split('T')[0];
+  addQBLine(); addQBLine();
+  renderDots();
+  showTask(0);
+  updateScore();
+}
+
+function renderDots() {
+  document.getElementById('task-dots').innerHTML =
+    TASKS.map((_,i) => `<div class="task-dot ${i===state.task?'active':state.completed.includes(i)?'done':''}" id="qdot-${i}"></div>`).join('');
+  document.getElementById('task-count').textContent = `${state.completed.length}/${TASKS.length}`;
+}
+
+function showTask(i) {
+  state.task = i;
+  if (i >= TASKS.length) { showCompletion(); return; }
+  document.getElementById('task-num').textContent = i+1;
+  document.getElementById('task-instr').innerHTML = TASKS[i].instr;
+  renderDots();
+}
+
+function addQBLine() {
+  qbLineCount++;
+  const n = qbLineCount;
+  const tr = document.createElement('tr');
+  tr.id = 'qbl-'+n;
+  tr.innerHTML = `
+    <td><input type="text" class="ql-product" placeholder="Product/Service" oninput="calcQB()"/></td>
+    <td><input type="text" placeholder="Description"/></td>
+    <td><input type="number" class="ql-qty" value="1" min="0" oninput="calcQB()"/></td>
+    <td><input type="number" class="ql-rate" placeholder="0.00" min="0" step="0.01" oninput="calcQB()"/></td>
+    <td style="text-align:center"><input type="checkbox" class="ql-tax" onchange="calcQB()"/></td>
+    <td style="text-align:right;font-weight:600"><span class="ql-amt" id="qla-${n}">$0.00</span></td>
+    <td><button class="del-btn" onclick="delQBLine(${n})">×</button></td>`;
+  document.getElementById('qb-line-body').appendChild(tr);
+}
+
+function delQBLine(n) {
+  document.getElementById('qbl-'+n)?.remove();
+  calcQB();
+}
+
+function calcQB() {
+  let sub=0, tax=0;
+  document.querySelectorAll('[id^="qbl-"]').forEach(row => {
+    const qty  = parseFloat(row.querySelector('.ql-qty')?.value)||0;
+    const rate = parseFloat(row.querySelector('.ql-rate')?.value)||0;
+    const taxed = row.querySelector('.ql-tax')?.checked;
+    const amt  = qty*rate;
+    sub += amt;
+    if (taxed) tax += amt*0.085;
+    row.querySelector('.ql-amt').textContent = '$'+amt.toFixed(2);
+  });
+  document.getElementById('qb-subtotal').textContent = '$'+sub.toFixed(2);
+  document.getElementById('qb-tax').textContent      = '$'+tax.toFixed(2);
+  document.getElementById('qb-total').textContent    = '$'+(sub+tax).toFixed(2);
+  document.getElementById('qb-balance').textContent  = '$'+(sub+tax).toFixed(2);
+
+  // Auto-validate tasks 2 and 3
+  if (state.task === 2) {
+    const hasLine = [...document.querySelectorAll('[id^="qbl-"]')].some(r =>
+      r.querySelector('.ql-product')?.value.trim() && parseFloat(r.querySelector('.ql-rate')?.value)>0);
+    if (hasLine) setTimeout(checkTask, 700);
+  }
+  if (state.task === 3) {
+    const taxChecked = [...document.querySelectorAll('.ql-tax')].some(c=>c.checked);
+    if (taxChecked) setTimeout(checkTask, 700);
+  }
+}
+
+function applyTerms() {
+  const terms = document.getElementById('qb-terms').value;
+  const base  = document.getElementById('qb-date').value;
+  if (!base||!terms) return;
+  const d = new Date(base);
+  if (terms==='net15') d.setDate(d.getDate()+15);
+  else if (terms==='net30') d.setDate(d.getDate()+30);
+  else if (terms==='net60') d.setDate(d.getDate()+60);
+  else if (terms==='due-receipt') d.setDate(d.getDate());
+  document.getElementById('qb-duedate').value = d.toISOString().split('T')[0];
+  if (state.task===1) setTimeout(checkTask,600);
+}
+
+function onFieldInput(el, type) {
+  el.classList.remove('error','valid');
+  if (type==='customer' && el.value.trim().length>=2) {
+    el.classList.add('valid');
+    if (state.task===0) setTimeout(checkTask,700);
+  }
+  if ((type==='date'||type==='duedate') && el.value) {
+    el.classList.add('valid');
+    if (state.task===1) setTimeout(checkTask,700);
+  }
+}
+
+function checkTask() {
+  const t = state.task;
+  let ok=false, msg='';
+
+  if (t===0) {
+    const v = document.getElementById('qb-customer').value.trim();
+    ok = v.length>=2;
+    msg = ok ? `Customer "${v}" added. QuickBooks stores this in your customer list automatically.` : 'Enter a customer name.';
+  } else if (t===1) {
+    const d=document.getElementById('qb-date').value, dd=document.getElementById('qb-duedate').value, terms=document.getElementById('qb-terms').value;
+    ok = !!(d&&dd&&terms);
+    msg = ok ? `Invoice dated ${d}, due ${dd} (${terms.replace('net','Net ')}). QuickBooks uses these dates to calculate overdue status and send payment reminders.` : 'Set invoice date and payment terms.';
+  } else if (t===2) {
+    const row = [...document.querySelectorAll('[id^="qbl-"]')].find(r=>r.querySelector('.ql-product')?.value.trim()&&parseFloat(r.querySelector('.ql-rate')?.value)>0);
+    ok = !!row;
+    if (ok) msg = `Line item added: ${row.querySelector('.ql-product').value} × ${row.querySelector('.ql-qty').value} @ $${row.querySelector('.ql-rate').value}. QuickBooks can also pull from your Products & Services catalogue.`;
+    else msg = 'Add a product or service line item.';
+  } else if (t===3) {
+    ok = [...document.querySelectorAll('.ql-tax')].some(c=>c.checked);
+    msg = ok ? 'Tax applied (8.5%). QuickBooks tracks this for your sales tax return filing automatically.' : 'Check the Tax box on your line item.';
+  } else if (t===4) {
+    ok = document.getElementById('qb-message-field').value.trim().length>=10;
+    msg = ok ? 'Message added. This appears at the bottom of the invoice PDF and email sent to the customer.' : 'Add a message of at least 10 characters.';
+  } else if (t===5) {
+    ok = state.saved;
+    msg = ok ? 'Invoice saved and sent! It now appears in your Accounts Receivable and will show in Aged Receivables until paid.' : 'Click Save and send to complete.';
+  }
+
+  if (ok && !state.completed.includes(t)) {
+    state.correct++;
+    state.completed.push(t);
+    showFb('✅','Correct!', msg, true);
+  } else if (!ok) {
+    state.total++;
+    showFb('❌','Not quite', msg, false);
+  }
+  state.total++;
+  updateScore();
+}
+
+function saveInvoice() {
+  const r = validateRequired();
+  if (!r.ok) { showMsg('Please complete: '+r.missing.join(', ')); return; }
+  state.saved = true;
+  showFb('💾','Invoice saved!', 'Your invoice is saved in QuickBooks and will appear in Accounts Receivable until marked as paid.',false);
+}
+
+function saveSend() {
+  const r = validateRequired();
+  if (!r.ok) { showMsg('Please complete: '+r.missing.join(', ')); return; }
+  state.saved = true;
+  if (state.task===5 && !state.completed.includes(5)) {
+    state.completed.push(5); state.correct++;
+    state.total++;
+  }
+  updateScore();
+  showFb('📧','Invoice saved and sent!', 'In a live QuickBooks account, this opens an email dialog to send the invoice to your customer with a Pay Now link. The invoice status changes to "Sent" once emailed.',false);
+}
+
+function saveDraft() { showFb('💾','Saved as draft','Drafts are saved but not sent to the customer and do not appear in Accounts Receivable until approved.',false); }
+function saveQuote() { showFb('📋','Saved as quote','Quotes can be converted to invoices once the customer accepts. This is useful for project estimates.',false); }
+function printPreview() { showFb('🖨️','Print/Preview','In a live QuickBooks account, this shows a PDF preview of the invoice as the customer will see it.',false); }
+
+function validateRequired() {
+  const missing=[];
+  if (!document.getElementById('qb-customer').value.trim()) missing.push('Customer');
+  if (!document.getElementById('qb-date').value) missing.push('Invoice date');
+  const hasLine=[...document.querySelectorAll('[id^="qbl-"]')].some(r=>r.querySelector('.ql-product')?.value.trim()&&parseFloat(r.querySelector('.ql-rate')?.value)>0);
+  if (!hasLine) missing.push('At least one line item');
+  return {ok:missing.length===0,missing};
+}
+
+function showMsg(txt) {
+  document.getElementById('qb-message-text').textContent=txt;
+  document.getElementById('qb-message').classList.add('show');
+  setTimeout(()=>document.getElementById('qb-message').classList.remove('show'),3000);
+}
+
+function showFb(icon,title,body,hasNext) {
+  document.getElementById('fb-icon').textContent=icon;
+  document.getElementById('fb-title').textContent=title;
+  document.getElementById('fb-body').textContent=body;
+  document.getElementById('fb-next').style.display=hasNext?'inline-flex':'none';
+  document.getElementById('fb-overlay').classList.add('show');
+}
+function closeFb(){document.getElementById('fb-overlay').classList.remove('show');}
+function nextTask(){closeFb();showTask(state.task+1);}
+function showHint(){showFb('💡','Hint',TASKS[Math.min(state.task,TASKS.length-1)].hint,false);}
+
+function updateScore() {
+  const pct=state.total>0?Math.round(state.correct/state.total*100):0;
+  document.getElementById('sc-c').textContent=state.correct;
+  document.getElementById('sc-t').textContent=state.total;
+  document.getElementById('sc-p').textContent=state.total>0?pct+'%':'—';
+  document.getElementById('task-count').textContent=`${state.completed.length}/${TASKS.length}`;
+}
+
+function showCompletion(){
+  const pct=Math.round(state.correct/TASKS.length*100);
+  document.getElementById('task-instr').innerHTML=`
+    Simulation complete! Score: <strong>${state.correct}/${TASKS.length} (${pct}%)</strong>
+    ${pct>=80?' 🏆 Ready for the assessment!':' — review and try again for 80%+'}`;
+  document.getElementById('task-num').textContent='✓';
+}
+
+function resetSim() {
+  state={task:0,correct:0,total:0,completed:[],saved:false};
+  document.getElementById('qb-customer').value='';
+  document.getElementById('qb-email').value='';
+  document.getElementById('qb-message-field').value='';
+  document.getElementById('qb-statement').value='';
+  document.getElementById('qb-line-body').innerHTML='';
+  qbLineCount=0;
+  addQBLine();addQBLine();
+  calcQB();
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('qb-date').value=today;
+  const due=new Date();due.setDate(due.getDate()+30);
+  document.getElementById('qb-duedate').value=due.toISOString().split('T')[0];
+  renderDots();showTask(0);updateScore();
+}
+
+init();
+</script>
+</body>
+</html>

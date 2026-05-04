@@ -4,371 +4,618 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Placement Quiz — LedgerLearn Pro</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared.css">
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-.quiz-wrap {
-  max-width: 680px; margin: 0 auto;
-  padding: 4rem 2rem 5rem;
-  min-height: calc(100vh - 60px);
-  display: flex; flex-direction: column; justify-content: center;
+:root{
+  --navy:#0B1F3A;--navy-mid:#132d52;
+  --gold:#D4A843;--gold-light:#f0c860;--gold-pale:#fdf3dc;
+  --teal:#1DA98A;--teal-light:#26c9a5;--teal-pale:#e1f7f2;
+  --white:#fff;--off-white:#f8f7f4;
+  --text-dark:#0B1F3A;--text-mid:#3d5a7a;--text-muted:#6b87a3;
+  --border:rgba(11,31,58,0.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;}
+
+/* Nav */
+nav{
+  background:rgba(11,31,58,0.95);height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;border-bottom:1px solid rgba(212,168,67,0.2);
+  position:sticky;top:0;z-index:50;
+}
+.nav-logo{display:flex;align-items:center;gap:9px;text-decoration:none;}
+.nav-hex{width:26px;height:26px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.nav-brand{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#fff;}
+.nav-brand span{color:var(--gold);}
+.nav-links{display:flex;gap:1.5rem;list-style:none;}
+.nav-links a{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.85rem;transition:color 0.2s;}
+.nav-links a:hover{color:#fff;}
+
+/* Quiz wrapper */
+.quiz-page{
+  min-height:calc(100vh - 56px);
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-start;padding:3rem 1.5rem;
+  background:var(--navy);
+  position:relative;overflow:hidden;
+}
+.quiz-page::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 20% 30%,rgba(29,169,138,0.1) 0%,transparent 55%),
+    radial-gradient(ellipse at 80% 70%,rgba(212,168,67,0.07) 0%,transparent 50%);
+  pointer-events:none;
 }
 
 /* Intro screen */
-.intro-screen { text-align: center; }
-.intro-icon { font-size: 3rem; margin-bottom: 1.25rem; }
-.intro-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem; letter-spacing: -.025em; margin-bottom: .75rem; }
-.intro-sub { color: var(--muted); font-size: 1rem; line-height: 1.75; margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto; }
-.level-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-bottom: 2rem; }
-.lp-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-align: left; }
-.lp-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: .62rem; font-weight: 600; margin-bottom: .5rem; }
-.lp-name  { font-weight: 500; font-size: .875rem; margin-bottom: .25rem; }
-.lp-desc  { font-size: .75rem; color: var(--muted); line-height: 1.55; }
-
-/* Question screen */
-.question-screen { display: none; }
-.q-progress { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
-.q-prog-bar { flex: 1; }
-.q-prog-label { font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--muted); white-space: nowrap; }
-.q-num { font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--muted); white-space: nowrap; }
-
-.q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1.5rem; }
-.q-card-header { padding: 1.1rem 1.5rem; background: var(--surface2); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .75rem; }
-.q-topic { font-family: 'JetBrains Mono', monospace; font-size: .62rem; color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
-.q-body { padding: 1.5rem; }
-.q-text { font-size: 1rem; font-weight: 500; line-height: 1.65; margin-bottom: 1.25rem; }
-
-.q-options { display: flex; flex-direction: column; gap: .65rem; }
-.q-opt {
-  display: flex; align-items: flex-start; gap: .75rem;
-  padding: .85rem 1rem; border: 1px solid var(--border);
-  border-radius: 8px; cursor: pointer; transition: all .2s;
-  font-size: .875rem; line-height: 1.55;
+.intro-card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:18px;padding:2.5rem 2rem;
+  max-width:560px;width:100%;text-align:center;
+  position:relative;z-index:1;
+  animation:fadeUp 0.5s ease;
 }
-.q-opt:hover { border-color: var(--accent2); background: rgba(59,130,246,.05); }
-.q-opt.selected { border-color: var(--accent); background: rgba(0,212,170,.07); }
-.q-opt.correct  { border-color: var(--success); background: rgba(16,185,129,.1); }
-.q-opt.wrong    { border-color: var(--danger);  background: rgba(239,68,68,.08); }
-.q-letter {
-  width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: .7rem; font-weight: 700; flex-shrink: 0;
-  font-family: 'JetBrains Mono', monospace; color: var(--muted);
-  transition: all .2s;
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.intro-icon{font-size:3rem;margin-bottom:1rem;display:block;}
+.intro-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(29,169,138,0.12);border:1px solid rgba(29,169,138,0.3);
+  color:var(--teal-light);font-size:0.72rem;font-weight:600;
+  padding:4px 12px;border-radius:100px;margin-bottom:1.25rem;
+  letter-spacing:0.04em;
 }
-.selected .q-letter { border-color: var(--accent); color: var(--accent); }
-.correct  .q-letter { border-color: var(--success); color: var(--success); background: rgba(16,185,129,.1); }
-.wrong    .q-letter { border-color: var(--danger);  color: var(--danger); }
-
-.q-feedback { display: none; margin-top: 1rem; padding: .9rem 1.1rem; border-radius: 8px; font-size: .84rem; line-height: 1.7; }
-.q-feedback.show { display: block; }
-.fb-correct { background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.25); color: #6ee7b7; }
-.fb-wrong   { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); color: #fca5a5; }
-
-.q-nav { display: flex; justify-content: flex-end; margin-top: 1rem; }
-
-/* Result screen */
-.result-screen { display: none; text-align: center; }
-.result-level-card {
-  padding: 2rem; border-radius: var(--radius-lg); margin: 1.5rem 0;
-  border: 2px solid var(--rc, var(--accent));
-  background: var(--rb, var(--accent-dim));
+.intro-h1{
+  font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;
+  color:#fff;letter-spacing:-0.02em;margin-bottom:0.75rem;line-height:1.2;
 }
-.result-level-label { font-family: 'JetBrains Mono', monospace; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .5rem; }
-.result-level-name  { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.75rem; letter-spacing: -.02em; margin-bottom: .5rem; }
-.result-level-desc  { font-size: .9rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.25rem; max-width: 420px; margin-left: auto; margin-right: auto; }
-.result-score { font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: var(--muted); margin-bottom: 1.5rem; }
-.result-score strong { color: var(--accent); font-size: 1.35rem; }
-.result-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+.intro-h1 span{color:var(--gold);}
+.intro-sub{font-size:0.9rem;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:2rem;font-weight:300;}
 
-/* Skip link */
-.skip-link { text-align: center; margin-top: 1.5rem; }
-.skip-link a { font-size: .8rem; color: var(--muted); text-decoration: none; }
-.skip-link a:hover { color: var(--accent); }
+.intro-meta{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;
+  margin-bottom:2rem;
+}
+.intro-meta-item{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:9px;padding:0.85rem;
+}
+.intro-meta-num{
+  font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;
+  color:var(--gold);display:block;margin-bottom:2px;
+}
+.intro-meta-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.07em;color:rgba(255,255,255,0.4);}
+
+.btn-start{
+  background:var(--gold);color:var(--navy);
+  border:none;border-radius:9px;padding:14px 32px;
+  font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;
+  cursor:pointer;transition:all 0.2s;width:100%;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-start:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 8px 24px rgba(212,168,67,0.35);}
+
+/* Quiz card */
+.quiz-card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:18px;padding:0;
+  max-width:620px;width:100%;
+  position:relative;z-index:1;
+  display:none;overflow:hidden;
+}
+
+/* Progress */
+.quiz-progress{
+  padding:1.25rem 1.75rem 0;
+}
+.quiz-progress-track{
+  height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;
+  margin-bottom:0.75rem;
+}
+.quiz-progress-fill{
+  height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-light));
+  border-radius:2px;transition:width 0.5s ease;
+}
+.quiz-progress-label{
+  display:flex;justify-content:space-between;
+  font-size:0.72rem;color:rgba(255,255,255,0.4);
+}
+
+/* Question */
+.quiz-question-wrap{padding:1.5rem 1.75rem;}
+.quiz-q-num{
+  font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--teal-light);font-weight:600;margin-bottom:0.5rem;
+}
+.quiz-q-text{
+  font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;
+  color:#fff;line-height:1.4;margin-bottom:0.5rem;letter-spacing:-0.01em;
+}
+.quiz-q-context{
+  font-size:0.82rem;color:rgba(255,255,255,0.5);
+  line-height:1.6;margin-bottom:1.5rem;font-weight:300;
+}
+
+/* Options */
+.quiz-options{display:flex;flex-direction:column;gap:0.6rem;}
+.quiz-option{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 16px;border-radius:10px;
+  border:2px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.04);
+  cursor:pointer;transition:all 0.2s;text-align:left;width:100%;
+  font-family:'DM Sans',sans-serif;
+}
+.quiz-option:hover{border-color:rgba(29,169,138,0.4);background:rgba(29,169,138,0.08);}
+.quiz-option.selected{border-color:var(--gold);background:rgba(212,168,67,0.1);}
+.quiz-option.correct{border-color:var(--teal);background:rgba(29,169,138,0.15);}
+.quiz-option.wrong{border-color:#e05555;background:rgba(224,85,85,0.1);}
+.quiz-option:disabled{cursor:default;}
+.opt-letter{
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(255,255,255,0.08);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.6);
+  flex-shrink:0;margin-top:1px;
+}
+.quiz-option.selected .opt-letter{background:var(--gold);color:var(--navy);}
+.quiz-option.correct .opt-letter{background:var(--teal);color:#fff;}
+.quiz-option.wrong.selected .opt-letter{background:#e05555;color:#fff;}
+.opt-text{font-size:0.875rem;color:rgba(255,255,255,0.85);line-height:1.45;flex:1;}
+
+/* Explanation */
+.quiz-explanation{
+  margin:1rem 0 0;padding:1rem 1.25rem;
+  border-radius:9px;font-size:0.82rem;line-height:1.65;
+  display:none;
+}
+.quiz-explanation.show{display:block;}
+.quiz-explanation.correct-exp{background:rgba(29,169,138,0.12);border:1px solid rgba(29,169,138,0.25);color:rgba(255,255,255,0.8);}
+.quiz-explanation.wrong-exp{background:rgba(224,85,85,0.08);border:1px solid rgba(224,85,85,0.2);color:rgba(255,255,255,0.8);}
+.exp-prefix{font-weight:700;margin-right:4px;}
+
+.quiz-footer{
+  padding:1.25rem 1.75rem;border-top:1px solid rgba(255,255,255,0.08);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.quiz-footer-meta{font-size:0.72rem;color:rgba(255,255,255,0.35);}
+.quiz-next-btn{
+  background:var(--teal);color:#fff;
+  border:none;border-radius:8px;padding:10px 22px;
+  font-family:'DM Sans',sans-serif;font-size:0.875rem;font-weight:700;
+  cursor:pointer;transition:all 0.2s;
+  display:none;
+}
+.quiz-next-btn.show{display:inline-flex;align-items:center;gap:6px;}
+.quiz-next-btn:hover{background:var(--teal-light);}
+
+/* Results card */
+.results-card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:18px;padding:2.5rem 2rem;
+  max-width:620px;width:100%;
+  position:relative;z-index:1;
+  display:none;text-align:center;
+  animation:fadeUp 0.5s ease;
+}
+
+.results-score-big{
+  font-family:'Syne',sans-serif;font-size:4rem;font-weight:800;
+  color:var(--gold);line-height:1;margin-bottom:0.25rem;
+}
+.results-score-label{font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:1.5rem;}
+.results-title{
+  font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;
+  color:#fff;margin-bottom:0.5rem;letter-spacing:-0.02em;
+}
+.results-sub{font-size:0.875rem;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:1.75rem;font-weight:300;}
+
+/* Recommendation card */
+.rec-card{
+  background:var(--navy-mid);border-radius:12px;
+  padding:1.5rem;margin-bottom:1.5rem;text-align:left;
+  border:1px solid rgba(212,168,67,0.2);
+}
+.rec-badge{
+  display:inline-block;background:rgba(212,168,67,0.15);color:var(--gold);
+  font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;
+  padding:3px 9px;border-radius:4px;margin-bottom:0.75rem;
+}
+.rec-title{
+  font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;
+  color:#fff;margin-bottom:0.4rem;
+}
+.rec-desc{font-size:0.82rem;color:rgba(255,255,255,0.55);line-height:1.65;font-weight:300;margin-bottom:1rem;}
+.rec-modules{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem;}
+.rec-module{
+  font-size:0.72rem;font-weight:600;
+  padding:4px 10px;border-radius:5px;
+  background:rgba(29,169,138,0.12);color:var(--teal-light);
+  border:1px solid rgba(29,169,138,0.2);
+}
+.rec-module.done{background:rgba(212,168,67,0.1);color:var(--gold);border-color:rgba(212,168,67,0.2);}
+
+/* Topic breakdown */
+.topic-breakdown{
+  margin-bottom:1.75rem;
+}
+.topic-row{
+  display:flex;align-items:center;gap:10px;margin-bottom:8px;
+}
+.topic-name{font-size:0.78rem;color:rgba(255,255,255,0.6);width:140px;flex-shrink:0;text-align:left;}
+.topic-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;}
+.topic-bar-fill{height:100%;border-radius:3px;transition:width 0.8s ease;}
+.topic-bar-fill.pass{background:var(--teal);}
+.topic-bar-fill.fail{background:#e05555;}
+.topic-result{font-size:0.72rem;font-weight:600;width:50px;text-align:right;flex-shrink:0;}
+.topic-result.pass{color:var(--teal-light);}
+.topic-result.fail{color:#ff8080;}
+
+.results-actions{display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;}
+.btn-primary{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all 0.2s;}
+.btn-primary:hover{background:var(--teal-light);transform:translateY(-1px);}
+.btn-secondary{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all 0.2s;}
+.btn-secondary:hover{background:rgba(255,255,255,0.12);color:#fff;}
+
+@media(max-width:520px){
+  .intro-meta{grid-template-columns:1fr 1fr 1fr;}
+  .quiz-question-wrap{padding:1.25rem;}
+  nav ul{display:none;}
+}
 </style>
 </head>
 <body>
 
-<nav class="nav">
-  <a href="index.html" class="nav-logo">⬡ Ledger<span>Learn</span></a>
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-hex"></div>
+    <span class="nav-brand">Ledger<span>Learn</span> Pro</span>
+  </a>
   <ul class="nav-links">
-    <li><a href="learn.html">Learn</a></li>
-    <li><a href="practice.html">Practice</a></li>
-    <li><a href="test.html">Assessment</a></li>
+    <li><a href="/learn">Learn</a></li>
+    <li><a href="/practice">Practice</a></li>
+    <li><a href="/test">Assessment</a></li>
   </ul>
-  <div class="nav-actions">
-    <a href="dashboard.html" class="btn btn-ghost">Dashboard</a>
-  </div>
 </nav>
 
-<main class="main">
-<div class="quiz-wrap">
+<div class="quiz-page">
 
-  <!-- ── INTRO ── -->
-  <div class="intro-screen" id="intro-screen">
-    <div class="intro-icon">🎯</div>
-    <div class="intro-title">Find your level</div>
-    <div class="intro-sub">Answer 6 quick questions and we'll place you at the right starting point — no guessing, no wasted lessons.</div>
-
-    <div class="level-preview">
-      <div class="lp-card">
-        <div class="lp-badge" style="background:rgba(19,181,234,.15);color:#13b5ea">L1 Associate</div>
-        <div class="lp-name">Xero Associate</div>
-        <div class="lp-desc">New to Xero. Covers setup, invoices, bank reconciliation, and basic navigation.</div>
+  <!-- INTRO -->
+  <div class="intro-card" id="intro-screen">
+    <span class="intro-icon">🎯</span>
+    <div class="intro-badge">Free · Takes 2 minutes</div>
+    <h1 class="intro-h1">Find your <span>starting point</span></h1>
+    <p class="intro-sub">5 quick questions to assess your current accounting software knowledge. We'll tell you exactly where to start and which modules will move the needle fastest for your career.</p>
+    <div class="intro-meta">
+      <div class="intro-meta-item">
+        <span class="intro-meta-num">5</span>
+        <span class="intro-meta-label">Questions</span>
       </div>
-      <div class="lp-card">
-        <div class="lp-badge" style="background:rgba(59,130,246,.15);color:#60a5fa">L2 Professional</div>
-        <div class="lp-name">Xero Professional</div>
-        <div class="lp-desc">Comfortable with basics. Covers bills, VAT returns, financial reports, and bank rules.</div>
+      <div class="intro-meta-item">
+        <span class="intro-meta-num">2min</span>
+        <span class="intro-meta-label">Duration</span>
       </div>
-      <div class="lp-card">
-        <div class="lp-badge" style="background:rgba(139,92,246,.15);color:#a78bfa">L3 Advisor</div>
-        <div class="lp-name">Xero Advisor</div>
-        <div class="lp-desc">Experienced user. Covers advisory reporting, client onboarding, and practice management.</div>
+      <div class="intro-meta-item">
+        <span class="intro-meta-num">100%</span>
+        <span class="intro-meta-label">Personalised</span>
       </div>
     </div>
-
-    <button class="btn btn-primary btn-lg" onclick="startQuiz()">Start placement quiz →</button>
-    <div class="skip-link"><a href="learn.html">Skip — start at L1 Associate</a></div>
+    <button class="btn-start" onclick="startQuiz()">
+      Start placement quiz →
+    </button>
   </div>
 
-  <!-- ── QUESTIONS ── -->
-  <div class="question-screen" id="question-screen">
-    <div class="q-progress">
-      <span class="q-prog-label" id="q-prog-label">Question 1 of 6</span>
-      <div class="q-prog-bar">
-        <div class="progress-wrap"><div class="progress-fill" id="q-progress" style="width:16%"></div></div>
+  <!-- QUIZ -->
+  <div class="quiz-card" id="quiz-screen">
+    <div class="quiz-progress">
+      <div class="quiz-progress-track">
+        <div class="quiz-progress-fill" id="quiz-progress-fill" style="width:20%"></div>
       </div>
-      <span class="q-num" id="q-score-live">0 correct</span>
-    </div>
-
-    <div class="q-card" id="q-card">
-      <div class="q-card-header">
-        <span class="q-topic" id="q-topic">Xero basics</span>
-      </div>
-      <div class="q-body">
-        <div class="q-text" id="q-text"></div>
-        <div class="q-options" id="q-options"></div>
-        <div class="q-feedback" id="q-feedback"></div>
+      <div class="quiz-progress-label">
+        <span id="quiz-progress-text">Question 1 of 5</span>
+        <span id="quiz-score-running">0 correct</span>
       </div>
     </div>
 
-    <div class="q-nav">
-      <button class="btn btn-primary" id="btn-next-q" onclick="nextQuestion()" style="display:none">Next question →</button>
+    <div class="quiz-question-wrap">
+      <div class="quiz-q-num" id="q-num">Question 1</div>
+      <div class="quiz-q-text" id="q-text"></div>
+      <div class="quiz-q-context" id="q-context"></div>
+      <div class="quiz-options" id="q-options"></div>
+      <div class="quiz-explanation" id="q-explanation"></div>
+    </div>
+
+    <div class="quiz-footer">
+      <div class="quiz-footer-meta" id="q-footer-meta">Select an answer to continue</div>
+      <button class="quiz-next-btn" id="quiz-next-btn" onclick="nextQuestion()">
+        Next question →
+      </button>
     </div>
   </div>
 
-  <!-- ── RESULT ── -->
-  <div class="result-screen" id="result-screen">
-    <div style="font-size:.7rem;font-family:'JetBrains Mono',monospace;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.75rem">Your placement result</div>
-    <div class="result-level-card" id="result-card">
-      <div class="result-level-label" id="result-label"></div>
-      <div class="result-level-name" id="result-name"></div>
-      <div class="result-level-desc" id="result-desc"></div>
-      <div class="result-score" id="result-score"></div>
-      <div class="result-actions" id="result-actions"></div>
+  <!-- RESULTS -->
+  <div class="results-card" id="results-screen">
+    <span style="font-size:3rem;display:block;margin-bottom:0.75rem;" id="results-emoji">🏆</span>
+    <div class="results-score-big" id="results-score-big">4/5</div>
+    <div class="results-score-label">questions correct</div>
+    <div class="results-title" id="results-title">Strong foundation — start at L1</div>
+    <div class="results-sub" id="results-sub"></div>
+
+    <div class="topic-breakdown" id="topic-breakdown"></div>
+
+    <div class="rec-card" id="rec-card">
+      <div class="rec-badge" id="rec-badge">Recommended path</div>
+      <div class="rec-title" id="rec-title"></div>
+      <div class="rec-desc" id="rec-desc"></div>
+      <div class="rec-modules" id="rec-modules"></div>
+    </div>
+
+    <div class="results-actions">
+      <a href="/learn" class="btn-primary" id="rec-cta">Start recommended track →</a>
+      <a href="/sim-xero-invoice" class="btn-secondary">Try live simulation →</a>
+      <button class="btn-secondary" onclick="resetQuiz()">Retake quiz</button>
     </div>
   </div>
 
 </div>
-</main>
 
-<script src="shared.js"></script>
 <script>
+// ── Questions ─────────────────────────────────────────────
 const QUESTIONS = [
   {
-    topic: 'Xero basics — L1',
-    text: 'You open Xero for the first time for a new client. Which section do you visit first to set up the company\'s name, address, financial year start, and GST/VAT registration?',
+    topic: 'Experience',
+    text: 'How would you describe your current experience with accounting software?',
+    context: '',
     options: [
-      'Accounts → Chart of Accounts',
-      'Settings → General settings → Organisation details',
-      'Reports → Financial settings',
-      'Contacts → Add organisation',
+      'I have never used Xero, QuickBooks, or Sage before',
+      'I have used it a few times but am not confident',
+      'I use it regularly for basic tasks like invoicing',
+      'I am proficient — I handle reconciliation, VAT, and reports',
     ],
-    correct: 1,
-    feedback: 'Settings → General settings is where you configure the organisation\'s core details in Xero. This is always the first step when setting up a new client file.',
-    level: 1,
+    correct: null, // No wrong answer — diagnostic
+    explanation: null,
+    weight: 'experience',
+    scores: [0, 1, 2, 3],
   },
   {
-    topic: 'Invoicing — L1',
-    text: 'You approve an invoice in Xero. What immediately changes in the system?',
+    topic: 'Invoicing',
+    text: 'A client asks you to send an invoice to a customer with 30-day payment terms and 20% VAT. Where in Xero do you go first?',
+    context: '',
     options: [
-      'Nothing — approved invoices are the same as drafts',
-      'The invoice is emailed to the client automatically',
-      'The invoice appears in Accounts Receivable and updates the aged debtors report',
-      'Payment is requested from the client\'s bank',
+      'Accounting → Chart of Accounts',
+      'Business → Invoices → New Invoice',
+      'Contacts → New Contact',
+      'Reports → Profit & Loss',
+    ],
+    correct: 1,
+    explanation: 'In Xero, all sales invoices are created under Business → Invoices → New Invoice. You select the customer contact, set the due date (30 days from invoice date), add line items with the 20% VAT tax rate, then Approve and Send.',
+    weight: 'invoicing',
+    scores: null,
+  },
+  {
+    topic: 'Bank Rec',
+    text: 'During bank reconciliation, a £350 direct debit appears in the bank feed with no matching record in Xero. What is the correct action?',
+    context: 'You are reconciling the bank account and find an unmatched item.',
+    options: [
+      'Delete the transaction from the bank feed',
+      'Leave it and move to the next transaction',
+      'Create a Spend Money transaction coded to the appropriate expense account',
+      'Transfer it to a suspense account and ask your manager',
     ],
     correct: 2,
-    feedback: 'Approving an invoice moves it into the nominal ledger — it posts to Accounts Receivable (a balance sheet asset) and appears in the aged debtors report. Draft invoices have no accounting impact.',
-    level: 1,
+    explanation: 'When a bank feed transaction has no matching record, you create a Spend Money transaction in Xero and code it to the correct expense account (e.g. Rent, Bank Charges, Utilities). This records the expense and marks the bank feed item as reconciled.',
+    weight: 'bank-rec',
+    scores: null,
   },
   {
-    topic: 'Bank reconciliation — L1',
-    text: 'Your Xero bank balance is £11,980. The bank statement shows £12,450. There is one uncleared cheque for £470 that you issued but hasn\'t cleared the bank yet. What do you do?',
+    topic: 'VAT',
+    text: 'A UK business sells professional consulting services to a VAT-registered UK company. What VAT rate applies?',
+    context: 'The business is VAT registered. The customer is in the UK.',
     options: [
-      'Enter a journal to add £470 to the Xero balance',
-      'Contact the bank — this must be their error',
-      'Leave the cheque as outstanding in Xero — it will clear next period. The accounts reconcile correctly.',
-      'Delete and re-enter the cheque in the new period',
+      '0% — professional services are VAT exempt',
+      '5% — reduced rate for services',
+      '20% — standard rate applies to most UK services',
+      'No VAT — B2B sales between registered businesses are VAT-free',
     ],
     correct: 2,
-    feedback: 'This is a normal timing difference. Bank balance (£12,450) minus uncleared cheque (£470) = £11,980 which matches Xero exactly. Outstanding items are expected and reconcile naturally when they clear.',
-    level: 1,
+    explanation: 'Most professional services in the UK are standard-rated at 20% VAT. Exempt categories include insurance, financial services, and certain education. B2B status does not exempt a sale from VAT — both businesses account for VAT on standard-rated supplies.',
+    weight: 'vat',
+    scores: null,
   },
   {
-    topic: 'VAT — L2',
-    text: 'A UK business on standard VAT accounting has sales of £60,000 (ex-VAT) and purchases with input VAT of £8,000 in Q1. What is the net VAT payable to HMRC?',
+    topic: 'Reports',
+    text: 'A business owner asks: "How much profit did we make last month?" Which Xero report do you run?',
+    context: '',
     options: [
-      '£12,000 — just the output VAT',
-      '£4,000 — net of output and input VAT',
-      '£8,000 — just the input VAT',
-      '£20,000 — output plus input combined',
+      'Balance Sheet — shows assets, liabilities and equity',
+      'Aged Receivables — shows outstanding customer invoices',
+      'Profit and Loss — shows income minus expenses for the period',
+      'Cash Flow Statement — shows movement of cash in and out',
     ],
-    correct: 1,
-    feedback: 'Output VAT = £60,000 × 20% = £12,000. Input VAT claimable = £8,000. Net payable = £12,000 − £8,000 = £4,000. This is the standard VAT calculation for box 1 minus box 4 on the VAT100 return.',
-    level: 2,
-  },
-  {
-    topic: 'Financial reporting — L2',
-    text: 'A client asks why their Profit & Loss shows a net profit of £25,000 but their bank balance only increased by £8,000. What is the most likely explanation?',
-    options: [
-      'The P&L report has an error',
-      'The difference is explained by items like outstanding debtors, loan repayments, stock purchases, or fixed asset purchases that affect cash but not P&L',
-      'VAT payments are reducing the bank balance',
-      'Xero is calculating profit incorrectly',
-    ],
-    correct: 1,
-    feedback: 'Profit ≠ cash. The gap between P&L profit and cash movement is explained by balance sheet movements: debtors collecting cash, creditors being paid, loans repaid, assets purchased. This is the core concept behind the Cash Flow Statement — an L2 topic.',
-    level: 2,
-  },
-  {
-    topic: 'Advisory — L3',
-    text: 'You are onboarding a new client onto Xero who has been using an old desktop system. Their historical data covers 3 years. What is the recommended Xero migration approach?',
-    options: [
-      'Enter all 3 years of transactions manually into Xero',
-      'Import a conversion balance sheet as at the switchover date — only bring in open debtors, creditors, and bank balances rather than all history',
-      'Only enter transactions from today — ignore history',
-      'Use the Xero CSV import for all historical transactions',
-    ],
-    correct: 1,
-    feedback: 'Best practice migration uses a conversion date and imports opening balances only — the outstanding debtors/creditors ledgers and a trial balance as at that date. Full history import is rarely cost-effective and can introduce errors. This is an L3 Advisor / Migration Specialist skill.',
-    level: 3,
+    correct: 2,
+    explanation: 'The Profit and Loss report (also called Income Statement) shows all revenue minus all expenses for a specific period, resulting in net profit or loss. The Balance Sheet shows financial position at a point in time. Aged Receivables shows who owes money. Cash Flow shows cash movements.',
+    weight: 'reports',
+    scores: null,
   },
 ];
 
-let current = 0, score = 0, answered = false;
+// ── State ─────────────────────────────────────────────────
+let state = { q:0, correct:0, answers:[], experienceScore:0 };
 
+// ── Start ─────────────────────────────────────────────────
 function startQuiz() {
   document.getElementById('intro-screen').style.display = 'none';
-  document.getElementById('question-screen').style.display = 'block';
-  renderQuestion();
+  document.getElementById('quiz-screen').style.display  = 'block';
+  renderQuestion(0);
 }
 
-function renderQuestion() {
-  const q = QUESTIONS[current];
-  answered = false;
-  document.getElementById('q-topic').textContent = q.topic;
+// ── Render question ───────────────────────────────────────
+function renderQuestion(index) {
+  const q = QUESTIONS[index];
+  const letters = ['A','B','C','D'];
+  const pct = Math.round(((index+1)/QUESTIONS.length)*100);
+
+  document.getElementById('quiz-progress-fill').style.width = pct + '%';
+  document.getElementById('quiz-progress-text').textContent = `Question ${index+1} of ${QUESTIONS.length}`;
+  document.getElementById('quiz-score-running').textContent = `${state.correct} correct`;
+  document.getElementById('q-num').textContent = `Question ${index+1} · ${q.topic}`;
   document.getElementById('q-text').textContent = q.text;
-  document.getElementById('q-prog-label').textContent = `Question ${current + 1} of ${QUESTIONS.length}`;
-  document.getElementById('q-progress').style.width = ((current + 1) / QUESTIONS.length * 100) + '%';
-  document.getElementById('q-score-live').textContent = score + ' correct';
-  document.getElementById('q-feedback').className = 'q-feedback';
-  document.getElementById('btn-next-q').style.display = 'none';
+  document.getElementById('q-context').textContent = q.context;
+  document.getElementById('q-explanation').className = 'quiz-explanation';
+  document.getElementById('q-explanation').innerHTML = '';
+  document.getElementById('quiz-next-btn').className = 'quiz-next-btn';
+  document.getElementById('q-footer-meta').textContent = 'Select an answer to continue';
 
-  const opts = document.getElementById('q-options');
-  opts.innerHTML = '';
-  q.options.forEach((o, i) => {
-    const div = document.createElement('div');
-    div.className = 'q-opt';
-    div.innerHTML = `<div class="q-letter">${String.fromCharCode(65+i)}</div><div>${o}</div>`;
-    div.onclick = () => selectAnswer(i, div, q);
-    opts.appendChild(div);
-  });
+  document.getElementById('q-options').innerHTML = q.options.map((opt, i) => `
+    <button class="quiz-option" onclick="selectAnswer(${index},${i})" id="opt-${i}">
+      <div class="opt-letter">${letters[i]}</div>
+      <div class="opt-text">${opt}</div>
+    </button>`).join('');
 }
 
-function selectAnswer(idx, el, q) {
-  if (answered) return;
-  answered = true;
+// ── Select answer ─────────────────────────────────────────
+function selectAnswer(qIndex, optIndex) {
+  const q = QUESTIONS[qIndex];
 
-  const isCorrect = idx === q.correct;
-  if (isCorrect) score++;
+  // Disable all options
+  document.querySelectorAll('.quiz-option').forEach(o => o.disabled = true);
+  document.getElementById('opt-'+optIndex).classList.add('selected');
 
-  const opts = document.getElementById('q-options').children;
-  el.classList.add(isCorrect ? 'correct' : 'wrong');
-  if (!isCorrect) opts[q.correct].classList.add('correct');
+  state.answers.push(optIndex);
 
-  Array.from(opts).forEach(o => o.onclick = null);
+  // Diagnostic question (experience) — no right/wrong
+  if (q.correct === null) {
+    state.experienceScore = q.scores[optIndex];
+    document.getElementById('q-explanation').innerHTML =
+      `<span class="exp-prefix">Got it.</span> We'll tailor your learning path based on your experience level.`;
+    document.getElementById('q-explanation').className = 'quiz-explanation show correct-exp';
+  } else {
+    const isCorrect = optIndex === q.correct;
+    if (isCorrect) state.correct++;
 
-  const fb = document.getElementById('q-feedback');
-  fb.className = `q-feedback show ${isCorrect ? 'fb-correct' : 'fb-wrong'}`;
-  fb.textContent = (isCorrect ? '✅ ' : '❌ ') + q.feedback;
+    // Highlight correct/wrong
+    document.getElementById('opt-'+q.correct).classList.add('correct');
+    if (!isCorrect) document.getElementById('opt-'+optIndex).classList.add('wrong');
 
-  document.getElementById('q-score-live').textContent = score + ' correct';
-  document.getElementById('btn-next-q').style.display = 'block';
-  document.getElementById('btn-next-q').textContent = current < QUESTIONS.length - 1 ? 'Next question →' : 'See my result →';
+    // Show explanation
+    const expEl = document.getElementById('q-explanation');
+    expEl.innerHTML = `<span class="exp-prefix">${isCorrect ? '✅ Correct!' : '❌ Not quite.'}</span> ${q.explanation}`;
+    expEl.className = `quiz-explanation show ${isCorrect ? 'correct-exp' : 'wrong-exp'}`;
+  }
+
+  document.getElementById('quiz-score-running').textContent = `${state.correct} correct`;
+  document.getElementById('q-footer-meta').textContent = `${q.topic} — ${q.correct===null ? 'Diagnostic' : (optIndex===q.correct ? 'Correct ✓' : `Correct answer: ${['A','B','C','D'][q.correct]}`)}`;
+  document.getElementById('quiz-next-btn').className = 'quiz-next-btn show';
+  document.getElementById('quiz-next-btn').textContent = qIndex < QUESTIONS.length-1 ? 'Next question →' : 'See my results →';
 }
 
+// ── Next question ─────────────────────────────────────────
 function nextQuestion() {
-  current++;
-  if (current < QUESTIONS.length) { renderQuestion(); return; }
-  showResult();
+  state.q++;
+  if (state.q >= QUESTIONS.length) {
+    showResults();
+  } else {
+    renderQuestion(state.q);
+  }
 }
 
-const LEVELS = {
-  1: {
-    label: 'Recommended starting level',
-    name: 'L1 Xero Associate',
-    color: '#13b5ea', bg: 'rgba(19,181,234,.12)',
-    desc: 'You\'re starting with the fundamentals — the right place to build solid Xero skills. L1 covers setup, invoices, bank reconciliation, and contacts. Most bookkeepers begin here.',
-    cta: 'learn.html?lesson=intro',
-    ctaText: 'Start L1 Associate →',
-  },
-  2: {
-    label: 'Recommended starting level',
-    name: 'L2 Xero Professional',
-    color: '#3b82f6', bg: 'rgba(59,130,246,.12)',
-    desc: 'You already have solid Xero basics. L2 Professional covers VAT returns, bills, financial reporting, and bank rules. You can start here or quickly review L1 first.',
-    cta: 'learn.html?lesson=invoices',
-    ctaText: 'Start at L2 content →',
-  },
-  3: {
-    label: 'Recommended starting level',
-    name: 'L3 Xero Advisor',
-    color: '#8b5cf6', bg: 'rgba(139,92,246,.12)',
-    desc: 'Strong Xero knowledge across the board. L3 Advisor content covers client advisory, practice management, and advanced reporting. Consider our ERP.SaaS Academy for the next step.',
-    cta: 'learn.html',
-    ctaText: 'Go to advanced content →',
-  },
-};
+// ── Results ───────────────────────────────────────────────
+function showResults() {
+  document.getElementById('quiz-screen').style.display    = 'none';
+  document.getElementById('results-screen').style.display = 'block';
 
-function showResult() {
-  document.getElementById('question-screen').style.display = 'none';
-  document.getElementById('result-screen').style.display = 'block';
+  const scored = QUESTIONS.filter(q => q.correct !== null);
+  const total  = scored.length;
+  const pct    = Math.round((state.correct / total) * 100);
 
-  // Determine level from score pattern
-  // Q1-3 are L1, Q4-5 are L2, Q6 is L3
-  const l1Score = [0,1,2].filter(i => i < QUESTIONS.length).reduce((a, i) => a + (/* track per-question */ 0), 0);
-  let placement = 1;
-  if (score >= 5) placement = 3;
-  else if (score >= 3) placement = 2;
+  document.getElementById('results-score-big').textContent = `${state.correct}/${total}`;
 
-  const lv = LEVELS[placement];
-  const card = document.getElementById('result-card');
-  card.style.setProperty('--rc', lv.color);
-  card.style.setProperty('--rb', lv.bg);
+  // Determine level
+  let level, title, sub, badge, recTitle, recDesc, modules, ctaHref;
+  const expScore = state.experienceScore;
 
-  document.getElementById('result-label').textContent = lv.label;
-  document.getElementById('result-name').textContent  = lv.name;
-  document.getElementById('result-desc').textContent  = lv.desc;
-  document.getElementById('result-score').innerHTML   = `You scored <strong>${score}</strong> out of ${QUESTIONS.length}`;
-  document.getElementById('result-actions').innerHTML = `
-    <a href="${lv.cta}" class="btn btn-primary btn-lg">${lv.ctaText}</a>
-    <a href="learn.html" class="btn btn-ghost btn-lg">Browse all content</a>
-  `;
+  if (pct >= 75 || (expScore >= 2 && pct >= 50)) {
+    level = 'advanced';
+    title = 'Strong foundation — you can start at L2';
+    sub   = `You scored ${pct}% and already have solid accounting software knowledge. We recommend skipping straight to the intermediate modules and sitting the L1 assessment to get your certification quickly.`;
+    badge = 'Recommended: Fast-track to L2';
+    recTitle = 'Fast-track path: L1 certification → L2 Professional';
+    recDesc  = 'Your results show you already understand core concepts. Complete the L1 assessment to get certified, then move straight to L2 Professional content covering VAT returns, financial reporting, and bank rules.';
+    modules  = ['L1 Assessment (fast-track)','VAT Returns (MTD)','Financial Reports','Bank Rules & Feeds'];
+    ctaHref  = '/test';
+    document.getElementById('results-emoji').textContent = '🏆';
+  } else if (pct >= 50 || expScore >= 1) {
+    level = 'intermediate';
+    title = 'Good start — begin with L1 modules';
+    sub   = `You scored ${pct}%. You have some familiarity with the concepts but gaps in key areas. Work through the L1 modules in order — focusing especially on Bank Reconciliation and VAT where most candidates lose marks.`;
+    badge = 'Recommended: L1 Associate path';
+    recTitle = 'Start here: Xero L1 Associate';
+    recDesc  = 'Complete all 6 L1 lessons, use the live simulations to practice, then sit the L1 assessment. Focus extra time on bank reconciliation and VAT — the two topics most commonly failed.';
+    modules  = ['Dashboard & Navigation','Creating Invoices ⚡','Bank Reconciliation ⚡','VAT Basics ⚡','Financial Reports'];
+    ctaHref  = '/learn';
+    document.getElementById('results-emoji').textContent = '📚';
+  } else {
+    level = 'beginner';
+    title = 'Great starting point — learn from scratch';
+    sub   = `You scored ${pct}%. That\'s completely fine — everyone starts somewhere. The L1 content is designed for complete beginners. Start with the guided walkthrough lessons before moving to live simulations.`;
+    badge = 'Recommended: Start from Lesson 1';
+    recTitle = 'Your path: Xero L1 from the beginning';
+    recDesc  = 'Begin with Dashboard & Navigation to get comfortable with the interface, then work through each lesson in order. Use the hints and don\'t rush — understanding each concept before moving on is more important than speed.';
+    modules  = ['Dashboard & Navigation (start here)','Organisation Setup','Creating Invoices','Bank Reconciliation','Chart of Accounts','Financial Reports'];
+    ctaHref  = '/learn';
+    document.getElementById('results-emoji').textContent = '🌱';
+  }
 
-  // Save to local progress
-  LL.saveProgress({ placement_level: placement, placement_score: score, placement_done: true });
+  document.getElementById('results-title').textContent = title;
+  document.getElementById('results-sub').textContent   = sub;
+  document.getElementById('rec-badge').textContent     = badge;
+  document.getElementById('rec-title').textContent     = recTitle;
+  document.getElementById('rec-desc').textContent      = recDesc;
+  document.getElementById('rec-cta').href              = ctaHref;
+
+  document.getElementById('rec-modules').innerHTML = modules.map((m,i) =>
+    `<span class="rec-module ${i===0?'done':''}">${m}</span>`).join('');
+
+  // Topic breakdown
+  const topicResults = [
+    { name:'Invoicing',   q:1 },
+    { name:'Bank Rec',    q:2 },
+    { name:'VAT',         q:3 },
+    { name:'Reports',     q:4 },
+  ];
+
+  document.getElementById('topic-breakdown').innerHTML =
+    `<div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.35);margin-bottom:0.75rem;text-align:left;">Topic breakdown</div>` +
+    topicResults.map(t => {
+      const correct = state.answers[t.q] === QUESTIONS[t.q].correct;
+      return `
+        <div class="topic-row">
+          <div class="topic-name">${t.name}</div>
+          <div class="topic-bar-wrap">
+            <div class="topic-bar-fill ${correct?'pass':'fail'}" style="width:${correct?100:30}%"></div>
+          </div>
+          <div class="topic-result ${correct?'pass':'fail'}">${correct?'✓ Pass':'✗ Review'}</div>
+        </div>`;
+    }).join('');
+
+  // Save to localStorage
+  try {
+    const prog = JSON.parse(localStorage.getItem('ll_progress')||'{}');
+    prog.placementResult = { level, score:pct, correct:state.correct, total, ts:Date.now() };
+    localStorage.setItem('ll_progress', JSON.stringify(prog));
+  } catch(e) {}
+}
+
+// ── Reset ─────────────────────────────────────────────────
+function resetQuiz() {
+  state = { q:0, correct:0, answers:[], experienceScore:0 };
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('intro-screen').style.display   = 'block';
 }
 </script>
 </body>
