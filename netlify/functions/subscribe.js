@@ -1,130 +1,89 @@
 /**
- * LedgerLearn — Netlify Serverless Function
+ * LedgerLearn — Netlify Function: subscribe
  * ==========================================
- * Handles all Brevo contact signups securely.
- * The API key lives in Netlify environment variables — never in code.
+ * File location: netlify/functions/subscribe.js
  *
- * Endpoint: POST /.netlify/functions/subscribe
+ * Receives POST from brevo.js and forwards to Brevo API
+ * using the BREVO_API_KEY env variable (never exposed to browser).
  *
- * Body (JSON):
- *   { email, name, listId, source }
+ * Set in Netlify: Site config → Environment variables → BREVO_API_KEY
  *
- * Returns:
- *   200 { ok: true }
- *   400 { ok: false, error: "..." }
- *   500 { ok: false, error: "..." }
+ * Lists:
+ *   3 = Xero Signups
+ *   4 = QB Waitlist
+ *   5 = General
  */
 
 exports.handler = async function (event) {
-
-  // Only allow POST
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ ok: false, error: 'Method not allowed' }),
-    };
-  }
-
-  // CORS headers — allow your Netlify domain
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin':  '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json',
   };
 
-  // Parse body
-  let email, name, listId, source;
-  try {
-    const body = JSON.parse(event.body || '{}');
-    email  = (body.email  || '').toLowerCase().trim();
-    name   = (body.name   || '').trim();
-    listId = parseInt(body.listId, 10);
-    source = body.source || 'unknown';
-  } catch (err) {
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({ ok: false, error: 'Invalid JSON body' }),
-    };
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
   }
 
-  // Validate
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  if (!emailValid) {
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({ ok: false, error: 'Invalid email address' }),
-    };
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, headers, body: JSON.stringify({ ok: false, error: 'Method not allowed' }) };
+  }
+
+  let email, name, listId, source;
+  try {
+    const b = JSON.parse(event.body || '{}');
+    email  = (b.email  || '').toLowerCase().trim();
+    name   = (b.name   || '').trim();
+    listId = parseInt(b.listId, 10);
+    source = b.source  || 'unknown';
+  } catch {
+    return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: 'Invalid JSON' }) };
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: 'Invalid email' }) };
   }
 
   if (![3, 4, 5].includes(listId)) {
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({ ok: false, error: 'Invalid list ID' }),
-    };
+    return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: 'Invalid list ID' }) };
   }
 
-  // Get API key from Netlify environment — never hardcoded
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) {
-    console.error('[subscribe] BREVO_API_KEY environment variable not set');
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ ok: false, error: 'Server configuration error' }),
-    };
+    console.error('[subscribe] BREVO_API_KEY not set');
+    return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: 'Server config error' }) };
   }
 
-  // Build Brevo payload
-  const nameParts = name.split(' ');
+  const parts = name.split(' ');
   const payload = {
     email,
     listIds: [listId],
     updateEnabled: true,
     attributes: {
       SOURCE: source,
-      ...(nameParts[0] ? { FIRSTNAME: nameParts[0] } : {}),
-      ...(nameParts[1] ? { LASTNAME: nameParts.slice(1).join(' ') } : {}),
+      ...(parts[0] ? { FIRSTNAME: parts[0] } : {}),
+      ...(parts[1] ? { LASTNAME: parts.slice(1).join(' ') } : {}),
     },
   };
 
-  // Call Brevo API
   try {
     const res = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': apiKey,
-      },
+      headers: { 'Content-Type': 'application/json', 'api-key': apiKey },
       body: JSON.stringify(payload),
     });
 
-    // 204 = contact already existed and was updated — still success
     if (res.ok || res.status === 204) {
       console.log(`[subscribe] ✓ ${email} → list ${listId} (${source})`);
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ ok: true }),
-      };
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
     }
 
-    const errorBody = await res.json().catch(() => ({}));
-    console.error('[subscribe] Brevo error:', res.status, errorBody);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ ok: false, error: 'Brevo API error', detail: errorBody }),
-    };
+    const err = await res.json().catch(() => ({}));
+    console.error('[subscribe] Brevo error:', res.status, err);
+    return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: 'Brevo API error' }) };
 
   } catch (err) {
     console.error('[subscribe] Network error:', err.message);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ ok: false, error: 'Network error reaching Brevo' }),
-    };
+    return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: 'Network error' }) };
   }
 };
