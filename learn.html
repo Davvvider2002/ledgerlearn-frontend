@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="shortcut icon" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learn — LedgerLearn Pro</title>
+<link rel="stylesheet" href="/ll-shared.css">
+<style>
+body { background: var(--off-white); }
+
+.page-wrap {
+  max-width: 1200px; margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: grid;
+  grid-template-columns: 260px 1fr 280px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* ── Left sidebar: lesson list ── */
+.lesson-nav {
+  position: sticky; top: 74px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.lesson-nav-header {
+  background: var(--navy);
+  padding: 1rem 1.25rem;
+  display: flex; align-items: center; gap: 9px;
+}
+
+.lesson-nav-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.78rem; font-weight: 700;
+  color: var(--white);
+}
+
+.lesson-nav-progress {
+  font-size: 0.65rem; color: rgba(255,255,255,0.5);
+  margin-top: 2px;
+}
+
+.lesson-nav-bar {
+  height: 3px; background: rgba(255,255,255,0.1);
+  border-radius: 2px; margin-top: 8px; overflow: hidden;
+}
+
+.lesson-nav-bar-fill {
+  height: 100%; background: var(--gold);
+  border-radius: 2px; transition: width 0.5s ease;
+}
+
+.lesson-list { padding: 0.5rem 0; }
+
+.lesson-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 1.25rem;
+  cursor: pointer; transition: background 0.15s;
+  border: none; background: none; width: 100%;
+  text-align: left;
+}
+
+.lesson-item:hover { background: rgba(11,31,58,0.04); }
+.lesson-item.active { background: var(--gold-pale); }
+.lesson-item.locked { opacity: 0.45; cursor: default; }
+
+.lesson-item-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.lesson-item-dot.done    { background: var(--teal); }
+.lesson-item-dot.active  { background: var(--gold); }
+.lesson-item-dot.locked  { background: #c5d0de; }
+
+.lesson-item-text { flex: 1; }
+.lesson-item-name { font-size: 0.78rem; font-weight: 500; color: var(--text-dark); line-height: 1.3; }
+.lesson-item-meta { font-size: 0.65rem; color: var(--text-muted); font-weight: 300; }
+
+.lesson-item-badge {
+  font-size: 0.58rem; font-weight: 700;
+  padding: 2px 6px; border-radius: 3px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.badge-free { background: var(--teal-pale); color: var(--teal); }
+.badge-done { background: rgba(29,169,138,0.1); color: var(--teal); }
+.badge-lock { background: rgba(11,31,58,0.06); color: var(--text-muted); }
+
+/* ── Main lesson area ── */
+.lesson-main { min-width: 0; }
+
+.lesson-header-card {
+  background: var(--navy);
+  border-radius: 14px; padding: 1.5rem 1.75rem;
+  margin-bottom: 1.25rem; position: relative; overflow: hidden;
+}
+
+.lesson-header-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 85% 50%, rgba(29,169,138,0.12) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.lesson-header-inner { position: relative; z-index: 1; }
+
+.lesson-track-tag {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--teal-light); font-weight: 600; margin-bottom: 0.4rem;
+}
+
+.lesson-track-tag::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal-light);
+  animation: ll-pulse 2s infinite;
+}
+
+.lesson-title-h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem; font-weight: 700;
+  color: var(--white); letter-spacing: -0.02em; margin-bottom: 0.3rem;
+}
+
+.lesson-subtitle { font-size: 0.82rem; color: rgba(255,255,255,0.5); font-weight: 300; }
+
+.lesson-progress-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 9px; padding: 0.85rem 1.1rem;
+  margin-bottom: 1.25rem;
+}
+
+.lesson-progress-label { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
+
+.lesson-progress-bar-wrap {
+  flex: 1; height: 7px;
+  background: rgba(11,31,58,0.07);
+  border-radius: 4px; overflow: hidden;
+}
+
+.lesson-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--teal-light));
+  border-radius: 4px; transition: width 0.6s ease;
+}
+
+.lesson-progress-pct { font-size: 0.75rem; font-weight: 700; color: var(--teal); white-space: nowrap; }
+
+/* ── Simulation card ── */
+.sim-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.sim-card-header {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #0a3d2e, #0f5540);
+  display: flex; align-items: center; gap: 10px;
+}
+
+.sim-card-num {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700;
+  color: var(--white); flex-shrink: 0;
+}
+
+.sim-card-title {
+  font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--white);
+}
+
+.sim-card-type {
+  margin-left: auto;
+  font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+  padding: 3px 8px; border-radius: 4px;
+  background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7);
+}
+
+.sim-card-body { padding: 1.5rem; }
+
+/* Lesson content area */
+#lesson-content { min-height: 200px; }
+
+.lesson-intro {
+  font-size: 0.9rem; color: var(--text-mid);
+  line-height: 1.75; margin-bottom: 1.5rem; font-weight: 300;
+}
+
+.lesson-steps { display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 1.5rem; }
+
+.lesson-step {
+  display: flex; gap: 12px;
+  padding: 1rem 1.1rem;
+  background: var(--off-white);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  transition: background 0.2s;
+}
+
+.lesson-step.active-step {
+  background: var(--teal-pale);
+  border-color: rgba(29,169,138,0.25);
+}
+
+.step-num-badge {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--navy);
+  color: var(--white);
+  font-family: 'Syne', sans-serif; font-size: 0.7rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+
+.lesson-step.active-step .step-num-badge { background: var(--teal); }
+
+.step-content { flex: 1; }
+.step-title { font-size: 0.82rem; font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+.step-instruction { font-size: 0.8rem; color: var(--text-mid); line-height: 1.6; font-weight: 300; }
+.step-tip {
+  font-size: 0.72rem; color: var(--teal);
+  margin-top: 5px; font-weight: 400;
+}
+.step-tip::before { content: '💡 '; }
+
+.lesson-why-matters {
+  background: var(--gold-pale);
+  border: 1px solid rgba(212,168,67,0.25);
+  border-left: 3px solid var(--gold);
+  border-radius: 8px; padding: 0.9rem 1.1rem;
+  font-size: 0.8rem; color: var(--text-mid);
+  line-height: 1.65; margin-bottom: 1.5rem;
+}
+
+.lesson-why-matters strong { color: var(--gold-dim); font-weight: 600; }
+
+/* Loading state */
+.lesson-loading {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 3rem 1rem; gap: 0.75rem;
+}
+
+.lesson-loading-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(29,169,138,0.15);
+  border-top-color: var(--teal);
+  border-radius: 50%; animation: ll-spin 0.7s linear infinite;
+}
+
+.lesson-loading-text { font-size: 0.8rem; color: var(--text-muted); }
+
+/* Nav buttons */
+.sim-nav {
+  display: flex; gap: 0.75rem; align-items: center; justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.sim-nav-left { display: flex; gap: 0.75rem; }
+
+/* Email gate (inline, not modal on this rebuild) */
+.email-gate-card {
+  background: var(--navy);
+  border-radius: 12px; padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.email-gate-title {
+  font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700;
+  color: var(--white); margin-bottom: 0.3rem;
+}
+
+.email-gate-sub { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-bottom: 1rem; font-weight: 300; }
+
+.email-gate-form { display: flex; flex-direction: column; gap: 8px; }
+
+.email-gate-row { display: flex; gap: 8px; }
+
+.email-gate-row .ll-input { flex: 1; }
+
+/* Upsell */
+.ll-upsell { margin-top: 1.25rem; }
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .page-wrap { grid-template-columns: 1fr 260px; }
+  .lesson-nav { display: none; }
+}
+
+@media (max-width: 760px) {
+  .page-wrap { grid-template-columns: 1fr; padding: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<nav class="ll-nav">
+  <a href="/" class="ll-nav-logo">
+    <div class="ll-hex ll-hex-lg"></div>
+    <span class="ll-nav-brand">Ledger<span>Learn</span> Pro</span>
+  </a>
+  <ul class="ll-nav-links">
+    <li><a href="/learn" class="active">Learn</a></li>
+    <li><a href="/practice">Practice</a></li>
+    <li><a href="/test">Assessment</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><a href="/learn" class="ll-nav-cta">Start free →</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- ── Left: Lesson navigation ── -->
+  <nav class="lesson-nav">
+    <div class="lesson-nav-header">
+      <div>
+        <div class="lesson-nav-title">Xero L1 Associate</div>
+        <div class="lesson-nav-progress" id="nav-progress-text">0 of 6 complete</div>
+        <div class="lesson-nav-bar">
+          <div class="lesson-nav-bar-fill" id="nav-progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="lesson-list" id="lesson-list">
+      <!-- Populated by JS -->
+    </div>
+  </nav>
+
+  <!-- ── Main content ── -->
+  <main class="lesson-main">
+
+    <!-- Header -->
+    <div class="lesson-header-card">
+      <div class="lesson-header-inner">
+        <div class="lesson-track-tag" id="lesson-track-tag">Xero L1 Associate · Live simulation</div>
+        <div class="lesson-title-h1" id="lesson-title">Loading lesson…</div>
+        <div class="lesson-subtitle" id="lesson-subtitle">⏱ 15–20 min · Free module</div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="lesson-progress-row">
+      <span class="lesson-progress-label" id="progress-label">Lesson 1 of 6</span>
+      <div class="lesson-progress-bar-wrap">
+        <div class="lesson-progress-bar-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <span class="lesson-progress-pct" id="progress-pct">0%</span>
+    </div>
+
+    <!-- Email gate — shown to new users -->
+    <div class="email-gate-card" id="email-gate" style="display:none">
+      <div class="ll-hex ll-hex-xs" style="margin-bottom:0.75rem;"></div>
+      <div class="email-gate-title">Save your progress & certificate</div>
+      <div class="email-gate-sub">Your first module is completely free. Enter your details to save progress and receive your certificate when you pass.</div>
+      <div class="email-gate-form">
+        <div class="email-gate-row">
+          <input class="ll-input" type="text" id="gate-name" placeholder="Your full name" />
+          <input class="ll-input" type="email" id="gate-email" placeholder="Email address" />
+        </div>
+        <button class="btn btn-gold btn-full" onclick="saveGate()">Save progress & continue →</button>
+        <button onclick="dismissGate()" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:0.75rem;cursor:pointer;margin-top:4px;">Skip for now</button>
+      </div>
+    </div>
+
+    <!-- Simulation card -->
+    <div class="sim-card">
+      <div class="sim-card-header">
+        <div class="sim-card-num" id="sim-num">1</div>
+        <div class="sim-card-title" id="sim-title">Loading…</div>
+        <div class="sim-card-type" id="sim-type">Guided walkthrough</div>
+      </div>
+      <div class="sim-card-body">
+
+        <div id="lesson-content">
+          <div class="lesson-loading">
+            <div class="lesson-loading-spinner"></div>
+            <div class="lesson-loading-text">Loading lesson content…</div>
+          </div>
+        </div>
+
+        <div class="sim-nav">
+          <div class="sim-nav-left">
+            <button class="btn btn-ghost-dark btn-sm" onclick="prevLesson()" id="btn-prev">← Previous</button>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:center;">
+            <a href="/practice" class="btn btn-ghost-dark btn-sm">Practice questions</a>
+            <button class="btn btn-teal btn-sm" onclick="nextLesson()" id="btn-next">Next lesson →</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Upsell -->
+    <div class="ll-upsell">
+      <div class="ll-upsell-text">
+        <div class="ll-upsell-badge">After certification</div>
+        <h3>Turn your Xero skills into consulting income</h3>
+        <p>ERP.SaaS Academy teaches you to land £3,000–£8,000 projects using the skills you're building right now.</p>
+        <div class="ll-upsell-code">Use code <strong>LEDGER30</strong> for 30% off your first month</div>
+      </div>
+      <div class="ll-upsell-actions">
+        <a href="https://skool.com/erp-saas-academy" class="btn btn-gold btn-sm" target="_blank">Join ERP.SaaS Academy →</a>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Right: Jobs sidebar ── -->
+  <aside id="ll-jobs-sidebar"></aside>
+
+</div>
+
+<footer class="ll-footer">
+  <div class="ll-footer-inner">
+    <div class="ll-footer-brand">Ledger<span>Learn</span> Pro</div>
+    <ul class="ll-footer-links">
+      <li><a href="/learn">Learn</a></li>
+      <li><a href="/practice">Practice</a></li>
+      <li><a href="/test">Assessment</a></li>
+      <li><a href="/verify">Verify</a></li>
+      <li><a href="/dashboard">Dashboard</a></li>
+    </ul>
+    <div class="ll-footer-disclaimer">
+      LedgerLearn Pro is independent and not affiliated with Xero Limited, Intuit Inc., or Sage Group plc. © 2025 LedgerLearn Pro
+    </div>
+  </div>
+</footer>
+
+<script src="/ll-shared.js"></script>
+<script src="/ll-api.js"></script>
+<script src="/ll-jobs.js"></script>
+<script src="/brevo.js"></script>
+<script src="/email-gate.js"></script>
+<script>
+
+// ── Lesson definitions ───────────────────────────────────
+const LESSONS = [
+  { id:1, title:'Dashboard & Navigation',       type:'Guided walkthrough', module:'Dashboard Navigation',   free:true  },
+  { id:2, title:'Organisation Setup',           type:'Guided walkthrough', module:'Organisation Setup',     free:true  },
+  { id:3, title:'Creating & Managing Invoices', type:'Live simulation',    module:'Invoicing',              free:true  },
+  { id:4, title:'Bank Reconciliation',          type:'Live simulation',    module:'Bank Reconciliation',    free:true  },
+  { id:5, title:'Chart of Accounts Setup',      type:'Live simulation',    module:'Chart of Accounts',     free:true  },
+  { id:6, title:'Running Financial Reports',    type:'Guided walkthrough', module:'Financial Reports',     free:true  },
+];
+
+let currentLesson = 0;
+let lessonCache   = {};
+
+// ── Init ─────────────────────────────────────────────────
+function init() {
+  const progress = LL.getProgress();
+  const user     = LL.getUser();
+
+  // Determine which lesson to show
+  const lastLesson = progress.lastLesson || 0;
+  currentLesson = Math.min(lastLesson, LESSONS.length - 1);
+
+  renderLessonNav();
+  loadLesson(currentLesson);
+
+  // Show email gate after 5 seconds if not registered
+  if (!user.email && !user.skipped) {
+    setTimeout(() => {
+      document.getElementById('email-gate').style.display = 'block';
+    }, 5000);
+  }
+}
+
+// ── Render lesson nav list ────────────────────────────────
+function renderLessonNav() {
+  const progress  = LL.getProgress();
+  const completed = progress.completedLessons || [];
+  const list      = document.getElementById('lesson-list');
+
+  list.innerHTML = LESSONS.map((l, i) => {
+    const isDone   = completed.includes(i);
+    const isActive = i === currentLesson;
+    const dotClass = isDone ? 'done' : isActive ? 'active' : 'locked';
+    const badge    = isDone ? '<span class="lesson-item-badge badge-done">Done</span>'
+                  : l.free  ? '<span class="lesson-item-badge badge-free">Free</span>'
+                  :            '<span class="lesson-item-badge badge-lock">🔒</span>';
+
+    return `
+      <button class="lesson-item ${isActive?'active':''} ${!isDone&&!isActive&&!l.free?'locked':''}"
+              onclick="switchLesson(${i})">
+        <div class="lesson-item-dot ${dotClass}"></div>
+        <div class="lesson-item-text">
+          <div class="lesson-item-name">${l.title}</div>
+          <div class="lesson-item-meta">${l.type}</div>
+        </div>
+        ${badge}
+      </button>`;
+  }).join('');
+
+  // Update progress
+  const pct  = Math.round((completed.length / LESSONS.length) * 100);
+  document.getElementById('nav-progress-text').textContent  = `${completed.length} of ${LESSONS.length} complete`;
+  document.getElementById('nav-progress-fill').style.width  = pct + '%';
+  document.getElementById('progress-fill').style.width      = pct + '%';
+  document.getElementById('progress-pct').textContent       = pct + '%';
+  document.getElementById('progress-label').textContent     = `Lesson ${currentLesson + 1} of ${LESSONS.length}`;
+}
+
+// ── Load a lesson ─────────────────────────────────────────
+async function loadLesson(index) {
+  const lesson = LESSONS[index];
+  currentLesson = index;
+
+  // Update header
+  document.getElementById('lesson-title').textContent   = lesson.title;
+  document.getElementById('lesson-subtitle').textContent = `⏱ 15–20 min · ${lesson.free ? 'Free module' : 'L1 Associate'}`;
+  document.getElementById('sim-num').textContent        = lesson.id;
+  document.getElementById('sim-title').textContent      = lesson.title;
+  document.getElementById('sim-type').textContent       = lesson.type;
+  document.getElementById('progress-label').textContent = `Lesson ${index + 1} of ${LESSONS.length}`;
+
+  // Update nav buttons
+  document.getElementById('btn-prev').disabled = index === 0;
+  document.getElementById('btn-next').textContent = index === LESSONS.length - 1
+    ? 'Go to Assessment →' : 'Next lesson →';
+
+  renderLessonNav();
+
+  // Show loading
+  document.getElementById('lesson-content').innerHTML = `
+    <div class="lesson-loading">
+      <div class="lesson-loading-spinner"></div>
+      <div class="lesson-loading-text">Loading lesson content…</div>
+    </div>`;
+
+  // Use cache if available
+  if (lessonCache[index]) {
+    renderLessonContent(lessonCache[index], index);
+    return;
+  }
+
+  // Fetch from AI
+  const data = await LLAPI.getLesson({
+    lessonTitle: lesson.title,
+    lessonType:  lesson.type,
+    track:       'Xero',
+    level:       'L1 Associate',
+  });
+
+  if (data.error || !data.steps) {
+    // Use high-quality fallback content
+    renderFallbackLesson(index);
+    return;
+  }
+
+  lessonCache[index] = data;
+  renderLessonContent(data, index);
+}
+
+// ── Render AI lesson content ──────────────────────────────
+function renderLessonContent(data, index) {
+  const stepsHTML = (data.steps || []).map((s, i) => `
+    <div class="lesson-step ${i === 0 ? 'active-step' : ''}">
+      <div class="step-num-badge">${s.step || i+1}</div>
+      <div class="step-content">
+        <div class="step-title">${s.title || ''}</div>
+        <div class="step-instruction">${s.instruction || ''}</div>
+        ${s.tip ? `<div class="step-tip">${s.tip}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('lesson-content').innerHTML = `
+    <p class="lesson-intro">${data.intro || ''}</p>
+    <div class="lesson-steps">${stepsHTML}</div>
+    ${data.whyMatters ? `
+    <div class="lesson-why-matters">
+      <strong>Why this matters for your career:</strong> ${data.whyMatters}
+      The live jobs panel shows current vacancies requiring this exact skill.
+    </div>` : ''}
+    ${data.summary ? `<p style="font-size:0.8rem;color:var(--text-muted);font-style:italic;margin-bottom:0.5rem;">${data.summary}</p>` : ''}
+    <button class="btn btn-teal btn-sm" onclick="completeLesson(${index})" id="btn-complete-${index}" style="margin-top:0.5rem;">
+      ✓ Mark lesson complete
+    </button>`;
+
+  // Check if already completed
+  const completed = LL.getProgress().completedLessons || [];
+  if (completed.includes(index)) {
+    const btn = document.getElementById(`btn-complete-${index}`);
+    if (btn) { btn.textContent = '✓ Completed'; btn.disabled = true; btn.style.background = 'var(--teal)'; }
+  }
+}
+
+// ── Fallback lesson content (when AI unavailable) ─────────
+const FALLBACK_CONTENT = {
+  0: { intro: "In this lesson you'll learn to navigate the Xero dashboard confidently — understanding where everything lives before you start using it with clients.", steps: [{ step:1, title:"Access the Xero dashboard", instruction:"Log into Xero. The main dashboard shows your bank accounts, invoices owed to you, bills you need to pay, and expense claims. These four panels give you an instant financial snapshot.", tip:"Bookmark the dashboard — you'll start every client session here." },{ step:2, title:"Explore the top navigation", instruction:"The top menu contains: Business (invoicing & bills), Accounting (bank, reports, chart of accounts), Projects, and Payroll. Each section is a core workflow area.", tip:"" },{ step:3, title:"Customise your dashboard", instruction:"Click 'Edit layout' on the dashboard to add or remove widgets. Many clients like to see cash flow shortfall or account watchlist on their main view.", tip:"Set this up in the first session with any new client — it creates a strong first impression." },{ step:4, title:"Access organisation settings", instruction:"Click your organisation name (top left) → Settings. Here you set financial year, GST/VAT, currency, and branding. These settings affect every transaction.", tip:"" }], summary:"You can now navigate Xero and find every major function from the main menu.", whyMatters:"Xero navigation is the first thing asked in every Xero Accountant interview — employers need to know you can find your way around without hand-holding." },
+  1: { intro: "Organisation setup is the foundation of every Xero account. Getting this right from the start prevents months of corrections later.", steps: [{ step:1, title:"Set the financial year start", instruction:"Go to Settings → General Settings → Financial Settings. Set the correct financial year start month. For UK businesses this is usually April (6 April technically, but Xero uses April).", tip:"Getting this wrong means all your period reports will be misaligned." },{ step:2, title:"Configure VAT/GST settings", instruction:"In Financial Settings, set your tax basis (invoice or cash), VAT/GST registration number, and filing frequency. UK businesses on MTD must use invoice basis.", tip:"" },{ step:3, title:"Set up the chart of accounts", instruction:"Go to Accounting → Chart of Accounts. Review the default accounts Xero provides. Add industry-specific accounts your client needs. Delete unused ones to keep it clean.", tip:"A clean chart of accounts makes reports meaningful — cluttered COAs are a red flag in any audit." },{ step:4, title:"Add your organisation branding", instruction:"Go to Settings → Invoice Themes. Upload the client's logo, set brand colours, and customise the invoice template. This affects all customer-facing documents.", tip:"" }], summary:"Your Xero organisation is now correctly configured and ready for transactions.", whyMatters:"Correct organisation setup is required before any bookkeeping can begin — implementation consultants charge £500–£1,500 just for this initial configuration work." },
+  2: { intro: "Invoicing is the most-tested skill in Xero certifications and the most common task in Xero Accountant job descriptions. Master this and you're immediately hireable.", steps: [{ step:1, title:"Create a new sales invoice", instruction:"Go to Business → Invoices → New Invoice. Select the customer from Contacts (or add a new one). Enter the invoice date and due date. Add line items with description, quantity, unit price, and tax rate.", tip:"Always double-check the tax rate on each line — wrong VAT coding is the most common bookkeeping error." },{ step:2, title:"Set payment terms", instruction:"In the invoice, set due date based on your client's payment terms (e.g. 30 days from invoice date). You can also set default payment terms per customer in their Contact record.", tip:"" },{ step:3, title:"Approve and send the invoice", instruction:"Click Approve to lock the invoice and move it from Draft to Awaiting Payment status. Then click Send to email it directly from Xero with a Pay Now button if online payments are set up.", tip:"Draft invoices don't appear in aged receivables reports — always approve before sending." },{ step:4, title:"Record a payment received", instruction:"When the customer pays, open the invoice and click Add Payment. Enter the payment date, amount, and bank account it was received into. Xero will match this to your bank feed automatically.", tip:"" }], summary:"You can now create, approve, send and receipt invoices end-to-end in Xero.", whyMatters:"Invoicing is listed as a required skill in over 85% of Xero Accountant job postings — employers expect you to be able to do this without training on day one." },
+  3: { intro: "Bank reconciliation is where bookkeeping accuracy is proven. It's the core skill that separates a competent bookkeeper from a basic data entry operator.", steps: [{ step:1, title:"Import bank transactions", instruction:"Go to Accounting → Bank Accounts. If bank feeds are set up, transactions import automatically daily. Otherwise, import a CSV statement from your bank. Xero will display all unreconciled transactions.", tip:"Always reconcile at least weekly — leaving it a month makes matching much harder." },{ step:2, title:"Match transactions to records", instruction:"For each bank transaction, Xero will suggest a match to an existing invoice, bill, or spend money record. Review the suggestion and click OK to match, or Discuss if you need clarification.", tip:"" },{ step:3, title:"Create transactions for unmatched items", instruction:"For transactions with no match (direct debits, bank charges, etc.), click Create to add a new Spend Money or Receive Money transaction coded to the correct account.", tip:"Bank charges go to Bank Fees expense. HMRC payments go to VAT Liability or Corporation Tax accounts." },{ step:4, title:"Complete the reconciliation", instruction:"When all transactions are matched or created, click Reconcile All. The Reconcile button turns green when all items are matched and your Xero balance agrees with the bank statement balance.", tip:"" }], summary:"You can now reconcile a full month of bank transactions in Xero confidently.", whyMatters:"Bank reconciliation is performed in every Xero role every week — showing you can do this accurately and efficiently is the single most important practical skill for employers." },
+  4: { intro: "A well-structured chart of accounts makes reports meaningful and audits painless. This is a skill that commands a premium in implementation work.", steps: [{ step:1, title:"Understand account types", instruction:"Xero uses five account types: Assets (what the business owns), Liabilities (what it owes), Equity (owner's stake), Revenue (income), Expenses (costs). Every transaction must be coded to one of these.", tip:"" },{ step:2, title:"Review and clean the default COA", instruction:"Go to Accounting → Chart of Accounts. Xero provides a default set. Archive any accounts not relevant to this business type. Rename accounts to match the business's terminology.", tip:"A retail business needs Stock/Inventory accounts. A service business doesn't. Tailor accordingly." },{ step:3, title:"Add custom accounts", instruction:"Click Add Account. Choose the correct account type, give it a code (use a logical numbering system — 200s for assets, 400s for revenue, 600s for expenses), add a description.", tip:"Keep codes in logical ranges — it makes reports and exports far easier to work with." },{ step:4, title:"Set tracking categories", instruction:"Go to Accounting → Advanced → Tracking Categories to add dimensions like Department or Location. This allows profit reporting by segment without needing separate companies.", tip:"" }], summary:"Your chart of accounts is now structured correctly for meaningful financial reporting.", whyMatters:"Chart of accounts design is a core skill for Xero implementation consultants who charge £80–£120/hour specifically for this configuration work." },
+  5: { intro: "Financial reports are how you demonstrate the value of your bookkeeping work and advise clients. Knowing which report to pull and how to read it sets you apart.", steps: [{ step:1, title:"Run the Profit and Loss report", instruction:"Go to Accounting → Reports → Profit and Loss. Set the date range (usually month-to-date or year-to-date). This shows all revenue minus all expenses = net profit or loss.", tip:"Always check this monthly with clients — it's the single most important conversation in bookkeeping." },{ step:2, title:"Run the Balance Sheet", instruction:"The Balance Sheet shows what the business owns (assets), owes (liabilities), and the difference (equity) at a specific date. Run it at month-end. Assets must equal Liabilities + Equity.", tip:"" },{ step:3, title:"Check the Aged Receivables", instruction:"Go to Reports → Aged Receivables. This shows every customer with an outstanding invoice grouped by how overdue it is. Use this to chase payment on overdue invoices.", tip:"Always review aged receivables before the client meeting — it's the most common question they'll ask." },{ step:4, title:"Export and share reports", instruction:"Click the Export button on any report to download as PDF or Excel. You can also email reports directly from Xero or publish them to a shared Xero file for the client.", tip:"" }], summary:"You can now run, interpret and share the four core Xero financial reports.", whyMatters:"Reading and explaining financial reports is required at every level of accounting work — clients pay bookkeepers specifically for this insight, not just data entry." },
+};
+
+function renderFallbackLesson(index) {
+  const data = FALLBACK_CONTENT[index] || FALLBACK_CONTENT[0];
+  renderLessonContent(data, index);
+}
+
+// ── Complete a lesson ─────────────────────────────────────
+function completeLesson(index) {
+  const progress  = LL.getProgress();
+  const completed = progress.completedLessons || [];
+
+  if (!completed.includes(index)) {
+    completed.push(index);
+    LL.saveProgress({ completedLessons: completed, lastLesson: Math.min(index + 1, LESSONS.length - 1) });
+  }
+
+  // Update button
+  const btn = document.getElementById(`btn-complete-${index}`);
+  if (btn) { btn.textContent = '✓ Completed'; btn.disabled = true; }
+
+  renderLessonNav();
+  LL.toast('Lesson complete! Moving to next lesson…', 'success');
+
+  // Auto-advance after 1.5s
+  setTimeout(() => {
+    if (index < LESSONS.length - 1) {
+      loadLesson(index + 1);
+    } else {
+      window.location.href = '/test';
+    }
+  }, 1500);
+}
+
+// ── Navigation ────────────────────────────────────────────
+function nextLesson() {
+  if (currentLesson < LESSONS.length - 1) {
+    loadLesson(currentLesson + 1);
+  } else {
+    window.location.href = '/test';
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevLesson() {
+  if (currentLesson > 0) loadLesson(currentLesson - 1);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function switchLesson(index) {
+  loadLesson(index);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Email gate ────────────────────────────────────────────
+async function saveGate() {
+  const name  = document.getElementById('gate-name').value.trim();
+  const email = document.getElementById('gate-email').value.trim();
+  if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    LL.toast('Please enter your name and a valid email.', 'error'); return;
+  }
+  LL.saveUser(name, email);
+  if (window.BREVO) await BREVO.addContact(email, name, 3, { SOURCE: 'learn-gate' });
+  document.getElementById('email-gate').style.display = 'none';
+  LL.toast('Progress saved! ✓', 'success');
+}
+
+function dismissGate() {
+  LL.saveProgress({ skipped: true });
+  document.getElementById('email-gate').style.display = 'none';
+}
+
+// ── Start ─────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
