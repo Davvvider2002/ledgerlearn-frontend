@@ -292,6 +292,109 @@ body { background: var(--off-white); }
 /* Upsell */
 .ll-upsell { margin-top: 1.25rem; }
 
+/* ── Simulation launch card ── */
+.sim-launch-card {
+  background: linear-gradient(135deg, #0B1F3A, #132d52);
+  border: 1px solid rgba(29,169,138,0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.sim-launch-card::before {
+  content: '';
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 40%;
+  background: radial-gradient(ellipse at right, rgba(29,169,138,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.sim-launch-header {
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 1rem; flex-wrap: wrap;
+}
+
+.sim-launch-icon {
+  font-size: 2rem; flex-shrink: 0;
+}
+
+.sim-launch-text { flex: 1; }
+
+.sim-launch-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem; font-weight: 700;
+  color: #fff; margin-bottom: 2px;
+}
+
+.sim-launch-sub {
+  font-size: 0.78rem; color: rgba(255,255,255,0.55);
+  font-weight: 300;
+}
+
+.sim-launch-badge {
+  background: rgba(29,169,138,0.2);
+  border: 1px solid rgba(29,169,138,0.35);
+  color: #26c9a5;
+  font-size: 0.65rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 3px 9px; border-radius: 100px;
+  flex-shrink: 0;
+}
+
+.sim-launch-features {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 1.25rem;
+}
+
+.sim-feat {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  font-size: 0.72rem; padding: 4px 10px;
+  border-radius: 100px;
+}
+
+.sim-launch-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--teal);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; font-weight: 700;
+  padding: 12px 24px; border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s;
+  margin-bottom: 0.6rem;
+}
+
+.sim-launch-btn:hover {
+  background: var(--teal-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(29,169,138,0.35);
+}
+
+.sim-launch-note {
+  font-size: 0.7rem; color: rgba(255,255,255,0.3);
+  margin-top: 0.25rem;
+}
+
+.sim-divider {
+  display: flex; align-items: center; gap: 1rem;
+  margin: 1.25rem 0;
+}
+
+.sim-divider::before,
+.sim-divider::after {
+  content: ''; flex: 1;
+  height: 1px; background: var(--border);
+}
+
+.sim-divider span {
+  font-size: 0.72rem; color: var(--text-muted);
+  white-space: nowrap;
+}
+
 /* Responsive */
 @media (max-width: 1000px) {
   .page-wrap { grid-template-columns: 1fr 260px; }
@@ -426,7 +529,7 @@ body { background: var(--off-white); }
   <div class="ll-footer-inner">
     <div class="ll-footer-brand">Ledger<span>Learn</span> Pro</div>
     <ul class="ll-footer-links">
-      <li><a href="/learn" id="nav-learn-link">Learn</a></li>
+      <li><a href="/learn">Learn</a></li>
       <li><a href="/practice">Practice</a></li>
       <li><a href="/test">Assessment</a></li>
       <li><a href="/verify">Verify</a></li>
@@ -533,35 +636,8 @@ async function loadLesson(index) {
 
   renderLessonNav();
 
-  // Show loading
-  document.getElementById('lesson-content').innerHTML = `
-    <div class="lesson-loading">
-      <div class="lesson-loading-spinner"></div>
-      <div class="lesson-loading-text">Loading lesson content…</div>
-    </div>`;
-
-  // Use cache if available
-  if (lessonCache[index]) {
-    renderLessonContent(lessonCache[index], index);
-    return;
-  }
-
-  // Fetch from AI
-  const data = await LLAPI.getLesson({
-    lessonTitle: lesson.title,
-    lessonType:  lesson.type,
-    track:       'Xero',
-    level:       'L1 Associate',
-  });
-
-  if (data.error || !data.steps) {
-    // Use high-quality fallback content
-    renderFallbackLesson(index);
-    return;
-  }
-
-  lessonCache[index] = data;
-  renderLessonContent(data, index);
+  // Render immediately from static content — no API call needed
+  renderFallbackLesson(index);
 }
 
 // ── Render AI lesson content ──────────────────────────────
@@ -607,9 +683,88 @@ const FALLBACK_CONTENT = {
   5: { intro: "Financial reports are how you demonstrate the value of your bookkeeping work and advise clients. Knowing which report to pull and how to read it sets you apart.", steps: [{ step:1, title:"Run the Profit and Loss report", instruction:"Go to Accounting → Reports → Profit and Loss. Set the date range (usually month-to-date or year-to-date). This shows all revenue minus all expenses = net profit or loss.", tip:"Always check this monthly with clients — it's the single most important conversation in bookkeeping." },{ step:2, title:"Run the Balance Sheet", instruction:"The Balance Sheet shows what the business owns (assets), owes (liabilities), and the difference (equity) at a specific date. Run it at month-end. Assets must equal Liabilities + Equity.", tip:"" },{ step:3, title:"Check the Aged Receivables", instruction:"Go to Reports → Aged Receivables. This shows every customer with an outstanding invoice grouped by how overdue it is. Use this to chase payment on overdue invoices.", tip:"Always review aged receivables before the client meeting — it's the most common question they'll ask." },{ step:4, title:"Export and share reports", instruction:"Click the Export button on any report to download as PDF or Excel. You can also email reports directly from Xero or publish them to a shared Xero file for the client.", tip:"" }], summary:"You can now run, interpret and share the four core Xero financial reports.", whyMatters:"Reading and explaining financial reports is required at every level of accounting work — clients pay bookkeepers specifically for this insight, not just data entry." },
 };
 
+// Simulation lesson URLs
+const SIM_URLS = {
+  2: '/xero-invoice-sim',   // Creating & Managing Invoices
+  3: '/xero-bankrec-sim',   // Bank Reconciliation
+};
+
 function renderFallbackLesson(index) {
   const data = FALLBACK_CONTENT[index] || FALLBACK_CONTENT[0];
-  renderLessonContent(data, index);
+
+  // For simulation lessons, show content + embedded sim launcher
+  if (SIM_URLS[index]) {
+    renderSimLesson(data, index, SIM_URLS[index]);
+  } else {
+    renderLessonContent(data, index);
+  }
+}
+
+function renderSimLesson(data, index, simUrl) {
+  const completed = LL.getProgress().completedLessons || [];
+  const isDone = completed.includes(index);
+
+  const stepsHTML = (data.steps || []).map((s, i) => `
+    <div class="lesson-step ${i === 0 ? 'active-step' : ''}">
+      <div class="step-num-badge">${s.step || i+1}</div>
+      <div class="step-content">
+        <div class="step-title">${s.title || ''}</div>
+        <div class="step-instruction">${s.instruction || ''}</div>
+        ${s.tip ? `<div class="step-tip">${s.tip}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('lesson-content').innerHTML = `
+    <p class="lesson-intro">${data.intro || ''}</p>
+
+    <!-- SIMULATION LAUNCH CARD -->
+    <div class="sim-launch-card" id="sim-launch-${index}">
+      <div class="sim-launch-header">
+        <div class="sim-launch-icon">🖥️</div>
+        <div class="sim-launch-text">
+          <div class="sim-launch-title">Interactive Live Simulation</div>
+          <div class="sim-launch-sub">Type real data · Get scored · Learn by doing — not just reading</div>
+        </div>
+        <div class="sim-launch-badge">Included free</div>
+      </div>
+      <div class="sim-launch-features">
+        <span class="sim-feat">✓ Real ${index === 2 ? 'Xero invoice' : 'bank reconciliation'} interface</span>
+        <span class="sim-feat">✓ Live input fields — enter real numbers</span>
+        <span class="sim-feat">✓ Guided tasks with instant feedback</span>
+        <span class="sim-feat">✓ Score tracked as you go</span>
+      </div>
+      <a href="${simUrl}" target="_blank" class="sim-launch-btn" onclick="trackSimLaunch(${index})">
+        Launch ${index === 2 ? 'Invoice' : 'Bank Rec'} Simulation →
+      </a>
+      <p class="sim-launch-note">Opens in a new tab · Come back here when done to mark complete</p>
+    </div>
+
+    <div class="sim-divider">
+      <span>Or review the guided steps below</span>
+    </div>
+
+    <div class="lesson-steps">${stepsHTML}</div>
+
+    ${data.whyMatters ? `
+    <div class="lesson-why-matters">
+      <strong>Why this matters:</strong> ${data.whyMatters}
+    </div>` : ''}
+
+    <button class="btn btn-teal btn-sm" onclick="completeLesson(${index})" id="btn-complete-${index}" style="margin-top:1rem;">
+      ${isDone ? '✓ Completed' : '✓ Mark lesson complete'}
+    </button>`;
+
+  if (isDone) {
+    const btn = document.getElementById('btn-complete-' + index);
+    if (btn) { btn.disabled = true; btn.style.background = 'var(--teal)'; }
+  }
+}
+
+function trackSimLaunch(index) {
+  // Save that user launched the sim — give partial credit
+  const progress = LL.getProgress();
+  progress['simLaunched_' + index] = true;
+  LL.saveProgress(progress);
 }
 
 // ── Complete a lesson ─────────────────────────────────────
@@ -678,69 +833,7 @@ function dismissGate() {
 }
 
 // ── Start ─────────────────────────────────────────────────
-  init();
+init();
 </script>
-
- <script>
-// Smart routing — send new visitors to placement quiz first
-(function() {
-  const progress = JSON.parse(localStorage.getItem('ll_progress') || '{}');
-  const hasPlacement = progress.placementResult;
-  const hasStarted   = progress.completedLessons && progress.completedLessons.length > 0;
-  const hasSkipped   = progress.skippedPlacement;
-
-  // Update nav link for other pages too
-  const navLink = document.getElementById('nav-learn-link');
-  if (navLink && !hasPlacement && !hasStarted && !hasSkipped) {
-    navLink.href = '/placement';
-    navLink.title = 'Take placement quiz first';
-  }
-
-  // If this IS the learn page and user is brand new — redirect
-  const isLearnPage = window.location.pathname.includes('/learn');
-  if (isLearnPage && !hasPlacement && !hasStarted && !hasSkipped) {
-    // Show a prompt rather than hard redirect — gives user choice
-    const banner = document.createElement('div');
-    banner.style.cssText = `
-      background:#0B1F3A;border-bottom:2px solid #D4A843;
-      padding:0.85rem 1.5rem;display:flex;align-items:center;
-      justify-content:space-between;gap:1rem;flex-wrap:wrap;
-    `;
-    banner.innerHTML = `
-      <div>
-        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:#1DA98A;font-weight:600;margin-bottom:2px;">New here?</div>
-        <div style="font-size:0.85rem;color:rgba(255,255,255,0.85);">
-          Take the <strong style="color:#D4A843">2-minute placement quiz</strong> first — we'll tell you exactly where to start.
-        </div>
-      </div>
-      <div style="display:flex;gap:0.75rem;flex-shrink:0;">
-        <a href="/placement"
-           style="background:#D4A843;color:#0B1F3A;padding:7px 16px;border-radius:6px;font-size:0.8rem;font-weight:700;text-decoration:none;">
-          Take quiz →
-        </a>
-        <button onclick="skipPlacement()"
-                style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);padding:7px 14px;border-radius:6px;font-size:0.78rem;cursor:pointer;font-family:inherit;">
-          Skip — start at Lesson 1
-        </button>
-      </div>
-    `;
-
-    // Insert below the nav
-    const nav = document.querySelector('nav.ll-nav') || document.querySelector('nav');
-    if (nav && nav.parentNode) {
-      nav.parentNode.insertBefore(banner, nav.nextSibling);
-    }
-  }
-})();
-
-function skipPlacement() {
-  const progress = JSON.parse(localStorage.getItem('ll_progress') || '{}');
-  progress.skippedPlacement = true;
-  localStorage.setItem('ll_progress', JSON.stringify(progress));
-  // Remove the banner
-  document.querySelector('[style*="New here"]')?.closest('div')?.remove();
-}
-   
-</script> 
 </body>
 </html>
