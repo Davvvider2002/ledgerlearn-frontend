@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="shortcut icon" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — LedgerLearn Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B1F3A;
+    --navy-mid: #132d52;
+    --navy-light: #1a3a6b;
+    --gold: #D4A843;
+    --gold-light: #f0c860;
+    --gold-pale: #fdf3dc;
+    --teal: #1DA98A;
+    --teal-light: #26c9a5;
+    --teal-pale: #e1f7f2;
+    --white: #ffffff;
+    --off-white: #f8f7f4;
+    --text-dark: #0B1F3A;
+    --text-mid: #3d5a7a;
+    --text-muted: #6b87a3;
+    --border: rgba(11,31,58,0.1);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--off-white);
+    color: var(--text-dark);
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--navy);
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem;
+    border-bottom: 1px solid rgba(212,168,67,0.2);
+    position: sticky; top:0; z-index:50;
+  }
+
+  .nav-logo {
+    display: flex; align-items: center; gap: 9px;
+    text-decoration: none;
+  }
+
+  .nav-hex {
+    width: 28px; height: 28px;
+    background: var(--gold);
+    clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  }
+
+  .nav-brand {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 1rem;
+    color: var(--white);
+  }
+
+  .nav-brand span { color: var(--gold); }
+
+  .nav-links { display:flex; gap:1.5rem; list-style:none; align-items:center; }
+
+  .nav-links a {
+    color: rgba(255,255,255,0.6);
+    text-decoration:none; font-size:0.85rem;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover, .nav-links a.active { color: var(--white); }
+
+  .nav-user {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .nav-user-name {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.55);
+  }
+
+  .nav-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--teal);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--white);
+    font-family: 'Syne', sans-serif;
+  }
+
+  /* LAYOUT */
+  .page { max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+  /* WELCOME BANNER — new user state */
+  .welcome-banner {
+    background: var(--navy);
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .welcome-banner::before {
+    content: '';
+    position: absolute; right: 0; top: 0; bottom: 0; width: 50%;
+    background: radial-gradient(ellipse at right center, rgba(29,169,138,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .welcome-text { position: relative; z-index: 1; }
+
+  .welcome-greeting {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--teal-light);
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+
+  .welcome-text h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+
+  .welcome-text p {
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.6;
+    max-width: 420px;
+    font-weight: 300;
+  }
+
+  .welcome-cta {
+    flex-shrink: 0;
+    background: var(--gold);
+    color: var(--navy);
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 13px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    white-space: nowrap;
+    position: relative; z-index: 1;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+
+  .welcome-cta:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(212,168,67,0.35);
+  }
+
+  /* ONBOARDING STEPS */
+  .onboarding {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .onboarding-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+
+  .onboarding-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  .onboarding-progress-text {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .onboarding-bar {
+    height: 4px;
+    background: rgba(11,31,58,0.07);
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .onboarding-bar-fill {
+    height: 100%;
+    background: var(--teal);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .onboarding-steps { display: flex; flex-direction: column; gap: 10px; }
+
+  .ob-step {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 14px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .ob-step.done { background: var(--teal-pale); border-color: rgba(29,169,138,0.2); }
+  .ob-step.active { background: var(--gold-pale); border-color: rgba(212,168,67,0.3); }
+  .ob-step.locked { opacity: 0.5; cursor: default; }
+
+  .ob-step:not(.locked):hover { transform: translateX(3px); }
+
+  .ob-icon {
+    width: 36px; height: 36px; flex-shrink: 0;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+  }
+
+  .ob-step.done .ob-icon { background: var(--teal); }
+  .ob-step.active .ob-icon { background: var(--gold); }
+  .ob-step.locked .ob-icon { background: rgba(11,31,58,0.06); }
+
+  .ob-info { flex: 1; }
+
+  .ob-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--navy);
+    margin-bottom: 1px;
+  }
+
+  .ob-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  .ob-action {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .ob-step.done .ob-action { background: rgba(29,169,138,0.15); color: var(--teal); }
+  .ob-step.active .ob-action { background: rgba(212,168,67,0.2); color: #9a7320; }
+  .ob-step.locked .ob-action { background: rgba(11,31,58,0.05); color: var(--text-muted); }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-value.zero { color: #c5d0de; }
+
+  .stat-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  .stat-hint a { color: var(--teal); text-decoration: none; }
+
+  /* COURSE CARD */
+  .section-heading {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 1rem;
+  }
+
+  .course-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .course-header {
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #0a3d2e, #0f5540);
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .course-logo {
+    width: 42px; height: 42px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 0.8rem;
+    color: var(--white);
+  }
+
+  .course-header-text h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem; font-weight: 700;
+    color: var(--white); margin-bottom: 2px;
+  }
+
+  .course-header-text p { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+
+  .course-body { padding: 1.25rem 1.5rem; }
+
+  .course-progress-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+
+  .course-progress-bar {
+    flex: 1; height: 6px;
+    background: rgba(11,31,58,0.07);
+    border-radius: 3px; overflow: hidden;
+  }
+
+  .course-progress-fill {
+    height: 100%;
+    background: var(--teal);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  .course-progress-pct {
+    font-size: 0.75rem; font-weight: 600;
+    color: var(--teal); white-space: nowrap;
+  }
+
+  .lesson-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1.25rem; }
+
+  .lesson-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: var(--text-mid);
+    transition: background 0.15s;
+  }
+
+  .lesson-row:hover { background: rgba(11,31,58,0.04); }
+
+  .lesson-row.done { color: var(--navy); }
+  .lesson-row.current { background: var(--gold-pale); color: var(--navy); font-weight: 500; }
+  .lesson-row.locked { color: #b0bec5; cursor: default; }
+
+  .lesson-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .lesson-dot.done { background: var(--teal); }
+  .lesson-dot.current { background: var(--gold); }
+  .lesson-dot.locked { background: #d0dce8; }
+
+  .lesson-badge {
+    margin-left: auto;
+    font-size: 0.68rem; font-weight: 600;
+    padding: 2px 7px; border-radius: 4px;
+  }
+
+  .lesson-badge.free { background: var(--teal-pale); color: var(--teal); }
+  .lesson-badge.inprogress { background: var(--gold-pale); color: #9a7320; }
+  .lesson-badge.locked { background: rgba(11,31,58,0.05); color: var(--text-muted); }
+
+  .course-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+  .btn-primary {
+    background: var(--teal);
+    color: var(--white);
+    font-weight: 600; font-size: 0.875rem;
+    padding: 11px 20px; border-radius: 7px;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .btn-primary:hover { background: var(--teal-light); transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-mid);
+    font-weight: 500; font-size: 0.875rem;
+    padding: 11px 20px; border-radius: 7px;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+
+  /* QB WAITLIST CARD */
+  .qb-card {
+    background: var(--navy);
+    border-radius: 14px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 2rem;
+    display: flex; align-items: center; gap: 2rem;
+    position: relative; overflow: hidden;
+  }
+
+  .qb-card::after {
+    content: '';
+    position: absolute; right: 0; top: 0; bottom: 0; width: 45%;
+    background: radial-gradient(ellipse at right, rgba(212,168,67,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .qb-logo {
+    width: 52px; height: 52px; flex-shrink: 0;
+    border-radius: 12px;
+    background: rgba(212,168,67,0.15);
+    border: 1px solid rgba(212,168,67,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1rem;
+    color: var(--gold);
+    position: relative; z-index: 1;
+  }
+
+  .qb-text { flex: 1; position: relative; z-index: 1; }
+
+  .qb-badge {
+    display: inline-block;
+    background: rgba(212,168,67,0.15);
+    color: var(--gold);
+    font-size: 0.68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    padding: 3px 8px; border-radius: 4px;
+    margin-bottom: 0.5rem;
+  }
+
+  .qb-text h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem; font-weight: 700;
+    color: var(--white); margin-bottom: 0.3rem;
+    letter-spacing: -0.01em;
+  }
+
+  .qb-text p { font-size: 0.8rem; color: rgba(255,255,255,0.45); font-weight: 300; }
+
+  .qb-form {
+    display: flex; gap: 8px; align-items: center;
+    flex-shrink: 0; position: relative; z-index: 1;
+    flex-wrap: wrap;
+  }
+
+  .qb-input {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 7px;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--white);
+    outline: none;
+    width: 220px;
+    transition: border-color 0.2s;
+  }
+
+  .qb-input::placeholder { color: rgba(255,255,255,0.3); }
+  .qb-input:focus { border-color: rgba(212,168,67,0.5); }
+
+  .qb-submit {
+    background: var(--gold);
+    color: var(--navy);
+    border: none; border-radius: 7px;
+    padding: 10px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+  }
+
+  .qb-submit:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+  /* UPSELL */
+  .upsell-strip {
+    background: linear-gradient(135deg, #0d2744, #0a1f38);
+    border: 1px solid rgba(212,168,67,0.2);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .upsell-strip h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    color: var(--white); margin-bottom: 0.25rem;
+  }
+
+  .upsell-strip p { font-size: 0.8rem; color: rgba(255,255,255,0.45); font-weight: 300; }
+
+  .upsell-strip-cta {
+    background: var(--gold);
+    color: var(--navy);
+    font-weight: 700; font-size: 0.85rem;
+    padding: 10px 20px; border-radius: 7px;
+    text-decoration: none; white-space: nowrap;
+    transition: background 0.2s, transform 0.15s;
+    flex-shrink: 0;
+  }
+
+  .upsell-strip-cta:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+  .upsell-code { font-size: 0.72rem; color: rgba(255,255,255,0.25); margin-top: 4px; }
+  .upsell-code strong { color: var(--gold); }
+
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: repeat(2,1fr); }
+    .welcome-banner { flex-direction: column; }
+    .qb-card { flex-direction: column; }
+    .qb-form { width: 100%; }
+    .qb-input { width: 100%; }
+    nav .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-hex"></div>
+    <span class="nav-brand">Ledger<span>Learn</span> Pro</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/learn">Learn</a></li>
+    <li><a href="/practice">Practice</a></li>
+    <li><a href="/test">Assessment</a></li>
+  </ul>
+  <div class="nav-user">
+    <span class="nav-user-name" id="nav-user-name">Guest</span>
+    <div class="nav-avatar" id="nav-avatar">?</div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- WELCOME BANNER -->
+  <div class="welcome-banner" id="welcome-banner">
+    <div class="welcome-text">
+      <div class="welcome-greeting" id="welcome-greeting">Welcome to LedgerLearn Pro</div>
+      <h1 id="welcome-headline">Start your Xero certification today</h1>
+      <p id="welcome-sub">Your first module is completely free. Complete all six L1 lessons, pass the assessment, and download your verifiable certificate.</p>
+    </div>
+    <a href="/learn" class="welcome-cta" id="welcome-cta">
+      Begin Xero L1 — it's free
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h9M8.5 4l3.5 3.5L8.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+
+  <!-- ONBOARDING STEPS — shown only to new users -->
+  <div class="onboarding" id="onboarding-block">
+    <div class="onboarding-header">
+      <h2>Your path to certification</h2>
+      <span class="onboarding-progress-text" id="ob-progress-text">0 of 4 complete</span>
+    </div>
+    <div class="onboarding-bar">
+      <div class="onboarding-bar-fill" id="ob-bar" style="width: 0%"></div>
+    </div>
+    <div class="onboarding-steps">
+      <a href="/learn" class="ob-step active" id="ob-step-1">
+        <div class="ob-icon">📚</div>
+        <div class="ob-info">
+          <div class="ob-label">Complete the free L1 module</div>
+          <div class="ob-sub">6 lessons · Guided walkthroughs + live simulations</div>
+        </div>
+        <span class="ob-action">Start now →</span>
+      </a>
+      <a href="/practice" class="ob-step locked" id="ob-step-2">
+        <div class="ob-icon">🎯</div>
+        <div class="ob-info">
+          <div class="ob-label">Practice with scenario questions</div>
+          <div class="ob-sub">AI-generated questions · Instant explanations</div>
+        </div>
+        <span class="ob-action">Locked</span>
+      </a>
+      <a href="/test" class="ob-step locked" id="ob-step-3">
+        <div class="ob-icon">📝</div>
+        <div class="ob-info">
+          <div class="ob-label">Sit the L1 assessment ($49)</div>
+          <div class="ob-sub">20 questions · 40 mins · Pass at 70% to certify</div>
+        </div>
+        <span class="ob-action">Locked</span>
+      </a>
+      <div class="ob-step locked" id="ob-step-4">
+        <div class="ob-icon">🏆</div>
+        <div class="ob-info">
+          <div class="ob-label">Download your certificate</div>
+          <div class="ob-sub">PDF certificate + LinkedIn share + employer verification</div>
+        </div>
+        <span class="ob-action">Locked</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Lessons completed</div>
+      <div class="stat-value zero" id="stat-lessons">0</div>
+      <div class="stat-hint"><a href="/learn">Start your first →</a></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Practice questions</div>
+      <div class="stat-value zero" id="stat-practice">0</div>
+      <div class="stat-hint"><a href="/practice">Try a scenario →</a></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Last test score</div>
+      <div class="stat-value zero" id="stat-score">—</div>
+      <div class="stat-hint" id="stat-score-hint">Complete lessons first</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Certificates earned</div>
+      <div class="stat-value zero" id="stat-certs">0</div>
+      <div class="stat-hint">Pass assessment to earn</div>
+    </div>
+  </div>
+
+  <!-- XERO COURSE CARD -->
+  <div class="section-heading">Your current track</div>
+  <div class="course-card">
+    <div class="course-header">
+      <div class="course-logo">XRO</div>
+      <div class="course-header-text">
+        <h3>Xero Certified Practitioner — Level 1</h3>
+        <p>Associate · 6 lessons · Timed assessment · Verifiable certificate</p>
+      </div>
+    </div>
+    <div class="course-body">
+      <div class="course-progress-row">
+        <div class="course-progress-bar">
+          <div class="course-progress-fill" id="xero-progress-fill" style="width:0%"></div>
+        </div>
+        <span class="course-progress-pct" id="xero-progress-pct">0% complete</span>
+      </div>
+      <div class="lesson-list" id="dashboard-lesson-list">
+        <!-- Populated dynamically by JS based on real progress -->
+      </div>
+      <div class="course-actions">
+        <a href="/learn" class="btn-primary" id="continue-lesson-btn">
+          Continue learning
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7.5 4l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="/practice" class="btn-ghost">Practice scenarios</a>
+        <a href="/test" class="btn-ghost">Sit assessment</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- QB WAITLIST -->
+  <div class="qb-card">
+    <div class="qb-logo">QB</div>
+    <div class="qb-text">
+      <div class="qb-badge">Coming soon</div>
+      <h3>QuickBooks certification — join the waitlist</h3>
+      <p>Be first in line when QuickBooks L1 launches. You'll get early access and a founding member discount.</p>
+    </div>
+    <form class="qb-form" onsubmit="handleQBWaitlist(event)">
+      <input type="email" class="qb-input" placeholder="Your email address" id="qb-email" required />
+      <button type="submit" class="qb-submit">Notify me →</button>
+    </form>
+  </div>
+
+  <!-- UPSELL -->
+  <div class="upsell-strip">
+    <div>
+      <h3>🚀 Ready to become an ERP consultant?</h3>
+      <p>Turn your certification into consulting income. ERP.SaaS Academy teaches you to land $5,000+ projects.</p>
+      <div class="upsell-code">Use code <strong>LEDGER30</strong> for 30% off your first month</div>
+    </div>
+    <a href="https://skool.com/erp-saas-academy" class="upsell-strip-cta" target="_blank">Join ERP.SaaS Academy →</a>
+  </div>
+
+</div>
+
+<script>
+  const STORAGE_KEY = 'll_user';
+  const PROGRESS_KEY = 'll_progress';
+
+  function getUser() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; }
+  }
+
+  function getProgress() {
+    try { return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {}; } catch { return {}; }
+  }
+
+  function init() {
+    const user     = getUser();
+    const progress = getProgress();
+
+    // ── Personalise nav ───────────────────────────────────
+    if (user && user.name) {
+      document.getElementById('nav-user-name').textContent = user.name.split(' ')[0];
+      document.getElementById('nav-avatar').textContent    = user.name.charAt(0).toUpperCase();
+      document.getElementById('welcome-greeting').textContent = 'Welcome back, ' + user.name.split(' ')[0];
+    }
+
+    // ── Read ALL data sources defensively ─────────────────
+    // Each page saves to different keys — read them all and merge
+
+    // 1. LESSONS: learn.html saves indices to 'll_completed'
+    //    old versions save count to 'll_progress.lessonsCompleted'
+    //    or array to 'll_progress.completedLessons'
+    const lessonsCompleted = (() => {
+      try {
+        const arr = JSON.parse(localStorage.getItem('ll_completed') || '[]');
+        if (Array.isArray(arr) && arr.length > 0) return arr.length;
+        if (Array.isArray(progress.completedLessons)) return progress.completedLessons.length;
+        if (typeof progress.lessonsCompleted === 'number') return progress.lessonsCompleted;
+        return 0;
+      } catch { return 0; }
+    })();
+
+    // 2. PRACTICE: practice.html saves 'practiceAttempted' and 'practiceCorrect'
+    //    dashboard was reading 'practiceAnswered' — that key never gets saved
+    const practiceAnswered = (() => {
+      const attempted = progress.practiceAttempted || progress.practiceAnswered || 0;
+      const correct   = progress.practiceCorrect   || 0;
+      return Math.max(attempted, correct);
+    })();
+
+    // 3. SCORE: test.html saves 'lastScore' via LL.saveProgress ✓
+    const lastScore = progress.lastScore || null;
+
+    // 4. CERTIFICATE: check if a cert exists in storage
+    //    test.html saves certificate object, certsEarned was never set by anything
+    const hasCert = (() => {
+      try {
+        if (progress.certificate && progress.certificate.certId) return true;
+        // Also check if they passed (lastScore >= 70 counts as certified)
+        if (progress.completedLevels && progress.completedLevels.includes('l1')) return true;
+        return false;
+      } catch { return false; }
+    })();
+    const certsEarned = hasCert ? 1 : 0;
+
+    // ── Update stats ──────────────────────────────────────
+    if (lessonsCompleted > 0) {
+      const el = document.getElementById('stat-lessons');
+      el.textContent = lessonsCompleted;
+      el.classList.remove('zero');
+      const hint = document.querySelector('#stat-lessons + .stat-hint');
+      if (hint) hint.innerHTML = '<a href="/learn">' + lessonsCompleted + ' of 6 complete →</a>';
+    }
+
+    if (practiceAnswered > 0) {
+      const el = document.getElementById('stat-practice');
+      el.textContent = practiceAnswered;
+      el.classList.remove('zero');
+    }
+
+    if (lastScore !== null) {
+      const el = document.getElementById('stat-score');
+      el.textContent = lastScore + '%';
+      el.classList.remove('zero');
+      document.getElementById('stat-score-hint').textContent = lastScore >= 70 ? 'Passed ✓' : 'Retake available';
+    }
+
+    if (certsEarned > 0) {
+      const el = document.getElementById('stat-certs');
+      el.textContent = certsEarned;
+      el.classList.remove('zero');
+    }
+
+    // ── Progress bar ──────────────────────────────────────
+    const pct = Math.round((lessonsCompleted / 6) * 100);
+    document.getElementById('xero-progress-fill').style.width = pct + '%';
+    document.getElementById('xero-progress-pct').textContent  = pct + '% complete';
+
+    // ── Onboarding steps ──────────────────────────────────
+    // Step 1: complete free L1 module (all 6 lessons done)
+    // Step 2: practice with scenarios (any practice done)
+    // Step 3: sit the assessment (any score recorded)
+    // Step 4: download certificate (cert exists)
+    let obComplete = 0;
+
+    if (lessonsCompleted >= 6) {
+      markObDone('ob-step-1'); obComplete++;
+      unlockObStep('ob-step-2');
+    } else if (lessonsCompleted > 0) {
+      // Partially done — mark active
+      const el = document.getElementById('ob-step-1');
+      if (el) {
+        el.className = el.className.replace('locked','active');
+        const action = el.querySelector('.ob-action');
+        const label  = el.querySelector('.ob-label');
+        if (action) action.textContent = lessonsCompleted + '/6 done →';
+        if (label)  label.textContent  = 'Complete the free L1 module (' + lessonsCompleted + '/6)';
+      }
+    }
+
+    if (practiceAnswered > 0) {
+      markObDone('ob-step-2'); obComplete++;
+      unlockObStep('ob-step-3');
+    }
+
+    if (lastScore !== null) {
+      markObDone('ob-step-3'); obComplete++;
+      unlockObStep('ob-step-4');
+    }
+
+    if (certsEarned > 0) {
+      markObDone('ob-step-4'); obComplete++;
+    }
+
+    document.getElementById('ob-progress-text').textContent = obComplete + ' of 4 complete';
+    document.getElementById('ob-bar').style.width = (obComplete / 4 * 100) + '%';
+
+    // ── Welcome banner ────────────────────────────────────
+    if (obComplete === 4) {
+      document.getElementById('onboarding-block').style.display = 'none';
+      document.getElementById('welcome-headline').textContent   = 'Congratulations — you\'re certified!';
+      document.getElementById('welcome-sub').textContent        = 'You\'ve completed the Xero L1 certification. Download your certificate and share it on LinkedIn.';
+      document.getElementById('welcome-cta').textContent        = 'Download certificate →';
+      document.getElementById('welcome-cta').href               = '/test';
+    } else if (lastScore !== null && lastScore >= 70) {
+      // Passed assessment but cert not yet downloaded
+      document.getElementById('welcome-headline').textContent = 'You passed! Download your certificate';
+      document.getElementById('welcome-sub').textContent      = 'You scored ' + lastScore + '% on the Xero L1 assessment. Your certificate is ready to download.';
+      document.getElementById('welcome-cta').textContent      = 'Download certificate →';
+      document.getElementById('welcome-cta').href             = '/test';
+    } else if (lessonsCompleted > 0 && lessonsCompleted < 6) {
+      document.getElementById('welcome-headline').textContent = 'Pick up where you left off';
+      document.getElementById('welcome-sub').textContent      = 'You\'ve completed ' + lessonsCompleted + ' of 6 lessons. Keep going — you\'re ' + pct + '% of the way to your Xero certificate.';
+      document.getElementById('welcome-cta').textContent      = 'Continue learning →';
+    }
+
+    // ── Render dynamic lesson list ────────────────────────
+    renderDashboardLessons();
+  }
+
+  function markObDone(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = el.className.replace('active', 'done').replace('locked', 'done');
+    const action = el.querySelector('.ob-action');
+    if (action) action.textContent = 'Done ✓';
+  }
+
+  function unlockObStep(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = el.className.replace('locked', 'active');
+    const action = el.querySelector('.ob-action');
+    if (action) action.textContent = 'Start →';
+  }
+
+  async function handleQBWaitlist(e) {
+    e.preventDefault();
+    const email = document.getElementById('qb-email').value.trim();
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!emailValid) {
+      document.getElementById('qb-email').style.borderColor = 'rgba(255,100,100,0.6)';
+      return;
+    }
+
+    // Save locally
+    const existing = getProgress();
+    existing.qbWaitlist = email;
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(existing));
+
+    // Get name from user store if available
+    const user = getUser();
+    const name = user?.name || '';
+
+    // Push to Brevo list 4 (QB Waitlist)
+    if (window.BREVO) {
+      await window.BREVO.addContact(email, name, window.BREVO.config.lists.qb, {
+        SOURCE: 'dashboard-qb-waitlist',
+      });
+    }
+
+    const form = e.target;
+    form.innerHTML = '<span style="color:#D4A843;font-size:0.85rem;font-weight:600;">✓ You\'re on the list — we\'ll email you first when QB launches.</span>';
+  }
+
+  init();
+
+  // ── Dynamic lesson list ───────────────────────────────────
+  function renderDashboardLessons() {
+    const LESSON_NAMES = [
+      'Dashboard & navigation',
+      'Organisation setup',
+      'Creating & managing invoices',
+      'Bank reconciliation',
+      'Chart of accounts setup',
+      'Running financial reports',
+    ];
+
+    // Read completed lessons from all possible keys
+    let completedArr = [];
+    try {
+      const newArr = JSON.parse(localStorage.getItem('ll_completed') || '[]');
+      if (Array.isArray(newArr) && newArr.length > 0) {
+        completedArr = newArr;
+      } else {
+        const oldProg = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+        if (Array.isArray(oldProg.completedLessons)) completedArr = oldProg.completedLessons;
+      }
+    } catch(e) {}
+
+    const nextLesson = LESSON_NAMES.findIndex((_, i) => !completedArr.includes(i));
+    const current    = nextLesson === -1 ? LESSON_NAMES.length : nextLesson;
+
+    const listEl = document.getElementById('dashboard-lesson-list');
+    if (!listEl) return;
+
+    listEl.innerHTML = LESSON_NAMES.map((name, i) => {
+      const done    = completedArr.includes(i);
+      const isCurr  = i === current && !done;
+      const locked  = !done && i > current;
+
+      if (done) {
+        return `<a href="/learn" class="lesson-row done">
+          <div class="lesson-dot done"></div>${name}
+          <span class="lesson-badge free" style="background:rgba(29,169,138,0.1);color:var(--teal)">Done ✓</span>
+        </a>`;
+      } else if (isCurr) {
+        return `<a href="/learn" class="lesson-row current">
+          <div class="lesson-dot current"></div>${name}
+          <span class="lesson-badge inprogress">Start →</span>
+        </a>`;
+      } else {
+        return `<div class="lesson-row locked">
+          <div class="lesson-dot locked"></div>${name}
+          <span class="lesson-badge locked">Locked</span>
+        </div>`;
+      }
+    }).join('');
+
+    // Update continue button text
+    const continueBtn = document.getElementById('continue-lesson-btn');
+    if (continueBtn) {
+      if (completedArr.length === 0) {
+        continueBtn.innerHTML = 'Start Lesson 1 — free <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7.5 4l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      } else if (completedArr.length >= LESSON_NAMES.length) {
+        continueBtn.innerHTML = 'Review lessons <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7.5 4l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      } else {
+        continueBtn.innerHTML = 'Continue Lesson ' + (completedArr.length + 1) + ' <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7.5 4l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      }
+    }
+  }
+
+  renderDashboardLessons();
+</script>
+<script src="/brevo.js"></script>
+</body>
+</html>
