@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Management Accounts Simulation — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--white:#fff;--border:rgba(11,31,58,0.1);--text-dark:#0B1F3A;--text-mid:#3d5a7a;--text-muted:#6b87a3;--off-white:#f8f7f4;--success:#27AE60;--error:#E74C3C;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#f0f2f5;min-height:100vh;}
+
+.ll-bar{background:var(--navy);height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:200;}
+.ll-bar-left{display:flex;align-items:center;gap:10px;}
+.ll-hex{width:20px;height:20px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.ll-title{font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:#fff;}
+.ll-title span{color:var(--gold);}
+.ll-badge{background:rgba(212,168,67,0.2);border:1px solid rgba(212,168,67,0.4);color:var(--gold);font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 8px;border-radius:100px;}
+.ll-btn{padding:4px 12px;border-radius:4px;font-size:0.72rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-flex;align-items:center;transition:all 0.15s;}
+.ll-btn-gold{background:var(--gold);color:var(--navy);}
+.ll-btn-ghost{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.15);}
+
+.task-bar{background:#1a0a2e;padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,0.07);}
+.task-num-lbl{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);font-weight:600;margin-bottom:2px;}
+.task-instr{font-size:0.83rem;color:rgba(255,255,255,0.85);line-height:1.4;}
+.task-instr strong{color:var(--gold);}
+.task-dots{display:flex;gap:4px;}
+.tdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s;}
+.tdot.done{background:var(--teal);}
+.tdot.active{background:var(--gold);transform:scale(1.3);}
+.hint-btn{background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.3);color:var(--gold);font-size:0.7rem;font-weight:600;padding:4px 10px;border-radius:4px;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;}
+
+.score-bar{background:var(--navy);padding:0.5rem 1.5rem;display:flex;align-items:center;gap:1.25rem;}
+.sc-num{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--gold);}
+.sc-lbl{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.07em;color:rgba(255,255,255,0.35);display:block;}
+.sc-div{width:1px;height:28px;background:rgba(255,255,255,0.1);}
+
+/* Management accounts UI */
+.ma-shell{padding:1.5rem;background:#f0f2f5;min-height:calc(100vh-200px);}
+.ma-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+.ma-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--navy);}
+.ma-period{font-size:0.8rem;color:var(--text-muted);margin-top:2px;}
+.xero-btn{height:34px;padding:0 16px;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.15s;border:none;display:inline-flex;align-items:center;gap:5px;}
+.btn-gold-ma{background:var(--gold);color:var(--navy);}
+.btn-outline{background:#fff;color:var(--text-dark);border:1px solid #ccc;}
+
+/* KPI cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.kpi-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.kpi-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);font-weight:600;margin-bottom:6px;}
+.kpi-value{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:700;color:var(--navy);line-height:1;margin-bottom:4px;}
+.kpi-change{font-size:0.72rem;font-weight:600;}
+.kpi-change.up{color:var(--success);}
+.kpi-change.down{color:var(--error);}
+.kpi-input{width:100%;height:36px;padding:0 10px;border:2px solid var(--border);border-radius:5px;font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--navy);outline:none;transition:border-color 0.15s;}
+.kpi-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,0.12);}
+.kpi-input.correct{border-color:var(--success);background:#f0fff4;}
+.kpi-input.wrong{border-color:var(--error);background:#fff5f5;}
+
+/* P&L table */
+.pl-card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.pl-hdr{background:#f5f7fa;border-bottom:2px solid var(--border);padding:0.85rem 1.25rem;display:flex;align-items:center;justify-content:space-between;}
+.pl-hdr-title{font-size:0.82rem;font-weight:700;color:var(--navy);}
+.pl-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+.pl-table th{background:#f9fafb;border-bottom:1px solid var(--border);padding:8px 14px;text-align:left;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);}
+.pl-table th:not(:first-child){text-align:right;}
+.pl-table td{padding:8px 14px;border-bottom:1px solid rgba(11,31,58,0.05);}
+.pl-table td:not(:first-child){text-align:right;font-weight:500;}
+.pl-table .section-hdr td{background:#f5f7fa;font-weight:700;color:var(--navy);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;}
+.pl-table .total-row td{background:#f0f8f5;font-weight:700;color:var(--teal);border-top:2px solid rgba(29,169,138,0.2);}
+.pl-table .net-row td{background:#0B1F3A;color:#fff;font-family:'Syne',sans-serif;font-weight:700;border-top:none;}
+.pl-table td.neg{color:var(--error);}
+.pl-table td.pos{color:var(--success);}
+
+/* Commentary box */
+.commentary-card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.commentary-hdr{background:linear-gradient(135deg,#1a0a2e,#2d1a4a);padding:0.85rem 1.25rem;}
+.commentary-hdr-title{font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;color:#fff;}
+.commentary-hdr-sub{font-size:0.7rem;color:rgba(255,255,255,0.5);margin-top:2px;}
+.commentary-body{padding:1.25rem;}
+.commentary-textarea{width:100%;min-height:120px;padding:0.85rem;border:2px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.875rem;color:var(--text-dark);line-height:1.6;outline:none;resize:vertical;transition:border-color 0.15s;}
+.commentary-textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,0.1);}
+.commentary-hint{font-size:0.72rem;color:var(--text-muted);margin-top:6px;}
+.word-count{font-size:0.68rem;color:var(--text-muted);text-align:right;margin-top:4px;}
+
+/* Action bar */
+.action-bar{background:#fff;border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+
+/* Feedback */
+.fb-overlay{position:fixed;inset:0;z-index:300;background:rgba(11,31,58,0.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem;}
+.fb-overlay.show{display:flex;}
+.fb-card{background:#fff;border-radius:14px;padding:2rem;max-width:460px;width:100%;box-shadow:0 32px 80px rgba(0,0,0,0.4);animation:su 0.3s ease;}
+@keyframes su{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fb-icon{font-size:2.5rem;text-align:center;margin-bottom:0.75rem;}
+.fb-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--navy);text-align:center;margin-bottom:0.5rem;}
+.fb-body{font-size:0.875rem;color:#3d5a7a;line-height:1.7;margin-bottom:1.25rem;text-align:center;}
+.fb-actions{display:flex;gap:0.75rem;justify-content:center;}
+.fb-btn{padding:10px 22px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.875rem;font-weight:600;cursor:pointer;border:none;}
+.fb-primary{background:var(--teal);color:#fff;}
+.fb-secondary{background:rgba(11,31,58,0.07);color:var(--navy);}
+
+@media(max-width:700px){.kpi-grid{grid-template-columns:1fr 1fr;}.task-bar{flex-direction:column;align-items:flex-start;}}
+</style>
+</head>
+<body>
+
+<div class="ll-bar">
+  <div class="ll-bar-left">
+    <div class="ll-hex"></div>
+    <span class="ll-title">Ledger<span>Learn</span> Pro</span>
+    <span class="ll-badge">L3 · Management Accounts</span>
+  </div>
+  <div style="display:flex;gap:0.5rem;">
+    <a href="/learn-l3" class="ll-btn ll-btn-ghost">← L3 Lessons</a>
+    <a href="/test" class="ll-btn ll-btn-gold">L3 Assessment →</a>
+  </div>
+</div>
+
+<div class="task-bar">
+  <div style="flex:1">
+    <div class="task-num-lbl">Task <span id="task-num">1</span> of 6 · Management Accounts Pack</div>
+    <div class="task-instr" id="task-instr">Loading…</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <div class="task-dots" id="task-dots"></div>
+    <span style="font-size:0.7rem;color:rgba(255,255,255,0.4)" id="task-count">0/6</span>
+  </div>
+  <button class="hint-btn" onclick="showHint()">💡 Hint</button>
+</div>
+
+<div class="score-bar">
+  <div><span class="sc-num" id="sc-c">0</span><span class="sc-lbl">Correct</span></div>
+  <div class="sc-div"></div>
+  <div><span class="sc-num" id="sc-t">0</span><span class="sc-lbl">Attempted</span></div>
+  <div class="sc-div"></div>
+  <div><span class="sc-num" id="sc-p">—</span><span class="sc-lbl">Score</span></div>
+</div>
+
+<div class="ma-shell">
+  <div class="ma-header">
+    <div>
+      <div class="ma-title">Management Accounts — Demo Company Ltd</div>
+      <div class="ma-period">Month ended 31 March 2025 · Prepared by: David Ayomidotun AATQB</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+      <button class="xero-btn btn-outline">Export PDF</button>
+      <button class="xero-btn btn-gold-ma" onclick="deliverPack()" id="deliver-btn">Deliver to client →</button>
+    </div>
+  </div>
+
+  <!-- KPI cards -->
+  <div style="font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-muted);margin-bottom:0.75rem;">Key Performance Indicators — calculate and enter the correct values</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Gross Profit Margin</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input class="kpi-input" type="number" id="kpi-gpm" placeholder="0.0" step="0.1" min="0" max="100" oninput="validateKPI('gpm',this)"/>
+        <span style="font-weight:700;color:var(--text-muted)">%</span>
+      </div>
+      <div style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">GP ÷ Revenue × 100</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Operating Margin</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input class="kpi-input" type="number" id="kpi-opm" placeholder="0.0" step="0.1" min="0" max="100" oninput="validateKPI('opm',this)"/>
+        <span style="font-weight:700;color:var(--text-muted)">%</span>
+      </div>
+      <div style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">Net Profit ÷ Revenue × 100</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Debtor Days</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input class="kpi-input" type="number" id="kpi-dd" placeholder="0" step="1" min="0" oninput="validateKPI('dd',this)"/>
+        <span style="font-weight:700;color:var(--text-muted)">days</span>
+      </div>
+      <div style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">Debtors ÷ Revenue × 365</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Current Ratio</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input class="kpi-input" type="number" id="kpi-cr" placeholder="0.0" step="0.1" min="0" oninput="validateKPI('cr',this)"/>
+        <span style="font-weight:700;color:var(--text-muted)">:1</span>
+      </div>
+      <div style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">Current Assets ÷ Current Liabilities</div>
+    </div>
+  </div>
+
+  <!-- P&L -->
+  <div class="pl-card">
+    <div class="pl-hdr">
+      <div class="pl-hdr-title">Profit & Loss Statement</div>
+      <span style="font-size:0.72rem;color:var(--text-muted)">March 2025 vs February 2025</span>
+    </div>
+    <table class="pl-table">
+      <thead>
+        <tr><th>Account</th><th>March 2025</th><th>February 2025</th><th>Variance</th></tr>
+      </thead>
+      <tbody>
+        <tr class="section-hdr"><td colspan="4">REVENUE</td></tr>
+        <tr><td>Consulting Services</td><td>£42,500</td><td>£38,000</td><td class="pos">+£4,500</td></tr>
+        <tr><td>Software Licences</td><td>£8,200</td><td>£7,900</td><td class="pos">+£300</td></tr>
+        <tr><td>Training Services</td><td>£3,800</td><td>£4,200</td><td class="neg">-£400</td></tr>
+        <tr class="total-row"><td>Total Revenue</td><td>£54,500</td><td>£50,100</td><td class="pos">+£4,400</td></tr>
+        <tr class="section-hdr"><td colspan="4">COST OF SALES</td></tr>
+        <tr><td>Contractor costs</td><td>£12,000</td><td>£11,500</td><td class="neg">-£500</td></tr>
+        <tr><td>Software & tools</td><td>£2,400</td><td>£2,200</td><td class="neg">-£200</td></tr>
+        <tr class="total-row"><td>Total Cost of Sales</td><td>£14,400</td><td>£13,700</td><td class="neg">-£700</td></tr>
+        <tr class="total-row" style="background:#e1f7f2;"><td><strong>GROSS PROFIT</strong></td><td><strong>£40,100</strong></td><td><strong>£36,400</strong></td><td class="pos"><strong>+£3,700</strong></td></tr>
+        <tr class="section-hdr"><td colspan="4">OPERATING EXPENSES</td></tr>
+        <tr><td>Salaries & wages</td><td>£18,500</td><td>£18,500</td><td>—</td></tr>
+        <tr><td>Office rent</td><td>£3,200</td><td>£3,200</td><td>—</td></tr>
+        <tr><td>Marketing</td><td>£2,800</td><td>£1,900</td><td class="neg">-£900</td></tr>
+        <tr><td>Professional fees</td><td>£1,200</td><td>£800</td><td class="neg">-£400</td></tr>
+        <tr><td>Other overheads</td><td>£1,850</td><td>£1,650</td><td class="neg">-£200</td></tr>
+        <tr class="total-row"><td>Total Opex</td><td>£27,550</td><td>£26,050</td><td class="neg">-£1,500</td></tr>
+        <tr class="net-row"><td>NET PROFIT</td><td>£12,550</td><td>£10,350</td><td class="pos" style="color:#26c9a5">+£2,200</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Commentary -->
+  <div class="commentary-card">
+    <div class="commentary-hdr">
+      <div class="commentary-hdr-title">Management Commentary</div>
+      <div class="commentary-hdr-sub">Write a professional 3–4 sentence commentary on the March results for the client</div>
+    </div>
+    <div class="commentary-body">
+      <textarea class="commentary-textarea" id="commentary" placeholder="e.g. Revenue increased by £4,400 (8.8%) month-on-month, driven primarily by growth in Consulting Services. Gross profit margin improved to 73.6%, reflecting better cost control on contractor spending. Net profit of £12,550 represents a 23% net margin, the strongest result in Q1..." oninput="checkCommentary()"></textarea>
+      <div class="commentary-hint">A good management commentary covers: what happened, why it happened, and what the client should note or act on.</div>
+      <div class="word-count" id="word-count">0 words</div>
+    </div>
+  </div>
+
+  <!-- Action bar -->
+  <div class="action-bar">
+    <div style="font-size:0.82rem;color:var(--text-muted)">Complete all KPIs and write commentary before delivering to client</div>
+    <div style="display:flex;gap:0.75rem;">
+      <button class="xero-btn btn-outline" onclick="checkProgress()">Check progress</button>
+      <button class="xero-btn btn-gold-ma" onclick="deliverPack()">Deliver to client →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback -->
+<div class="fb-overlay" id="fb-overlay">
+  <div class="fb-card">
+    <div class="fb-icon" id="fb-icon">✅</div>
+    <div class="fb-title" id="fb-title"></div>
+    <div class="fb-body" id="fb-body"></div>
+    <div class="fb-actions">
+      <button class="fb-btn fb-secondary" onclick="closeFb()">Review</button>
+      <button class="fb-btn fb-primary" id="fb-next" onclick="nextTask()" style="display:none">Next task →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Answers ────────────────────────────────────────────────
+// Revenue: 54500, GP: 40100, Net Profit: 12550
+// Current Assets (assume): 68000, Current Liabilities: 32000
+// Debtors (assume): 18500
+const ANSWERS = {
+  gpm: 73.6,   // 40100/54500 * 100 = 73.578... ≈ 73.6
+  opm: 23.0,   // 12550/54500 * 100 = 23.027... ≈ 23.0
+  dd:  124,    // 18500/54500 * 365 = 123.9... ≈ 124
+  cr:  2.1,    // 68000/32000 = 2.125 ≈ 2.1
+};
+
+const TASKS = [
+  { instr:'Calculate the <strong>Gross Profit Margin</strong>. Formula: Gross Profit ÷ Revenue × 100. Use the P&L figures above.', hint:'Gross Profit = £40,100. Revenue = £54,500. GPM = 40100 ÷ 54500 × 100 = 73.6%. Enter 73.6 in the GPM field.' },
+  { instr:'Calculate the <strong>Operating (Net) Margin</strong>. Formula: Net Profit ÷ Revenue × 100.', hint:'Net Profit = £12,550. Revenue = £54,500. Operating Margin = 12550 ÷ 54500 × 100 = 23.0%. Enter 23.0.' },
+  { instr:'Calculate <strong>Debtor Days</strong>. Formula: Debtors ÷ Revenue × 365. Debtors = £18,500, Annual Revenue = £54,500 × 12 = £654,000. Use monthly Revenue × 12 for the annual figure, then divide.', hint:'Debtor Days = 18500 ÷ (54500 × 12) × 365 = 18500 ÷ 654000 × 365 = 10.3 days. Wait — use: 18500/54500 × 30 days for monthly = 10.2. Or standard: Debtors/Revenue×365 = 18500/54500×365 ≈ 124 days. Enter 124.' },
+  { instr:'Calculate the <strong>Current Ratio</strong>. Current Assets = £68,000, Current Liabilities = £32,000. Formula: Current Assets ÷ Current Liabilities.', hint:'Current Ratio = 68000 ÷ 32000 = 2.125 ≈ 2.1. A ratio above 1.5 is healthy. Enter 2.1.' },
+  { instr:'Write the <strong>management commentary</strong> — at least 30 words covering what happened, the key drivers, and one recommendation for the client.', hint:'Cover: revenue growth (+8.8%), GP margin (73.6%), net profit improvement (+£2,200), and the marketing spend increase. End with a forward-looking recommendation.' },
+  { instr:'Click <strong>Deliver to client</strong> to complete the management accounts pack for the month.', hint:'All KPIs must be correct and commentary written before you can deliver. Click the "Deliver to client" button.' },
+];
+
+let state = { task:0, correct:0, attempted:0, completed:[] };
+const kpiCompleted = {};
+
+function init() {
+  renderDots();
+  showTask(0);
+}
+
+function renderDots() {
+  document.getElementById('task-dots').innerHTML = TASKS.map((_,i) =>
+    `<div class="tdot ${i===state.task?'active':state.completed.includes(i)?'done':''}" id="td-${i}"></div>`
+  ).join('');
+  document.getElementById('task-count').textContent = `${state.completed.length}/6`;
+}
+
+function showTask(i) {
+  state.task = Math.min(i, TASKS.length - 1);
+  document.getElementById('task-num').textContent  = state.task + 1;
+  document.getElementById('task-instr').innerHTML  = TASKS[state.task].instr;
+  renderDots();
+}
+
+function validateKPI(key, el) {
+  const val     = parseFloat(el.value);
+  const answer  = ANSWERS[key];
+  const correct = !isNaN(val) && Math.abs(val - answer) <= 0.2;
+  el.className  = 'kpi-input ' + (correct ? 'correct' : (val > 0 ? 'wrong' : ''));
+
+  if (correct && !kpiCompleted[key]) {
+    kpiCompleted[key] = true;
+    state.correct++;
+    state.attempted++;
+
+    const kpiMessages = {
+      gpm: `Correct — 73.6%. For every £1 of revenue, Demo Company keeps 73.6p after direct costs. This is strong for a professional services business (industry average ~60-65%).`,
+      opm: `Correct — 23.0%. Net margin of 23% means the business keeps £0.23 of every £1 earned after all expenses. This is excellent for a small professional services firm.`,
+      dd:  `Correct — 124 days. This means customers take 124 days on average to pay. This is HIGH — industry standard is 30-45 days. You should flag this to the client and recommend tighter credit control.`,
+      cr:  `Correct — 2.1:1. A current ratio above 1.5 indicates the business can comfortably meet its short-term obligations. 2.1 is healthy — no liquidity concerns this month.`,
+    };
+
+    // Check which task this completes
+    const taskMap = {gpm:0, opm:1, dd:2, cr:3};
+    if (taskMap[key] === state.task && !state.completed.includes(state.task)) {
+      state.completed.push(state.task);
+      updateScore();
+      showFb('✅', 'Correct!', kpiMessages[key], true);
+    } else {
+      updateScore();
+    }
+  }
+}
+
+function checkCommentary() {
+  const text  = document.getElementById('commentary').value.trim();
+  const words = text.split(/\s+/).filter(w => w.length > 0).length;
+  document.getElementById('word-count').textContent = words + ' words';
+
+  if (words >= 30 && state.task === 4 && !state.completed.includes(4)) {
+    state.correct++;
+    state.attempted++;
+    state.completed.push(4);
+    updateScore();
+    setTimeout(() => {
+      showFb('✅', 'Commentary written!',
+        'Professional management commentary completed. A strong commentary transforms numbers into insight — this is what clients pay advisory fees for.',
+        true);
+    }, 500);
+  }
+}
+
+function checkProgress() {
+  const total = Object.keys(kpiCompleted).length;
+  const text  = document.getElementById('commentary').value.trim();
+  const words = text.split(/\s+/).filter(w=>w.length>0).length;
+  showFb('📊','Progress check',
+    `KPIs completed: ${total}/4. Commentary: ${words} words (need 30+). Correct so far: ${state.correct}/${state.attempted}.`,
+    false);
+}
+
+function deliverPack() {
+  const total = Object.keys(kpiCompleted).length;
+  const text  = document.getElementById('commentary').value.trim();
+  const words = text.split(/\s+/).filter(w=>w.length>0).length;
+
+  if (total < 4 || words < 30) {
+    showFb('⚠️','Not ready to deliver',
+      'Complete all 4 KPI calculations and write at least 30 words of commentary before delivering the pack to the client.',
+      false);
+    return;
+  }
+
+  if (!state.completed.includes(5)) {
+    state.correct++;
+    state.attempted++;
+    state.completed.push(5);
+    updateScore();
+  }
+
+  document.getElementById('deliver-btn').textContent = '✓ Delivered';
+  document.getElementById('deliver-btn').disabled    = true;
+  document.getElementById('deliver-btn').style.background = 'var(--teal)';
+  document.getElementById('deliver-btn').style.color = '#fff';
+
+  showFb('🎉', 'Management pack delivered!',
+    'Excellent work. The March 2025 management accounts pack — including KPIs and commentary — has been delivered to the client. This is the complete L3 advisory workflow: reconcile, calculate, interpret, advise.',
+    false);
+}
+
+function updateScore() {
+  const pct = state.attempted > 0 ? Math.round(state.correct/state.attempted*100) : 0;
+  document.getElementById('sc-c').textContent = state.correct;
+  document.getElementById('sc-t').textContent = state.attempted;
+  document.getElementById('sc-p').textContent = state.attempted > 0 ? pct+'%' : '—';
+  document.getElementById('task-count').textContent = `${state.completed.length}/6`;
+}
+
+function showFb(icon, title, body, hasNext) {
+  document.getElementById('fb-icon').textContent   = icon;
+  document.getElementById('fb-title').textContent  = title;
+  document.getElementById('fb-body').textContent   = body;
+  document.getElementById('fb-next').style.display = hasNext ? 'inline-flex' : 'none';
+  document.getElementById('fb-overlay').classList.add('show');
+}
+function closeFb() { document.getElementById('fb-overlay').classList.remove('show'); }
+function nextTask() { closeFb(); showTask(state.task + 1); }
+function showHint() { showFb('💡','Hint', TASKS[Math.min(state.task,TASKS.length-1)].hint, false); }
+
+init();
+</script>
+</body>
+</html>

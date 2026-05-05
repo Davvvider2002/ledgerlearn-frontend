@@ -485,7 +485,17 @@
   }
 
   // ── Wire to global scope ──────────────────────────────────
-  window.downloadCert   = downloadCertificate;
+  // Primary export object
+  window.LedgerLearnCert = {
+    download: downloadCertificate,
+    share:    shareLinkedIn,
+    print:    printCertificate,
+  };
+  // Also wire direct names for any direct calls
+  window.downloadCert        = downloadCertificate;
+  window.downloadCertificate = downloadCertificate;  // alias
+  window.shareLinkedIn       = shareLinkedIn;
+  window.shareLinkedInCert   = shareLinkedIn;        // alias
   window.printCert      = printCertificate;
   window.shareLinkedIn  = shareLinkedIn;
 

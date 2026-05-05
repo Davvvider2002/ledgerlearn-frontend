@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xero VAT Return Simulation — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;
+  --xero-blue:#0078C8;--xero-dark:#1B2A3A;
+  --xero-border:#E0E0E0;--xero-text:#3D3D3D;--xero-label:#767676;
+  --xero-bg:#F5F7FA;--white:#fff;
+  --success:#27AE60;--error:#E74C3C;--warn:#F39C12;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#f0f2f5;min-height:100vh;}
+
+/* LedgerLearn top bar */
+.ll-bar{background:var(--navy);height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:200;}
+.ll-bar-left{display:flex;align-items:center;gap:10px;}
+.ll-hex{width:20px;height:20px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.ll-title{font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:#fff;}
+.ll-title span{color:var(--gold);}
+.ll-badge{background:rgba(43,91,232,0.25);border:1px solid rgba(43,91,232,0.4);color:#93B4FF;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 8px;border-radius:100px;}
+.ll-btn{padding:4px 12px;border-radius:4px;font-size:0.72rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:all 0.15s;}
+.ll-btn-gold{background:var(--gold);color:var(--navy);}
+.ll-btn-ghost{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.15);}
+
+/* Task bar */
+.task-bar{background:#0d2744;padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,0.07);}
+.task-num{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--teal);font-weight:600;margin-bottom:2px;}
+.task-instr{font-size:0.83rem;color:rgba(255,255,255,0.85);line-height:1.4;}
+.task-instr strong{color:var(--gold);}
+.task-dots{display:flex;gap:4px;}
+.tdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s;}
+.tdot.done{background:var(--teal);}
+.tdot.active{background:var(--gold);transform:scale(1.3);}
+.hint-btn{background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.3);color:var(--gold);font-size:0.7rem;font-weight:600;padding:4px 10px;border-radius:4px;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;}
+
+/* Score bar */
+.score-bar{background:var(--navy);padding:0.5rem 1.5rem;display:flex;align-items:center;gap:1.25rem;border-top:1px solid rgba(255,255,255,0.05);}
+.sc-num{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--gold);}
+.sc-lbl{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.07em;color:rgba(255,255,255,0.35);display:block;}
+.sc-div{width:1px;height:28px;background:rgba(255,255,255,0.1);}
+
+/* Xero chrome */
+.xero-topnav{background:var(--xero-dark);height:52px;display:flex;align-items:center;padding:0 1rem;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);}
+.xero-logo{display:flex;align-items:center;gap:6px;margin-right:1.5rem;padding-right:1.5rem;border-right:1px solid rgba(255,255,255,0.1);}
+.xero-logo-mark{width:28px;height:28px;border-radius:6px;background:#0078C8;display:flex;align-items:center;justify-content:center;}
+.xero-logo-name{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#fff;letter-spacing:-0.02em;}
+.xero-nav-item{padding:0 1rem;height:52px;display:flex;align-items:center;font-size:0.82rem;color:rgba(255,255,255,0.65);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.xero-nav-item.active{color:#fff;border-bottom-color:var(--xero-blue);}
+.xero-org{background:var(--xero-blue);color:#fff;font-size:0.72rem;font-weight:600;padding:4px 10px;border-radius:4px;margin-left:auto;}
+.xero-avatar{width:30px;height:30px;border-radius:50%;background:#2980b9;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#fff;margin-left:0.5rem;}
+
+/* VAT Return page */
+.xero-main{background:var(--xero-bg);min-height:calc(100vh - 200px);padding:1.5rem;}
+.vat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+.vat-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;color:var(--xero-text);}
+.vat-period{font-size:0.82rem;color:var(--xero-label);margin-top:2px;}
+.xero-btn{height:36px;padding:0 18px;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.15s;border:none;display:inline-flex;align-items:center;gap:6px;}
+.btn-blue{background:var(--xero-blue);color:#fff;}
+.btn-blue:hover{background:#005fa3;}
+.btn-outline{background:#fff;color:var(--xero-text);border:1px solid #ccc;}
+.btn-outline:hover{background:#f5f7fa;}
+.btn-success{background:var(--success);color:#fff;}
+
+/* VAT boxes */
+.vat-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;}
+.vat-card{background:#fff;border:1px solid var(--xero-border);border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.vat-card-header{background:#f5f7fa;border-bottom:2px solid var(--xero-border);padding:0.85rem 1.25rem;display:flex;align-items:center;gap:8px;}
+.vat-card-num{width:28px;height:28px;border-radius:6px;background:var(--xero-blue);color:#fff;font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.vat-card-title{font-size:0.82rem;font-weight:600;color:var(--xero-text);}
+.vat-card-desc{font-size:0.7rem;color:var(--xero-label);margin-top:1px;}
+.vat-card-body{padding:1rem 1.25rem;}
+.vat-amount{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:700;color:var(--xero-text);margin-bottom:4px;}
+.vat-amount.calculated{color:var(--xero-blue);}
+.vat-amount.user-input{color:var(--navy);}
+.vat-input{width:100%;height:42px;padding:0 12px;border:2px solid var(--xero-border);border-radius:5px;font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;color:var(--navy);outline:none;transition:border-color 0.15s;}
+.vat-input:focus{border-color:var(--xero-blue);box-shadow:0 0 0 3px rgba(0,120,200,0.12);}
+.vat-input.correct{border-color:var(--success);background:#f0fff4;}
+.vat-input.incorrect{border-color:var(--error);background:#fff5f5;}
+.vat-input-hint{font-size:0.7rem;color:var(--xero-label);margin-top:4px;}
+
+/* Transactions table */
+.txn-section{background:#fff;border:1px solid var(--xero-border);border-radius:8px;overflow:hidden;margin-bottom:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.txn-section-hdr{background:#f5f7fa;border-bottom:1px solid var(--xero-border);padding:0.85rem 1.25rem;display:flex;align-items:center;justify-content:space-between;}
+.txn-section-title{font-size:0.82rem;font-weight:600;color:var(--xero-text);}
+.txn-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+.txn-table th{background:#f9fafb;border-bottom:2px solid var(--xero-border);padding:8px 12px;text-align:left;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--xero-label);}
+.txn-table td{padding:9px 12px;border-bottom:1px solid #f0f0f0;}
+.txn-table tr:last-child td{border-bottom:none;}
+.txn-table tr:hover td{background:#fafcff;}
+.amount-col{text-align:right;font-weight:600;}
+.vat-col{text-align:right;color:var(--xero-blue);}
+
+/* Summary box */
+.vat-summary{background:var(--navy);border-radius:10px;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;}
+.summary-item{text-align:center;}
+.summary-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.45);display:block;margin-bottom:4px;}
+.summary-value{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--gold);}
+.summary-value.teal{color:var(--teal);}
+.summary-value.white{color:#fff;}
+.summary-div{width:1px;height:48px;background:rgba(255,255,255,0.1);}
+
+/* Feedback overlay */
+.fb-overlay{position:fixed;inset:0;z-index:300;background:rgba(11,31,58,0.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem;}
+.fb-overlay.show{display:flex;}
+.fb-card{background:#fff;border-radius:14px;padding:2rem;max-width:460px;width:100%;box-shadow:0 32px 80px rgba(0,0,0,0.4);animation:su 0.3s ease;}
+@keyframes su{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fb-icon{font-size:2.5rem;text-align:center;margin-bottom:0.75rem;}
+.fb-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--navy);text-align:center;margin-bottom:0.5rem;}
+.fb-body{font-size:0.875rem;color:#3d5a7a;line-height:1.7;margin-bottom:1.25rem;text-align:center;}
+.fb-actions{display:flex;gap:0.75rem;justify-content:center;}
+.fb-btn{padding:10px 22px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.875rem;font-weight:600;cursor:pointer;border:none;}
+.fb-primary{background:var(--teal);color:#fff;}
+.fb-secondary{background:rgba(11,31,58,0.07);color:var(--navy);}
+
+@media(max-width:700px){.vat-grid{grid-template-columns:1fr;}.task-bar{flex-direction:column;align-items:flex-start;}}
+</style>
+</head>
+<body>
+
+<div class="ll-bar">
+  <div class="ll-bar-left">
+    <div class="ll-hex"></div>
+    <span class="ll-title">Ledger<span>Learn</span> Pro</span>
+    <span class="ll-badge">L2 · VAT Return Simulation</span>
+  </div>
+  <div style="display:flex;gap:0.5rem;">
+    <a href="/learn-l2" class="ll-btn ll-btn-ghost">← L2 Lessons</a>
+    <a href="/test" class="ll-btn ll-btn-gold">L2 Assessment →</a>
+  </div>
+</div>
+
+<div class="task-bar">
+  <div style="flex:1">
+    <div class="task-num">Task <span id="task-num">1</span> of 6 · Xero VAT Return (MTD)</div>
+    <div class="task-instr" id="task-instr">Loading…</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <div class="task-dots" id="task-dots"></div>
+    <span style="font-size:0.7rem;color:rgba(255,255,255,0.4)" id="task-count">0/6</span>
+  </div>
+  <button class="hint-btn" onclick="showHint()">💡 Hint</button>
+</div>
+
+<div class="score-bar">
+  <div><span class="sc-num" id="sc-c">0</span><span class="sc-lbl">Correct</span></div>
+  <div class="sc-div"></div>
+  <div><span class="sc-num" id="sc-t">0</span><span class="sc-lbl">Attempted</span></div>
+  <div class="sc-div"></div>
+  <div><span class="sc-num" id="sc-p">—</span><span class="sc-lbl">Score</span></div>
+</div>
+
+<!-- Xero nav -->
+<div class="xero-topnav">
+  <div class="xero-logo">
+    <div class="xero-logo-mark"><svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div>
+    <span class="xero-logo-name">Xero</span>
+  </div>
+  <div class="xero-nav-item">Dashboard</div>
+  <div class="xero-nav-item">Business</div>
+  <div class="xero-nav-item active">Accounting ▾</div>
+  <div class="xero-nav-item">Reports</div>
+  <div class="xero-org">Demo Company Ltd</div>
+  <div class="xero-avatar">DA</div>
+</div>
+
+<div class="xero-main">
+  <div class="vat-header">
+    <div>
+      <div class="vat-title">VAT Return — Quarter 1 (MTD)</div>
+      <div class="vat-period">Period: 1 January – 31 March 2025 · Due: 7 May 2025 · HMRC MTD</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+      <button class="xero-btn btn-outline">Save draft</button>
+      <button class="xero-btn btn-blue" onclick="submitVAT()" id="submit-btn">Submit to HMRC →</button>
+    </div>
+  </div>
+
+  <!-- Transactions reference table -->
+  <div class="txn-section">
+    <div class="txn-section-hdr">
+      <div class="txn-section-title">Transactions for this VAT period</div>
+      <span style="font-size:0.72rem;color:var(--xero-blue);cursor:pointer;">View full ledger</span>
+    </div>
+    <table class="txn-table">
+      <thead>
+        <tr>
+          <th>Date</th><th>Description</th><th>Type</th><th>Net Amount</th><th>VAT Rate</th><th class="vat-col">VAT Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>15 Jan</td><td>Consulting services — Acme Corp</td><td style="color:var(--success)">Sales</td><td class="amount-col">£4,000.00</td><td>20%</td><td class="vat-col">£800.00</td></tr>
+        <tr><td>22 Jan</td><td>Software licence — Green Valley</td><td style="color:var(--success)">Sales</td><td class="amount-col">£1,200.00</td><td>20%</td><td class="vat-col">£240.00</td></tr>
+        <tr><td>28 Jan</td><td>Office rent — monthly</td><td style="color:var(--error)">Purchase</td><td class="amount-col">£1,000.00</td><td>20%</td><td class="vat-col">£200.00</td></tr>
+        <tr><td>05 Feb</td><td>Project delivery — BlueSky</td><td style="color:var(--success)">Sales</td><td class="amount-col">£6,500.00</td><td>20%</td><td class="vat-col">£1,300.00</td></tr>
+        <tr><td>14 Feb</td><td>IT equipment purchase</td><td style="color:var(--error)">Purchase</td><td class="amount-col">£2,400.00</td><td>20%</td><td class="vat-col">£480.00</td></tr>
+        <tr><td>20 Feb</td><td>Training materials (exempt)</td><td style="color:var(--error)">Purchase</td><td class="amount-col">£350.00</td><td>Exempt</td><td class="vat-col">£0.00</td></tr>
+        <tr><td>10 Mar</td><td>Advisory services — Harrison</td><td style="color:var(--success)">Sales</td><td class="amount-col">£3,800.00</td><td>20%</td><td class="vat-col">£760.00</td></tr>
+        <tr><td>25 Mar</td><td>Phone & broadband</td><td style="color:var(--error)">Purchase</td><td class="amount-col">£120.00</td><td>20%</td><td class="vat-col">£24.00</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- VAT Return boxes -->
+  <div style="font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--xero-label);margin-bottom:0.75rem;">VAT Return Boxes — Enter the correct amounts</div>
+
+  <div class="vat-grid">
+    <!-- Box 1 -->
+    <div class="vat-card">
+      <div class="vat-card-header">
+        <div class="vat-card-num">1</div>
+        <div>
+          <div class="vat-card-title">VAT due on sales and other outputs</div>
+          <div class="vat-card-desc">Total VAT charged on all standard-rated sales this period</div>
+        </div>
+      </div>
+      <div class="vat-card-body">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:1.1rem;font-weight:700;color:var(--xero-label)">£</span>
+          <input class="vat-input" type="number" id="box1" placeholder="0.00" step="0.01" min="0" oninput="validateBox(1)"/>
+        </div>
+        <div class="vat-input-hint" id="hint1">Add up all VAT amounts in the Sales rows above</div>
+      </div>
+    </div>
+
+    <!-- Box 2 -->
+    <div class="vat-card">
+      <div class="vat-card-header">
+        <div class="vat-card-num">2</div>
+        <div>
+          <div class="vat-card-title">VAT due on acquisitions from EC</div>
+          <div class="vat-card-desc">VAT due on goods/services acquired from EU countries</div>
+        </div>
+      </div>
+      <div class="vat-card-body">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:1.1rem;font-weight:700;color:var(--xero-label)">£</span>
+          <input class="vat-input" type="number" id="box2" placeholder="0.00" step="0.01" min="0" oninput="validateBox(2)"/>
+        </div>
+        <div class="vat-input-hint" id="hint2">No EU acquisitions this period — enter 0.00</div>
+      </div>
+    </div>
+
+    <!-- Box 3 -->
+    <div class="vat-card">
+      <div class="vat-card-header">
+        <div class="vat-card-num">3</div>
+        <div>
+          <div class="vat-card-title">Total VAT due (Box 1 + Box 2)</div>
+          <div class="vat-card-desc">Sum of boxes 1 and 2 — calculated automatically</div>
+        </div>
+      </div>
+      <div class="vat-card-body">
+        <div class="vat-amount calculated" id="box3-display">£0.00</div>
+        <div class="vat-input-hint">Auto-calculated from Box 1 + Box 2</div>
+      </div>
+    </div>
+
+    <!-- Box 4 -->
+    <div class="vat-card">
+      <div class="vat-card-header">
+        <div class="vat-card-num">4</div>
+        <div>
+          <div class="vat-card-title">VAT reclaimed on purchases (input tax)</div>
+          <div class="vat-card-desc">Total VAT on business purchases you can reclaim</div>
+        </div>
+      </div>
+      <div class="vat-card-body">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:1.1rem;font-weight:700;color:var(--xero-label)">£</span>
+          <input class="vat-input" type="number" id="box4" placeholder="0.00" step="0.01" min="0" oninput="validateBox(4)"/>
+        </div>
+        <div class="vat-input-hint" id="hint4">Add up VAT on all Purchase rows (exclude exempt items)</div>
+      </div>
+    </div>
+
+    <!-- Box 5 -->
+    <div class="vat-card" style="border:2px solid var(--xero-blue);">
+      <div class="vat-card-header" style="background:#EBF5FF;">
+        <div class="vat-card-num">5</div>
+        <div>
+          <div class="vat-card-title" style="color:var(--xero-blue)">Net VAT to pay HMRC (Box 3 – Box 4)</div>
+          <div class="vat-card-desc">Amount payable to HMRC — calculated automatically</div>
+        </div>
+      </div>
+      <div class="vat-card-body">
+        <div class="vat-amount calculated" id="box5-display" style="font-size:2rem;">£0.00</div>
+        <div class="vat-input-hint">Auto-calculated. This is the amount you owe HMRC.</div>
+      </div>
+    </div>
+
+    <!-- Box 6 -->
+    <div class="vat-card">
+      <div class="vat-card-header">
+        <div class="vat-card-num">6</div>
+        <div>
+          <div class="vat-card-title">Total value of sales (ex-VAT)</div>
+          <div class="vat-card-desc">Net value of all sales — do not include VAT</div>
+        </div>
+      </div>
+      <div class="vat-card-body">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:1.1rem;font-weight:700;color:var(--xero-label)">£</span>
+          <input class="vat-input" type="number" id="box6" placeholder="0.00" step="0.01" min="0" oninput="validateBox(6)"/>
+        </div>
+        <div class="vat-input-hint">Add up Net Amount for all Sales rows (not VAT)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="vat-summary" id="vat-summary">
+    <div class="summary-item">
+      <span class="summary-label">VAT on Sales (Box 1)</span>
+      <span class="summary-value" id="sum-box1">£0.00</span>
+    </div>
+    <div class="summary-div"></div>
+    <div class="summary-item">
+      <span class="summary-label">VAT Reclaimable (Box 4)</span>
+      <span class="summary-value teal" id="sum-box4">£0.00</span>
+    </div>
+    <div class="summary-div"></div>
+    <div class="summary-item">
+      <span class="summary-label">Net payable to HMRC</span>
+      <span class="summary-value" id="sum-box5">£0.00</span>
+    </div>
+    <div class="summary-div"></div>
+    <div class="summary-item">
+      <span class="summary-label">Status</span>
+      <span class="summary-value white" id="sum-status" style="font-size:0.9rem;">In progress</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Feedback overlay -->
+<div class="fb-overlay" id="fb-overlay">
+  <div class="fb-card">
+    <div class="fb-icon" id="fb-icon">✅</div>
+    <div class="fb-title" id="fb-title"></div>
+    <div class="fb-body" id="fb-body"></div>
+    <div class="fb-actions">
+      <button class="fb-btn fb-secondary" onclick="closeFb()">Review</button>
+      <button class="fb-btn fb-primary" id="fb-next" onclick="nextTask()" style="display:none">Next task →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Answer key ────────────────────────────────────────────
+const ANSWERS = {
+  1: 3100.00,  // 800 + 240 + 1300 + 760
+  2: 0.00,
+  4: 704.00,   // 200 + 480 + 24 (not exempt 0)
+  6: 15500.00, // 4000 + 1200 + 6500 + 3800
+};
+// Box 3 = box1 + box2 = 3100
+// Box 5 = box3 - box4 = 3100 - 704 = 2396
+
+const TASKS = [
+  { instr:'Review the transactions table. Calculate the <strong>total VAT on Sales</strong> (Box 1). Add all VAT amounts from the Sales rows.', hint:'Add the VAT column for all rows marked "Sales": £800 + £240 + £1,300 + £760 = ? Enter this in Box 1.' },
+  { instr:'Enter <strong>£0.00 in Box 2</strong> (EC acquisitions). There are no EU purchases this period — post-Brexit most businesses enter zero.', hint:'Box 2 covers goods acquired from EU member states. There are none this period, so enter 0.00.' },
+  { instr:'Box 3 auto-calculates. Now enter the <strong>VAT reclaimable on purchases (Box 4)</strong>. Add VAT from Purchase rows — exclude exempt items.', hint:'Purchase rows: Office rent £200, IT equipment £480, Phone & broadband £24. Training materials are exempt — do not include the £0 VAT. Total = £200 + £480 + £24.' },
+  { instr:'Enter the <strong>total net value of sales (Box 6)</strong> — the net amounts without VAT. Add all Net Amount values from Sales rows.', hint:'Net Sales amounts: £4,000 + £1,200 + £6,500 + £3,800 = ? Do NOT include the VAT column — Box 6 is net only.' },
+  { instr:'Check Box 5 (Net VAT payable). Confirm it shows the correct amount — this is what you owe HMRC. Then click <strong>Submit to HMRC</strong>.', hint:'Box 5 = Box 3 (£3,100) minus Box 4 (£704) = £2,396. If it shows that, click Submit to HMRC to complete the return.' },
+];
+
+let state = { task:0, correct:0, attempted:0, completed:[] };
+
+function init() {
+  renderDots();
+  showTask(0);
+}
+
+function renderDots() {
+  document.getElementById('task-dots').innerHTML = TASKS.map((_,i) =>
+    `<div class="tdot ${i===state.task?'active':state.completed.includes(i)?'done':''}" id="td-${i}"></div>`
+  ).join('');
+  document.getElementById('task-count').textContent = `${state.completed.length}/5`;
+}
+
+function showTask(i) {
+  state.task = i;
+  if (i >= TASKS.length) { showComplete(); return; }
+  document.getElementById('task-num').textContent   = i + 1;
+  document.getElementById('task-instr').innerHTML   = TASKS[i].instr;
+  renderDots();
+}
+
+// ── Box validation ────────────────────────────────────────
+function validateBox(box) {
+  const el  = document.getElementById('box' + box);
+  const val = parseFloat(el.value) || 0;
+
+  // Recalculate boxes 3 and 5
+  const b1 = parseFloat(document.getElementById('box1').value) || 0;
+  const b2 = parseFloat(document.getElementById('box2').value) || 0;
+  const b4 = parseFloat(document.getElementById('box4').value) || 0;
+  const b3 = b1 + b2;
+  const b5 = b3 - b4;
+
+  document.getElementById('box3-display').textContent = '£' + b3.toFixed(2);
+  document.getElementById('box5-display').textContent = '£' + b5.toFixed(2);
+  document.getElementById('sum-box1').textContent  = '£' + b1.toFixed(2);
+  document.getElementById('sum-box4').textContent  = '£' + b4.toFixed(2);
+  document.getElementById('sum-box5').textContent  = '£' + b5.toFixed(2);
+
+  // Validate entered box
+  if (ANSWERS[box] !== undefined && val > 0) {
+    const correct = Math.abs(val - ANSWERS[box]) < 0.02;
+    el.className = 'vat-input ' + (correct ? 'correct' : '');
+
+    if (correct && !state.completed.includes(state.task)) {
+      // Check if this box completes the current task
+      const taskBoxMap = { 0:1, 1:2, 2:4, 3:6 };
+      if (taskBoxMap[state.task] === box) {
+        state.correct++;
+        state.attempted++;
+        state.completed.push(state.task);
+        updateScore();
+        showFb('✅', 'Correct!', getBoxFeedback(box), true);
+      }
+    }
+  }
+}
+
+function getBoxFeedback(box) {
+  const msgs = {
+    1: 'Box 1 correct — £3,100. You correctly summed all VAT charged on sales: £800 + £240 + £1,300 + £760. This is the VAT you collected from customers on behalf of HMRC.',
+    2: 'Correct — £0.00. Post-Brexit, UK businesses no longer acquire goods from EU member states on the same basis. Most UK businesses enter zero in Box 2 for domestic transactions.',
+    4: 'Box 4 correct — £704. You correctly identified the reclaimable VAT: rent £200 + IT equipment £480 + phone £24 = £704. The training materials were exempt so correctly excluded.',
+    6: 'Box 6 correct — £15,500. This is the total net value of all sales excluding VAT. HMRC uses this to cross-check your declared turnover against other data sources.',
+  };
+  return msgs[box] || 'Correct!';
+}
+
+function submitVAT() {
+  const b1 = parseFloat(document.getElementById('box1').value) || 0;
+  const b4 = parseFloat(document.getElementById('box4').value) || 0;
+  const b5 = b1 + (parseFloat(document.getElementById('box2').value)||0) - b4;
+
+  if (Math.abs(b1 - ANSWERS[1]) > 0.02 || Math.abs(b4 - ANSWERS[4]) > 0.02) {
+    showFb('⚠️', 'Check your figures', 'Box 1 and Box 4 must be correct before submitting. Review the transaction table and re-enter the values.', false);
+    return;
+  }
+
+  if (!state.completed.includes(4)) {
+    state.correct++;
+    state.attempted++;
+    state.completed.push(4);
+    updateScore();
+  }
+
+  document.getElementById('sum-status').textContent = '✓ Submitted';
+  document.getElementById('sum-status').style.color = '#26c9a5';
+  document.getElementById('submit-btn').textContent  = '✓ Submitted to HMRC';
+  document.getElementById('submit-btn').disabled     = true;
+  document.getElementById('submit-btn').style.background = 'var(--success)';
+
+  showFb('🎉', 'VAT Return submitted!',
+    `Your Q1 VAT return has been submitted to HMRC via Making Tax Digital. HMRC will debit £${b5.toFixed(2)} from your bank account by 7 May 2025. A confirmation reference has been sent to the registered email. This return is now locked and archived in Xero.`,
+    false);
+
+  showTask(state.task + 1);
+}
+
+function updateScore() {
+  const pct = state.attempted > 0 ? Math.round(state.correct/state.attempted*100) : 0;
+  document.getElementById('sc-c').textContent = state.correct;
+  document.getElementById('sc-t').textContent = state.attempted;
+  document.getElementById('sc-p').textContent = state.attempted > 0 ? pct+'%' : '—';
+  document.getElementById('task-count').textContent = `${state.completed.length}/5`;
+}
+
+function showComplete() {
+  document.getElementById('task-instr').innerHTML =
+    `Simulation complete! Score: <strong>${state.correct}/5</strong>. ${state.correct >= 4 ? '🏆 Excellent — ready for L2 assessment!' : 'Review the lessons and try again.'}`;
+}
+
+function showFb(icon, title, body, hasNext) {
+  document.getElementById('fb-icon').textContent  = icon;
+  document.getElementById('fb-title').textContent = title;
+  document.getElementById('fb-body').textContent  = body;
+  document.getElementById('fb-next').style.display = hasNext ? 'inline-flex' : 'none';
+  document.getElementById('fb-overlay').classList.add('show');
+}
+function closeFb() { document.getElementById('fb-overlay').classList.remove('show'); }
+function nextTask() { closeFb(); showTask(state.task + 1); }
+function showHint() { showFb('💡', 'Hint', TASKS[Math.min(state.task, TASKS.length-1)].hint, false); }
+
+init();
+</script>
+</body>
+</html>
