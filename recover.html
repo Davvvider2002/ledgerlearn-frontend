@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recover Progress — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:system-ui,sans-serif;background:#0B1F3A;min-height:100vh;display:flex;flex-direction:column;}
+nav{height:56px;background:rgba(11,31,58,0.98);border-bottom:2px solid #D4A843;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:22px;height:22px;background:#D4A843;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-weight:800;font-size:1rem;color:#fff;}.brand b{color:#D4A843;}
+.nav-back{color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.85rem;}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;
+  background:radial-gradient(ellipse at 30% 50%,rgba(29,169,138,0.07) 0%,transparent 60%),
+  radial-gradient(ellipse at 70% 30%,rgba(212,168,67,0.05) 0%,transparent 50%);}
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:2.5rem 2rem;max-width:480px;width:100%;}
+h1{font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:0.4rem;letter-spacing:-0.02em;}
+h1 span{color:#D4A843;}
+.sub{font-size:0.875rem;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:2rem;font-weight:300;}
+.step{background:rgba(11,31,58,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1.25rem;margin-bottom:1rem;}
+.step-label{font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:#D4A843;font-weight:700;margin-bottom:0.4rem;}
+.step h3{font-size:0.9rem;font-weight:700;color:#fff;margin-bottom:0.5rem;}
+.step p{font-size:0.8rem;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:0.75rem;}
+.field{margin-bottom:0.6rem;}
+label{font-size:0.7rem;color:rgba(255,255,255,0.4);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.06em;}
+input{width:100%;padding:11px 13px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;transition:border-color 0.15s;}
+input:focus{border-color:#D4A843;}
+input[readonly]{opacity:0.6;cursor:default;}
+.btn{width:100%;padding:14px;border-radius:9px;font-family:inherit;font-size:0.95rem;font-weight:700;cursor:pointer;border:none;transition:all 0.2s;margin-top:0.5rem;}
+.btn-gold{background:#D4A843;color:#0B1F3A;}
+.btn-gold:hover{background:#f0c860;transform:translateY(-1px);}
+.btn-teal{background:#1DA98A;color:#fff;}
+.btn-teal:hover{background:#26c9a5;transform:translateY(-1px);}
+.btn-ghost{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);}
+.status{font-size:0.82rem;min-height:1.2em;padding:10px 14px;border-radius:7px;margin-top:0.75rem;display:none;}
+.status.ok{display:block;background:rgba(29,169,138,0.12);border:1px solid rgba(29,169,138,0.3);color:#26c9a5;}
+.status.err{display:block;background:rgba(224,85,85,0.1);border:1px solid rgba(224,85,85,0.25);color:#ff8080;}
+.status.info{display:block;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.25);color:#D4A843;}
+.divider{display:flex;align-items:center;gap:1rem;margin:1.25rem 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08);}
+.divider span{font-size:0.72rem;color:rgba(255,255,255,0.3);}
+.result-list{display:flex;flex-direction:column;gap:0.5rem;margin:0.75rem 0;}
+.result-item{display:flex;align-items:center;gap:10px;background:rgba(29,169,138,0.08);border:1px solid rgba(29,169,138,0.2);border-radius:7px;padding:9px 13px;}
+.ri-icon{font-size:1rem;flex-shrink:0;}
+.ri-label{font-size:0.75rem;color:rgba(255,255,255,0.5);flex:1;}
+.ri-val{font-size:0.82rem;font-weight:700;color:#fff;}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<b>Learn</b> Pro</span></a>
+  <a href="/test" class="nav-back">← Back to assessment</a>
+</nav>
+<main>
+  <div class="card">
+    <h1>Recover your <span>progress</span></h1>
+    <p class="sub">Your progress was saved on the old domain (<code style="color:#D4A843;font-size:0.8rem">ledgerlearn-frontend.netlify.app</code>). This page restores it to <code style="color:#1DA98A;font-size:0.8rem">ledgerlearn.pro</code> — no reassessment needed.</p>
+
+    <!-- METHOD 1: Auto-detect from old domain -->
+    <div class="step" id="step-auto">
+      <div class="step-label">Method 1 — Automatic</div>
+      <h3>Restore from old domain</h3>
+      <p>If you still have the old domain open in another tab, click below to copy your progress automatically.</p>
+      <button class="btn btn-gold" onclick="tryAutoRestore()">Auto-restore from old domain</button>
+      <div class="status" id="auto-status"></div>
+    </div>
+
+    <div class="divider"><span>or enter manually</span></div>
+
+    <!-- METHOD 2: Manual entry of known data -->
+    <div class="step" id="step-manual">
+      <div class="step-label">Method 2 — Enter your details</div>
+      <h3>Restore known assessment result</h3>
+      <p>Enter the details from your previous assessment. Your certificate will be regenerated with this data.</p>
+
+      <div class="field">
+        <label>Your full name (as on certificate)</label>
+        <input type="text" id="m-name" placeholder="e.g. David Ayomidotun" autocomplete="name"/>
+      </div>
+      <div class="field">
+        <label>Score achieved (%)</label>
+        <input type="number" id="m-score" placeholder="e.g. 90" min="70" max="100"/>
+      </div>
+      <div class="field">
+        <label>Certificate ID (if known — leave blank to generate new)</label>
+        <input type="text" id="m-certid" placeholder="e.g. LLP-XCP1-2026-4231"/>
+      </div>
+      <div class="field">
+        <label>Issue date (if known)</label>
+        <input type="text" id="m-date" placeholder="e.g. 5 May 2026"/>
+      </div>
+
+      <button class="btn btn-teal" onclick="manualRestore()">Restore progress</button>
+      <div class="status" id="manual-status"></div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result-section" style="display:none;margin-top:1.5rem;">
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:#26c9a5;font-weight:700;margin-bottom:0.75rem;">Progress restored</div>
+      <div class="result-list" id="result-list"></div>
+      <button class="btn btn-gold" onclick="window.location.href='/test'" style="margin-top:1rem;">Go to assessment page to download certificate →</button>
+      <button class="btn btn-ghost" onclick="window.location.href='/dashboard'" style="margin-top:0.5rem;">View dashboard</button>
+    </div>
+  </div>
+</main>
+<script>
+function setStatus(id, msg, type) {
+  var el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+
+// ── Method 1: Try to read from old domain via postMessage ──
+function tryAutoRestore() {
+  setStatus('auto-status', 'Opening old domain to copy your data...', 'info');
+
+  // Open old domain in a small window
+  var win = window.open('https://ledgerlearn-frontend.netlify.app/test', '_blank',
+    'width=400,height=300,noopener=false');
+
+  if (!win) {
+    setStatus('auto-status', 'Popup blocked. Please use Method 2 below.', 'err');
+    return;
+  }
+
+  // Listen for data from old domain
+  var timeout = setTimeout(function() {
+    setStatus('auto-status', 'Could not auto-restore. Please use Method 2 below.', 'err');
+    try { win.close(); } catch(e) {}
+  }, 8000);
+
+  window.addEventListener('message', function handler(e) {
+    if (e.origin !== 'https://ledgerlearn-frontend.netlify.app') return;
+    window.removeEventListener('message', handler);
+    clearTimeout(timeout);
+    try { win.close(); } catch(e) {}
+    if (e.data && e.data.type === 'll_progress') {
+      applyRestore(e.data.progress, e.data.user);
+      setStatus('auto-status', 'Progress restored from old domain!', 'ok');
+    }
+  });
+
+  // Inject a script into the old domain window to send back data
+  setTimeout(function() {
+    try {
+      win.postMessage({ type: 'll_request_data' }, 'https://ledgerlearn-frontend.netlify.app');
+    } catch(e) {}
+  }, 2000);
+}
+
+// ── Method 2: Manual restore ──────────────────────────────
+function manualRestore() {
+  var name  = document.getElementById('m-name').value.trim();
+  var score = parseInt(document.getElementById('m-score').value, 10);
+  var certid = document.getElementById('m-certid').value.trim();
+  var date  = document.getElementById('m-date').value.trim();
+
+  if (!name || name.indexOf(' ') < 1) {
+    setStatus('manual-status', 'Please enter your first and last name.', 'err');
+    return;
+  }
+  if (!score || score < 70 || score > 100) {
+    setStatus('manual-status', 'Please enter a valid score (70–100).', 'err');
+    return;
+  }
+
+  var cert = {
+    candidateName: name,
+    certTitle:     'Xero Certified Practitioner \u2014 Level 1',
+    certLevel:     'L1 \u00B7 Associate \u00B7 Xero Cloud Accounting \u00B7 LedgerLearn Pro',
+    certId:        certid || ('LLP-XCP1-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random()*9000)),
+    issueDate:     date || new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),
+    score:         score
+  };
+
+  applyRestore({ lastScore: score, certificate: cert, certId: cert.certId, completedLevels: ['l1'] },
+               { name: name });
+  setStatus('manual-status', 'Progress restored successfully!', 'ok');
+}
+
+// ── Apply restored data to localStorage ──────────────────
+function applyRestore(progress, user) {
+  try {
+    localStorage.setItem('ll_progress', JSON.stringify(progress));
+    localStorage.setItem('ll_completed', JSON.stringify([0,1,2,3,4,5]));
+    if (user && user.name) {
+      localStorage.setItem('ll_user', JSON.stringify({ name: user.name, ts: Date.now() }));
+    }
+    // Set in memory too
+    if (progress.certificate) window._certData = progress.certificate;
+  } catch(e) {
+    console.error('Restore error:', e);
+    return;
+  }
+
+  // Show result
+  var cert = progress.certificate || {};
+  var items = [
+    { icon: '👤', label: 'Name on certificate',  val: cert.candidateName || user.name || '—' },
+    { icon: '🏆', label: 'Assessment score',      val: (cert.score || progress.lastScore || '—') + '%' },
+    { icon: '📄', label: 'Certificate ID',         val: cert.certId || '—' },
+    { icon: '📅', label: 'Issue date',             val: cert.issueDate || '—' },
+    { icon: '✅', label: 'Levels completed',        val: (progress.completedLevels||[]).map(function(l){return l.toUpperCase();}).join(', ') || 'L1' },
+  ];
+
+  var list = document.getElementById('result-list');
+  list.innerHTML = items.map(function(i) {
+    return '<div class="result-item"><span class="ri-icon">'+i.icon+'</span><span class="ri-label">'+i.label+'</span><span class="ri-val">'+i.val+'</span></div>';
+  }).join('');
+
+  document.getElementById('result-section').style.display = 'block';
+  document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── Pre-fill known values for David ──────────────────────
+(function init() {
+  // Check if there's already data on this domain
+  try {
+    var p = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+    var u = JSON.parse(localStorage.getItem('ll_user') || '{}');
+    if (p.lastScore && u.name) {
+      // Already have data - show it
+      document.getElementById('m-name').value  = u.name;
+      document.getElementById('m-score').value = p.lastScore;
+      if (p.certId) document.getElementById('m-certid').value = p.certId;
+    }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
