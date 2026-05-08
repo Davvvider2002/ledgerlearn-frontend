@@ -145,10 +145,19 @@ exports.handler = async function (event) {
 
       // ── SCENARIO — pool cache, batch generation ─────────────
       case 'scenario': {
-        const track      = body.track      || 'Xero';
-        const module_    = body.module     || 'Invoicing';
-        const difficulty = body.difficulty || 'intermediate';
-        const poolKey    = `${module_}:${difficulty}`;
+        const track       = body.track        || 'Xero';
+        const module_     = body.module       || 'Invoicing';
+        const difficulty  = body.difficulty   || 'intermediate';
+        const region      = body.region       || 'UK';
+        const regionLabel = body.regionLabel  || 'United Kingdom';
+        const tax         = body.tax          || 'VAT';
+        const taxRate     = body.taxRate      || '20%';
+        const taxBody     = body.taxBody      || 'HMRC';
+        const currency    = region === 'US' ? 'USD ($)' : region === 'AU' || region === 'NZ' || region === 'CA' ? 'local $' :
+                            region === 'NG' ? 'NGN (₦)' : region === 'ZA' ? 'ZAR (R)' :
+                            region === 'AE' ? 'AED' : region === 'IE' ? 'EUR (€)' : '£';
+        // Pool key includes region so questions stay region-specific
+        const poolKey    = `${module_}:${difficulty}:${region}`;
 
         // Check pool
         const pool    = POOL.questions[poolKey] || [];
@@ -162,7 +171,7 @@ exports.handler = async function (event) {
 
           // Trigger background refill if pool is getting low
           if (pool.length < POOL.MIN_SIZE) {
-            refillPool(process.env.ANTHROPIC_API_KEY, track, module_, difficulty, poolKey)
+            refillPool(process.env.ANTHROPIC_API_KEY, track, module_, difficulty, poolKey, region, regionLabel, tax, taxRate, taxBody, currency)
               .catch(e => console.warn('[ai] Background refill failed:', e.message));
           }
 
@@ -251,7 +260,9 @@ exports.handler = async function (event) {
 // ── Generate a batch of questions in one API call ──────────
 async function generateBatch(apiKey, track, module_, difficulty) {
   const prompt = `Generate ${POOL.BATCH} different accounting multiple choice questions for ${track} software training.
-Topic: ${module_}. Difficulty: ${difficulty}. UK context, use £.
+Topic: ${module_}. Difficulty: ${difficulty}.
+Region: ${regionLabel}. Use ${currency} for amounts. Tax system: ${tax} at ${taxRate}, administered by ${taxBody}.
+All scenarios, amounts, tax references, and regulatory context must reflect ${regionLabel} practice — not UK-specific unless region is UK.
 Each question must be completely different — different scenarios, different concepts.
 
 Return ONLY a raw JSON array — no markdown, no backticks:
@@ -275,7 +286,7 @@ Return ONLY a raw JSON array — no markdown, no backticks:
 }
 
 // ── Background pool refill ─────────────────────────────────
-async function refillPool(apiKey, track, module_, difficulty, poolKey) {
+async function refillPool(apiKey, track, module_, difficulty, poolKey, region='UK', regionLabel='United Kingdom', tax='VAT', taxRate='20%', taxBody='HMRC', currency='£') {
   if (!apiKey) return;
   console.log(`[ai] Background refilling pool for "${poolKey}"`);
   const questions = await generateBatch(apiKey, track, module_, difficulty);

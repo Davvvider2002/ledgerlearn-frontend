@@ -13,7 +13,9 @@
  * Returns: { ok: true, verified: true, level }
  */
 
-const { getStore } = require('@netlify/blobs');
+// @netlify/blobs is available natively on Netlify runtime
+let getStore;
+try { getStore = require('@netlify/blobs').getStore; } catch(e) { getStore = null; }
 
 const CORS = {
   'Access-Control-Allow-Origin':  'https://ledgerlearn.pro',
@@ -117,6 +119,7 @@ exports.handler = async function(event) {
 
 async function storeAndReturn(email, level, subscriptionId, verificationMethod) {
   try {
+    if (!getStore) throw new Error('blobs unavailable');
     const store = getStore('ledgerlearn-payments');
     const key   = 'payment:' + email.toLowerCase().trim() + ':' + level;
 
