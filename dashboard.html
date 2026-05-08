@@ -719,11 +719,115 @@
     <a href="https://skool.com/erp-saas-academy" class="upsell-strip-cta" target="_blank">Join ERP.SaaS Academy →</a>
   </div>
 
+  <!-- REGION SETTINGS -->
+  <div class="region-settings-card" id="region-settings-card" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-top:1rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--teal);font-weight:700;margin-bottom:3px;">Assessment region</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--navy);">Practice &amp; Certificate Region</div>
+        <div style="font-size:0.78rem;color:var(--text-mid);margin-top:2px;">Your assessment questions and certificate will reflect the tax laws and terminology of your selected region.</div>
+      </div>
+      <div id="current-region-badge" style="display:flex;align-items:center;gap:8px;background:var(--gold-pale);border:1px solid var(--gold);border-radius:100px;padding:6px 16px;font-size:0.82rem;font-weight:700;color:var(--navy);white-space:nowrap;flex-shrink:0;cursor:pointer;" onclick="toggleRegionPicker()">
+        <span id="current-region-flag">🌍</span>
+        <span id="current-region-label">Select region</span>
+        <span style="font-size:0.65rem;opacity:0.6;">▾</span>
+      </div>
+    </div>
+    <div id="region-picker" style="display:none;">
+      <div id="region-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.5rem;margin-bottom:0.75rem;"></div>
+      <div style="font-size:0.72rem;color:var(--text-mid);line-height:1.5;">Changing your region updates all future assessment questions. Certificates already earned keep their original region.</div>
+    </div>
+  </div>
+
 </div>
 
 <script>
   const STORAGE_KEY = 'll_user';
   const PROGRESS_KEY = 'll_progress';
+
+  // ── Region configuration ────────────────────────────────
+  const REGIONS = {
+    UK:     { label:'United Kingdom',  flag:'🇬🇧', tax:'VAT 20%',     taxBody:'HMRC',    certSuffix:'UK Practice'           },
+    ZA:     { label:'South Africa',    flag:'🇿🇦', tax:'VAT 15%',     taxBody:'SARS',    certSuffix:'South Africa Practice' },
+    NG:     { label:'Nigeria',         flag:'🇳🇬', tax:'VAT 7.5%',    taxBody:'FIRS',    certSuffix:'Nigeria Practice'      },
+    US:     { label:'United States',   flag:'🇺🇸', tax:'Sales Tax',   taxBody:'IRS',     certSuffix:'US Practice'           },
+    AU:     { label:'Australia',       flag:'🇦🇺', tax:'GST 10%',     taxBody:'ATO',     certSuffix:'Australia Practice'    },
+    NZ:     { label:'New Zealand',     flag:'🇳🇿', tax:'GST 15%',     taxBody:'IRD',     certSuffix:'New Zealand Practice'  },
+    IE:     { label:'Ireland',         flag:'🇮🇪', tax:'VAT 23%',     taxBody:'Revenue', certSuffix:'Ireland Practice'      },
+    AE:     { label:'UAE',             flag:'🇦🇪', tax:'VAT 5%',      taxBody:'FTA',     certSuffix:'UAE Practice'          },
+    CA:     { label:'Canada',          flag:'🇨🇦', tax:'GST/HST',     taxBody:'CRA',     certSuffix:'Canada Practice'       },
+    GLOBAL: { label:'Global / Other',  flag:'🌍',  tax:'General Tax', taxBody:'Local',   certSuffix:'International Practice'},
+  };
+
+  function getCurrentRegion() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}').region || ''; } catch(e) { return ''; }
+  }
+  function setUserRegion(code) {
+    try {
+      var u = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+      u.region = code;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+    } catch(e) {}
+  }
+  function toggleRegionPicker() {
+    var picker = document.getElementById('region-picker');
+    picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+  }
+  function renderRegionPicker() {
+    var grid = document.getElementById('region-grid');
+    if (!grid) return;
+    var current = getCurrentRegion() || 'UK';
+    grid.innerHTML = '';
+    Object.keys(REGIONS).forEach(function(code) {
+      var r = REGIONS[code];
+      var btn = document.createElement('button');
+      var isSelected = code === current;
+      btn.style.cssText = 'padding:10px 12px;border-radius:8px;border:1px solid;text-align:left;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px;width:100%;font-family:inherit;' +
+        (isSelected ? 'background:#fdf8ec;border-color:#D4A843;' : 'background:#f8fafc;border-color:#e2e8f0;');
+      btn.innerHTML = '<span style="font-size:1.1rem">' + r.flag + '</span>' +
+        '<div><div style="font-size:0.78rem;font-weight:600;color:#1e3a5f">' + r.label + '</div>' +
+        '<div style="font-size:0.65rem;color:#6b87a3">' + r.tax + ' · ' + r.taxBody + '</div></div>' +
+        (isSelected ? '<span style="margin-left:auto;color:#D4A843;font-size:0.8rem">✓</span>' : '');
+      btn.addEventListener('click', function() {
+        setUserRegion(code);
+        updateRegionBadge(code);
+        renderRegionPicker();
+        document.getElementById('region-picker').style.display = 'none';
+        // Show confirmation
+        var badge = document.getElementById('current-region-badge');
+        badge.style.background = '#e1f7f2';
+        badge.style.borderColor = '#1DA98A';
+        setTimeout(function() {
+          badge.style.background = '';
+          badge.style.borderColor = '';
+        }, 1500);
+      });
+      grid.appendChild(btn);
+    });
+  }
+  function updateRegionBadge(code) {
+    var r = REGIONS[code] || REGIONS['GLOBAL'];
+    var flagEl  = document.getElementById('current-region-flag');
+    var labelEl = document.getElementById('current-region-label');
+    if (flagEl)  flagEl.textContent  = r.flag;
+    if (labelEl) labelEl.textContent = r.label;
+  }
+  function initRegionCard() {
+    var current = getCurrentRegion();
+    if (current && REGIONS[current]) {
+      updateRegionBadge(current);
+    } else {
+      // No region set — highlight card to prompt user
+      var card = document.getElementById('region-settings-card');
+      if (card) {
+        card.style.borderColor = '#D4A843';
+        card.style.boxShadow   = '0 0 0 3px rgba(212,168,67,0.15)';
+        // Auto-open picker if no region set
+        document.getElementById('region-picker').style.display = 'block';
+      }
+    }
+    renderRegionPicker();
+  }
 
   function getUser() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; }
@@ -736,6 +840,7 @@
   function init() {
     const user     = getUser();
     const progress = getProgress();
+    initRegionCard();
 
     // ── Personalise nav ───────────────────────────────────
     if (user && user.name) {

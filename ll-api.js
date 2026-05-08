@@ -43,8 +43,8 @@ const LLAPI = (function () {
   }
 
   // ── Generate scenario / MCQ question ───────────────────
-  async function generateScenario({ track = 'Xero', module: mod = 'Invoicing', difficulty = 'intermediate' } = {}) {
-    return call('scenario', { track, module: mod, difficulty });
+  async function generateScenario({ track = 'Xero', module: mod = 'Invoicing', difficulty = 'intermediate', region = 'UK', regionLabel = 'United Kingdom', tax = 'VAT', taxRate = '20%', taxBody = 'HMRC' } = {}) {
+    return call('scenario', { track, module: mod, difficulty, region, regionLabel, tax, taxRate, taxBody });
   }
 
   // ── Get feedback on answered question ──────────────────
@@ -59,8 +59,8 @@ const LLAPI = (function () {
   }
 
   // ── Get lesson simulation content ──────────────────────
-  async function getLesson({ lessonTitle, lessonType = 'guided walkthrough', track = 'Xero', level = 'L1 Associate' }) {
-    return call('lesson', { lessonTitle, lessonType, track, level });
+  async function getLesson({ lessonTitle, lessonType = 'guided walkthrough', track = 'Xero', level = 'L1 Associate', region = 'UK', regionLabel = 'United Kingdom', tax = 'VAT', taxBody = 'HMRC' } = {}) {
+    return call('lesson', { lessonTitle, lessonType, track, level, region, regionLabel, tax, taxBody });
   }
 
   // ── Fallback question bank (used if API fails) ──────────

@@ -103,7 +103,14 @@ nav{background:rgba(11,31,58,0.98);height:62px;display:flex;align-items:center;j
 .btn-complete:hover{background:#f0c860;transform:translateY(-1px);}
 .btn-complete:disabled{background:#a0b5c5;cursor:default;transform:none;}
 .l2-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.3);color:var(--gold);font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:3px 10px;border-radius:100px;margin-bottom:1rem;}
-@media(max-width:1000px){.page{grid-template-columns:1fr;}.lesson-nav{display:none;}}
+@media(max-width:1000px){
+  .page{grid-template-columns:1fr;}
+  .lesson-nav{position:fixed;top:0;left:0;width:260px;height:100%;z-index:500;transform:translateX(-100%);transition:transform .25s ease;box-shadow:4px 0 20px rgba(0,0,0,0.4);}
+  .lesson-nav.open{transform:translateX(0);}
+  .lesson-main{padding-top:3.5rem;}
+  .mob-nav-toggle{display:flex;}
+}
+@media(min-width:1001px){.mob-nav-toggle{display:none;}}
 @media(max-width:600px){.page{padding:1rem;}.sim-iframe{height:500px;}}
 </style>
 <script>
@@ -138,7 +145,15 @@ nav{background:rgba(11,31,58,0.98);height:62px;display:flex;align-items:center;j
       if (onLearnL3 && targetPage !== '/learn-l3') { window.location.replace(targetPage); return; }
 
     } catch(e) { /* silent fail — stay on current page */ }
-  })();
+  // Close sidebar on overlay click (mobile)
+document.addEventListener('click', function(e) {
+  var nav = document.querySelector('.lesson-nav');
+  if (nav && nav.classList.contains('open') &&
+      !nav.contains(e.target) && !e.target.closest('.mob-nav-toggle')) {
+    nav.classList.remove('open');
+  }
+});
+})();
 </script>
 </head>
 <body>
@@ -259,7 +274,11 @@ nav{background:rgba(11,31,58,0.98);height:62px;display:flex;align-items:center;j
 </script>
 
   <main class="lesson-main">
-    <div class="prog-row">
+    <button class="mob-nav-toggle" onclick="document.querySelector('.lesson-nav').classList.toggle('open')"
+  style="display:none;position:absolute;top:1rem;left:1rem;z-index:10;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:8px 14px;border-radius:8px;font-size:0.82rem;cursor:pointer;align-items:center;gap:6px;">
+  ☰ Lessons
+</button>
+<div class="prog-row">
       <span class="prog-label" id="prog-label">Lesson 1 of 6</span>
       <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
       <span class="prog-pct" id="prog-pct">0%</span>

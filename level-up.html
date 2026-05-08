@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Level Up — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#0B1F3A;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;}
+nav{height:56px;background:rgba(11,31,58,0.98);border-bottom:2px solid #D4A843;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:24px;height:24px;background:#D4A843;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-weight:800;font-size:1rem;color:#fff;letter-spacing:-0.01em;}
+.brand span{color:#D4A843;}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;
+  background:radial-gradient(ellipse at 20% 50%,rgba(29,169,138,0.1) 0%,transparent 55%),
+             radial-gradient(ellipse at 80% 20%,rgba(212,168,67,0.08) 0%,transparent 50%);}
+.card{max-width:680px;width:100%;text-align:center;}
+
+/* Trophy animation */
+.trophy-wrap{position:relative;width:120px;height:120px;margin:0 auto 2rem;display:flex;align-items:center;justify-content:center;}
+.trophy-ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(212,168,67,0.3);animation:ring-pulse 2s ease-in-out infinite;}
+.trophy-ring-2{position:absolute;inset:-10px;border-radius:50%;border:1px solid rgba(212,168,67,0.15);animation:ring-pulse 2s ease-in-out 0.5s infinite;}
+.trophy-icon{font-size:4rem;animation:trophy-bounce 1s ease-in-out infinite alternate;}
+@keyframes ring-pulse{0%,100%{transform:scale(1);opacity:0.5}50%{transform:scale(1.05);opacity:1}}
+@keyframes trophy-bounce{0%{transform:translateY(0)}100%{transform:translateY(-6px)}}
+
+/* Badge */
+.level-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(29,169,138,0.15);border:1px solid rgba(29,169,138,0.4);color:#26c9a5;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:5px 16px;border-radius:100px;margin-bottom:1.5rem;}
+
+/* Heading */
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:800;color:#fff;line-height:1.1;letter-spacing:-0.03em;margin-bottom:1rem;}
+h1 .gold{color:#D4A843;}
+h1 .teal{color:#1DA98A;}
+.subhead{font-size:1.05rem;color:rgba(255,255,255,0.55);line-height:1.75;max-width:500px;margin:0 auto 2.5rem;font-weight:300;}
+
+/* Progress path */
+.path{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:3rem;flex-wrap:wrap;}
+.path-step{display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 8px;}
+.path-circle{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:800;border:2px solid;position:relative;}
+.ps-done{background:rgba(29,169,138,0.2);border-color:#1DA98A;color:#1DA98A;}
+.ps-done::after{content:'✓';position:absolute;top:-4px;right:-4px;width:18px;height:18px;background:#1DA98A;border-radius:50%;font-size:0.65rem;display:flex;align-items:center;justify-content:center;color:#fff;}
+.ps-current{background:rgba(212,168,67,0.2);border-color:#D4A843;color:#D4A843;box-shadow:0 0 20px rgba(212,168,67,0.3);}
+.ps-next{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.4);}
+.path-label{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;}
+.path-sub{font-size:0.62rem;color:rgba(255,255,255,0.35);text-align:center;}
+.path-arrow{color:rgba(255,255,255,0.2);font-size:1.2rem;margin:0 4px;padding-bottom:24px;}
+
+/* What's next cards */
+.next-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2.5rem;}
+.next-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.25rem 1rem;text-align:center;transition:all .2s;}
+.next-card:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.15);transform:translateY(-2px);}
+.nc-icon{font-size:1.75rem;margin-bottom:0.5rem;display:block;}
+.nc-title{font-size:0.82rem;font-weight:600;color:#fff;margin-bottom:0.25rem;}
+.nc-text{font-size:0.72rem;color:rgba(255,255,255,0.45);line-height:1.5;}
+
+/* CTA buttons */
+.ctas{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem;}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:#D4A843;color:#0B1F3A;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;padding:16px 32px;border-radius:10px;text-decoration:none;transition:all .2s;border:none;cursor:pointer;}
+.btn-primary:hover{background:#f0c860;transform:translateY(-2px);box-shadow:0 10px 30px rgba(212,168,67,0.4);}
+.btn-secondary{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;padding:14px 24px;border-radius:10px;text-decoration:none;transition:all .2s;}
+.btn-secondary:hover{background:rgba(255,255,255,0.14);color:#fff;}
+.btn-teal{background:rgba(29,169,138,0.15);border:1px solid rgba(29,169,138,0.4);color:#26c9a5;}
+.btn-teal:hover{background:rgba(29,169,138,0.25);}
+
+.note{font-size:0.78rem;color:rgba(255,255,255,0.3);line-height:1.6;}
+.note a{color:rgba(255,255,255,0.5);text-decoration:underline;}
+
+@media(max-width:600px){
+  .next-cards{grid-template-columns:1fr;}
+  .path{gap:0;}
+  .path-step{padding:0 4px;}
+  .path-circle{width:44px;height:44px;font-size:0.72rem;}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+</nav>
+
+<main>
+  <div class="card">
+    <div class="trophy-wrap">
+      <div class="trophy-ring"></div>
+      <div class="trophy-ring-2"></div>
+      <span class="trophy-icon">🏆</span>
+    </div>
+
+    <div class="level-badge" id="level-badge">Level Passed</div>
+
+    <h1 id="page-heading">You've unlocked<br><span class="gold" id="next-level-name">the next level</span></h1>
+    <p class="subhead" id="page-sub">You've demonstrated real skill. Here's what's waiting for you at the next level.</p>
+
+    <!-- Progress path -->
+    <div class="path">
+      <div class="path-step">
+        <div class="path-circle ps-done" id="step-l1">L1</div>
+        <div class="path-label" style="color:#1DA98A">Associate</div>
+        <div class="path-sub">Passed ✓</div>
+      </div>
+      <div class="path-arrow">›</div>
+      <div class="path-step">
+        <div class="path-circle ps-next" id="step-l2">L2</div>
+        <div class="path-label" id="l2-label" style="color:rgba(255,255,255,0.4)">Professional</div>
+        <div class="path-sub" id="l2-sub">$49 to unlock</div>
+      </div>
+      <div class="path-arrow">›</div>
+      <div class="path-step">
+        <div class="path-circle ps-next" id="step-l3">L3</div>
+        <div class="path-label" id="l3-label" style="color:rgba(255,255,255,0.4)">Advisor</div>
+        <div class="path-sub" id="l3-sub">Free after L2</div>
+      </div>
+      <div class="path-arrow">›</div>
+      <div class="path-step">
+        <div class="path-circle ps-next" style="border-color:rgba(255,140,75,0.4);color:#ff8c4b;">ERP</div>
+        <div class="path-label" style="color:rgba(255,140,75,0.6)">Consultant</div>
+        <div class="path-sub">Elite track</div>
+      </div>
+    </div>
+
+    <!-- What's in the next level -->
+    <div class="next-cards" id="next-cards">
+      <div class="next-card">
+        <span class="nc-icon">📚</span>
+        <div class="nc-title">6 New Lessons</div>
+        <div class="nc-text">Deeper content, real-world scenarios and guided walkthroughs</div>
+      </div>
+      <div class="next-card">
+        <span class="nc-icon">🖥️</span>
+        <div class="nc-title">Live Simulations</div>
+        <div class="nc-text">Practice inside real Xero interfaces with scored exercises</div>
+      </div>
+      <div class="next-card">
+        <span class="nc-icon">🏆</span>
+        <div class="nc-title">New Certificate</div>
+        <div class="nc-text">Earn a higher-level verifiable certificate to share on LinkedIn</div>
+      </div>
+    </div>
+
+    <!-- CTAs — set dynamically -->
+    <div class="ctas" id="ctas">
+      <a href="/learn" class="btn-primary" id="btn-learn">Start learning →</a>
+      <a href="/test" class="btn-secondary" id="btn-assess">Go to assessment</a>
+      <a href="/dashboard" class="btn-secondary btn-teal">Dashboard</a>
+    </div>
+
+    <p class="note" id="bottom-note">Your progress is saved. You can return any time.</p>
+  </div>
+</main>
+
+<script>
+(function() {
+  // Read progress
+  var p = {};
+  try { p = JSON.parse(localStorage.getItem('ll_progress') || '{}'); } catch(e) {}
+  var completed  = p.completedLevels || [];
+  var isAdmin    = p.adminMode === true || sessionStorage.getItem('ll_admin_token');
+  var paidL2     = p.paid_l2 === true;
+  var passedL1   = completed.includes('l1');
+  var passedL2   = completed.includes('l2') || p.l2Score != null;
+  var passedL3   = completed.includes('l3') || p.l3Score != null;
+
+  // Also read URL param to know which transition we're showing
+  var params = new URLSearchParams(window.location.search);
+  var from   = params.get('from') || (passedL2 ? 'l2' : 'l1');
+  var to     = from === 'l1' ? 'l2' : (from === 'l2' ? 'l3' : 'erp');
+
+  // Update progress path
+  function setStep(id, type) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'path-circle ' + type;
+  }
+
+  if (passedL1) setStep('step-l1', 'ps-done');
+
+  if (from === 'l1') {
+    // Transitioning from L1 → L2
+    document.getElementById('level-badge').textContent = 'L1 Passed — Unlock L2';
+    document.getElementById('page-heading').innerHTML  = 'You\'ve passed L1!<br><span class="gold">Xero Professional awaits</span>';
+    document.getElementById('page-sub').textContent    = 'You\'ve mastered the fundamentals. L2 goes deeper — VAT returns, bank rules, financial reporting, and multi-currency. One payment unlocks it permanently.';
+    setStep('step-l2', 'ps-current');
+    document.getElementById('l2-label').style.color = '#D4A843';
+    document.getElementById('l2-sub').textContent   = paidL2 ? 'Unlocked ✓' : '$49 — one-time';
+    // Next cards L2 content
+    document.getElementById('next-cards').innerHTML =
+      '<div class="next-card"><span class="nc-icon">💸</span><div class="nc-title">VAT Returns (MTD)</div><div class="nc-text">File UK Making Tax Digital VAT returns with live Box 1–9 calculations</div></div>' +
+      '<div class="next-card"><span class="nc-icon">🏦</span><div class="nc-title">Bank Rules & Automation</div><div class="nc-text">Build bank rules, auto-code transactions and reconcile at scale</div></div>' +
+      '<div class="next-card"><span class="nc-icon">📊</span><div class="nc-title">Management Accounts</div><div class="nc-text">P&L, balance sheet, cash flow — the reports advisory clients pay for</div></div>';
+    if (paidL2 || isAdmin) {
+      document.getElementById('btn-learn').href        = '/learn-l2';
+      document.getElementById('btn-learn').textContent = 'Start L2 lessons →';
+      document.getElementById('btn-assess').href       = '/test';
+      document.getElementById('btn-assess').textContent = 'Go to L2 assessment';
+      document.getElementById('bottom-note').textContent = 'L2 is unlocked. Start learning when ready.';
+    } else {
+      document.getElementById('btn-learn').href        = '/test';
+      document.getElementById('btn-learn').textContent = 'Unlock L2 for $49 →';
+      document.getElementById('btn-assess').href       = '/learn-l2';
+      document.getElementById('btn-assess').textContent = 'Preview L2 content';
+      document.getElementById('bottom-note').innerHTML = 'One-time payment · No subscription · L3 is free after passing L2 · <a href="/dashboard">View dashboard</a>';
+    }
+
+  } else if (from === 'l2') {
+    // Transitioning from L2 → L3
+    setStep('step-l2', 'ps-done');
+    document.getElementById('level-badge').textContent = 'L2 Passed — L3 Unlocked Free';
+    document.getElementById('page-heading').innerHTML  = 'L2 complete!<br><span class="teal">L3 Advisor is yours — free</span>';
+    document.getElementById('page-sub').textContent    = 'You\'ve earned the professional level. L3 is your reward — advisory reporting, year-end prep, and practice management at the advisor level.';
+    setStep('step-l3', 'ps-current');
+    document.getElementById('l3-label').style.color = '#D4A843';
+    document.getElementById('l3-sub').textContent   = 'Unlocked free ✓';
+    document.getElementById('next-cards').innerHTML =
+      '<div class="next-card"><span class="nc-icon">📋</span><div class="nc-title">Advisory Reporting</div><div class="nc-text">Build management account packs and KPI dashboards clients actually pay for</div></div>' +
+      '<div class="next-card"><span class="nc-icon">📅</span><div class="nc-title">Year-End Preparation</div><div class="nc-text">Complete year-end workflows, journal adjustments and accounts production</div></div>' +
+      '<div class="next-card"><span class="nc-icon">🏢</span><div class="nc-title">Practice Management</div><div class="nc-text">Run an accounting practice — onboarding, pricing, delivery frameworks</div></div>';
+    document.getElementById('btn-learn').href        = '/learn-l3';
+    document.getElementById('btn-learn').textContent = 'Start L3 lessons — free →';
+    document.getElementById('btn-assess').href       = '/test';
+    document.getElementById('btn-assess').textContent = 'Go to L3 assessment';
+    document.getElementById('bottom-note').textContent = 'L3 is completely free — no payment needed.';
+
+  } else if (from === 'l3' || passedL3) {
+    // All levels done — ERP upsell
+    setStep('step-l2', 'ps-done');
+    setStep('step-l3', 'ps-done');
+    document.getElementById('level-badge').textContent  = 'All Xero Levels Complete';
+    document.getElementById('page-heading').innerHTML   = 'You\'re fully certified!<br><span class="gold">Ready for ERP consulting</span>';
+    document.getElementById('page-sub').textContent     = 'You\'ve completed all three Xero certification levels. You have the skills. Now learn to package them into £5,000+ consulting projects.';
+    document.getElementById('next-cards').innerHTML =
+      '<div class="next-card"><span class="nc-icon">💼</span><div class="nc-title">ERP Implementation</div><div class="nc-text">Land your first ERP project with our proven positioning framework</div></div>' +
+      '<div class="next-card"><span class="nc-icon">💰</span><div class="nc-title">£5,000+ Projects</div><div class="nc-text">Package your Xero skills into fixed-price proposals clients say yes to</div></div>' +
+      '<div class="next-card"><span class="nc-icon">🌍</span><div class="nc-title">Global Clients</div><div class="nc-text">Work remotely with clients across UK, UAE, Africa, and the US</div></div>';
+    document.getElementById('btn-learn').href        = 'https://skool.com/erp-saas-academy';
+    document.getElementById('btn-learn').target      = '_blank';
+    document.getElementById('btn-learn').textContent = 'Join ERP.SaaS Academy →';
+    document.getElementById('btn-assess').href       = '/dashboard';
+    document.getElementById('btn-assess').textContent = 'View my dashboard';
+    document.getElementById('bottom-note').innerHTML = 'Use code <strong>LEDGER30</strong> for 30% off ERP.SaaS Academy';
+  }
+})();
+</script>
+</body>
+</html>

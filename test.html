@@ -402,6 +402,35 @@ body { background: var(--off-white); }
 
 // Standalone toast — no LL dependency
 // ── Security: sanitize strings before DOM insertion ──────
+
+// ── Region configuration ─────────────────────────────────
+const REGIONS = {
+  UK:     { label:'United Kingdom',  flag:'🇬🇧', currency:'GBP (£)',     tax:'VAT',     taxRate:'20%',       taxBody:'HMRC',    filing:'MTD',            payroll:'PAYE',        certSuffix:'UK Practice'            },
+  ZA:     { label:'South Africa',    flag:'🇿🇦', currency:'ZAR (R)',     tax:'VAT',     taxRate:'15%',       taxBody:'SARS',    filing:'eFiling',        payroll:'PAYE',        certSuffix:'South Africa Practice'  },
+  NG:     { label:'Nigeria',         flag:'🇳🇬', currency:'NGN (₦)',     tax:'VAT',     taxRate:'7.5%',      taxBody:'FIRS',    filing:'TaxPro Max',     payroll:'PAYE',        certSuffix:'Nigeria Practice'       },
+  US:     { label:'United States',   flag:'🇺🇸', currency:'USD ($)',     tax:'Sales Tax',taxRate:'varies',   taxBody:'IRS',     filing:'e-File',         payroll:'Payroll Tax', certSuffix:'US Practice'            },
+  AU:     { label:'Australia',       flag:'🇦🇺', currency:'AUD ($)',     tax:'GST',     taxRate:'10%',       taxBody:'ATO',     filing:'STP',            payroll:'PAYG',        certSuffix:'Australia Practice'     },
+  NZ:     { label:'New Zealand',     flag:'🇳🇿', currency:'NZD ($)',     tax:'GST',     taxRate:'15%',       taxBody:'IRD',     filing:'myIR',           payroll:'PAYE',        certSuffix:'New Zealand Practice'   },
+  IE:     { label:'Ireland',         flag:'🇮🇪', currency:'EUR (€)',     tax:'VAT',     taxRate:'23%',       taxBody:'Revenue', filing:'ROS',            payroll:'PAYE',        certSuffix:'Ireland Practice'       },
+  AE:     { label:'UAE',             flag:'🇦🇪', currency:'AED',        tax:'VAT',     taxRate:'5%',        taxBody:'FTA',     filing:'EmaraTax',       payroll:'WPS',         certSuffix:'UAE Practice'           },
+  CA:     { label:'Canada',          flag:'🇨🇦', currency:'CAD ($)',     tax:'GST/HST', taxRate:'5-15%',     taxBody:'CRA',     filing:'NETFILE',        payroll:'CPP/EI',      certSuffix:'Canada Practice'        },
+  GLOBAL: { label:'Global / Other',  flag:'🌍',  currency:'Multi',       tax:'Tax',     taxRate:'varies',    taxBody:'Tax Authority', filing:'Local', payroll:'Payroll',   certSuffix:'International Practice' },
+};
+
+function getRegion() {
+  try { return JSON.parse(localStorage.getItem('ll_user')||'{}').region || 'UK'; } catch(e) { return 'UK'; }
+}
+function saveRegion(code) {
+  try {
+    var u = JSON.parse(localStorage.getItem('ll_user')||'{}');
+    u.region = code;
+    localStorage.setItem('ll_user', JSON.stringify(u));
+  } catch(e) {}
+}
+function getRegionConfig() {
+  return REGIONS[getRegion()] || REGIONS['UK'];
+}
+
 function sanitizeStr(str) {
   if (!str) return '';
   return String(str)
@@ -437,17 +466,168 @@ let test = {
 
 // ── Select level ──────────────────────────────────────────
 function selectLevel(level) {
-  const progress = (() => { try { return JSON.parse(localStorage.getItem('ll_progress')||'{}'); } catch { return {}; } })();
-  if (level === 'l2' && !(progress.completedLevels||[]).includes('l1')) return;
-  if (level === 'l3' && !(progress.completedLevels||[]).includes('l2')) return;
+  var progress = {};
+  try { progress = JSON.parse(localStorage.getItem('ll_progress')||'{}'); } catch(e) {}
+  var completed = progress.completedLevels || [];
+  var isAdmin   = progress.adminMode === true || sessionStorage.getItem('ll_admin_token');
+  var paidL2    = progress.paid_l2 === true;
 
+  if (level === 'l2' && !completed.includes('l1') && !isAdmin) return;
+  if (level === 'l3' && !(completed.includes('l2') || progress.l2Score != null) && !isAdmin) return;
+
+  // For L2 and L3: show the level dashboard view instead of just changing button
+  if (level === 'l2' || level === 'l3') {
+    showLevelDashboard(level, progress, isAdmin, paidL2);
+    return;
+  }
+
+  // L1: original behaviour — select and show start button
   test.level = level;
-  document.querySelectorAll('.level-option').forEach(el => el.classList.remove('selected-level'));
+  document.querySelectorAll('.level-option').forEach(function(el){ el.classList.remove('selected-level'); });
   document.getElementById('level-'+level).classList.add('selected-level');
+  var cfg = TEST_CONFIG[level];
+  document.getElementById('btn-start-test').textContent = 'Start ' + cfg.level + ' assessment →';
+  // Hide level dashboard if shown
+  var ld = document.getElementById('ll-level-dashboard');
+  if (ld) ld.remove();
+}
 
-  const cfg = TEST_CONFIG[level];
-  document.getElementById('btn-start-test').textContent =
-    `Start ${cfg.level} assessment →`;
+// ── Level dashboard overlay (shown when clicking L2/L3) ──
+function showLevelDashboard(level, progress, isAdmin, paidL2) {
+  // Remove existing
+  var existing = document.getElementById('ll-level-dashboard');
+  if (existing) existing.remove();
+
+  var overlay = document.createElement('div');
+  overlay.id = 'll-level-dashboard';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(5,14,28,0.95);display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;';
+
+  var isL2      = level === 'l2';
+  var levelName = isL2 ? 'Xero Professional' : 'Xero Advisor';
+  var levelNum  = isL2 ? 'L2' : 'L3';
+  var completed = progress.completedLevels || [];
+  var passedL2  = completed.includes('l2') || progress.l2Score != null;
+  var passedL3  = completed.includes('l3') || progress.l3Score != null;
+  var isPassed  = isL2 ? passedL2 : passedL3;
+  var isUnlocked = isL2 ? (paidL2 || isAdmin) : (passedL2 || isAdmin);
+
+  // Score display
+  var scoreText = isL2
+    ? (progress.l2Score != null ? progress.l2Score + '%' : '—')
+    : (progress.l3Score != null ? progress.l3Score + '%' : '—');
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#0B1F3A;border:1px solid rgba(212,168,67,0.25);border-radius:18px;padding:2rem;max-width:680px;width:100%;';
+
+  // Header
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;';
+  var titleWrap = document.createElement('div');
+  var eyebrow = document.createElement('div');
+  eyebrow.textContent = levelNum + ' Certification Track';
+  eyebrow.style.cssText = 'font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:#D4A843;font-weight:700;margin-bottom:0.4rem;';
+  var title = document.createElement('h2');
+  title.textContent = levelName;
+  title.style.cssText = 'font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:0.25rem;';
+  var meta = document.createElement('div');
+  meta.textContent = isL2 ? '25 questions · 50 minutes · 70% to pass' : '30 questions · 60 minutes · 75% to pass';
+  meta.style.cssText = 'font-size:0.82rem;color:rgba(255,255,255,0.45);';
+  titleWrap.appendChild(eyebrow); titleWrap.appendChild(title); titleWrap.appendChild(meta);
+  var closeBtn = document.createElement('button');
+  closeBtn.textContent = '✕';
+  closeBtn.style.cssText = 'background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);width:36px;height:36px;border-radius:8px;font-size:1rem;cursor:pointer;flex-shrink:0;';
+  closeBtn.addEventListener('click', function(){ overlay.remove(); });
+  hdr.appendChild(titleWrap); hdr.appendChild(closeBtn);
+
+  // 3-col stats
+  var stats = document.createElement('div');
+  stats.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;';
+
+  function statCard(label, value, color) {
+    var s = document.createElement('div');
+    s.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1rem;text-align:center;';
+    var v = document.createElement('div');
+    v.textContent = value;
+    v.style.cssText = 'font-size:1.5rem;font-weight:800;color:' + color + ';line-height:1;margin-bottom:4px;';
+    var l = document.createElement('div');
+    l.textContent = label;
+    l.style.cssText = 'font-size:0.7rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;';
+    s.appendChild(v); s.appendChild(l);
+    return s;
+  }
+  stats.appendChild(statCard('Status', isPassed ? 'Passed' : isUnlocked ? 'Unlocked' : 'Locked', isPassed ? '#1DA98A' : isUnlocked ? '#D4A843' : 'rgba(255,255,255,0.3)'));
+  stats.appendChild(statCard('Best Score', scoreText, '#D4A843'));
+  stats.appendChild(statCard('Price', isL2 ? (isUnlocked ? 'Paid ✓' : '$49') : 'Free', isL2 && !isUnlocked ? '#D4A843' : '#1DA98A'));
+
+  // 3-tab actions: Learn · Practice · Assessment
+  var tabs = document.createElement('div');
+  tabs.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:1.5rem;';
+
+  function tabCard(icon, heading, desc, href, enabled, btnText) {
+    var card = document.createElement('div');
+    card.style.cssText = 'background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.25rem;display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem;' + (enabled ? '' : 'opacity:0.45;');
+    var ic = document.createElement('div'); ic.textContent = icon; ic.style.fontSize = '1.5rem';
+    var hd = document.createElement('div'); hd.textContent = heading;
+    hd.style.cssText = 'font-size:0.9rem;font-weight:700;color:#fff;';
+    var ds = document.createElement('div'); ds.textContent = desc;
+    ds.style.cssText = 'font-size:0.75rem;color:rgba(255,255,255,0.45);line-height:1.5;flex:1;';
+    var btn = document.createElement('a');
+    btn.textContent = btnText;
+    btn.href = enabled ? href : '#';
+    btn.style.cssText = 'display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;padding:8px 14px;border-radius:7px;text-decoration:none;margin-top:0.25rem;' +
+      (enabled ? 'background:#D4A843;color:#0B1F3A;' : 'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);pointer-events:none;');
+    card.appendChild(ic); card.appendChild(hd); card.appendChild(ds); card.appendChild(btn);
+    return card;
+  }
+
+  var learnHref = isL2 ? '/learn-l2' : '/learn-l3';
+  tabs.appendChild(tabCard('📚', 'Learn', '6 structured lessons covering all ' + levelNum + ' topics with guided walkthroughs', learnHref, isUnlocked, isUnlocked ? 'Go to lessons →' : 'Locked'));
+  tabs.appendChild(tabCard('🖥️', 'Practice', 'AI-powered practice questions and live software simulations', learnHref + '#practice', isUnlocked, isUnlocked ? 'Practice now →' : 'Locked'));
+  tabs.appendChild(tabCard('🎯', 'Assessment', 'Timed ' + (isL2?'25':'30') + '-question assessment. Pass to earn your certificate', '/test', isUnlocked, isUnlocked ? 'Start assessment →' : 'Locked'));
+
+  // CTA based on state
+  var cta = document.createElement('div');
+  cta.style.cssText = 'display:flex;gap:0.75rem;flex-wrap:wrap;';
+
+  if (!isUnlocked && isL2) {
+    // PayPal unlock button
+    var payBtn = document.createElement('button');
+    payBtn.textContent = 'Unlock ' + levelNum + ' for $49 →';
+    payBtn.style.cssText = 'flex:1;padding:14px;background:#D4A843;color:#0B1F3A;border:none;border-radius:9px;font-size:1rem;font-weight:700;cursor:pointer;';
+    payBtn.addEventListener('click', function() { overlay.remove(); showPaywall(level, levelName, '$49'); });
+    cta.appendChild(payBtn);
+  } else if (isUnlocked) {
+    var startBtn = document.createElement('a');
+    startBtn.href = learnHref;
+    startBtn.textContent = isPassed ? 'Review ' + levelNum + ' lessons →' : 'Start ' + levelNum + ' lessons →';
+    startBtn.style.cssText = 'flex:1;padding:14px;background:#D4A843;color:#0B1F3A;border:none;border-radius:9px;font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;';
+    cta.appendChild(startBtn);
+
+    var assessBtn = document.createElement('button');
+    assessBtn.textContent = 'Sit ' + levelNum + ' assessment';
+    assessBtn.style.cssText = 'padding:14px 20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);border-radius:9px;font-size:1rem;font-weight:600;cursor:pointer;';
+    assessBtn.addEventListener('click', function() {
+      overlay.remove();
+      test.level = level;
+      document.querySelectorAll('.level-option').forEach(function(el){ el.classList.remove('selected-level'); });
+      var el = document.getElementById('level-'+level);
+      if (el) el.classList.add('selected-level');
+      var cfg = TEST_CONFIG[level];
+      document.getElementById('btn-start-test').textContent = 'Start ' + cfg.level + ' assessment →';
+    });
+    cta.appendChild(assessBtn);
+  }
+
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Back';
+  cancelBtn.style.cssText = 'padding:14px 20px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.45);border-radius:9px;font-size:1rem;cursor:pointer;';
+  cancelBtn.addEventListener('click', function(){ overlay.remove(); });
+  cta.appendChild(cancelBtn);
+
+  box.appendChild(hdr); box.appendChild(stats); box.appendChild(tabs); box.appendChild(cta);
+  overlay.appendChild(box);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
 }
 
 // ── Start test ────────────────────────────────────────────
@@ -493,9 +673,13 @@ async function fetchTestQuestions(cfg) {
   for (let i = 0; i < cfg.questions; i++) {
     if (test.finished) break;
     const topic = topicCycle[i % topicCycle.length];
+    var _rc = getRegionConfig();
     const q = await LLAPI.generateScenario({
       track: 'Xero', module: topic,
       difficulty: test.level === 'l1' ? 'intermediate' : 'advanced',
+      region: getRegion(),
+      regionLabel: _rc.label,
+      tax: _rc.tax, taxRate: _rc.taxRate, taxBody: _rc.taxBody,
     });
 
     if (!q.error && q.question && q.options) {
@@ -633,6 +817,18 @@ async function finishTest() {
   document.getElementById('results-icon').textContent         = passed ? '🏆' : '📚';
   document.getElementById('results-h1').textContent           = passed ? "You're certified!" : 'Keep practising';
   document.getElementById('results-score').textContent        = score + '%';
+  // Region tag on results
+  try {
+    var _rc3 = (typeof getRegionConfig === 'function') ? getRegionConfig() : {label:'UK',flag:'',tax:'VAT',taxRate:'20%'};
+    var _rtEl = document.getElementById('results-region-tag');
+    if (!_rtEl) {
+      _rtEl = document.createElement('div');
+      _rtEl.id = 'results-region-tag';
+      _rtEl.style.cssText = 'font-size:0.72rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:3px 12px;border-radius:100px;margin:4px auto;display:inline-block;';
+      document.getElementById('results-score').insertAdjacentElement('afterend', _rtEl);
+    }
+    _rtEl.textContent = (_rc3.flag||'') + ' ' + (_rc3.label||'UK') + ' · ' + _rc3.tax + ' ' + _rc3.taxRate;
+  } catch(e2) {}
   document.getElementById('results-score-label').textContent  = `Pass mark: ${cfg.pass}% · You scored: ${score}%`;
   document.getElementById('results-badge').textContent        = passed ? '✓ Assessment passed' : '✗ Not passed this time';
   document.getElementById('results-badge').className          = `results-badge ${passed?'pass':'fail'}`;
@@ -670,7 +866,10 @@ async function finishTest() {
       updated.certificate = {
         candidateName: user.name || 'Candidate',
         certTitle:     levelTitles[test.level] || levelTitles.l1,
-        certLevel:     (test.level.toUpperCase()) + ' · Xero Cloud Accounting · LedgerLearn Pro',
+        certRegion:    (function(){ try{ return JSON.parse(localStorage.getItem('ll_user')||'{}').region||'UK'; }catch(e){return 'UK';} })(),
+        certRegionLabel: getRegionConfig ? getRegionConfig().label : 'United Kingdom',
+        certRegionSuffix: getRegionConfig ? getRegionConfig().certSuffix : 'UK Practice',
+        certLevel:     (test.level.toUpperCase()) + ' · Xero Cloud Accounting · ' + (getRegionConfig ? getRegionConfig().certSuffix : 'UK Practice') + ' · LedgerLearn Pro',
         certDesc:      levelDescs[test.level] || levelDescs.l1,
         certId, issueDate, score,
       };
@@ -766,6 +965,15 @@ function _buildCanvas(cert){
   c.fillStyle='#fff';c.beginPath();c.arc(sx,sy,sr-12,0,Math.PI*2);c.fill();
   c.font='bold 14px system-ui,sans-serif';c.fillStyle='#a07c2a';c.fillText('LEDGERLEARN',sx,sy+4);c.fillText('VERIFIED',sx,sy+22);
   c.fillStyle='#D4A843';_hex(c,sx,sy-14,9);
+  // Region badge
+  if (cert.certRegionLabel) {
+    var regText = cert.certRegionLabel + ' Practice';
+    c.font='bold 16px system-ui,sans-serif';
+    var rgw=c.measureText(regText).width+24;
+    c.fillStyle='rgba(11,31,58,0.7)';_rr(c,cx-rgw/2,600,rgw,26,13);c.fill();
+    c.strokeStyle='rgba(255,255,255,0.18)';c.lineWidth=1;_rr(c,cx-rgw/2,600,rgw,26,13);c.stroke();
+    c.fillStyle='rgba(255,255,255,0.6)';c.fillText(regText,cx,618);
+  }
   c.font='18px system-ui,sans-serif';c.fillStyle='#6b87a3';
   c.fillText('Verify: '+window.location.hostname+'/verify  ·  ID: '+(cert.certId||''),cx,H-32);
   return cv;
@@ -1068,38 +1276,107 @@ function renderPayPalButton(level) {
 function captureNameBeforeTest(prefill) {
   return new Promise(function(resolve) {
     var ex = document.getElementById('ll-name-gate'); if(ex) ex.remove();
-    var gate=document.createElement('div'); gate.id='ll-name-gate';
-    gate.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,14,28,0.96);display:flex;align-items:center;justify-content:center;z-index:999999;';
-    var box=document.createElement('div');
-    box.style.cssText='background:#0d2044;border:1px solid rgba(212,168,67,0.5);border-radius:14px;padding:2rem 1.75rem;max-width:400px;width:90%;text-align:center;';
-    var h2=document.createElement('h2'); h2.textContent='Confirm your certificate name';
-    h2.style.cssText='color:#fff;font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;';
-    var p=document.createElement('p'); p.textContent='Your name appears on your certificate exactly as entered.';
-    p.style.cssText='color:rgba(255,255,255,0.5);font-size:0.85rem;line-height:1.65;margin-bottom:1.25rem;';
-    var inp=document.createElement('input');
-    inp.type='text'; inp.value=prefill||''; inp.placeholder='First and last name'; inp.autocomplete='name';
-    inp.style.cssText='display:block;width:100%;padding:13px 15px;margin-bottom:0.5rem;background:rgba(255,255,255,0.08);border:2px solid rgba(212,168,67,0.45);border-radius:8px;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;';
-    var err=document.createElement('div'); err.style.cssText='color:#ff8080;font-size:0.78rem;min-height:1.2em;margin-bottom:0.5rem;';
-    var note=document.createElement('div'); note.textContent='Cannot be changed once assessment begins.';
-    note.style.cssText='color:rgba(255,255,255,0.28);font-size:0.7rem;margin-bottom:1.25rem;';
-    var go=document.createElement('button'); go.textContent='Confirm and start assessment';
-    go.style.cssText='display:block;width:100%;padding:13px;background:#D4A843;color:#0B1F3A;border:none;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;margin-bottom:0.5rem;';
-    var cn=document.createElement('button'); cn.textContent='Cancel';
-    cn.style.cssText='display:block;width:100%;padding:10px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.45);font-size:0.85rem;cursor:pointer;';
-    box.appendChild(h2); box.appendChild(p); box.appendChild(inp);
-    box.appendChild(err); box.appendChild(note); box.appendChild(go); box.appendChild(cn);
+    var savedRegion = getRegion();
+
+    var gate = document.createElement('div');
+    gate.id = 'll-name-gate';
+    gate.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,14,28,0.96);display:flex;align-items:center;justify-content:center;z-index:999999;overflow-y:auto;padding:1rem;';
+
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0d2044;border:1px solid rgba(212,168,67,0.5);border-radius:16px;padding:2rem 1.75rem;max-width:460px;width:100%;';
+
+    // Title
+    var h2 = document.createElement('h2');
+    h2.textContent = 'Before you start';
+    h2.style.cssText = 'color:#fff;font-size:1.25rem;font-weight:800;margin-bottom:0.25rem;';
+    var sub = document.createElement('p');
+    sub.textContent = 'Your name and region personalise your certificate and assessment questions.';
+    sub.style.cssText = 'color:rgba(255,255,255,0.5);font-size:0.82rem;line-height:1.6;margin-bottom:1.5rem;';
+
+    // Name field
+    var nameLabel = document.createElement('div');
+    nameLabel.textContent = 'Full name (appears on certificate)';
+    nameLabel.style.cssText = 'font-size:0.7rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;';
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.value = prefill||''; inp.placeholder = 'First and last name'; inp.autocomplete = 'name';
+    inp.style.cssText = 'display:block;width:100%;padding:12px 14px;margin-bottom:1.25rem;background:rgba(255,255,255,0.08);border:2px solid rgba(212,168,67,0.45);border-radius:8px;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;';
+
+    // Region selector
+    var regLabel = document.createElement('div');
+    regLabel.textContent = 'Your country / region';
+    regLabel.style.cssText = 'font-size:0.7rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;';
+
+    var regNote = document.createElement('div');
+    regNote.textContent = 'Assessment questions and tax terminology will match your region.';
+    regNote.style.cssText = 'font-size:0.72rem;color:rgba(255,255,255,0.3);margin-bottom:8px;line-height:1.5;';
+
+    // Region grid
+    var regGrid = document.createElement('div');
+    regGrid.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:0.5rem;margin-bottom:1.25rem;';
+
+    var regionOrder = ['UK','ZA','NG','US','AU','NZ','IE','AE','CA','GLOBAL'];
+    var selectedRegion = savedRegion || 'UK';
+
+    regionOrder.forEach(function(code) {
+      var r = REGIONS[code];
+      var btn = document.createElement('button');
+      btn.setAttribute('data-region', code);
+      btn.style.cssText = 'padding:9px 12px;border-radius:8px;border:1px solid;font-size:0.78rem;font-weight:500;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;transition:all .15s;' +
+        (code === selectedRegion
+          ? 'background:rgba(212,168,67,0.15);border-color:#D4A843;color:#fff;'
+          : 'background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);');
+      btn.innerHTML = '<span style="font-size:1.1rem">' + r.flag + '</span>' +
+        '<span><div style="font-weight:600;font-size:0.78rem">' + r.label + '</div>' +
+        '<div style="font-size:0.65rem;opacity:0.6">' + r.tax + ' ' + r.taxRate + ' · ' + r.taxBody + '</div></span>';
+      btn.addEventListener('click', function() {
+        selectedRegion = code;
+        regGrid.querySelectorAll('button').forEach(function(b) {
+          var isThis = b.getAttribute('data-region') === code;
+          b.style.background     = isThis ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.04)';
+          b.style.borderColor    = isThis ? '#D4A843' : 'rgba(255,255,255,0.1)';
+          b.style.color          = isThis ? '#fff' : 'rgba(255,255,255,0.6)';
+        });
+      });
+      regGrid.appendChild(btn);
+    });
+
+    var err = document.createElement('div');
+    err.style.cssText = 'color:#ff8080;font-size:0.78rem;min-height:1.2em;margin-bottom:0.5rem;';
+
+    var note = document.createElement('div');
+    note.textContent = 'Name and region cannot be changed once assessment begins.';
+    note.style.cssText = 'color:rgba(255,255,255,0.28);font-size:0.7rem;margin-bottom:1.25rem;';
+
+    var go = document.createElement('button');
+    go.textContent = 'Confirm and start assessment';
+    go.style.cssText = 'display:block;width:100%;padding:13px;background:#D4A843;color:#0B1F3A;border:none;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;margin-bottom:0.5rem;';
+
+    var cn = document.createElement('button');
+    cn.textContent = 'Cancel';
+    cn.style.cssText = 'display:block;width:100%;padding:10px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.45);font-size:0.85rem;cursor:pointer;';
+
+    box.appendChild(h2); box.appendChild(sub);
+    box.appendChild(nameLabel); box.appendChild(inp);
+    box.appendChild(regLabel); box.appendChild(regNote); box.appendChild(regGrid);
+    box.appendChild(err); box.appendChild(note);
+    box.appendChild(go); box.appendChild(cn);
     gate.appendChild(box); document.body.appendChild(gate);
-    setTimeout(function(){ inp.focus(); if(prefill) inp.select(); },80);
-    function val(){
-      var v=inp.value.trim();
-      if(v.length<2){err.textContent='Please enter your full name.';inp.style.borderColor='#e05555';return null;}
-      if(v.indexOf(' ')<1){err.textContent='Please include first and last name.';inp.style.borderColor='#e05555';return null;}
+    setTimeout(function(){ inp.focus(); if(prefill) inp.select(); }, 80);
+
+    function validate() {
+      var v = inp.value.trim();
+      if (v.length < 2) { err.textContent='Please enter your full name.'; inp.style.borderColor='#e05555'; return null; }
+      if (v.indexOf(' ') < 1) { err.textContent='Please include first and last name.'; inp.style.borderColor='#e05555'; return null; }
       return v;
     }
-    go.addEventListener('click',function(){var n=val();if(!n)return;gate.remove();resolve(n);});
-    cn.addEventListener('click',function(){gate.remove();resolve(null);});
-    inp.addEventListener('keydown',function(e){if(e.key==='Enter'){var n=val();if(n){gate.remove();resolve(n);}}});
-    inp.addEventListener('focus',function(){this.style.borderColor='rgba(212,168,67,0.7)';err.textContent='';});
+    go.addEventListener('click', function() {
+      var n = validate(); if (!n) return;
+      saveRegion(selectedRegion);
+      gate.remove(); resolve(n);
+    });
+    cn.addEventListener('click', function() { gate.remove(); resolve(null); });
+    inp.addEventListener('keydown', function(e) { if(e.key==='Enter'){ var n=validate(); if(n){ saveRegion(selectedRegion); gate.remove(); resolve(n); }} });
+    inp.addEventListener('focus', function() { this.style.borderColor='rgba(212,168,67,0.7)'; err.textContent=''; });
   });
 }
 
