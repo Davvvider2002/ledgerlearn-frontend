@@ -7,6 +7,32 @@
 <link rel="icon" href="/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+.lesson-nav{
+  position:sticky;
+  top:74px;
+  height:calc(100vh - 90px);
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.lesson-nav-hdr{
+  background:linear-gradient(135deg,#0a2d5a,#0d3d7a);
+  padding:1rem 1.25rem;
+  flex-shrink:0;
+}
+.lesson-list{
+  flex:1;
+  overflow-y:auto;
+  padding:0.4rem 0;
+  -webkit-overflow-scrolling:touch;
+}
+.lesson-list::-webkit-scrollbar{width:4px;}
+.lesson-list::-webkit-scrollbar-track{background:transparent;}
+.lesson-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
 :root{--navy:#0B1F3A;--navy-mid:#132d52;--gold:#D4A843;--gold-pale:#fdf3dc;--teal:#1DA98A;--teal-light:#26c9a5;--teal-pale:#e1f7f2;--white:#fff;--off-white:#f8f7f4;--text-dark:#0B1F3A;--text-mid:#3d5a7a;--text-muted:#6b87a3;--border:rgba(11,31,58,0.1);}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--text-dark);min-height:100vh;}
@@ -21,14 +47,14 @@ nav{background:rgba(11,31,58,0.98);height:62px;display:flex;align-items:center;j
 .nav-links a:hover,.nav-links a.active{color:#fff;}
 .nav-cta{background:var(--gold);color:var(--navy)!important;font-weight:700!important;padding:8px 18px;border-radius:6px;font-size:0.85rem;}
 .page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem;display:grid;grid-template-columns:240px 1fr;gap:1.5rem;align-items:start;}
-.lesson-nav{position:sticky;top:74px;background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;}
-.lesson-nav-hdr{background:linear-gradient(135deg,#0a2d5a,#0d3d7a);padding:1rem 1.25rem;}
+
+
 .lesson-nav-title{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;color:#fff;}
 .lesson-nav-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(212,168,67,0.2);border:1px solid rgba(212,168,67,0.35);color:var(--gold);font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 8px;border-radius:100px;margin-top:6px;}
 .lesson-nav-sub{font-size:0.62rem;color:rgba(255,255,255,0.5);margin-top:4px;}
 .lesson-nav-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:8px;overflow:hidden;}
 .lesson-nav-fill{height:100%;background:var(--gold);border-radius:2px;transition:width 0.5s;}
-.lesson-list{padding:0.4rem 0;}
+
 .lesson-item{display:flex;align-items:center;gap:9px;padding:9px 1.25rem;cursor:pointer;transition:background 0.15s;border:none;background:none;width:100%;text-align:left;}
 .lesson-item:hover{background:rgba(11,31,58,0.04);}
 .lesson-item.active{background:var(--gold-pale);}
@@ -134,18 +160,17 @@ nav{background:rgba(11,31,58,0.98);height:62px;display:flex;align-items:center;j
 
       // Redirect UP only: if user landed on a page they can't access yet
       // Never redirect DOWN: if they clicked L2, keep them on L2
-      if (onLearn && (passedL2 || (passedL1 && (paidL2 || isAdmin)))) {
-        // On L1 but could be on L2+ — redirect up to their current level
-        if (passedL2 || (passedL1 && (paidL2 || isAdmin))) {
-          if (passedL2) {
-            window.location.replace('/learn-l3'); return;
-          } else {
-            window.location.replace('/learn-l2'); return;
-          }
-        }
+      // Never redirect if user navigated here from within the site (back button / banner click)
+      var cameFromSite = document.referrer.indexOf('ledgerlearn.pro') > -1 || 
+                         document.referrer.indexOf(window.location.hostname) > -1;
+
+      if (onLearn && !cameFromSite && (passedL2 || (passedL1 && (paidL2 || isAdmin)))) {
+        // Direct load of /learn but user has higher level access — redirect up
+        if (passedL2) { window.location.replace('/learn-l3'); return; }
+        if (passedL1 && (paidL2 || isAdmin)) { window.location.replace('/learn-l2'); return; }
       }
-      // If on L2 or L3 directly, always allow — user chose this page intentionally
-      // Only block if truly not unlocked
+      // Always allow L2/L3 if user navigated there (banner, back button, etc)
+      // Only block if genuinely locked
       if (onLearnL2 && !passedL1 && !isAdmin) { window.location.replace('/learn'); return; }
       if (onLearnL3 && !passedL2 && !isAdmin) {
         if (passedL1 && (paidL2 || isAdmin)) { window.location.replace('/learn-l2'); return; }
@@ -237,7 +262,7 @@ document.addEventListener('click', function(e) {
 
   <main class="lesson-main">
     <button class="mob-nav-toggle" onclick="document.querySelector('.lesson-nav').classList.toggle('open')"
-  style="display:none;position:absolute;top:1rem;left:1rem;z-index:10;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:8px 14px;border-radius:8px;font-size:0.82rem;cursor:pointer;align-items:center;gap:6px;">
+  style="position:absolute;top:1rem;left:1rem;z-index:10;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:8px 14px;border-radius:8px;font-size:0.82rem;cursor:pointer;align-items:center;gap:6px;">
   ☰ Lessons
 </button>
 <div class="prog-row">
