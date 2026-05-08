@@ -41,13 +41,13 @@ nav{
 .page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem;display:grid;grid-template-columns:240px 1fr 280px;gap:1.5rem;align-items:start;}
 
 /* ── Left sidebar ── */
-.lesson-nav{position:sticky;top:74px;background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.lesson-nav{position:sticky;top:74px;background:#fff;border:1px solid var(--border);border-radius:14px;overflow:visible;display:flex;flex-direction:column;max-height:calc(100vh - 100px);}
 .lesson-nav-hdr{background:var(--navy);padding:1rem 1.25rem;}
 .lesson-nav-title{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;color:#fff;}
 .lesson-nav-sub{font-size:0.65rem;color:rgba(255,255,255,0.5);margin-top:2px;}
 .lesson-nav-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:8px;overflow:hidden;}
 .lesson-nav-fill{height:100%;background:var(--gold);border-radius:2px;transition:width 0.5s;}
-.lesson-list{padding:0.4rem 0;}
+.lesson-list{padding:0.4rem 0;overflow-y:auto;flex:1;}
 .lesson-item{display:flex;align-items:center;gap:9px;padding:9px 1.25rem;cursor:pointer;transition:background 0.15s;border:none;background:none;width:100%;text-align:left;}
 .lesson-item:hover{background:rgba(11,31,58,0.04);}
 .lesson-item.active{background:var(--gold-pale);}
@@ -200,18 +200,17 @@ nav{
 
       // Redirect UP only: if user landed on a page they can't access yet
       // Never redirect DOWN: if they clicked L2, keep them on L2
-      if (onLearn && (passedL2 || (passedL1 && (paidL2 || isAdmin)))) {
-        // On L1 but could be on L2+ — redirect up to their current level
-        if (passedL2 || (passedL1 && (paidL2 || isAdmin))) {
-          if (passedL2) {
-            window.location.replace('/learn-l3'); return;
-          } else {
-            window.location.replace('/learn-l2'); return;
-          }
-        }
+      // Never redirect if user navigated here from within the site (back button / banner click)
+      var cameFromSite = document.referrer.indexOf('ledgerlearn.pro') > -1 || 
+                         document.referrer.indexOf(window.location.hostname) > -1;
+
+      if (onLearn && !cameFromSite && (passedL2 || (passedL1 && (paidL2 || isAdmin)))) {
+        // Direct load of /learn but user has higher level access — redirect up
+        if (passedL2) { window.location.replace('/learn-l3'); return; }
+        if (passedL1 && (paidL2 || isAdmin)) { window.location.replace('/learn-l2'); return; }
       }
-      // If on L2 or L3 directly, always allow — user chose this page intentionally
-      // Only block if truly not unlocked
+      // Always allow L2/L3 if user navigated there (banner, back button, etc)
+      // Only block if genuinely locked
       if (onLearnL2 && !passedL1 && !isAdmin) { window.location.replace('/learn'); return; }
       if (onLearnL3 && !passedL2 && !isAdmin) {
         if (passedL1 && (paidL2 || isAdmin)) { window.location.replace('/learn-l2'); return; }
