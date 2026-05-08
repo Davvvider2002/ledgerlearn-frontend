@@ -1,0 +1,13 @@
+{
+  "name": "ledgerlearn-pro",
+  "version": "1.0.0",
+  "description": "LedgerLearn Pro — Xero and QuickBooks certification platform",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^7.3.0",
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
