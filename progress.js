@@ -29,6 +29,23 @@ exports.handler = async function(event) {
     return { statusCode: 204, headers: CORS, body: '' };
   }
 
+  if (event.httpMethod === 'GET') {
+    // GET: retrieve progress by email query param
+    const email = event.queryStringParameters && event.queryStringParameters.email;
+    if (!email) {
+      return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'email required' }) };
+    }
+    try {
+      const store = getStore ? getStore('ledgerlearn-progress') : null;
+      if (!store) return { statusCode: 200, headers: CORS, body: JSON.stringify({ progress: null }) };
+      const key  = 'progress:' + email.toLowerCase().trim();
+      const data = await store.get(key, { type: 'json' });
+      return { statusCode: 200, headers: CORS, body: JSON.stringify({ progress: data || null }) };
+    } catch(e) {
+      return { statusCode: 200, headers: CORS, body: JSON.stringify({ progress: null }) };
+    }
+  }
+
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: CORS, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
