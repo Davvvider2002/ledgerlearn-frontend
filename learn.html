@@ -191,24 +191,32 @@ nav{
       var passedL2  = completed.includes('l2') || p.l2Score != null;
       var currentPage = window.location.pathname.replace(/\/+$/,'');
 
-      // Determine the correct learn page for this user
-      var targetPage;
-      if (passedL2 || isAdmin && completed.includes('l2')) {
-        targetPage = '/learn-l3';
-      } else if ((passedL1 && paidL2) || (isAdmin && passedL1)) {
-        targetPage = '/learn-l2';
-      } else {
-        targetPage = '/learn';
-      }
-
-      // Redirect if on wrong page
+      // Determine minimum accessible page for this user
+      // Only redirect UP (never redirect someone away from a page they can access)
+      var currentPage = window.location.pathname.replace(/\/+$/,'');
       var onLearn   = currentPage === '/learn'    || currentPage.endsWith('/learn.html');
       var onLearnL2 = currentPage === '/learn-l2' || currentPage.endsWith('/learn-l2.html');
       var onLearnL3 = currentPage === '/learn-l3' || currentPage.endsWith('/learn-l3.html');
 
-      if (onLearn   && targetPage !== '/learn')    { window.location.replace(targetPage); return; }
-      if (onLearnL2 && targetPage !== '/learn-l2') { window.location.replace(targetPage); return; }
-      if (onLearnL3 && targetPage !== '/learn-l3') { window.location.replace(targetPage); return; }
+      // Redirect UP only: if user landed on a page they can't access yet
+      // Never redirect DOWN: if they clicked L2, keep them on L2
+      if (onLearn && (passedL2 || (passedL1 && (paidL2 || isAdmin)))) {
+        // On L1 but could be on L2+ — redirect up to their current level
+        if (passedL2 || (passedL1 && (paidL2 || isAdmin))) {
+          if (passedL2) {
+            window.location.replace('/learn-l3'); return;
+          } else {
+            window.location.replace('/learn-l2'); return;
+          }
+        }
+      }
+      // If on L2 or L3 directly, always allow — user chose this page intentionally
+      // Only block if truly not unlocked
+      if (onLearnL2 && !passedL1 && !isAdmin) { window.location.replace('/learn'); return; }
+      if (onLearnL3 && !passedL2 && !isAdmin) {
+        if (passedL1 && (paidL2 || isAdmin)) { window.location.replace('/learn-l2'); return; }
+        window.location.replace('/learn'); return;
+      }
 
     } catch(e) { /* silent fail — stay on current page */ }
   })();
@@ -287,52 +295,6 @@ nav{
     </div>
     <div class="lesson-list" id="lesson-list"></div>
   </nav>
-
-<!-- Level navigation banner -->
-<div id="ll-level-banner" style="background:#0B1F3A;border-bottom:1px solid rgba(255,255,255,0.08);padding:8px 2rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-  <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.3);font-weight:600;margin-right:4px;">Your track:</span>
-  <a href="/learn" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;font-size:0.75rem;font-weight:600;text-decoration:none;transition:all .15s;background:#D4A843;color:#0B1F3A;" id="level-nav-1"><span style="font-weight:800">L1</span> Xero Associate</a><span style="color:rgba(255,255,255,0.25);font-size:0.7rem;margin:0 2px">›</span><a href="/learn-l2" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;font-size:0.75rem;font-weight:600;text-decoration:none;transition:all .15s;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);" id="level-nav-2"><span style="font-weight:800">L2</span> Xero Professional</a><span style="color:rgba(255,255,255,0.25);font-size:0.7rem;margin:0 2px">›</span><a href="/learn-l3" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;font-size:0.75rem;font-weight:600;text-decoration:none;transition:all .15s;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);" id="level-nav-3"><span style="font-weight:800">L3</span> Xero Advisor</a>
-  <span id="ll-level-status" style="margin-left:auto;font-size:0.72rem;color:rgba(255,255,255,0.4);"></span>
-</div>
-<script>
-// Update level banner based on actual progress
-(function updateBanner() {
-  try {
-    var p = JSON.parse(localStorage.getItem('ll_progress') || '{}');
-    var completed = p.completedLevels || [];
-    var isAdmin = p.adminMode === true || sessionStorage.getItem('ll_admin_token');
-    var paidL2 = p.paid_l2 === true;
-
-    // Show which levels are accessible
-    var l2Access = completed.includes('l1') && (paidL2 || isAdmin);
-    var l3Access = (completed.includes('l2') || p.l2Score != null) || isAdmin;
-
-    var nav2 = document.getElementById('level-nav-2');
-    var nav3 = document.getElementById('level-nav-3');
-
-    if (!l2Access && nav2) {
-      nav2.style.opacity = '0.35';
-      nav2.style.pointerEvents = 'none';
-      nav2.title = 'Complete L1 and unlock L2 to access';
-    }
-    if (!l3Access && nav3) {
-      nav3.style.opacity = '0.35';
-      nav3.style.pointerEvents = 'none';
-      nav3.title = 'Complete L2 to access';
-    }
-
-    var status = document.getElementById('ll-level-status');
-    if (status) {
-      var labels = [];
-      if (completed.includes('l1')) labels.push('L1 ✓');
-      if (completed.includes('l2') || p.l2Score != null) labels.push('L2 ✓');
-      if (completed.includes('l3') || p.l3Score != null) labels.push('L3 ✓');
-      if (isAdmin) labels.push('Admin mode');
-      status.textContent = labels.join(' · ');
-    }
-  } catch(e) {}
-})();
-</script>
 
   <!-- Main -->
   <main class="lesson-main">
