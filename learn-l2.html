@@ -411,13 +411,71 @@ function renderNav() {
   }).join('');
 }
 
+
+// ── Region-aware term substitution ───────────────────────
+// Called on any content string before rendering to DOM
+function getRegionConfig() {
+  var code = 'UK';
+  try { code = JSON.parse(localStorage.getItem('ll_user')||'{}').region || 'UK'; } catch(e) {}
+  var R = {
+    UK:     {tax:'VAT',     taxRate:'20%',  taxBody:'HMRC',    filing:'MTD',         payroll:'PAYE',   currency:'£',    currencyName:'GBP',  company:'Limited Company', label:'United Kingdom'},
+    ZA:     {tax:'VAT',     taxRate:'15%',  taxBody:'SARS',    filing:'eFiling',     payroll:'PAYE',   currency:'R',    currencyName:'ZAR',  company:'Pty Ltd',         label:'South Africa'},
+    NG:     {tax:'VAT',     taxRate:'7.5%', taxBody:'FIRS',    filing:'TaxPro Max',  payroll:'PAYE',   currency:'₦',    currencyName:'NGN',  company:'Limited Company', label:'Nigeria'},
+    US:     {tax:'Sales Tax',taxRate:'varies',taxBody:'IRS',   filing:'e-File',      payroll:'Payroll',currency:'$',    currencyName:'USD',  company:'LLC',             label:'United States'},
+    AU:     {tax:'GST',     taxRate:'10%',  taxBody:'ATO',     filing:'STP',         payroll:'PAYG',   currency:'A$',   currencyName:'AUD',  company:'Pty Ltd',         label:'Australia'},
+    NZ:     {tax:'GST',     taxRate:'15%',  taxBody:'IRD',     filing:'myIR',        payroll:'PAYE',   currency:'NZ$',  currencyName:'NZD',  company:'Limited Company', label:'New Zealand'},
+    IE:     {tax:'VAT',     taxRate:'23%',  taxBody:'Revenue', filing:'ROS',         payroll:'PAYE',   currency:'€',    currencyName:'EUR',  company:'Limited Company', label:'Ireland'},
+    AE:     {tax:'VAT',     taxRate:'5%',   taxBody:'FTA',     filing:'EmaraTax',    payroll:'WPS',    currency:'AED',  currencyName:'AED',  company:'LLC',             label:'UAE'},
+    CA:     {tax:'GST/HST', taxRate:'5-15%',taxBody:'CRA',     filing:'NETFILE',     payroll:'CPP/EI', currency:'CA$',  currencyName:'CAD',  company:'Corp',            label:'Canada'},
+    GLOBAL: {tax:'Tax',     taxRate:'varies',taxBody:'Tax Authority',filing:'Local', payroll:'Payroll',currency:'',     currencyName:'Local',company:'Company',         label:'Global'},
+  };
+  return R[code] || R['UK'];
+}
+
+function regionaliseTerm(text) {
+  if (!text) return text;
+  var r = getRegionConfig();
+  // Tax body substitutions
+  text = text.replace(/\bHMRC\b/g, r.taxBody);
+  text = text.replace(/\bSARS\b/g, r.taxBody);
+  text = text.replace(/\bFIRS\b/g, r.taxBody);
+  text = text.replace(/\bIRS\b/g, r.taxBody);
+  text = text.replace(/\bATO\b/g, r.taxBody);
+  text = text.replace(/\bIRD\b/g, r.taxBody);
+  text = text.replace(/\bCRA\b/g, r.taxBody);
+  text = text.replace(/\bFTA\b/g, r.taxBody);
+  // Tax type
+  text = text.replace(/\bUK VAT\b/gi, r.label + ' ' + r.tax);
+  text = text.replace(/\bVAT Return\b/gi, r.tax + ' Return');
+  text = text.replace(/\bVAT Returns\b/gi, r.tax + ' Returns');
+  text = text.replace(/\bVAT registration\b/gi, r.tax + ' registration');
+  text = text.replace(/\bVAT rate\b/gi, r.tax + ' rate (' + r.taxRate + ')');
+  text = text.replace(/\bVAT\b/g, r.tax);
+  text = text.replace(/\bGST\b/g, r.tax);
+  // Filing system
+  text = text.replace(/Making Tax Digital \(MTD\)/gi, r.filing);
+  text = text.replace(/\bMTD\b/g, r.filing);
+  text = text.replace(/\beTax\b/gi, r.filing);
+  // Payroll
+  text = text.replace(/\bPAYE\b/g, r.payroll);
+  text = text.replace(/\bPAYG\b/g, r.payroll);
+  // Currency — replace £ amounts like £1,000 or £50
+  if (r.currency && r.currency !== '£') {
+    text = text.replace(/£([\d,]+)/g, r.currency + '$1');
+  }
+  // UK context
+  text = text.replace(/\bUK\b/g, r.label);
+  return text;
+}
 function loadLesson(index) {
   currentLesson = index;
   const lesson  = LESSONS[index];
   const content = CONTENT[index] || CONTENT[0];
 
   document.getElementById('lesson-tag').textContent  = 'Xero L2 Professional · Lesson ' + (index+1) + ' of ' + LESSONS.length;
-  document.getElementById('lesson-h1').textContent   = lesson.title;
+  // Update region indicator
+  try { var _ri = document.getElementById('lesson-region-tag'); if(_ri){ var _rc=getRegionConfig(); _ri.textContent=_rc.label+' · '+_rc.tax+' '+_rc.taxRate; } } catch(e){}
+  document.getElementById('lesson-h1').textContent   = regionaliseTerm(lesson.title);
   document.getElementById('lesson-meta').textContent = '⏱ 20–25 min · L2 Professional';
   document.getElementById('cc-num').textContent      = lesson.id;
   document.getElementById('cc-title').textContent    = lesson.title;
@@ -430,14 +488,14 @@ function loadLesson(index) {
     '<div class="lesson-step">' +
       '<div class="step-num">' + s.n + '</div>' +
       '<div style="flex:1">' +
-        '<div class="step-title">' + s.title + '</div>' +
-        '<div class="step-text">' + s.text + '</div>' +
-        (s.tip ? '<div class="step-tip">' + s.tip + '</div>' : '') +
+        '<div class="step-title">' + regionaliseTerm(s.title) + '</div>' +
+        '<div class="step-text">' + regionaliseTerm(s.text) + '</div>' +
+        (s.tip ? '<div class="step-tip">' + regionaliseTerm(s.tip) + '</div>' : '') +
       '</div></div>'
   ).join('');
 
   let bodyHTML = '<div class="l2-badge">L2 Professional Content</div>';
-  bodyHTML += '<p class="lesson-intro">' + content.intro + '</p>';
+  bodyHTML += '<p class="lesson-intro">' + regionaliseTerm(content.intro) + '</p>';
 
   if (lesson.hasSim) {
     const simName = lesson.simName;
@@ -447,7 +505,7 @@ function loadLesson(index) {
         '<div class="sim-icon">🖥️</div>' +
         '<div class="sim-card-info">' +
           '<div class="sim-card-title">Interactive ' + simName + ' Simulation</div>' +
-          '<div class="sim-card-sub">Practice filing a real UK VAT Return with live calculations and HMRC submission flow</div>' +
+          '<div class="sim-card-sub">Practice filing a real ' + getRegionConfig().label + ' ' + getRegionConfig().tax + ' Return with live calculations and ' + getRegionConfig().taxBody + ' submission flow</div>' +
         '</div>' +
         '<div class="sim-card-badge">✓ L2 Included</div>' +
       '</div>' +
@@ -473,7 +531,7 @@ function loadLesson(index) {
   }
 
   bodyHTML += '<div class="lesson-steps">' + stepsHTML + '</div>';
-  if (content.why) bodyHTML += '<div class="why-matters"><strong>Why this matters:</strong> ' + content.why + '</div>';
+  if (content.why) bodyHTML += '<div class="why-matters"><strong>Why this matters:</strong> ' + regionaliseTerm(content.why) + '</div>';
 
   bodyHTML += '<button class="btn-complete" id="btn-complete-' + index + '" onclick="completeLesson(' + index + ')"' +
     (isDone ? ' disabled style="background:#a0b5c5"' : '') + '>' +

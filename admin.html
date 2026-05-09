@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f2f5;min-height:100vh;display:flex;}
+/* ── Login overlay ───────────────────────────────────── */
+#login-overlay{position:fixed;inset:0;background:#0B1F3A;display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;}
+.login-box{background:#0d2044;border:1px solid rgba(212,168,67,0.4);border-radius:16px;padding:2.5rem 2rem;max-width:380px;width:100%;text-align:center;}
+.login-logo{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:0.25rem;}.login-logo span{color:#D4A843;}
+.login-sub{font-size:0.8rem;color:rgba(255,255,255,0.4);margin-bottom:2rem;}
+.login-input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.95rem;font-family:inherit;outline:none;margin-bottom:0.75rem;display:block;}
+.login-input:focus{border-color:#D4A843;}
+.login-btn{width:100%;padding:13px;background:#D4A843;color:#0B1F3A;border:none;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.login-err{color:#ff8080;font-size:0.78rem;min-height:1em;margin-bottom:0.5rem;}
+/* ── Main layout ────────────────────────────────────── */
+#app{display:none;width:100%;min-height:100vh;flex-direction:row;}
+/* Sidebar */
+.sidebar{width:220px;background:#0B1F3A;display:flex;flex-direction:column;flex-shrink:0;min-height:100vh;}
+.sb-brand{padding:1.25rem 1.25rem 0.75rem;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.sb-hex{width:22px;height:22px;background:#D4A843;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);flex-shrink:0;}
+.sb-title{font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:800;color:#fff;}
+.sb-title span{color:#D4A843;}
+.sb-nav{padding:0.75rem 0;flex:1;}
+.sb-section{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.3);padding:0.5rem 1.25rem 0.25rem;font-weight:700;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 1.25rem;cursor:pointer;font-size:0.82rem;color:rgba(255,255,255,0.6);transition:all .15s;border:none;background:none;width:100%;text-align:left;}
+.sb-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.sb-item.active{background:rgba(212,168,67,0.15);color:#D4A843;}
+.sb-item .icon{width:16px;text-align:center;flex-shrink:0;}
+.sb-footer{padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,0.08);}
+.sb-admin-badge{font-size:0.65rem;background:rgba(29,169,138,0.15);border:1px solid rgba(29,169,138,0.3);color:#26c9a5;padding:3px 10px;border-radius:100px;display:inline-block;margin-bottom:0.5rem;}
+.sb-logout{font-size:0.75rem;color:rgba(255,255,255,0.4);cursor:pointer;background:none;border:none;font-family:inherit;padding:0;}
+.sb-logout:hover{color:#ff8080;}
+/* Main */
+.main{flex:1;overflow-y:auto;padding:2rem;}
+.page-view{display:none;}
+.page-view.active{display:block;}
+/* Header */
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;}
+.page-title{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#1e3a5f;letter-spacing:-0.02em;}
+.page-sub{font-size:0.82rem;color:#6b87a3;margin-top:2px;}
+/* Stats row */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;}
+.stat-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem;}
+.stat-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#1e3a5f;line-height:1;}
+.stat-lbl{font-size:0.72rem;color:#6b87a3;margin-top:4px;text-transform:uppercase;letter-spacing:0.06em;}
+.stat-chg{font-size:0.72rem;margin-top:6px;font-weight:600;}
+.chg-up{color:#1DA98A;}
+.chg-dn{color:#E24B4A;}
+/* Table */
+.table-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:1.5rem;}
+.table-hdr{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0;}
+.table-title{font-size:0.9rem;font-weight:700;color:#1e3a5f;}
+.table-actions{display:flex;gap:0.5rem;}
+.tbl-search{padding:7px 12px;border:1px solid #e2e8f0;border-radius:7px;font-size:0.8rem;font-family:inherit;outline:none;width:200px;}
+.btn-sm{padding:7px 14px;border-radius:7px;font-size:0.78rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;}
+.btn-primary-sm{background:#1DA98A;color:#fff;}
+.btn-ghost-sm{background:transparent;border:1px solid #e2e8f0;color:#6b87a3;}
+.btn-ghost-sm:hover{border-color:#D4A843;color:#D4A843;}
+.btn-danger-sm{background:transparent;border:1px solid #fde8e8;color:#E24B4A;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:10px 1.25rem;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:#6b87a3;font-weight:700;border-bottom:1px solid #e2e8f0;background:#f8fafc;}
+td{padding:11px 1.25rem;font-size:0.82rem;color:#374151;border-bottom:1px solid #f0f2f5;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafbfc;}
+.badge{display:inline-block;font-size:0.65rem;font-weight:700;text-transform:uppercase;padding:2px 9px;border-radius:100px;}
+.badge-green{background:#e1f7f2;color:#0F6E56;}
+.badge-gold{background:#fef3c7;color:#92400e;}
+.badge-grey{background:#f0f2f5;color:#6b87a3;}
+.badge-blue{background:#dbeafe;color:#1d4ed8;}
+.badge-red{background:#fde8e8;color:#E24B4A;}
+/* Form */
+.form-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;}
+.form-title{font-size:0.9rem;font-weight:700;color:#1e3a5f;margin-bottom:1.25rem;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-field{display:flex;flex-direction:column;gap:4px;}
+.form-field label{font-size:0.7rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:0.05em;}
+.form-field input,.form-field select,.form-field textarea{padding:9px 12px;border:1px solid #e2e8f0;border-radius:7px;font-size:0.85rem;font-family:inherit;outline:none;color:#1e3a5f;}
+.form-field input:focus,.form-field select:focus{border-color:#D4A843;}
+.form-actions{display:flex;gap:0.75rem;margin-top:1.25rem;}
+.btn-save{padding:10px 20px;background:#D4A843;color:#0B1F3A;border:none;border-radius:8px;font-size:0.875rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-cancel{padding:10px 20px;background:transparent;border:1px solid #e2e8f0;color:#6b87a3;border-radius:8px;font-size:0.875rem;cursor:pointer;font-family:inherit;}
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:500;padding:1rem;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:14px;padding:1.75rem;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:1rem;font-weight:700;color:#1e3a5f;margin-bottom:1.25rem;}
+.modal-close{float:right;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#6b87a3;margin-top:-4px;}
+/* Empty state */
+.empty-state{text-align:center;padding:3rem 1rem;color:#6b87a3;}
+.empty-icon{font-size:2.5rem;margin-bottom:0.75rem;}
+.empty-text{font-size:0.875rem;}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">Ledger<span>Learn</span> Pro</div>
+    <div class="login-sub">Admin Panel · Restricted Access</div>
+    <div class="login-err" id="login-err"></div>
+    <input class="login-input" type="password" id="admin-pass" placeholder="Admin passphrase" autocomplete="current-password"/>
+    <button class="login-btn" onclick="adminLogin()">Access admin panel →</button>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-brand"><div class="sb-hex"></div><div class="sb-title">Ledger<span>Learn</span></div></div>
+    <div class="sb-nav">
+      <div class="sb-section">Overview</div>
+      <button class="sb-item active" onclick="nav('dashboard')"><span class="icon">📊</span> Dashboard</button>
+      <div class="sb-section">Users</div>
+      <button class="sb-item" onclick="nav('users')"><span class="icon">👥</span> All Users</button>
+      <button class="sb-item" onclick="nav('upgrades')"><span class="icon">⬆️</span> Upgrades</button>
+      <div class="sb-section">Revenue</div>
+      <button class="sb-item" onclick="nav('payments')"><span class="icon">💳</span> Payments</button>
+      <button class="sb-item" onclick="nav('affiliates')"><span class="icon">🤝</span> Affiliate Payouts</button>
+      <button class="sb-item" onclick="nav('partners')"><span class="icon">🏫</span> Partners</button>
+      <div class="sb-section">Platform</div>
+      <button class="sb-item" onclick="nav('certs')"><span class="icon">🏆</span> Certificates</button>
+      <button class="sb-item" onclick="nav('settings')"><span class="icon">⚙️</span> Settings</button>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-admin-badge">● Admin Active</div><br>
+      <button class="sb-logout" onclick="adminLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page-view active" id="view-dashboard">
+      <div class="page-hdr">
+        <div><div class="page-title">Dashboard</div><div class="page-sub">Platform overview · Last updated just now</div></div>
+        <button class="btn-sm btn-ghost-sm" onclick="loadDashboard()">↻ Refresh</button>
+      </div>
+      <div class="stat-row" id="stat-row">
+        <div class="stat-card"><div class="stat-val" id="stat-users">—</div><div class="stat-lbl">Total Users</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-certs">—</div><div class="stat-lbl">Certificates Issued</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-revenue">—</div><div class="stat-lbl">Total Revenue</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-affiliates">—</div><div class="stat-lbl">Active Affiliates</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-hdr"><div class="table-title">Recent registrations</div></div>
+        <div id="recent-users-table"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Loading...</div></div></div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="page-view" id="view-users">
+      <div class="page-hdr">
+        <div><div class="page-title">Users</div><div class="page-sub">Manage all registered users</div></div>
+        <button class="btn-sm btn-primary-sm" onclick="openUserModal()">+ Add user</button>
+      </div>
+      <div class="table-card">
+        <div class="table-hdr">
+          <div class="table-title">All users</div>
+          <div class="table-actions">
+            <input class="tbl-search" type="text" placeholder="Search name or email…" id="user-search" oninput="filterUsers()"/>
+          </div>
+        </div>
+        <div id="users-table"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">Loading users…</div></div></div>
+      </div>
+    </div>
+
+    <!-- UPGRADES -->
+    <div class="page-view" id="view-upgrades">
+      <div class="page-hdr">
+        <div><div class="page-title">Manual Upgrades</div><div class="page-sub">Upgrade a user's level access manually</div></div>
+      </div>
+      <div class="form-card">
+        <div class="form-title">Upgrade user level</div>
+        <div class="form-grid">
+          <div class="form-field"><label>User email</label><input type="email" id="upg-email" placeholder="user@example.com"/></div>
+          <div class="form-field"><label>Grant level access</label>
+            <select id="upg-level">
+              <option value="l2">L2 — Xero Professional ($49)</option>
+              <option value="l3">L3 — Xero Advisor (Free)</option>
+              <option value="both">L2 + L3 (both)</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Reason</label><input type="text" id="upg-reason" placeholder="Manual upgrade, refund, partner grant…"/></div>
+          <div class="form-field"><label>Note (internal)</label><input type="text" id="upg-note" placeholder="Optional internal note"/></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-save" onclick="applyUpgrade()">Apply upgrade</button>
+          <button class="btn-cancel" onclick="clearUpgrade()">Clear</button>
+        </div>
+        <div id="upg-status" style="font-size:0.78rem;margin-top:0.5rem;"></div>
+      </div>
+      <div class="table-card">
+        <div class="table-hdr"><div class="table-title">Upgrade history</div></div>
+        <div id="upgrades-table"><div class="empty-state"><div class="empty-icon">⬆️</div><div class="empty-text">No upgrades recorded yet.</div></div></div>
+      </div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="page-view" id="view-payments">
+      <div class="page-hdr">
+        <div><div class="page-title">Payments</div><div class="page-sub">PayPal subscription records</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-hdr"><div class="table-title">Payment records</div></div>
+        <div id="payments-table"><div class="empty-state"><div class="empty-icon">💳</div><div class="empty-text">Loading payment data…</div></div></div>
+      </div>
+    </div>
+
+    <!-- AFFILIATES -->
+    <div class="page-view" id="view-affiliates">
+      <div class="page-hdr">
+        <div><div class="page-title">Affiliate Payouts</div><div class="page-sub">Manage partner commissions and payouts</div></div>
+        <button class="btn-sm btn-primary-sm" onclick="openAffiliateModal()">+ Add affiliate</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-val" id="aff-total">—</div><div class="stat-lbl">Total Paid Out</div></div>
+        <div class="stat-card"><div class="stat-val" id="aff-pending">—</div><div class="stat-lbl">Pending Payout</div></div>
+        <div class="stat-card"><div class="stat-val" id="aff-count">—</div><div class="stat-lbl">Active Affiliates</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-hdr"><div class="table-title">Affiliate accounts</div></div>
+        <div id="affiliates-table"><div class="empty-state"><div class="empty-icon">🤝</div><div class="empty-text">No affiliates registered yet.</div></div></div>
+      </div>
+    </div>
+
+    <!-- PARTNERS -->
+    <div class="page-view" id="view-partners">
+      <div class="page-hdr">
+        <div><div class="page-title">Partners</div><div class="page-sub">LedgerLearn Partner Program applications</div></div>
+        <button class="btn-sm btn-primary-sm" onclick="openPartnerModal()">+ Add partner</button>
+      </div>
+      <div class="table-card">
+        <div class="table-hdr"><div class="table-title">Partner applications</div></div>
+        <div id="partners-table"><div class="empty-state"><div class="empty-icon">🏫</div><div class="empty-text">No partner applications yet.</div></div></div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATES -->
+    <div class="page-view" id="view-certs">
+      <div class="page-hdr">
+        <div><div class="page-title">Certificates</div><div class="page-sub">All issued certificates</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-hdr">
+          <div class="table-title">Issued certificates</div>
+          <input class="tbl-search" type="text" placeholder="Search by name or cert ID…" id="cert-search" oninput="filterCerts()"/>
+        </div>
+        <div id="certs-table"><div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">Loading certificates…</div></div></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page-view" id="view-settings">
+      <div class="page-hdr"><div><div class="page-title">Settings</div><div class="page-sub">Platform configuration</div></div></div>
+      <div class="form-card">
+        <div class="form-title">Platform settings</div>
+        <div class="form-grid">
+          <div class="form-field"><label>Platform name</label><input type="text" value="LedgerLearn Pro"/></div>
+          <div class="form-field"><label>Support email</label><input type="email" value="hello@ledgerlearn.pro"/></div>
+          <div class="form-field"><label>L2 price (USD)</label><input type="number" value="49"/></div>
+          <div class="form-field"><label>Default region</label>
+            <select><option>UK</option><option>ZA</option><option>NG</option><option>US</option><option>AU</option></select>
+          </div>
+        </div>
+        <div class="form-actions"><button class="btn-save">Save settings</button></div>
+      </div>
+      <div class="form-card">
+        <div class="form-title">Announcement banner</div>
+        <div class="form-field"><label>Message (leave empty to hide)</label><textarea rows="2" placeholder="e.g. New QuickBooks L1 content launching 1 June!"></textarea></div>
+        <div class="form-actions"><button class="btn-save">Save banner</button></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- User edit modal -->
+<div class="modal-bg" id="user-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('user-modal')">✕</button>
+    <div class="modal-title" id="user-modal-title">Edit user</div>
+    <div class="form-grid">
+      <div class="form-field"><label>Full name</label><input type="text" id="um-name"/></div>
+      <div class="form-field"><label>Email</label><input type="email" id="um-email"/></div>
+      <div class="form-field"><label>Region</label>
+        <select id="um-region"><option>UK</option><option>ZA</option><option>NG</option><option>US</option><option>AU</option><option>NZ</option><option>IE</option><option>AE</option><option>CA</option><option>GLOBAL</option></select>
+      </div>
+      <div class="form-field"><label>Level access</label>
+        <select id="um-level"><option value="l1">L1 only</option><option value="l2">L1 + L2</option><option value="l3">L1 + L2 + L3</option></select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-save" onclick="saveUser()">Save changes</button>
+      <button class="btn-cancel" onclick="closeModal('user-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Affiliate modal -->
+<div class="modal-bg" id="aff-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('aff-modal')">✕</button>
+    <div class="modal-title">Add affiliate</div>
+    <div class="form-grid">
+      <div class="form-field"><label>Name</label><input type="text" id="aff-name"/></div>
+      <div class="form-field"><label>Email</label><input type="email" id="aff-email"/></div>
+      <div class="form-field"><label>Commission %</label><input type="number" id="aff-pct" value="20" min="1" max="50"/></div>
+      <div class="form-field"><label>PayPal / Bank ref</label><input type="text" id="aff-payref" placeholder="PayPal email or bank ref"/></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-save" onclick="saveAffiliate()">Add affiliate</button>
+      <button class="btn-cancel" onclick="closeModal('aff-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var ADMIN_TOKEN = '';
+
+// ── Login ─────────────────────────────────────────────
+function adminLogin() {
+  var pass = document.getElementById('admin-pass').value.trim();
+  if (!pass) return;
+  document.getElementById('login-err').textContent = 'Verifying...';
+
+  fetch('/.netlify/functions/admin-auth', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({passphrase: pass})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (!data.ok) {
+      document.getElementById('login-err').textContent = 'Invalid passphrase. Access denied.';
+      return;
+    }
+    ADMIN_TOKEN = data.token;
+    sessionStorage.setItem('ll_admin_token', data.token);
+    sessionStorage.setItem('ll_admin_expires', data.expires);
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    loadDashboard();
+    loadUsers();
+    loadCerts();
+    loadPayments();
+    loadAffiliates();
+    loadPartners();
+  })
+  .catch(function() {
+    document.getElementById('login-err').textContent = 'Network error. Try again.';
+  });
+}
+
+function adminLogout() {
+  ADMIN_TOKEN = '';
+  sessionStorage.removeItem('ll_admin_token');
+  sessionStorage.removeItem('ll_admin_expires');
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('admin-pass').value = '';
+}
+
+// Check existing session
+(function checkSession() {
+  var token   = sessionStorage.getItem('ll_admin_token');
+  var expires = sessionStorage.getItem('ll_admin_expires');
+  if (token && expires && new Date(expires) > new Date()) {
+    ADMIN_TOKEN = token;
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    loadDashboard(); loadUsers(); loadCerts(); loadPayments(); loadAffiliates(); loadPartners();
+  }
+})();
+
+document.getElementById('admin-pass').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') adminLogin();
+});
+
+// ── Navigation ────────────────────────────────────────
+function nav(page) {
+  document.querySelectorAll('.page-view').forEach(function(v){ v.classList.remove('active'); });
+  document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('active'); });
+  document.getElementById('view-'+page).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── Load data from Netlify Blobs via progress function ─
+function apiGet(path) {
+  return fetch(path, {headers:{'Authorization':'Bearer '+ADMIN_TOKEN}}).then(function(r){ return r.json(); }).catch(function(){ return null; });
+}
+function apiPost(path, body) {
+  return fetch(path, {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+ADMIN_TOKEN}, body: JSON.stringify(body)}).then(function(r){ return r.json(); }).catch(function(){ return null; });
+}
+
+// ── Dashboard ─────────────────────────────────────────
+function loadDashboard() {
+  // Read from localStorage for demo — in production call Netlify Blobs
+  var allUsers = getLocalUsers();
+  document.getElementById('stat-users').textContent   = allUsers.length;
+  document.getElementById('stat-certs').textContent   = allUsers.filter(function(u){ return u.hasCert; }).length;
+  document.getElementById('stat-revenue').textContent = '$' + (allUsers.filter(function(u){ return u.paid; }).length * 49);
+  document.getElementById('stat-affiliates').textContent = getLocalAffiliates().length;
+
+  var recent = allUsers.slice(-10).reverse();
+  var html = recent.length ? '<table><thead><tr><th>Name</th><th>Email</th><th>Level</th><th>Region</th><th>Joined</th></tr></thead><tbody>' +
+    recent.map(function(u) {
+      return '<tr><td>'+esc(u.name)+'</td><td>'+esc(u.email)+'</td>'+
+             '<td><span class="badge badge-green">'+esc(u.level||'L1')+'</span></td>'+
+             '<td>'+esc(u.region||'UK')+'</td>'+
+             '<td>'+new Date(u.ts||Date.now()).toLocaleDateString()+'</td></tr>';
+    }).join('') + '</tbody></table>' :
+    '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No users yet.</div></div>';
+  document.getElementById('recent-users-table').innerHTML = html;
+}
+
+// ── Users ─────────────────────────────────────────────
+var ALL_USERS = [];
+function getLocalUsers() {
+  try { return JSON.parse(localStorage.getItem('ll_admin_users') || '[]'); } catch(e){ return []; }
+}
+function saveLocalUsers(users) {
+  localStorage.setItem('ll_admin_users', JSON.stringify(users));
+}
+function loadUsers() {
+  ALL_USERS = getLocalUsers();
+  renderUsersTable(ALL_USERS);
+}
+function renderUsersTable(users) {
+  var html = users.length ? '<table><thead><tr><th>Name</th><th>Email</th><th>Region</th><th>Level</th><th>Cert</th><th>Actions</th></tr></thead><tbody>' +
+    users.map(function(u,i) {
+      return '<tr>'+
+        '<td>'+esc(u.name)+'</td>'+
+        '<td>'+esc(u.email)+'</td>'+
+        '<td>'+esc(u.region||'UK')+'</td>'+
+        '<td><span class="badge badge-green">'+esc(u.level||'L1')+'</span></td>'+
+        '<td>'+(u.hasCert?'<span class="badge badge-gold">✓ Cert</span>':'<span class="badge badge-grey">—</span>')+'</td>'+
+        '<td style="display:flex;gap:0.4rem;">'+
+          '<button class="btn-sm btn-ghost-sm" onclick="editUser('+i+')">Edit</button>'+
+          '<button class="btn-sm btn-danger-sm" onclick="deleteUser('+i+')">Delete</button>'+
+        '</td></tr>';
+    }).join('') + '</tbody></table>' :
+    '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">No users in admin records. Users registered via the platform appear here as they are added.</div></div>';
+  document.getElementById('users-table').innerHTML = html;
+}
+function filterUsers() {
+  var q = document.getElementById('user-search').value.toLowerCase();
+  renderUsersTable(ALL_USERS.filter(function(u){ return (u.name+u.email).toLowerCase().includes(q); }));
+}
+var editingUserIdx = -1;
+function openUserModal(){ editingUserIdx=-1; document.getElementById('user-modal-title').textContent='Add user'; document.getElementById('user-modal').classList.add('open'); }
+function editUser(i){ editingUserIdx=i; var u=ALL_USERS[i]; document.getElementById('um-name').value=u.name||''; document.getElementById('um-email').value=u.email||''; document.getElementById('um-region').value=u.region||'UK'; document.getElementById('um-level').value=u.level||'l1'; document.getElementById('user-modal-title').textContent='Edit user'; document.getElementById('user-modal').classList.add('open'); }
+function saveUser(){
+  var u={name:document.getElementById('um-name').value.trim(), email:document.getElementById('um-email').value.trim(), region:document.getElementById('um-region').value, level:document.getElementById('um-level').value, ts:Date.now()};
+  if(editingUserIdx>=0) ALL_USERS[editingUserIdx]=u; else ALL_USERS.push(u);
+  saveLocalUsers(ALL_USERS); loadUsers(); closeModal('user-modal'); loadDashboard();
+}
+function deleteUser(i){ if(!confirm('Delete this user?')) return; ALL_USERS.splice(i,1); saveLocalUsers(ALL_USERS); loadUsers(); }
+
+// ── Upgrades ──────────────────────────────────────────
+var UPGRADE_LOG = [];
+function applyUpgrade(){
+  var email=document.getElementById('upg-email').value.trim();
+  var level=document.getElementById('upg-level').value;
+  var reason=document.getElementById('upg-reason').value.trim();
+  if(!email){ document.getElementById('upg-status').textContent='Please enter user email.'; return; }
+  var log = {email,level,reason,ts:new Date().toISOString(), by:'admin'};
+  UPGRADE_LOG.unshift(log);
+  localStorage.setItem('ll_admin_upgrades', JSON.stringify(UPGRADE_LOG));
+  document.getElementById('upg-status').style.color='#1DA98A';
+  document.getElementById('upg-status').textContent='Upgrade logged for '+email+'. Instruct user to clear browser cache or use /recover page.';
+  renderUpgradesTable();
+}
+function clearUpgrade(){ document.getElementById('upg-email').value=''; document.getElementById('upg-reason').value=''; document.getElementById('upg-status').textContent=''; }
+function renderUpgradesTable(){
+  var html = UPGRADE_LOG.length ? '<table><thead><tr><th>Email</th><th>Level</th><th>Reason</th><th>Date</th></tr></thead><tbody>' +
+    UPGRADE_LOG.map(function(u){ return '<tr><td>'+esc(u.email)+'</td><td><span class="badge badge-gold">'+esc(u.level)+'</span></td><td>'+esc(u.reason||'—')+'</td><td>'+new Date(u.ts).toLocaleDateString()+'</td></tr>'; }).join('')+'</tbody></table>' :
+    '<div class="empty-state"><div class="empty-icon">⬆️</div><div class="empty-text">No upgrades yet.</div></div>';
+  document.getElementById('upgrades-table').innerHTML = html;
+}
+(function loadUpgrades(){ try{ UPGRADE_LOG=JSON.parse(localStorage.getItem('ll_admin_upgrades')||'[]'); }catch(e){} renderUpgradesTable(); })();
+
+// ── Payments ──────────────────────────────────────────
+function loadPayments(){
+  // Show a placeholder table — real data would come from Netlify Blobs
+  document.getElementById('payments-table').innerHTML =
+    '<table><thead><tr><th>Email</th><th>Plan</th><th>Subscription ID</th><th>Status</th><th>Date</th></tr></thead><tbody>' +
+    '<tr><td colspan="5" style="text-align:center;color:#6b87a3;padding:2rem;font-size:0.82rem;">PayPal payment records will appear here once the verify-payment Netlify function is updated to store records in Blobs and expose a GET endpoint for admin retrieval.</td></tr>' +
+    '</tbody></table>';
+}
+
+// ── Affiliates ────────────────────────────────────────
+var AFFILIATES = [];
+function getLocalAffiliates(){ try{ return JSON.parse(localStorage.getItem('ll_admin_affiliates')||'[]'); }catch(e){ return []; } }
+function loadAffiliates(){
+  AFFILIATES = getLocalAffiliates();
+  document.getElementById('aff-count').textContent = AFFILIATES.length;
+  var pending = AFFILIATES.reduce(function(a,af){ return a+(af.pending||0); }, 0);
+  var paid    = AFFILIATES.reduce(function(a,af){ return a+(af.paid||0); }, 0);
+  document.getElementById('aff-pending').textContent = '$'+pending;
+  document.getElementById('aff-total').textContent   = '$'+paid;
+  var html = AFFILIATES.length ? '<table><thead><tr><th>Name</th><th>Email</th><th>Commission</th><th>Referrals</th><th>Pending</th><th>Paid</th><th>Actions</th></tr></thead><tbody>' +
+    AFFILIATES.map(function(af,i){
+      return '<tr><td>'+esc(af.name)+'</td><td>'+esc(af.email)+'</td><td><span class="badge badge-blue">'+af.pct+'%</span></td>'+
+        '<td>'+( af.referrals||0)+'</td><td>$'+(af.pending||0)+'</td><td>$'+(af.paid||0)+'</td>'+
+        '<td style="display:flex;gap:0.4rem;">'+
+          '<button class="btn-sm btn-primary-sm" onclick="markPaid('+i+')">Mark paid</button>'+
+          '<button class="btn-sm btn-danger-sm" onclick="removeAffiliate('+i+')">Remove</button>'+
+        '</td></tr>';
+    }).join('')+'</tbody></table>' :
+    '<div class="empty-state"><div class="empty-icon">🤝</div><div class="empty-text">No affiliates yet. Add your first partner affiliate above.</div></div>';
+  document.getElementById('affiliates-table').innerHTML = html;
+}
+function openAffiliateModal(){ document.getElementById('aff-modal').classList.add('open'); }
+function saveAffiliate(){
+  var af={name:document.getElementById('aff-name').value.trim(), email:document.getElementById('aff-email').value.trim(), pct:parseInt(document.getElementById('aff-pct').value)||20, payref:document.getElementById('aff-payref').value.trim(), referrals:0, pending:0, paid:0, ts:Date.now()};
+  AFFILIATES.push(af); localStorage.setItem('ll_admin_affiliates',JSON.stringify(AFFILIATES)); loadAffiliates(); closeModal('aff-modal');
+}
+function markPaid(i){ AFFILIATES[i].paid=(AFFILIATES[i].paid||0)+(AFFILIATES[i].pending||0); AFFILIATES[i].pending=0; localStorage.setItem('ll_admin_affiliates',JSON.stringify(AFFILIATES)); loadAffiliates(); }
+function removeAffiliate(i){ if(!confirm('Remove affiliate?')) return; AFFILIATES.splice(i,1); localStorage.setItem('ll_admin_affiliates',JSON.stringify(AFFILIATES)); loadAffiliates(); }
+
+// ── Partners ──────────────────────────────────────────
+var PARTNERS = [];
+function loadPartners(){
+  try{ PARTNERS=JSON.parse(localStorage.getItem('ll_admin_partners')||'[]'); }catch(e){}
+  var html = PARTNERS.length ? '<table><thead><tr><th>Institution</th><th>Contact</th><th>Email</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+    PARTNERS.map(function(p,i){
+      return '<tr><td>'+esc(p.institution)+'</td><td>'+esc(p.contact)+'</td><td>'+esc(p.email)+'</td><td>'+esc(p.type||'—')+'</td>'+
+        '<td><span class="badge '+(p.status==='approved'?'badge-green':'badge-gold')+'">'+esc(p.status||'pending')+'</span></td>'+
+        '<td style="display:flex;gap:0.4rem;">'+
+          '<button class="btn-sm btn-primary-sm" onclick="approvePartner('+i+')">Approve</button>'+
+          '<button class="btn-sm btn-danger-sm" onclick="rejectPartner('+i+')">Reject</button>'+
+        '</td></tr>';
+    }).join('')+'</tbody></table>' :
+    '<div class="empty-state"><div class="empty-icon">🏫</div><div class="empty-text">No partner applications yet. Share the /partners page to receive applications.</div></div>';
+  document.getElementById('partners-table').innerHTML = html;
+}
+function openPartnerModal(){ /* TODO: open modal */ alert('Use the /partners page for new applications, or add manually via the partner modal (coming soon).'); }
+function approvePartner(i){ PARTNERS[i].status='approved'; localStorage.setItem('ll_admin_partners',JSON.stringify(PARTNERS)); loadPartners(); }
+function rejectPartner(i){ PARTNERS[i].status='rejected'; localStorage.setItem('ll_admin_partners',JSON.stringify(PARTNERS)); loadPartners(); }
+
+// ── Certificates ──────────────────────────────────────
+var ALL_CERTS = [];
+function loadCerts(){
+  // Pull from localStorage for now
+  ALL_CERTS = [];
+  var users = getLocalUsers();
+  users.forEach(function(u){ if(u.cert) ALL_CERTS.push(Object.assign({},u.cert,{userName:u.name,userEmail:u.email})); });
+  renderCertsTable(ALL_CERTS);
+}
+function renderCertsTable(certs){
+  var html = certs.length ? '<table><thead><tr><th>Name</th><th>Cert ID</th><th>Level</th><th>Score</th><th>Region</th><th>Date</th></tr></thead><tbody>' +
+    certs.map(function(c){
+      return '<tr><td>'+esc(c.candidateName||c.userName)+'</td><td><code style="font-size:0.75rem">'+esc(c.certId||'—')+'</code></td>'+
+        '<td><span class="badge badge-green">'+esc(c.certLevel||'L1')+'</span></td>'+
+        '<td><strong>'+esc(String(c.score||'—'))+'%</strong></td>'+
+        '<td>'+esc(c.certRegion||'UK')+'</td>'+
+        '<td>'+esc(c.issueDate||'—')+'</td></tr>';
+    }).join('')+'</tbody></table>' :
+    '<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">No certificates in admin records yet.</div></div>';
+  document.getElementById('certs-table').innerHTML = html;
+}
+function filterCerts(){ var q=document.getElementById('cert-search').value.toLowerCase(); renderCertsTable(ALL_CERTS.filter(function(c){ return (c.candidateName+c.certId).toLowerCase().includes(q); })); }
+
+// ── Helpers ───────────────────────────────────────────
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>

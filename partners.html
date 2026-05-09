@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Partner Program — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#fff;color:#1e3a5f;}
+nav{height:56px;background:#0B1F3A;border-bottom:2px solid #D4A843;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:22px;height:22px;background:#D4A843;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-weight:800;font-size:1rem;color:#fff;}.brand span{color:#D4A843;}
+.nav-cta{background:#D4A843;color:#0B1F3A;font-weight:700;font-size:0.82rem;padding:8px 18px;border-radius:7px;text-decoration:none;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0B1F3A 0%,#0d2a4e 60%,#0a1f38 100%);padding:6rem 2rem 5rem;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-50%;right:-10%;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(212,168,67,0.08) 0%,transparent 70%);pointer-events:none;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.35);color:#D4A843;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:5px 16px;border-radius:100px;margin-bottom:1.5rem;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,5vw,3.6rem);font-weight:800;color:#fff;line-height:1.1;letter-spacing:-0.03em;max-width:700px;margin:0 auto 1.25rem;}
+.hero h1 span{color:#D4A843;}
+.hero-sub{font-size:1.05rem;color:rgba(255,255,255,0.6);line-height:1.75;max-width:560px;margin:0 auto 2.5rem;font-weight:300;}
+.hero-ctas{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+.btn-hero{display:inline-flex;align-items:center;gap:8px;background:#D4A843;color:#0B1F3A;font-weight:700;font-size:1rem;padding:16px 32px;border-radius:10px;text-decoration:none;transition:all .2s;}
+.btn-hero:hover{background:#f0c860;transform:translateY(-2px);}
+.btn-hero-ghost{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:500;}
+.btn-hero-ghost:hover{background:rgba(255,255,255,0.14);}
+
+/* SECTIONS */
+section{padding:5rem 2rem;}
+.inner{max-width:1080px;margin:0 auto;}
+.eyebrow{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.14em;color:#1DA98A;font-weight:700;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;}
+.eyebrow::before{content:'';width:24px;height:2px;background:#1DA98A;}
+h2{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;color:#0B1F3A;letter-spacing:-0.02em;line-height:1.2;margin-bottom:0.75rem;}
+.section-sub{font-size:1rem;color:#6b87a3;line-height:1.75;max-width:580px;margin-bottom:3rem;font-weight:300;}
+
+/* Benefits grid */
+.benefits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;}
+.benefit-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:1.75rem;transition:all .2s;}
+.benefit-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(11,31,58,0.1);}
+.benefit-icon{font-size:2rem;margin-bottom:1rem;}
+.benefit-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#0B1F3A;margin-bottom:0.4rem;}
+.benefit-text{font-size:0.85rem;color:#6b87a3;line-height:1.65;font-weight:300;}
+
+/* Who can partner */
+.who-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;}
+.who-card{border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem;display:flex;align-items:flex-start;gap:12px;}
+.who-icon{font-size:1.5rem;flex-shrink:0;}
+.who-title{font-size:0.875rem;font-weight:700;color:#0B1F3A;margin-bottom:3px;}
+.who-text{font-size:0.78rem;color:#6b87a3;line-height:1.5;}
+
+/* Commission table */
+.comm-section{background:linear-gradient(135deg,#0B1F3A,#0d2a4e);padding:5rem 2rem;}
+.comm-inner{max-width:900px;margin:0 auto;text-align:center;}
+.comm-h2{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;color:#fff;margin-bottom:0.75rem;}
+.comm-sub{color:rgba(255,255,255,0.55);font-size:1rem;margin-bottom:3rem;font-weight:300;}
+.comm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:2rem;}
+.comm-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:2rem 1.5rem;text-align:center;}
+.comm-card.featured{background:rgba(212,168,67,0.1);border-color:rgba(212,168,67,0.4);}
+.comm-pct{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:#D4A843;line-height:1;margin-bottom:0.25rem;}
+.comm-label{font-size:0.9rem;font-weight:700;color:#fff;margin-bottom:0.4rem;}
+.comm-range{font-size:0.78rem;color:rgba(255,255,255,0.45);}
+.comm-note{font-size:0.82rem;color:rgba(255,255,255,0.4);}
+
+/* How it works */
+.steps-row{display:flex;align-items:flex-start;gap:2rem;position:relative;flex-wrap:wrap;}
+.step{flex:1;min-width:200px;text-align:center;}
+.step-num{width:60px;height:60px;border-radius:50%;background:#0B1F3A;color:#D4A843;font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+.step-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#0B1F3A;margin-bottom:0.4rem;}
+.step-text{font-size:0.85rem;color:#6b87a3;line-height:1.65;}
+.steps-connector{position:absolute;top:30px;left:calc(16% + 30px);right:calc(16% + 30px);height:2px;background:linear-gradient(90deg,#D4A843,#1DA98A);}
+
+/* ERP Pathway */
+.erp-band{background:#f0fdf8;border:1px solid #bbf7d0;border-radius:16px;padding:2rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap;}
+.erp-band-icon{font-size:3rem;flex-shrink:0;}
+.erp-band-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:#0B1F3A;margin-bottom:0.25rem;}
+.erp-band-text{font-size:0.875rem;color:#6b87a3;line-height:1.6;}
+.erp-band-cta{margin-left:auto;flex-shrink:0;}
+.btn-teal{display:inline-flex;padding:12px 22px;background:#1DA98A;color:#fff;font-weight:700;font-size:0.875rem;border-radius:9px;text-decoration:none;transition:all .2s;}
+.btn-teal:hover{background:#26c9a5;transform:translateY(-1px);}
+
+/* Application form */
+.apply-section{background:#f8fafc;padding:5rem 2rem;}
+.apply-inner{max-width:680px;margin:0 auto;}
+.form-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:2.5rem;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-field{display:flex;flex-direction:column;gap:5px;}
+.form-field.full{grid-column:1/-1;}
+label{font-size:0.7rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.06em;}
+input,select,textarea{padding:11px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.9rem;font-family:inherit;outline:none;color:#1e3a5f;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{border-color:#D4A843;}
+.submit-btn{width:100%;padding:16px;background:#D4A843;color:#0B1F3A;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;margin-top:1.25rem;}
+.submit-btn:hover{background:#f0c860;transform:translateY(-1px);}
+.form-note{font-size:0.75rem;color:#6b87a3;text-align:center;margin-top:0.75rem;line-height:1.6;}
+.success-msg{display:none;text-align:center;padding:2rem;background:#f0fdf8;border:1px solid #bbf7d0;border-radius:12px;}
+.success-icon{font-size:3rem;margin-bottom:0.75rem;}
+.success-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:#0B1F3A;margin-bottom:0.4rem;}
+.success-sub{font-size:0.875rem;color:#6b87a3;}
+
+/* Footer */
+footer{background:#0B1F3A;padding:2.5rem 2rem;text-align:center;}
+.footer-brand{font-family:'Syne',sans-serif;font-weight:800;color:#fff;font-size:1rem;margin-bottom:0.5rem;}.footer-brand span{color:#D4A843;}
+.footer-links{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:0.75rem;}
+.footer-links a{color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;}
+.footer-copy{font-size:0.72rem;color:rgba(255,255,255,0.3);}
+
+@media(max-width:700px){.comm-grid{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}.steps-connector{display:none;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <a href="#apply" class="nav-cta">Become a partner →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">🤝 Partner Program</div>
+  <h1>Transform accounting education.<br><span>Earn while you teach.</span></h1>
+  <p class="hero-sub">Join the LedgerLearn Partner Program and help your students become job-ready accountants — while generating recurring commission revenue for your institution.</p>
+  <div class="hero-ctas">
+    <a href="#apply" class="btn-hero">Apply to become a partner →</a>
+    <a href="#commission" class="btn-hero btn-hero-ghost">View commission structure</a>
+  </div>
+</section>
+
+<!-- WHAT IS LEDGERLEARN -->
+<section>
+  <div class="inner">
+    <div class="eyebrow">What is LedgerLearn</div>
+    <h2>A career-focused accounting platform<br>your students will actually use</h2>
+    <p class="section-sub">LedgerLearn is not a theory platform. It trains students and accounting professionals through hands-on Xero, QuickBooks, and Sage simulations — producing verifiable certificates that employers recognise and trust.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-icon">📊</div>
+        <div class="benefit-title">Boost employability</div>
+        <div class="benefit-text">Students leave with certified, practical skills. 73% of employers shortlist certified candidates over uncertified — even with the same qualification.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">🖥️</div>
+        <div class="benefit-title">Real software exposure</div>
+        <div class="benefit-text">Xero, QuickBooks and Sage simulations built to mirror the actual interfaces. Students are trained — not just taught.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">💰</div>
+        <div class="benefit-title">Recurring revenue</div>
+        <div class="benefit-text">Earn commission on every student who completes a paid certification through your referral. No cap. No expiry.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">📈</div>
+        <div class="benefit-title">Better outcomes</div>
+        <div class="benefit-text">Demonstrate measurable graduate success with verified certificate data you can share with accreditation bodies and employers.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO CAN PARTNER -->
+<section style="background:#f8fafc;padding:5rem 2rem;">
+  <div class="inner">
+    <div class="eyebrow">Who can partner</div>
+    <h2>Built for educators, trainers<br>and professional bodies</h2>
+    <p class="section-sub">If you teach accounting or finance — or support people into accounting careers — LedgerLearn is built for you.</p>
+    <div class="who-grid">
+      <div class="who-card"><div class="who-icon">🏫</div><div><div class="who-title">Accounting Training Schools</div><div class="who-text">Institutions focused on accounting education and professional development.</div></div></div>
+      <div class="who-card"><div class="who-icon">📒</div><div><div class="who-title">Bookkeeping Academies</div><div class="who-text">Specialised training centres for bookkeeping and financial management.</div></div></div>
+      <div class="who-card"><div class="who-icon">🏢</div><div><div class="who-title">Accounting Firms</div><div class="who-text">Professional services firms seeking training solutions for staff and graduates.</div></div></div>
+      <div class="who-card"><div class="who-icon">📋</div><div><div class="who-title">AAT / ACCA Tutors</div><div class="who-text">Certified instructors preparing students for professional qualifications.</div></div></div>
+      <div class="who-card"><div class="who-icon">🎓</div><div><div class="who-title">Apprenticeship Providers</div><div class="who-text">Organisations delivering work-based learning and apprenticeship programmes.</div></div></div>
+      <div class="who-card"><div class="who-icon">🚀</div><div><div class="who-title">Career Development Orgs</div><div class="who-text">Organisations supporting professional growth and skills development globally.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMISSION -->
+<section class="comm-section" id="commission">
+  <div class="comm-inner">
+    <div class="eyebrow" style="justify-content:center;color:#D4A843;">
+      <span style="background:#D4A843;width:24px;height:2px;display:inline-block;"></span>
+      Commission structure
+    </div>
+    <div class="comm-h2">Earn more as you grow</div>
+    <div class="comm-sub">Commission scales automatically with your referral volume. No applications. No renegotiations.</div>
+    <div class="comm-grid">
+      <div class="comm-card">
+        <div class="comm-pct">20%</div>
+        <div class="comm-label">Standard</div>
+        <div class="comm-range">1–20 student referrals</div>
+      </div>
+      <div class="comm-card featured">
+        <div class="comm-pct">25%</div>
+        <div class="comm-label">Growth</div>
+        <div class="comm-range">21–50 student referrals</div>
+      </div>
+      <div class="comm-card">
+        <div class="comm-pct">Custom</div>
+        <div class="comm-label">Enterprise</div>
+        <div class="comm-range">50+ students · tailored</div>
+      </div>
+    </div>
+    <div class="comm-note">Commissions are calculated on paid L2 enrolments ($49 each). Paid monthly via PayPal or bank transfer.</div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section>
+  <div class="inner">
+    <div class="eyebrow">How it works</div>
+    <h2>Three steps to earning</h2>
+    <p class="section-sub">From application to first commission payment in under 7 days.</p>
+    <div class="steps-row" style="position:relative;">
+      <div class="steps-connector"></div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Partner onboarding</div>
+        <div class="step-text">Apply below. We review your application and set you up with a partner dashboard, referral link, and resource pack within 2 business days.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Refer students</div>
+        <div class="step-text">Share your unique referral link with students, embed it on your website, or promote through your existing channels. L1 is free — low barrier to entry.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Earn commission</div>
+        <div class="step-text">Every time a referred student purchases L2 ($49), your commission is automatically tracked. Paid monthly with full reporting in your partner dashboard.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ERP PATHWAY -->
+<section style="background:#f8fafc;padding:5rem 2rem;">
+  <div class="inner">
+    <div class="eyebrow">ERP Pathways</div>
+    <h2>Give students a route to<br>high-income ERP consulting</h2>
+    <p class="section-sub">LedgerLearn is the entry point. ERP.SaaS Academy is the destination. Partners can unlock the full career pathway for their students.</p>
+    <div class="erp-band">
+      <div class="erp-band-icon">🚀</div>
+      <div>
+        <div class="erp-band-title">ERP.SaaS Academy access for partner students</div>
+        <div class="erp-band-text">Certified LedgerLearn graduates can progress to ERP.SaaS Academy — where they learn to land £5,000+ implementation projects. Partners earn additional commission on Academy enrolments too.</div>
+      </div>
+      <div class="erp-band-cta"><a href="/erp-academy" class="btn-teal">Learn about ERP Academy →</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLICATION FORM -->
+<section class="apply-section" id="apply">
+  <div class="apply-inner">
+    <div style="text-align:center;margin-bottom:2.5rem;">
+      <div class="eyebrow" style="justify-content:center;">Apply now</div>
+      <h2>Become a LedgerLearn Partner</h2>
+      <p style="font-size:1rem;color:#6b87a3;max-width:500px;margin:0.5rem auto 0;font-weight:300;">Complete the form below. We review every application personally and respond within 2 business days.</p>
+    </div>
+    <div class="form-card">
+      <div id="partner-form">
+        <div class="form-grid">
+          <div class="form-field"><label>Institution / Organisation name</label><input type="text" id="p-institution" placeholder="e.g. ABC Accounting Academy"/></div>
+          <div class="form-field"><label>Your full name</label><input type="text" id="p-name" placeholder="First and last name"/></div>
+          <div class="form-field"><label>Email address</label><input type="email" id="p-email" placeholder="you@institution.com"/></div>
+          <div class="form-field"><label>Phone number</label><input type="tel" id="p-phone" placeholder="+44 7700 000000"/></div>
+          <div class="form-field"><label>Organisation type</label>
+            <select id="p-type">
+              <option value="">Select…</option>
+              <option>Accounting Training School</option>
+              <option>Bookkeeping Academy</option>
+              <option>Accounting Firm</option>
+              <option>AAT / ACCA Tutor</option>
+              <option>Apprenticeship Provider</option>
+              <option>Career Development Organisation</option>
+              <option>University / College</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Country</label>
+            <select id="p-country">
+              <option>United Kingdom</option><option>Nigeria</option><option>South Africa</option>
+              <option>United States</option><option>Australia</option><option>UAE</option>
+              <option>Ireland</option><option>Canada</option><option>New Zealand</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Estimated students per year</label>
+            <select id="p-students">
+              <option>1–20 students</option><option>21–50 students</option>
+              <option>51–100 students</option><option>100+ students</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Website (optional)</label><input type="url" id="p-website" placeholder="https://"/></div>
+          <div class="form-field full"><label>Why do you want to partner with LedgerLearn?</label><textarea id="p-message" rows="3" placeholder="Tell us about your students, your goals, and how you plan to promote LedgerLearn…"></textarea></div>
+        </div>
+        <div id="p-err" style="color:#E24B4A;font-size:0.78rem;min-height:1em;margin-top:0.5rem;"></div>
+        <button class="submit-btn" onclick="submitPartnerApp()">Submit partner application →</button>
+        <div class="form-note">By submitting you agree to our partner terms. We review every application personally and respond within 2 business days.</div>
+      </div>
+      <div class="success-msg" id="partner-success">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">Application received!</div>
+        <div class="success-sub">Thank you — we'll review your application and be in touch within 2 business days at the email you provided.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">Ledger<span>Learn</span> Pro</div>
+  <div class="footer-links">
+    <a href="/">Home</a><a href="/learn">Learn</a><a href="/test">Certifications</a>
+    <a href="/dashboard">Dashboard</a><a href="mailto:partners@ledgerlearn.pro">Contact Partners Team</a>
+  </div>
+  <div class="footer-copy">© 2026 LedgerLearn Pro. All rights reserved.</div>
+</footer>
+
+<script>
+function submitPartnerApp() {
+  var inst    = document.getElementById('p-institution').value.trim();
+  var name    = document.getElementById('p-name').value.trim();
+  var email   = document.getElementById('p-email').value.trim();
+  var type    = document.getElementById('p-type').value;
+  var message = document.getElementById('p-message').value.trim();
+  var errEl   = document.getElementById('p-err');
+
+  if (!inst)    { errEl.textContent = 'Please enter your institution name.'; return; }
+  if (!name || name.indexOf(' ') < 1) { errEl.textContent = 'Please enter your first and last name.'; return; }
+  if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email.'; return; }
+  if (!type)    { errEl.textContent = 'Please select your organisation type.'; return; }
+  if (!message) { errEl.textContent = 'Please tell us why you want to partner with LedgerLearn.'; return; }
+
+  errEl.textContent = '';
+
+  var app = {
+    institution: inst,
+    contact: name,
+    email: email,
+    phone: document.getElementById('p-phone').value.trim(),
+    type: type,
+    country: document.getElementById('p-country').value,
+    students: document.getElementById('p-students').value,
+    website: document.getElementById('p-website').value.trim(),
+    message: message,
+    status: 'pending',
+    ts: new Date().toISOString()
+  };
+
+  // Save to localStorage (for admin panel to pick up)
+  try {
+    var existing = JSON.parse(localStorage.getItem('ll_admin_partners') || '[]');
+    existing.push(app);
+    localStorage.setItem('ll_admin_partners', JSON.stringify(existing));
+  } catch(e) {}
+
+  // Send to Brevo via subscribe function
+  fetch('/.netlify/functions/subscribe', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      email: email,
+      name: name,
+      listId: 4,  // Partner list in Brevo
+      attributes: { INSTITUTION: inst, PARTNER_TYPE: type }
+    })
+  }).catch(function(){});
+
+  // Show success
+  document.getElementById('partner-form').style.display = 'none';
+  document.getElementById('partner-success').style.display = 'block';
+}
+</script>
+</body>
+</html>

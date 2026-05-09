@@ -116,6 +116,21 @@
   status = 200
 
 [[redirects]]
+  from = "/admin"
+  to   = "/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/partners"
+  to   = "/partners.html"
+  status = 200
+
+[[redirects]]
+  from = "/erp-academy"
+  to   = "/erp-academy.html"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 404

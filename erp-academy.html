@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP.SaaS Academy — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#0B1F3A;}
+nav{height:56px;background:rgba(11,31,58,0.98);border-bottom:2px solid #D4A843;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:22px;height:22px;background:#D4A843;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-weight:800;font-size:1rem;color:#fff;}.brand span{color:#D4A843;}
+.nav-back{color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.85rem;}
+
+/* HERO */
+.hero{padding:6rem 2rem 5rem;text-align:center;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse at 30% 50%,rgba(29,169,138,0.1) 0%,transparent 55%),
+             radial-gradient(ellipse at 70% 20%,rgba(212,168,67,0.08) 0%,transparent 50%);}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(29,169,138,0.15);border:1px solid rgba(29,169,138,0.4);color:#26c9a5;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:5px 16px;border-radius:100px;margin-bottom:1.5rem;}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,5vw,3.8rem);font-weight:800;color:#fff;line-height:1.1;letter-spacing:-0.03em;max-width:760px;margin:0 auto 1.25rem;}
+h1 span{color:#D4A843;}
+.hero-sub{font-size:1.05rem;color:rgba(255,255,255,0.6);line-height:1.75;max-width:560px;margin:0 auto 2.5rem;font-weight:300;}
+.hero-price{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;color:#D4A843;line-height:1;margin-bottom:0.25rem;}
+.hero-price-sub{font-size:0.85rem;color:rgba(255,255,255,0.4);margin-bottom:2rem;}
+/* email capture */
+.email-capture{display:flex;gap:0;max-width:480px;margin:0 auto 1rem;border-radius:10px;overflow:hidden;border:2px solid #D4A843;}
+.email-capture input{flex:1;padding:15px 18px;background:rgba(255,255,255,0.08);border:none;color:#fff;font-size:0.95rem;font-family:inherit;outline:none;}
+.email-capture input::placeholder{color:rgba(255,255,255,0.35);}
+.email-capture button{padding:15px 24px;background:#D4A843;color:#0B1F3A;border:none;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s;}
+.email-capture button:hover{background:#f0c860;}
+.capture-note{font-size:0.75rem;color:rgba(255,255,255,0.3);text-align:center;margin-bottom:1rem;}
+.success-strip{display:none;background:rgba(29,169,138,0.15);border:1px solid rgba(29,169,138,0.4);color:#26c9a5;padding:14px 24px;border-radius:10px;font-size:0.875rem;font-weight:600;max-width:480px;margin:0 auto 1rem;}
+.code-strip{display:inline-flex;align-items:center;gap:10px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.3);padding:8px 20px;border-radius:100px;font-size:0.82rem;color:rgba(255,255,255,0.6);margin-bottom:2rem;}
+.code-strip strong{color:#D4A843;}
+
+/* sections */
+section{padding:5rem 2rem;}
+.inner{max-width:1080px;margin:0 auto;}
+.eyebrow{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.14em;color:#1DA98A;font-weight:700;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;}
+.eyebrow::before{content:'';width:24px;height:2px;background:#1DA98A;}
+.eyebrow-gold{color:#D4A843;}
+.eyebrow-gold::before{background:#D4A843;}
+h2{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1.2;margin-bottom:0.75rem;}
+h2.dark{color:#0B1F3A;}
+.section-sub{font-size:1rem;color:rgba(255,255,255,0.55);line-height:1.75;max-width:580px;margin-bottom:3rem;font-weight:300;}
+.section-sub-dark{color:#6b87a3;}
+
+/* outcomes */
+.outcomes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;}
+.outcome-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1.75rem;transition:border-color .2s;}
+.outcome-card:hover{border-color:rgba(212,168,67,0.3);}
+.oc-icon{font-size:2rem;margin-bottom:0.75rem;}
+.oc-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:0.4rem;}
+.oc-text{font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.65;}
+
+/* What's inside */
+.modules-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.module-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.25rem;display:flex;align-items:flex-start;gap:12px;}
+.mc-num{width:36px;height:36px;border-radius:8px;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.3);color:#D4A843;font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mc-title{font-size:0.9rem;font-weight:700;color:#fff;margin-bottom:3px;}
+.mc-text{font-size:0.78rem;color:rgba(255,255,255,0.45);line-height:1.5;}
+
+/* Stats */
+.stats-band{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:2.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:2rem;text-align:center;margin:3rem 0;}
+.stat-val{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:#D4A843;line-height:1;margin-bottom:5px;}
+.stat-lbl{font-size:0.75rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;}
+
+/* testimonial */
+.testimonial-strip{background:rgba(29,169,138,0.08);border:1px solid rgba(29,169,138,0.2);border-radius:16px;padding:2rem;margin:0 0 3rem;}
+.t-quote{font-size:1rem;color:rgba(255,255,255,0.8);line-height:1.75;margin-bottom:1rem;font-style:italic;}
+.t-name{font-size:0.82rem;font-weight:700;color:#26c9a5;}
+.t-role{font-size:0.78rem;color:rgba(255,255,255,0.4);}
+
+/* CTA bottom */
+.cta-section{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:3rem;text-align:center;margin-top:2rem;}
+.cta-h2{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#fff;margin-bottom:0.5rem;}
+.cta-sub{font-size:1rem;color:rgba(255,255,255,0.5);margin-bottom:2rem;font-weight:300;}
+
+footer{padding:2rem;text-align:center;border-top:1px solid rgba(255,255,255,0.08);}
+.footer-brand{font-family:'Syne',sans-serif;font-weight:800;color:#fff;font-size:0.95rem;margin-bottom:0.4rem;}.footer-brand span{color:#D4A843;}
+.footer-links{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;}
+.footer-links a{color:rgba(255,255,255,0.4);text-decoration:none;font-size:0.78rem;}
+
+@media(max-width:700px){.modules-grid{grid-template-columns:1fr;}.email-capture{flex-direction:column;border-radius:10px;}.email-capture input,.email-capture button{border-radius:8px;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <a href="/learn" class="nav-back">← Back to platform</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">🚀 ERP.SaaS Academy</div>
+  <h1>Stop being an employee.<br><span>Become an ERP consultant</span><br>earning £5,000+ per project.</h1>
+  <p class="hero-sub">You have the Xero certification. Now learn to package it into a consulting practice — and land your first client in 90 days.</p>
+
+  <div class="hero-price">£5,000–£15,000</div>
+  <div class="hero-price-sub">Typical implementation project value · Remote · UK, UAE, Africa, US</div>
+
+  <div class="email-capture" id="email-form">
+    <input type="email" id="erp-email" placeholder="Enter your email to get your invite"/>
+    <button onclick="captureEmail()">Get my invite →</button>
+  </div>
+  <div class="success-strip" id="erp-success">✓ Invite request received! Check your inbox within 24 hours.</div>
+  <div class="capture-note">No spam. Just your personal invite link to join the Academy on Skool.</div>
+  <div class="code-strip">Use code <strong>LEDGER30</strong> for 30% off your first month</div>
+</section>
+
+<!-- OUTCOMES -->
+<section>
+  <div class="inner">
+    <div class="eyebrow eyebrow-gold">What you will achieve</div>
+    <h2>From certified to consulting<br>in 90 days</h2>
+    <p class="section-sub">ERP.SaaS Academy is not a course. It is a business-building system for accountants and bookkeepers ready to earn consulting income.</p>
+    <div class="outcomes-grid">
+      <div class="outcome-card">
+        <div class="oc-icon">🎯</div>
+        <div class="oc-title">Land your first ERP client</div>
+        <div class="oc-text">Our positioning framework shows you exactly how to present your Xero skills as a premium implementation service — not just bookkeeping.</div>
+      </div>
+      <div class="outcome-card">
+        <div class="oc-icon">📄</div>
+        <div class="oc-title">Write proposals clients say yes to</div>
+        <div class="oc-text">The 3-option proposal framework removes price objections and packages your work at £5,000+ fixed price. No more hourly rates.</div>
+      </div>
+      <div class="outcome-card">
+        <div class="oc-icon">🌍</div>
+        <div class="oc-title">Work globally, remotely</div>
+        <div class="oc-text">Deliver ERP implementations for clients in UK, UAE, Nigeria, South Africa, and beyond — 100% remote with our delivery scripts and templates.</div>
+      </div>
+      <div class="outcome-card">
+        <div class="oc-icon">🔁</div>
+        <div class="oc-title">Build recurring client income</div>
+        <div class="oc-text">One-off projects become retainer relationships. Learn how to structure monthly advisory packages worth £500–£2,000/month per client.</div>
+      </div>
+    </div>
+    <div class="stats-band">
+      <div><div class="stat-val">130k+</div><div class="stat-lbl">Community members</div></div>
+      <div><div class="stat-val">£5k</div><div class="stat-lbl">Avg first project</div></div>
+      <div><div class="stat-val">90</div><div class="stat-lbl">Days to first client</div></div>
+      <div><div class="stat-val">£400</div><div class="stat-lbl">Day rate potential</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S INSIDE -->
+<section style="background:rgba(255,255,255,0.02);padding:5rem 2rem;">
+  <div class="inner">
+    <div class="eyebrow">What's inside</div>
+    <h2>Everything you need to build<br>a consulting practice</h2>
+    <p class="section-sub">The Academy combines training, templates, community, and live coaching — all in one Skool community.</p>
+    <div class="modules-grid">
+      <div class="module-card"><div class="mc-num">01</div><div><div class="mc-title">Positioning Triangle</div><div class="mc-text">Stand out from every other Xero user in your market. Define your niche, your client, and your premium offer.</div></div></div>
+      <div class="module-card"><div class="mc-num">02</div><div><div class="mc-title">3-Option Proposal Framework</div><div class="mc-text">Close more projects with a proven proposal structure. Stop quoting hourly. Start packaging value.</div></div></div>
+      <div class="module-card"><div class="mc-num">03</div><div><div class="mc-title">Project Delivery Scripts</div><div class="mc-text">Loom walkthrough scripts, client onboarding templates, and sign-off checklists so delivery feels professional every time.</div></div></div>
+      <div class="module-card"><div class="mc-num">04</div><div><div class="mc-title">Lead Generation System</div><div class="mc-text">LinkedIn outreach templates, referral scripts, and a 30-day visibility plan to fill your pipeline without paid ads.</div></div></div>
+      <div class="module-card"><div class="mc-num">05</div><div><div class="mc-title">Retainer Conversion</div><div class="mc-text">Turn one-off implementation clients into monthly advisory retainers. The difference between a freelancer and a firm.</div></div></div>
+      <div class="module-card"><div class="mc-num">06</div><div><div class="mc-title">Live Coaching + Community</div><div class="mc-text">Monthly Q&A sessions with David Ayomidotun FCCA. Plus 130k+ peers sharing wins, deals, and advice.</div></div></div>
+    </div>
+
+    <div class="testimonial-strip">
+      <div class="t-quote">"I went from £35k employed bookkeeper to landing a £7,200 Xero implementation project within 6 weeks of joining ERP.SaaS Academy. The proposal framework alone was worth the membership."</div>
+      <div class="t-name">Sandra M. · LedgerLearn Graduate</div>
+      <div class="t-role">Now: Independent ERP Consultant · Remote · UK clients</div>
+    </div>
+
+    <div class="cta-section">
+      <div class="cta-h2">Ready to make the jump?</div>
+      <div class="cta-sub">Enter your email and we'll send you a personal invite link to join ERP.SaaS Academy on Skool.</div>
+      <div class="email-capture" id="email-form-2" style="max-width:440px;margin:0 auto 0.75rem;">
+        <input type="email" id="erp-email-2" placeholder="your@email.com"/>
+        <button onclick="captureEmail2()">Get invite →</button>
+      </div>
+      <div class="success-strip" id="erp-success-2" style="max-width:440px;margin:0 auto;">✓ Invite sent! Check your inbox.</div>
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.3);margin-top:0.5rem;">Use code <strong style="color:#D4A843;">LEDGER30</strong> for 30% off · No subscription lock-in</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">Ledger<span>Learn</span> Pro</div>
+  <div class="footer-links">
+    <a href="/">Home</a><a href="/learn">Learn</a><a href="/test">Certifications</a>
+    <a href="/partners">Partner Program</a><a href="mailto:hello@ledgerlearn.pro">Contact</a>
+  </div>
+</footer>
+
+<script>
+function captureEmail() {
+  var email = document.getElementById('erp-email').value.trim();
+  submitErpEmail(email, 'erp-success', 'email-form');
+}
+function captureEmail2() {
+  var email = document.getElementById('erp-email-2').value.trim();
+  submitErpEmail(email, 'erp-success-2', 'email-form-2');
+}
+
+function submitErpEmail(email, successId, formId) {
+  if (!email || !email.includes('@')) {
+    alert('Please enter a valid email address.');
+    return;
+  }
+
+  // Save locally
+  try {
+    var list = JSON.parse(localStorage.getItem('ll_erp_leads') || '[]');
+    list.push({email: email, ts: new Date().toISOString()});
+    localStorage.setItem('ll_erp_leads', JSON.stringify(list));
+  } catch(e) {}
+
+  // Send to Brevo
+  fetch('/.netlify/functions/subscribe', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      email: email,
+      name: '',
+      listId: 5,  // ERP Academy interest list in Brevo
+      attributes: { SOURCE: 'erp-academy-page' }
+    })
+  }).catch(function(){});
+
+  // Show success, redirect to Skool after 2 seconds
+  document.getElementById(formId).style.display = 'none';
+  var successEl = document.getElementById(successId);
+  successEl.style.display = 'block';
+
+  setTimeout(function() {
+    window.open('https://skool.com/erp-saas-academy', '_blank');
+  }, 2000);
+}
+</script>
+</body>
+</html>
