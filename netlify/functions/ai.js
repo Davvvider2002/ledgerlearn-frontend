@@ -185,7 +185,7 @@ exports.handler = async function (event) {
         }
 
         console.log(`[ai] scenario: pool miss for "${poolKey}" — generating batch of ${POOL.BATCH}`);
-        const questions = await generateBatch(apiKey, track, module_, difficulty);
+        const questions = await generateBatch(apiKey, track, module_, difficulty, region, regionLabel, tax, taxRate, taxBody, currency);
 
         if (questions.length > 0) {
           // Serve first, cache rest
@@ -258,7 +258,7 @@ exports.handler = async function (event) {
 };
 
 // ── Generate a batch of questions in one API call ──────────
-async function generateBatch(apiKey, track, module_, difficulty) {
+async function generateBatch(apiKey, track, module_, difficulty, region="UK", regionLabel="United Kingdom", tax="VAT", taxRate="20%", taxBody="HMRC", currency="£") {
   const prompt = `Generate ${POOL.BATCH} different accounting multiple choice questions for ${track} software training.
 Topic: ${module_}. Difficulty: ${difficulty}.
 Region: ${regionLabel}. Use ${currency} for amounts. Tax system: ${tax} at ${taxRate}, administered by ${taxBody}.
@@ -289,7 +289,7 @@ Return ONLY a raw JSON array — no markdown, no backticks:
 async function refillPool(apiKey, track, module_, difficulty, poolKey, region='UK', regionLabel='United Kingdom', tax='VAT', taxRate='20%', taxBody='HMRC', currency='£') {
   if (!apiKey) return;
   console.log(`[ai] Background refilling pool for "${poolKey}"`);
-  const questions = await generateBatch(apiKey, track, module_, difficulty);
+  const questions = await generateBatch(apiKey, track, module_, difficulty, region, regionLabel, tax, taxRate, taxBody, currency);
   if (questions.length > 0) {
     const existing      = POOL.questions[poolKey] || [];
     POOL.questions[poolKey] = [...existing, ...questions];
