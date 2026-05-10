@@ -608,6 +608,33 @@ function switchLesson(i) { loadLesson(i); window.scrollTo({top:0,behavior:'smoot
   } catch(e) {}
   loadLesson(currentLesson);
 })();
+
+// ── Re-apply region if user changes it in another tab ──
+window.addEventListener('storage', function(e) {
+  if (e.key === 'll_user') {
+    // Region changed - reload to apply new terminology
+    window.location.reload();
+  }
+});
+// Update region badge on load
+(function() {
+  try {
+    var rc = getRegionConfig ? getRegionConfig() : null;
+    if (!rc) return;
+    var badge = document.getElementById('lesson-region-tag');
+    if (badge) {
+      badge.textContent = (rc.label || 'UK') + ' · ' + (rc.tax || 'VAT') + ' ' + (rc.taxRate || '20%');
+    }
+    // Also update level banner status with region
+    var status = document.getElementById('ll-level-status');
+    if (status && rc.label) {
+      var existing = status.textContent;
+      if (!existing.includes(rc.label)) {
+        status.textContent = (existing ? existing + ' · ' : '') + rc.label;
+      }
+    }
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>

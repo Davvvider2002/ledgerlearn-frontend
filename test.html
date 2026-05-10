@@ -651,7 +651,14 @@ async function startTest() {
   try { _saved = JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) {}
   var _name = await captureNameBeforeTest(_saved.name || '');
   if (!_name) return;
-  try { localStorage.setItem('ll_user', JSON.stringify({name:_name, email:_saved.email||'', ts:Date.now()})); } catch(e) {}
+  try { // Preserve ALL existing ll_user fields (especially region)
+    var _existing = {};
+    try { _existing = JSON.parse(localStorage.getItem('ll_user')||'{}'); } catch(e) {}
+    _existing.name  = _name;
+    _existing.email = _existing.email || '';
+    _existing.ts    = Date.now();
+    // region is preserved - do NOT overwrite it
+    localStorage.setItem('ll_user', JSON.stringify(_existing)); } catch(e) {}
   const cfg = TEST_CONFIG[test.level];
   test.questions = [];
   test.answers   = {};

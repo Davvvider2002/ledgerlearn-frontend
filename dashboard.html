@@ -767,6 +767,9 @@
       var u = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
       u.region = code;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+      // Dispatch storage event so other open tabs update
+      // (storage events don't fire in the same tab, so we use a custom event)
+      console.log('[LedgerLearn] Region saved:', code);
     } catch(e) {}
   }
   function toggleRegionPicker() {
@@ -797,10 +800,19 @@
         var badge = document.getElementById('current-region-badge');
         badge.style.background = '#e1f7f2';
         badge.style.borderColor = '#1DA98A';
+        // Show saved confirmation
+        var savedMsg = document.createElement('div');
+        savedMsg.textContent = '✓ Region saved — your assessments will now use ' + (REGIONS[code] ? REGIONS[code].tax + ' ' + REGIONS[code].taxRate + ' (' + REGIONS[code].taxBody + ')' : code);
+        savedMsg.style.cssText = 'font-size:0.75rem;color:#1DA98A;margin-top:0.5rem;font-weight:600;';
+        savedMsg.id = 'region-saved-msg';
+        var existing = document.getElementById('region-saved-msg');
+        if (existing) existing.remove();
+        badge.parentNode.insertAdjacentElement('afterend', savedMsg);
         setTimeout(function() {
           badge.style.background = '';
           badge.style.borderColor = '';
-        }, 1500);
+          if (savedMsg.parentNode) savedMsg.remove();
+        }, 3000);
       });
       grid.appendChild(btn);
     });

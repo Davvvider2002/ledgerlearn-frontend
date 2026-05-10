@@ -196,7 +196,10 @@
     // Save user + trigger sync
     saveUser: function(name, email) {
       try {
-        localStorage.setItem('ll_user', JSON.stringify({ name, email, ts: Date.now() }));
+        // Preserve region and other fields
+        var _u = {}; try { _u = JSON.parse(localStorage.getItem('ll_user')||'{}'); } catch(e) {}
+        _u.name = name; _u.email = email; _u.ts = Date.now();
+        localStorage.setItem('ll_user', JSON.stringify(_u));
       } catch(e) {}
       const data = readLocal();
       data.name  = name;
@@ -221,7 +224,8 @@
       if (email) {
         try {
           const u = JSON.parse(localStorage.getItem('ll_user') || '{}');
-          localStorage.setItem('ll_user', JSON.stringify({ email: u.email, name: u.name }));
+          // Preserve region and all other fields
+          localStorage.setItem('ll_user', JSON.stringify(u));
         } catch(e) {}
       }
     },
