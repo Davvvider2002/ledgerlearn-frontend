@@ -716,6 +716,112 @@ LL.updateLearnLink = function(elementId) {
 };
 
 </script>
+<script>
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  LedgerLearn — Routing Module v6.0                          ║
+// ║  Single source of truth. Identical copy in every page.      ║
+// ╚══════════════════════════════════════════════════════════════╝
+var LL = LL || {};
+
+LL.progress = (function() {
+  function getRaw() {
+    try { return JSON.parse(localStorage.getItem('ll_progress') || '{}'); } catch(e) { return {}; }
+  }
+  function getUser() {
+    try { return JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) { return {}; }
+  }
+
+  function state() {
+    var p         = getRaw();
+    var completed = p.completedLevels || [];
+
+    // Admin valid only while sessionStorage token exists (clears on tab/browser close)
+    var tok = sessionStorage.getItem('ll_admin_token');
+    var exp = sessionStorage.getItem('ll_admin_expires');
+    var isAdmin = !!(tok && exp && new Date(exp) > new Date());
+
+    // PASSED = in completedLevels AND real score exists
+    var passedL1 = completed.includes('l1') && (p.lastScore != null || p.l1Score != null);
+    var passedL2 = completed.includes('l2') && (p.l2Score  != null);
+    var passedL3 = completed.includes('l3') && (p.l3Score  != null);
+
+    // PAID = confirmed PayPal payment
+    var paidL2 = p.paid_l2 === true;
+
+    // ACCESS
+    var accessL1 = true;
+    var accessL2 = (passedL1 && paidL2) || isAdmin;
+    var accessL3 = passedL2 || isAdmin;
+
+    // WORKING LEVEL — where the user currently is
+    var workingLevel;
+    if (!passedL1 && !isAdmin) {
+      workingLevel = 'l1';
+    } else if (!accessL2) {
+      workingLevel = 'l1';   // L1 done, not yet unlocked L2
+    } else if (!passedL2) {
+      workingLevel = 'l2';   // L2 unlocked, working through it
+    } else if (!passedL3) {
+      workingLevel = 'l3';   // L2 done, working on L3
+    } else {
+      workingLevel = 'l3';   // All done
+    }
+    if (isAdmin) workingLevel = 'l3';
+
+    return {
+      p, completed, isAdmin,
+      passedL1, passedL2, passedL3,
+      paidL2,
+      accessL1, accessL2, accessL3,
+      workingLevel,
+    };
+  }
+
+  function learnPage(s) {
+    return s.workingLevel === 'l3' ? '/learn-l3' :
+           s.workingLevel === 'l2' ? '/learn-l2' : '/learn';
+  }
+
+  return { getRaw, getUser, state, learnPage };
+})();
+
+// Page routing — call once at page load
+LL.route = function(page) {
+  try {
+    var s = LL.progress.state();
+
+    if (page === 'practice') {
+      window.location.replace(LL.progress.learnPage(s));
+      return;
+    }
+    if (page === 'learn') {
+      // Never auto-redirect from /learn — user chose to be here
+      return;
+    }
+    if (page === 'learn-l2') {
+      if (!s.accessL2) { window.location.replace('/learn'); return; }
+      return;
+    }
+    if (page === 'learn-l3') {
+      if (!s.accessL3) {
+        window.location.replace(s.accessL2 ? '/learn-l2' : '/learn');
+        return;
+      }
+      return;
+    }
+  } catch(e) {}
+};
+
+// Update a nav "Learn" link to point to working level
+LL.updateLearnLink = function(id) {
+  try {
+    var el = document.getElementById(id || 'nav-learn-link');
+    if (el) el.href = LL.progress.learnPage(LL.progress.state());
+  } catch(e) {}
+};
+
+document.addEventListener("DOMContentLoaded",function(){LL.updateLearnLink("dash-learn-link");});
+</script>
 </head>
 <body>
 

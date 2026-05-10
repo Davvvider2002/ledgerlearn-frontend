@@ -1445,12 +1445,12 @@ function adminReset(){
   sessionStorage.removeItem('ll_admin_token');
   sessionStorage.removeItem('ll_admin_expires');
   try{
-    var p=JSON.parse(localStorage.getItem('ll_progress')||'{}');
-    p.completedLevels=['l1'];delete p.paid_l2;delete p.paid_l3;delete p.adminMode;
-    localStorage.setItem('ll_progress',JSON.stringify(p));
+    // Full reset: remove ALL admin-injected data
+    // Preserve only real user data (name, email, region)
+    localStorage.removeItem('ll_progress');
+    inlineToast('Admin reset. All test data cleared.','info');
   }catch(e){}
-  initLevels();
-  inlineToast('Admin reset.','info');
+  setTimeout(function(){ window.location.reload(); }, 1000);
 }
 window.adminUnlock=adminUnlock;
 window.adminReset=adminReset;
