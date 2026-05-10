@@ -145,6 +145,8 @@ exports.handler = async function (event) {
 
       // ── SCENARIO — pool cache, batch generation ─────────────
       case 'scenario': {
+        // DEBUG: log incoming region params
+        console.log('[ai] scenario called with region:', body.region, 'regionLabel:', body.regionLabel);
         const track       = body.track        || 'Xero';
         const module_     = body.module       || 'Invoicing';
         const difficulty  = body.difficulty   || 'intermediate';
