@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank Transactions Simulation — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--white:#fff;--border:rgba(11,31,58,0.1);--text:#0B1F3A;--mid:#3d5a7a;--muted:#6b87a3;--bg:#f0f2f5;--success:#27AE60;--error:#E74C3C;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;}
+.ll-bar{background:var(--navy);height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:200;}
+.ll-bar-brand{font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:800;color:#fff;}
+.ll-bar-brand span{color:var(--gold);}
+.ll-bar-badge{font-size:0.7rem;background:rgba(212,168,67,0.2);border:1px solid rgba(212,168,67,0.4);color:var(--gold);padding:3px 10px;border-radius:100px;font-weight:700;}
+.xero-bar{background:#fff;border-bottom:1px solid #e0e6ed;padding:0 1.5rem;display:flex;align-items:center;gap:0.75rem;height:44px;}
+.xero-logo{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#1AB4D7;}
+.xero-nav-item{font-size:0.8rem;color:#637380;padding:0 10px;height:44px;display:flex;align-items:center;cursor:pointer;border-bottom:2px solid transparent;}
+.xero-nav-item.active{color:#1AB4D7;border-bottom-color:#1AB4D7;}
+.sim-shell{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;padding:1.5rem;max-width:1200px;margin:0 auto;}
+.sim-main{background:#fff;border-radius:10px;border:1px solid #e0e6ed;overflow:hidden;}
+.panel-hdr{padding:1rem 1.25rem;border-bottom:1px solid #e0e6ed;display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-size:0.9rem;font-weight:700;color:var(--text);}
+.panel-sub{font-size:0.75rem;color:var(--muted);}
+.btn{padding:8px 16px;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;}
+.btn-primary{background:#1AB4D7;color:#fff;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-ghost{background:transparent;border:1px solid #e0e6ed;color:var(--mid);}
+.filter-row{padding:0.75rem 1.25rem;border-bottom:1px solid #f0f2f5;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;}
+.filter-chip{padding:4px 12px;border-radius:100px;font-size:0.72rem;font-weight:600;cursor:pointer;border:1px solid #e0e6ed;background:#fff;color:var(--mid);transition:all .15s;}
+.filter-chip.active{background:#1AB4D7;color:#fff;border-color:#1AB4D7;}
+.txn-table{width:100%;border-collapse:collapse;}
+.txn-table th{text-align:left;padding:8px 1.25rem;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);font-weight:700;border-bottom:1px solid #e0e6ed;background:#f8fafc;}
+.txn-table td{padding:10px 1.25rem;font-size:0.82rem;border-bottom:1px solid #f5f7fa;vertical-align:middle;}
+.txn-row{cursor:pointer;transition:background .1s;}
+.txn-row:hover{background:#f8fafc;}
+.txn-row.selected{background:#EBF9FB;}
+.txn-type{display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;font-weight:700;text-transform:uppercase;padding:2px 8px;border-radius:100px;}
+.type-credit{background:#e6f9f4;color:#0F6E56;}
+.type-debit{background:#fde8e8;color:#C0392B;}
+.txn-amount-pos{color:#0F6E56;font-weight:700;}
+.txn-amount-neg{color:#C0392B;font-weight:700;}
+.txn-unmatched{width:8px;height:8px;border-radius:50%;background:#f39c12;display:inline-block;}
+.txn-matched{width:8px;height:8px;border-radius:50%;background:#27AE60;display:inline-block;}
+/* Sidebar */
+.sim-sidebar{display:flex;flex-direction:column;gap:1rem;}
+.side-card{background:#fff;border-radius:10px;border:1px solid #e0e6ed;padding:1.25rem;}
+.side-title{font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:0.75rem;}
+.balance-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f5f7fa;}
+.balance-label{font-size:0.78rem;color:var(--muted);}
+.balance-value{font-size:0.88rem;font-weight:700;color:var(--text);}
+.balance-value.pos{color:#0F6E56;}
+.balance-value.neg{color:#C0392B;}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f5f7fa;}
+.task-item:last-child{border:none;}
+.task-check{width:20px;height:20px;border-radius:4px;border:2px solid #e0e6ed;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;background:#fff;}
+.task-check.done{background:#27AE60;border-color:#27AE60;color:#fff;}
+.task-text{font-size:0.78rem;color:var(--mid);line-height:1.4;}
+.task-text.done{text-decoration:line-through;color:#b0bec5;}
+.score-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;}
+.score-label{font-size:0.75rem;color:var(--muted);}
+.score-val{font-size:1.2rem;font-weight:800;color:var(--navy);}
+.score-bar-bg{height:8px;background:#f0f2f5;border-radius:4px;overflow:hidden;}
+.score-bar-fill{height:100%;background:linear-gradient(90deg,#1AB4D7,#1DA98A);border-radius:4px;transition:width .5s;}
+/* Match panel */
+.match-panel{display:none;padding:1rem 1.25rem;background:#EBF9FB;border-top:1px solid #bde8f0;}
+.match-title{font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:0.75rem;}
+.match-suggestion{display:flex;align-items:center;gap:10px;padding:8px;background:#fff;border:1px solid #e0e6ed;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:border .15s;}
+.match-suggestion:hover{border-color:#1AB4D7;}
+.match-suggestion.selected-match{border-color:#27AE60;background:#e8f8f0;}
+.match-icon{font-size:1.2rem;flex-shrink:0;}
+.match-desc{font-size:0.78rem;color:var(--text);flex:1;line-height:1.4;}
+.match-amount{font-size:0.82rem;font-weight:700;color:var(--text);flex-shrink:0;}
+.feedback{padding:10px 1.25rem;font-size:0.78rem;border-top:1px solid #e0e6ed;min-height:36px;}
+.feedback.correct{background:#e8f8f0;color:#0F6E56;}
+.feedback.wrong{background:#fde8e8;color:#C0392B;}
+.feedback.hint{background:#fef9e7;color:#856404;}
+@media(max-width:900px){.sim-shell{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="ll-bar">
+  <div class="ll-bar-brand">Ledger<span>Learn</span> Pro</div>
+  <div class="ll-bar-badge">Bank Transactions Simulation</div>
+</div>
+<!-- Xero-style top bar -->
+<div class="xero-bar">
+  <div class="xero-logo">Xero</div>
+  <div class="xero-nav-item">Dashboard</div>
+  <div class="xero-nav-item active">Bank Accounts</div>
+  <div class="xero-nav-item">Transactions</div>
+  <div class="xero-nav-item">Reports</div>
+</div>
+
+<div class="sim-shell">
+  <!-- Main transaction list -->
+  <div class="sim-main">
+    <div class="panel-hdr">
+      <div>
+        <div class="panel-title">Business Current Account — Statement Lines</div>
+        <div class="panel-sub" id="match-sub">Match each statement line to the correct Xero transaction or create a new one</div>
+      </div>
+      <button class="btn btn-primary" onclick="checkAll()">Check answers</button>
+    </div>
+    <div class="filter-row">
+      <span style="font-size:0.75rem;color:var(--muted);margin-right:4px;">Filter:</span>
+      <button class="filter-chip active" onclick="filterTxns('all',this)">All (8)</button>
+      <button class="filter-chip" onclick="filterTxns('unmatched',this)">Unmatched (5)</button>
+      <button class="filter-chip" onclick="filterTxns('matched',this)">Matched (3)</button>
+    </div>
+    <table class="txn-table">
+      <thead>
+        <tr><th>Date</th><th>Description</th><th>Type</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+      </thead>
+      <tbody id="txn-body"></tbody>
+    </table>
+    <div id="match-panel" class="match-panel">
+      <div class="match-title" id="match-panel-title">Match this transaction</div>
+      <div id="match-options"></div>
+      <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+        <button class="btn btn-gold" onclick="confirmMatch()">Confirm match</button>
+        <button class="btn btn-ghost" onclick="createNew()">Create new transaction</button>
+        <button class="btn btn-ghost" onclick="closeMatch()">Cancel</button>
+      </div>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sim-sidebar">
+    <div class="side-card">
+      <div class="side-title">Account Balance</div>
+      <div class="balance-row"><span class="balance-label">Bank balance</span><span class="balance-value pos" id="bank-bal">£12,450.00</span></div>
+      <div class="balance-row"><span class="balance-label">Xero balance</span><span class="balance-value" id="xero-bal">£11,200.00</span></div>
+      <div class="balance-row"><span class="balance-label">Difference</span><span class="balance-value neg" id="diff-bal">£1,250.00</span></div>
+    </div>
+    <div class="side-card">
+      <div class="side-title">Your progress</div>
+      <div class="score-row"><span class="score-label">Score</span><span class="score-val" id="score-display">0 / 8</span></div>
+      <div class="score-bar-bg"><div class="score-bar-fill" id="score-bar" style="width:0%"></div></div>
+      <div style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;" id="score-msg">Match each transaction to earn points</div>
+    </div>
+    <div class="side-card">
+      <div class="side-title">Tasks to complete</div>
+      <div id="task-list"></div>
+    </div>
+    <div class="side-card">
+      <div class="side-title">💡 Tips</div>
+      <div style="font-size:0.78rem;color:var(--muted);line-height:1.6;">
+        <p style="margin-bottom:0.5rem;">• Match credits (money IN) to sales invoices or customer payments</p>
+        <p style="margin-bottom:0.5rem;">• Match debits (money OUT) to bills, expenses, or supplier payments</p>
+        <p>• If no match exists, create a new transaction (expense, transfer, etc.)</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Read region from localStorage
+var R = {UK:'£',ZA:'R',NG:'₦',US:'$',AU:'A$',NZ:'NZ$',IE:'€',AE:'AED',CA:'CA$'};
+var region = 'UK';
+try { region = JSON.parse(localStorage.getItem('ll_user')||'{}').region || 'UK'; } catch(e) {}
+var CUR = R[region] || '£';
+
+// Format currency
+function fmt(n) { return CUR + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+
+// Transaction data
+var TRANSACTIONS = [
+  {id:1, date:'12 May', desc:'BACS Payment — Office Supplies Ltd', type:'debit', amount:-450.00, status:'unmatched',
+   matches:[{id:'m1',icon:'📄',desc:'Bill from Office Supplies Ltd — Apr 2026',amount:450.00,correct:true},
+            {id:'m2',icon:'👤',desc:'Contact: Office Supplies Ltd (customer)',amount:450.00,correct:false}]},
+  {id:2, date:'13 May', desc:'Customer Payment — Acme Corp', type:'credit', amount:3200.00, status:'matched',
+   matches:[{id:'m3',icon:'🧾',desc:'Invoice INV-2026-042 — Acme Corp',amount:3200.00,correct:true}],userMatch:'m3'},
+  {id:3, date:'13 May', desc:'DD — Business Insurance', type:'debit', amount:-185.00, status:'unmatched',
+   matches:[{id:'m4',icon:'📄',desc:'Bill: Monthly insurance premium',amount:185.00,correct:true},
+            {id:'m5',icon:'💸',desc:'Transfer to savings account',amount:185.00,correct:false}]},
+  {id:4, date:'14 May', desc:'FASTER PAYMENT — Beta Systems', type:'credit', amount:5800.00, status:'unmatched',
+   matches:[{id:'m6',icon:'🧾',desc:'Invoice INV-2026-039 — Beta Systems Ltd',amount:5800.00,correct:true},
+            {id:'m7',icon:'🧾',desc:'Invoice INV-2026-040 — Beta Systems Ltd',amount:4200.00,correct:false}]},
+  {id:5, date:'14 May', desc:'Card Payment — Amazon Business', type:'debit', amount:-67.50, status:'unmatched',
+   matches:[{id:'m8',icon:'💳',desc:'Expense: IT Equipment — Amazon',amount:67.50,correct:true},
+            {id:'m9',icon:'📄',desc:'Bill: Amazon Web Services',amount:67.50,correct:false}]},
+  {id:6, date:'15 May', desc:'BACS — Staff Salaries', type:'debit', amount:-8450.00, status:'matched',
+   matches:[{id:'m10',icon:'👷',desc:'Payroll run — May 2026',amount:8450.00,correct:true}],userMatch:'m10'},
+  {id:7, date:'15 May', desc:'Customer Payment — Carter Ltd', type:'credit', amount:1250.00, status:'matched',
+   matches:[{id:'m11',icon:'🧾',desc:'Invoice INV-2026-041 — Carter Ltd',amount:1250.00,correct:true}],userMatch:'m11'},
+  {id:8, date:'16 May', desc:'Bank Charges', type:'debit', amount:-12.50, status:'unmatched',
+   matches:[{id:'m12',icon:'🏦',desc:'Bank fee — monthly account charge',amount:12.50,correct:true},
+            {id:'m13',icon:'📄',desc:'Bill: Subscription fee',amount:12.50,correct:false}]},
+];
+
+var score = 0;
+var selectedTxn = null;
+var selectedMatch = null;
+var currentFilter = 'all';
+
+var TASKS = [
+  {id:'t1', text:'Match all debit transactions to bills or expenses', done:false},
+  {id:'t2', text:'Match all credit transactions to sales invoices', done:false},
+  {id:'t3', text:'Reconcile bank balance with Xero balance', done:false},
+  {id:'t4', text:'Review and confirm all pre-matched transactions', done:false},
+];
+
+function renderTxns() {
+  var body = document.getElementById('txn-body');
+  var rows = TRANSACTIONS.filter(function(t) {
+    if (currentFilter === 'unmatched') return t.status === 'unmatched';
+    if (currentFilter === 'matched')   return t.status === 'matched';
+    return true;
+  });
+  body.innerHTML = rows.map(function(t) {
+    var typeCls  = t.type === 'credit' ? 'type-credit' : 'type-debit';
+    var typeLabel= t.type === 'credit' ? '↑ Credit' : '↓ Debit';
+    var amtCls   = t.amount > 0 ? 'txn-amount-pos' : 'txn-amount-neg';
+    var statusDot= t.status === 'matched' ? '<span class="txn-matched" title="Matched"></span>' : '<span class="txn-unmatched" title="Unmatched"></span>';
+    var actionBtn= t.status === 'matched'
+      ? '<span style="font-size:0.72rem;color:#27AE60;font-weight:600">✓ Matched</span>'
+      : '<button class="btn btn-ghost" style="font-size:0.72rem;padding:5px 10px;" onclick="openMatch('+t.id+')">Match →</button>';
+    return '<tr class="txn-row'+(selectedTxn===t.id?' selected':'')+'" id="row-'+t.id+'">' +
+      '<td style="color:var(--muted);font-size:0.78rem;">'+t.date+'</td>' +
+      '<td><div style="font-size:0.82rem;font-weight:500;color:var(--text)">'+t.desc+'</div></td>' +
+      '<td><span class="txn-type '+typeCls+'">'+typeLabel+'</span></td>' +
+      '<td class="'+amtCls+'">'+fmt(t.amount)+'</td>' +
+      '<td>'+statusDot+'</td>' +
+      '<td>'+actionBtn+'</td></tr>';
+  }).join('');
+}
+
+function filterTxns(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active');});
+  el.classList.add('active');
+  renderTxns();
+}
+
+function openMatch(txnId) {
+  selectedTxn  = txnId;
+  selectedMatch = null;
+  var txn = TRANSACTIONS.find(function(t){return t.id===txnId;});
+  var panel = document.getElementById('match-panel');
+  document.getElementById('match-panel-title').textContent = 'Matching: ' + txn.desc + ' (' + fmt(txn.amount) + ')';
+  document.getElementById('match-options').innerHTML = txn.matches.map(function(m) {
+    return '<div class="match-suggestion" id="ms-'+m.id+'" onclick="selectMatch(\''+m.id+'\')">' +
+      '<div class="match-icon">'+m.icon+'</div>' +
+      '<div class="match-desc">'+m.desc+'</div>' +
+      '<div class="match-amount">'+fmt(m.amount)+'</div>' +
+    '</div>';
+  }).join('');
+  panel.style.display = 'block';
+  renderTxns();
+}
+
+function selectMatch(matchId) {
+  selectedMatch = matchId;
+  document.querySelectorAll('.match-suggestion').forEach(function(el){el.classList.remove('selected-match');});
+  var el = document.getElementById('ms-'+matchId);
+  if (el) el.classList.add('selected-match');
+}
+
+function confirmMatch() {
+  if (!selectedTxn || !selectedMatch) {
+    setFeedback('Please select a match option first.', 'hint'); return;
+  }
+  var txn   = TRANSACTIONS.find(function(t){return t.id===selectedTxn;});
+  var match = txn.matches.find(function(m){return m.id===selectedMatch;});
+  if (!txn || !match) return;
+
+  if (match.correct) {
+    txn.status    = 'matched';
+    txn.userMatch = match.id;
+    score++;
+    setFeedback('✓ Correct! Transaction matched successfully.', 'correct');
+    checkTasks();
+  } else {
+    setFeedback('✗ Not quite. Think about: is this payment going TO or FROM this contact?', 'wrong');
+  }
+  updateScore();
+  closeMatch();
+  renderTxns();
+}
+
+function createNew() {
+  if (!selectedTxn) return;
+  var txn = TRANSACTIONS.find(function(t){return t.id===selectedTxn;});
+  txn.status = 'matched';
+  score += 0.5;
+  setFeedback('New transaction created. In Xero you would code it to the correct account.', 'hint');
+  updateScore(); closeMatch(); renderTxns(); checkTasks();
+}
+
+function closeMatch() {
+  document.getElementById('match-panel').style.display = 'none';
+  selectedTxn = null; selectedMatch = null;
+}
+
+function checkAll() {
+  var unmatched = TRANSACTIONS.filter(function(t){return t.status==='unmatched';});
+  if (unmatched.length === 0) {
+    setFeedback('🎉 All transactions matched! Bank reconciliation complete.', 'correct');
+    TASKS.forEach(function(t){t.done=true;}); renderTasks();
+  } else {
+    setFeedback(unmatched.length + ' transaction(s) still need matching. Click "Match →" on each one.', 'hint');
+  }
+}
+
+function checkTasks() {
+  var matched   = TRANSACTIONS.filter(function(t){return t.status==='matched';});
+  var debits    = TRANSACTIONS.filter(function(t){return t.type==='debit' && t.status==='matched';});
+  var credits   = TRANSACTIONS.filter(function(t){return t.type==='credit' && t.status==='matched';});
+  var allDebits = TRANSACTIONS.filter(function(t){return t.type==='debit';});
+  var allCreds  = TRANSACTIONS.filter(function(t){return t.type==='credit';});
+  TASKS[0].done = debits.length === allDebits.length;
+  TASKS[1].done = credits.length === allCreds.length;
+  TASKS[2].done = matched.length === TRANSACTIONS.length;
+  TASKS[3].done = matched.length >= 3;
+  renderTasks();
+}
+
+function renderTasks() {
+  document.getElementById('task-list').innerHTML = TASKS.map(function(t) {
+    return '<div class="task-item">' +
+      '<div class="task-check'+(t.done?' done':'')+'\" onclick="toggleTask(\''+t.id+'\')">'+(t.done?'✓':'')+'</div>' +
+      '<div class="task-text'+(t.done?' done':'')+'">'+t.text+'</div></div>';
+  }).join('');
+}
+
+function toggleTask(id) {
+  var t = TASKS.find(function(x){return x.id===id;}); if(t) t.done=!t.done; renderTasks();
+}
+
+function updateScore() {
+  var total = TRANSACTIONS.length;
+  var pct   = Math.round((score / total) * 100);
+  document.getElementById('score-display').textContent = Math.round(score) + ' / ' + total;
+  document.getElementById('score-bar').style.width = pct + '%';
+  var msgs = ['Match each transaction to earn points','Good start — keep going!','Over halfway there!','Almost done!','Excellent work — all matched!'];
+  var idx  = score === 0 ? 0 : score < 3 ? 1 : score < 5 ? 2 : score < total ? 3 : 4;
+  document.getElementById('score-msg').textContent = msgs[idx];
+  // Update balance diff
+  var matched = TRANSACTIONS.filter(function(t){return t.status==='matched';});
+  var matchedAmt = matched.reduce(function(a,t){return a+Math.abs(t.amount);},0);
+  var diff = 12450 - 11200 - (matchedAmt * 0.1);
+  document.getElementById('diff-bal').textContent = CUR + Math.max(0, diff.toFixed(2));
+  if (diff <= 0) {
+    document.getElementById('diff-bal').className = 'balance-value pos';
+    document.getElementById('diff-bal').textContent = 'Reconciled ✓';
+  }
+}
+
+function setFeedback(msg, type) {
+  var el = document.getElementById('feedback');
+  el.textContent = msg;
+  el.className   = 'feedback ' + (type || '');
+}
+
+// Apply region currency to all amounts
+function applyRegion() {
+  // Re-render with correct currency
+  renderTxns();
+  document.getElementById('bank-bal').textContent = CUR + '12,450.00';
+  document.getElementById('xero-bal').textContent = CUR + '11,200.00';
+  document.getElementById('diff-bal').textContent = CUR + '1,250.00';
+}
+
+// Init
+applyRegion();
+renderTasks();
+</script>
+</body>
+</html>

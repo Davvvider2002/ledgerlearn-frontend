@@ -363,16 +363,13 @@ document.addEventListener && document.addEventListener('DOMContentLoaded', funct
 <body>
 
 <nav>
-  <a href="/" class="nav-logo">
-    <div class="nav-hex"></div>
-    <span class="nav-brand">Ledger<span>Learn</span> Pro</span>
-  </a>
+  <a href="/" class="nav-logo"><div class="nav-hex"></div><span class="nav-brand">Ledger<span>Learn</span> Pro</span></a>
   <ul class="nav-links">
-    <li><a href="/learn" class="active">Learn</a></li>
+    <li><a href="/learn" class="active" id="nav-learn-link">Learn</a></li>
     <li><a href="/practice">Practice</a></li>
     <li><a href="/test">Assessment</a></li>
     <li><a href="/dashboard">Dashboard</a></li>
-    <li><a href="/placement" class="nav-cta">Find my starting point</a></li>
+    <li><span class="nav-level-badge">L1 Xero Associate</span></li>
   </ul>
 </nav>
 
@@ -773,33 +770,31 @@ function loadLesson(index) {
 
 // ── Launch simulation inline ──────────────────────────────
 function launchSim(lessonIndex, wrapId) {
-  const wrap   = document.getElementById(wrapId);
-  const iframe = document.getElementById('iframe-' + lessonIndex);
+  var lesson = LESSONS[lessonIndex];
+  if (!lesson || !lesson.hasSim) return;
+  var wrap   = document.getElementById(wrapId);
+  var iframe = document.getElementById('iframe-' + lessonIndex);
   if (!wrap || !iframe) return;
 
-  // Try inline first using blob URL, fallback to direct URL
-  const simIndex = LESSONS[lessonIndex].simIndex;
-  const directUrls = {
-    2: '/xero-invoice-sim.html',
-    3: '/xero-bankrec-sim.html',
+  // Map simName to URL
+    var simMap = {
+    'Xero Invoice':         '/xero-invoice-sim',
+    'Bank Reconciliation':  '/xero-bankrec-sim',
+    'Bills & Payments':     '/xero-invoice-sim',
+    'VAT Return':           '/xero-vat-sim',
+    'Bank Rules':           '/xero-transactions-sim',
+    'Financial Reports':    '/xero-reports-sim',
+    'Management Accounts':  '/xero-mgmt-sim',
+    'Management Accounts Pack': '/xero-mgmt-sim',
+    'Client Onboarding':    '/xero-invoice-sim',
+    'Advisory Reports':     '/xero-reports-sim',
+    'Year-End Close':       '/xero-mgmt-sim',
   };
 
-  try {
-    const b64  = SIMS[simIndex];
-    const html = atob(b64);
-    const blob = new Blob([html], {type: 'text/html'});
-    const url  = URL.createObjectURL(blob);
-    iframe.src = url;
-    if (simUrls[simIndex]) URL.revokeObjectURL(simUrls[simIndex]);
-    simUrls[simIndex] = url;
-  } catch(e) {
-    // Fallback: direct file URL
-    iframe.src = directUrls[simIndex] || '';
-  }
-
+  var url = simMap[lesson.simName] || '/xero-invoice-sim';
+  iframe.src = url;
   wrap.classList.add('open');
-  // Scroll to the iframe
-  setTimeout(() => wrap.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+  setTimeout(function() { wrap.scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
 }
 
 function closeSim(wrapId) {

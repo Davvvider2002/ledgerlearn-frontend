@@ -136,6 +136,16 @@
   status = 200
 
 [[redirects]]
+  from = "/xero-transactions-sim"
+  to   = "/xero-transactions-sim.html"
+  status = 200
+
+[[redirects]]
+  from = "/xero-reports-sim"
+  to   = "/xero-reports-sim.html"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 404

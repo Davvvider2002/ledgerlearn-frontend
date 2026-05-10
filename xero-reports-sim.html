@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Reports Simulation — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--white:#fff;--border:#e0e6ed;--text:#0B1F3A;--mid:#3d5a7a;--muted:#6b87a3;--bg:#f0f2f5;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;}
+.ll-bar{background:var(--navy);height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;border-bottom:2px solid var(--gold);}
+.ll-bar-brand{font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:800;color:#fff;}
+.ll-bar-brand span{color:var(--gold);}
+.ll-bar-badge{font-size:0.7rem;background:rgba(212,168,67,0.2);border:1px solid rgba(212,168,67,0.4);color:var(--gold);padding:3px 10px;border-radius:100px;font-weight:700;}
+.xero-bar{background:#fff;border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;gap:0.75rem;height:44px;}
+.xero-logo{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#1AB4D7;margin-right:0.5rem;}
+.xero-nav{font-size:0.8rem;color:#637380;padding:0 10px;height:44px;display:flex;align-items:center;cursor:pointer;border-bottom:2px solid transparent;}
+.xero-nav.active{color:#1AB4D7;border-bottom-color:#1AB4D7;}
+.container{max-width:1200px;margin:0 auto;padding:1.5rem;display:grid;grid-template-columns:260px 1fr;gap:1.5rem;}
+/* Report selector */
+.report-menu{background:#fff;border-radius:10px;border:1px solid var(--border);overflow:hidden;}
+.rm-hdr{padding:1rem;border-bottom:1px solid var(--border);font-size:0.85rem;font-weight:700;color:var(--text);}
+.rm-section{padding:0.5rem 0;}
+.rm-section-label{padding:6px 1rem 4px;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:700;}
+.rm-item{padding:8px 1rem;font-size:0.82rem;color:var(--mid);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .1s;}
+.rm-item:hover{background:#f5f7fa;}
+.rm-item.active{background:#EBF9FB;color:#1AB4D7;font-weight:600;}
+.rm-item .icon{width:18px;text-align:center;font-size:1rem;}
+/* Report panel */
+.report-panel{background:#fff;border-radius:10px;border:1px solid var(--border);overflow:hidden;}
+.rp-hdr{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;}
+.rp-title{font-size:1rem;font-weight:800;color:var(--text);}
+.rp-meta{font-size:0.75rem;color:var(--muted);margin-top:2px;}
+.rp-actions{display:flex;gap:0.5rem;flex-wrap:wrap;}
+.btn{padding:7px 14px;border-radius:6px;font-size:0.78rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;}
+.btn-blue{background:#1AB4D7;color:#fff;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--mid);}
+/* Report table */
+.report-table{width:100%;border-collapse:collapse;}
+.rt-section-hdr td{padding:12px 1.5rem 4px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:700;background:#f8fafc;border-top:1px solid var(--border);}
+.rt-row td{padding:8px 1.5rem;font-size:0.82rem;border-bottom:1px solid #f5f7fa;}
+.rt-row:hover td{background:#fafbfc;}
+.rt-row .acct-name{color:var(--text);}
+.rt-row .acct-code{color:var(--muted);font-size:0.72rem;margin-left:6px;}
+.rt-row .amount{text-align:right;font-weight:500;}
+.rt-subtotal td{padding:8px 1.5rem;font-size:0.82rem;font-weight:700;background:#f8fafc;border-top:1px solid var(--border);}
+.rt-subtotal .amount{text-align:right;}
+.rt-total td{padding:12px 1.5rem;font-size:0.9rem;font-weight:800;background:var(--navy);color:#fff;}
+.rt-total .amount{text-align:right;}
+.amount-pos{color:#0F6E56;}
+.amount-neg{color:#C0392B;}
+/* Quiz overlay */
+.quiz-bar{background:#fef9e7;border-bottom:1px solid #f0c000;padding:10px 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.quiz-q{font-size:0.82rem;font-weight:600;color:var(--text);flex:1;}
+.quiz-opts{display:flex;gap:0.5rem;flex-wrap:wrap;}
+.quiz-opt{padding:5px 12px;border-radius:6px;font-size:0.78rem;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--mid);transition:all .15s;}
+.quiz-opt:hover{border-color:#1AB4D7;color:#1AB4D7;}
+.quiz-opt.correct{background:#e8f8f0;border-color:#27AE60;color:#27AE60;font-weight:700;}
+.quiz-opt.wrong{background:#fde8e8;border-color:#E74C3C;color:#E74C3C;}
+.score-strip{padding:10px 1.5rem;background:#f8fafc;border-top:1px solid var(--border);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.score-strip-val{font-size:0.85rem;font-weight:700;color:var(--text);}
+.score-strip-bar{flex:1;height:8px;background:#e0e6ed;border-radius:4px;overflow:hidden;}
+.score-strip-fill{height:100%;background:linear-gradient(90deg,#1AB4D7,#1DA98A);border-radius:4px;transition:width .5s;}
+@media(max-width:800px){.container{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="ll-bar">
+  <div class="ll-bar-brand">Ledger<span>Learn</span> Pro</div>
+  <div class="ll-bar-badge">Financial Reports Simulation</div>
+</div>
+<div class="xero-bar">
+  <div class="xero-logo">Xero</div>
+  <div class="xero-nav">Dashboard</div>
+  <div class="xero-nav">Accounting</div>
+  <div class="xero-nav active">Reports</div>
+  <div class="xero-nav">Adviser</div>
+</div>
+
+<div class="container">
+  <!-- Report menu -->
+  <div class="report-menu">
+    <div class="rm-hdr">📊 All Reports</div>
+    <div class="rm-section">
+      <div class="rm-section-label">Financial Statements</div>
+      <div class="rm-item active" onclick="showReport('pl',this)"><span class="icon">📈</span>Profit & Loss</div>
+      <div class="rm-item" onclick="showReport('bs',this)"><span class="icon">⚖️</span>Balance Sheet</div>
+      <div class="rm-item" onclick="showReport('cf',this)"><span class="icon">💧</span>Cash Flow</div>
+    </div>
+    <div class="rm-section">
+      <div class="rm-section-label">Management Reports</div>
+      <div class="rm-item" onclick="showReport('budget',this)"><span class="icon">🎯</span>Budget vs Actuals</div>
+      <div class="rm-item" onclick="showReport('aged',this)"><span class="icon">📋</span>Aged Receivables</div>
+      <div class="rm-item" onclick="showReport('aged_pay',this)"><span class="icon">📋</span>Aged Payables</div>
+    </div>
+    <div class="rm-section">
+      <div class="rm-section-label">Tax Reports</div>
+      <div class="rm-item" onclick="showReport('tax',this)"><span class="icon">🧾</span>Tax Summary</div>
+    </div>
+  </div>
+
+  <!-- Report output -->
+  <div class="report-panel" id="report-panel">
+    <!-- Quiz bar -->
+    <div class="quiz-bar" id="quiz-bar" style="display:none">
+      <div class="quiz-q" id="quiz-q"></div>
+      <div class="quiz-opts" id="quiz-opts"></div>
+    </div>
+    <!-- Report header -->
+    <div class="rp-hdr">
+      <div><div class="rp-title" id="rp-title">Profit & Loss</div><div class="rp-meta" id="rp-meta">For the period 1 April – 30 April 2026 · Accrual basis</div></div>
+      <div class="rp-actions">
+        <button class="btn btn-ghost" onclick="prevPeriod()">← Prev month</button>
+        <button class="btn btn-ghost" onclick="nextPeriod()">Next month →</button>
+        <button class="btn btn-gold" onclick="showQuiz()">Answer quiz →</button>
+      </div>
+    </div>
+    <table class="report-table" id="report-table"></table>
+    <div class="score-strip">
+      <span class="score-strip-val" id="score-label">Score: 0 / 7</span>
+      <div class="score-strip-bar"><div class="score-strip-fill" id="score-fill" style="width:0%"></div></div>
+      <span style="font-size:0.72rem;color:var(--muted);" id="score-hint">Answer the quiz questions to earn points</span>
+    </div>
+  </div>
+</div>
+
+<script>
+var R = {UK:'£',ZA:'R',NG:'₦',US:'$',AU:'A$',NZ:'NZ$',IE:'€',AE:'AED',CA:'CA$'};
+var region = 'UK';
+try { region = JSON.parse(localStorage.getItem('ll_user')||'{}').region || 'UK'; } catch(e) {}
+var CUR = R[region] || '£';
+function fmt(n,bold) {
+  var s = CUR + Math.abs(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return n < 0 ? '('+s+')' : s;
+}
+
+var score = 0; var totalQ = 7; var answered = {};
+var currentReport = 'pl';
+var months = ['January 2026','February 2026','March 2026','April 2026'];
+var monthIdx = 3;
+
+var REPORTS = {
+  pl: {
+    title: 'Profit & Loss',
+    meta: () => 'For the period 1 ' + months[monthIdx] + ' · Accrual basis',
+    rows: [
+      {type:'section', label:'Income'},
+      {type:'row', name:'Sales Revenue', code:'200', amount:48500},
+      {type:'row', name:'Consulting Fees', code:'201', amount:12000},
+      {type:'row', name:'Other Income', code:'260', amount:850},
+      {type:'subtotal', label:'Total Income', amount:61350},
+      {type:'section', label:'Cost of Sales'},
+      {type:'row', name:'Cost of Goods Sold', code:'300', amount:-18200},
+      {type:'row', name:'Subcontractor Costs', code:'310', amount:-4500},
+      {type:'subtotal', label:'Total Cost of Sales', amount:-22700},
+      {type:'subtotal', label:'Gross Profit', amount:38650, highlight:true},
+      {type:'section', label:'Operating Expenses'},
+      {type:'row', name:'Salaries & Wages', code:'477', amount:-14500},
+      {type:'row', name:'Rent & Rates', code:'493', amount:-2800},
+      {type:'row', name:'Office Supplies', code:'500', amount:-450},
+      {type:'row', name:'Marketing & Advertising', code:'503', amount:-1200},
+      {type:'row', name:'Professional Fees', code:'404', amount:-800},
+      {type:'row', name:'Bank Charges', code:'404', amount:-125},
+      {type:'subtotal', label:'Total Operating Expenses', amount:-19875},
+      {type:'total', label:'Net Profit', amount:18775},
+    ]
+  },
+  bs: {
+    title: 'Balance Sheet',
+    meta: () => 'As at 30 ' + months[monthIdx] + ' · Accrual basis',
+    rows: [
+      {type:'section', label:'Assets'},
+      {type:'row', name:'Bank — Current Account', code:'090', amount:12450},
+      {type:'row', name:'Accounts Receivable', code:'120', amount:24800},
+      {type:'row', name:'Inventory', code:'140', amount:8200},
+      {type:'subtotal', label:'Total Current Assets', amount:45450},
+      {type:'row', name:'Fixed Assets — Equipment', code:'710', amount:35000},
+      {type:'row', name:'Less Accumulated Depreciation', code:'711', amount:-8750},
+      {type:'subtotal', label:'Total Fixed Assets', amount:26250},
+      {type:'subtotal', label:'Total Assets', amount:71700, highlight:true},
+      {type:'section', label:'Liabilities'},
+      {type:'row', name:'Accounts Payable', code:'200', amount:-9400},
+      {type:'row', name:'Tax Payable', code:'820', amount:-4200},
+      {type:'row', name:'Accruals', code:'230', amount:-1800},
+      {type:'subtotal', label:'Total Current Liabilities', amount:-15400},
+      {type:'section', label:'Equity'},
+      {type:'row', name:'Share Capital', code:'960', amount:-10000},
+      {type:'row', name:'Retained Earnings', code:'970', amount:-28525},
+      {type:'row', name:'Current Year Earnings', code:'980', amount:-17775},
+      {type:'subtotal', label:'Total Equity', amount:-56300},
+      {type:'total', label:'Total Liabilities & Equity', amount:-71700},
+    ]
+  },
+  cf: {
+    title: 'Cash Flow Statement',
+    meta: () => '1 ' + months[monthIdx] + ' · Direct method',
+    rows: [
+      {type:'section', label:'Operating Activities'},
+      {type:'row', name:'Cash received from customers', code:'', amount:54200},
+      {type:'row', name:'Cash paid to suppliers', code:'', amount:-18900},
+      {type:'row', name:'Cash paid to employees', code:'', amount:-14500},
+      {type:'row', name:'Tax paid', code:'', amount:-3800},
+      {type:'subtotal', label:'Net cash from operations', amount:17000},
+      {type:'section', label:'Investing Activities'},
+      {type:'row', name:'Purchase of equipment', code:'', amount:-5000},
+      {type:'subtotal', label:'Net cash from investing', amount:-5000},
+      {type:'section', label:'Financing Activities'},
+      {type:'row', name:'Loan repayment', code:'', amount:-2000},
+      {type:'subtotal', label:'Net cash from financing', amount:-2000},
+      {type:'total', label:'Net increase in cash', amount:10000},
+    ]
+  },
+  budget: {
+    title: 'Budget vs Actuals',
+    meta: () => months[monthIdx] + ' · Variance analysis',
+    rows: [
+      {type:'section', label:'Income'},
+      {type:'row', name:'Sales Revenue', code:'Budget: '+CUR+'45,000', amount:48500},
+      {type:'row', name:'Consulting Fees', code:'Budget: '+CUR+'10,000', amount:12000},
+      {type:'subtotal', label:'Total Income', amount:60500},
+      {type:'section', label:'Expenses'},
+      {type:'row', name:'Salaries', code:'Budget: '+CUR+'14,000', amount:-14500},
+      {type:'row', name:'Rent', code:'Budget: '+CUR+'2,800', amount:-2800},
+      {type:'row', name:'Marketing', code:'Budget: '+CUR+'1,500', amount:-1200},
+      {type:'subtotal', label:'Total Expenses', amount:-18500},
+      {type:'total', label:'Net Surplus vs Budget', amount:5200},
+    ]
+  },
+  aged: {
+    title: 'Aged Receivables',
+    meta: () => 'Outstanding invoices as at 30 ' + months[monthIdx],
+    rows: [
+      {type:'section', label:'Customer Balances'},
+      {type:'row', name:'Acme Corp', code:'Current: '+CUR+'3,200', amount:3200},
+      {type:'row', name:'Beta Systems', code:'30 days: '+CUR+'5,800', amount:5800},
+      {type:'row', name:'Carter Ltd', code:'60 days: '+CUR+'1,250', amount:1250},
+      {type:'row', name:'Delta Corp', code:'90+ days: '+CUR+'4,100', amount:4100, highlight:true},
+      {type:'total', label:'Total Outstanding', amount:14350},
+    ]
+  },
+  aged_pay: {
+    title: 'Aged Payables',
+    meta: () => 'Outstanding bills as at 30 ' + months[monthIdx],
+    rows: [
+      {type:'section', label:'Supplier Balances'},
+      {type:'row', name:'Office Supplies Ltd', code:'Current: '+CUR+'450', amount:-450},
+      {type:'row', name:'Rent — May 2026', code:'Current: '+CUR+'2,800', amount:-2800},
+      {type:'row', name:'Broadband Provider', code:'30 days: '+CUR+'85', amount:-85},
+      {type:'row', name:'Legacy Supplier Co', code:'90+ days: '+CUR+'3,200', amount:-3200, highlight:true},
+      {type:'total', label:'Total Payable', amount:-6535},
+    ]
+  },
+  tax: {
+    title: 'Tax Summary',
+    meta: () => 'Period: 1 ' + months[monthIdx] + ' · All tax rates',
+    rows: [
+      {type:'section', label:'Output Tax (Sales)'},
+      {type:'row', name:'Standard rate sales', code:'20%', amount:48500},
+      {type:'row', name:'Tax collected', code:'', amount:9700},
+      {type:'section', label:'Input Tax (Purchases)'},
+      {type:'row', name:'Standard rate purchases', code:'20%', amount:-22700},
+      {type:'row', name:'Tax reclaimable', code:'', amount:-4540},
+      {type:'subtotal', label:'Net Tax Payable', amount:5160},
+      {type:'total', label:'Amount Due to Authority', amount:5160},
+    ]
+  },
+};
+
+var QUIZZES = {
+  pl: [
+    {q:'What is the Gross Profit shown in this P&L?', opts:[fmt(38650),fmt(61350),fmt(18775),fmt(22700)], correct:0},
+    {q:'Which line item is the largest operating expense?', opts:['Rent & Rates','Marketing','Salaries & Wages','Office Supplies'], correct:2},
+    {q:'Net Profit is calculated as:', opts:['Income - Cost of Sales','Gross Profit - Operating Expenses','Total Income - Tax','Revenue only'], correct:1},
+  ],
+  bs: [
+    {q:'What are Total Assets for this period?', opts:[fmt(71700),fmt(45450),fmt(26250),fmt(15400)], correct:0},
+    {q:'The Balance Sheet must always:', opts:['Show a profit','Balance (Assets = Liabilities + Equity)','Have more assets than liabilities','Start with Cash'], correct:1},
+  ],
+  cf: [
+    {q:'What is the net cash generated from operations?', opts:[fmt(17000),fmt(10000),fmt(5000),fmt(2000)], correct:0},
+    {q:'Cash flow from investing is negative because:', opts:['The business made a loss','Equipment was purchased (cash out)','Tax was paid','Customers did not pay'], correct:1},
+  ],
+};
+
+function showReport(key, el) {
+  currentReport = key;
+  document.querySelectorAll('.rm-item').forEach(function(i){i.classList.remove('active');});
+  if(el) el.classList.add('active');
+  var rep = REPORTS[key];
+  if(!rep) return;
+  document.getElementById('rp-title').textContent  = rep.title;
+  document.getElementById('rp-meta').textContent   = rep.meta();
+  document.getElementById('quiz-bar').style.display = 'none';
+  renderTable(rep.rows);
+}
+
+function renderTable(rows) {
+  var table = document.getElementById('report-table');
+  table.innerHTML = rows.map(function(r) {
+    if (r.type==='section') {
+      return '<tr class="rt-section-hdr"><td colspan="2">'+r.label+'</td></tr>';
+    }
+    if (r.type==='subtotal') {
+      var cls = r.highlight ? 'amount-pos' : (r.amount<0?'amount-neg':'');
+      return '<tr class="rt-subtotal"><td>'+r.label+'</td><td class="amount '+cls+'">'+fmt(r.amount)+'</td></tr>';
+    }
+    if (r.type==='total') {
+      return '<tr class="rt-total"><td>'+r.label+'</td><td class="amount">'+fmt(r.amount)+'</td></tr>';
+    }
+    // normal row
+    var amtCls = r.highlight ? 'amount-neg' : '';
+    return '<tr class="rt-row"><td><span class="acct-name">'+r.name+'</span><span class="acct-code">'+r.code+'</span></td>' +
+      '<td class="amount '+amtCls+'">'+fmt(r.amount)+'</td></tr>';
+  }).join('');
+}
+
+var currentQ = 0; var qList = [];
+function showQuiz() {
+  var qs = QUIZZES[currentReport];
+  if (!qs || qs.length === 0) { alert('No quiz available for this report yet.'); return; }
+  qList = qs;
+  currentQ = 0;
+  renderQuiz();
+}
+
+function renderQuiz() {
+  if (currentQ >= qList.length) {
+    document.getElementById('quiz-bar').style.display = 'none';
+    return;
+  }
+  var q = qList[currentQ];
+  document.getElementById('quiz-q').textContent = 'Q' + (currentQ+1) + ': ' + q.q;
+  document.getElementById('quiz-opts').innerHTML = q.opts.map(function(opt, i) {
+    var answeredState = answered[currentReport + '_' + currentQ];
+    var cls = '';
+    if (answeredState !== undefined) {
+      if (i === q.correct) cls = 'correct';
+      else if (i === answeredState) cls = 'wrong';
+    }
+    return '<button class="quiz-opt '+cls+'" onclick="answerQ('+i+')">'+opt+'</button>';
+  }).join('');
+  document.getElementById('quiz-bar').style.display = 'flex';
+}
+
+function answerQ(idx) {
+  var key = currentReport + '_' + currentQ;
+  if (answered[key] !== undefined) { currentQ++; renderQuiz(); return; }
+  var q = qList[currentQ];
+  answered[key] = idx;
+  if (idx === q.correct) { score++; }
+  updateScore();
+  setTimeout(function() { currentQ++; renderQuiz(); }, 1200);
+  renderQuiz();
+}
+
+function updateScore() {
+  document.getElementById('score-label').textContent = 'Score: ' + score + ' / ' + totalQ;
+  document.getElementById('score-fill').style.width = Math.round(score/totalQ*100) + '%';
+  document.getElementById('score-hint').textContent = score >= totalQ ? '🎉 All correct!' : 'Try more reports for more questions';
+}
+
+function prevPeriod() { if(monthIdx>0){monthIdx--;showReport(currentReport);} }
+function nextPeriod() { if(monthIdx<months.length-1){monthIdx++;showReport(currentReport);} }
+
+// Init
+showReport('pl');
+</script>
+</body>
+</html>

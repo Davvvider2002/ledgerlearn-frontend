@@ -302,13 +302,11 @@ document.addEventListener && document.addEventListener('DOMContentLoaded', funct
 <nav>
   <a href="/" class="nav-logo"><div class="nav-hex"></div><span class="nav-brand">Ledger<span>Learn</span> Pro</span></a>
   <ul class="nav-links">
-    <li><a href="/learn">L1</a></li>
-    <li><a href="/learn-l2">L2</a></li>
-    <li><a href="/learn-l3" class="active">L3</a></li>
+    <li><a href="/learn-l3" class="active" id="nav-learn-link">Learn</a></li>
     <li><a href="/practice">Practice</a></li>
     <li><a href="/test">Assessment</a></li>
     <li><a href="/dashboard">Dashboard</a></li>
-    <li><a href="/test" class="nav-cta">L3 Assessment →</a></li>
+    <li><span class="nav-level-badge">L3 Xero Advisor</span></li>
   </ul>
 </nav>
 
@@ -410,12 +408,12 @@ document.addEventListener && document.addEventListener('DOMContentLoaded', funct
 <script>
 // ── L2 lessons ────────────────────────────────────────────
 const LESSONS = [
-  {id:1, title:'Client Onboarding & Setup',    type:'Guided walkthrough', hasSim:false},
-  {id:2, title:'Management Accounts Pack',     type:'Live simulation',    hasSim:true, simIndex:0, simName:'Management Accounts'},
-  {id:3, title:'Advisory Reporting',           type:'Guided walkthrough', hasSim:false},
-  {id:4, title:'Year-End Preparation',         type:'Guided walkthrough', hasSim:false},
-  {id:5, title:'Practice Management',          type:'Guided walkthrough', hasSim:false},
-  {id:6, title:'Xero Certification Review',    type:'Guided walkthrough', hasSim:false},
+  {id:1, title:'Client Onboarding & Setup',   type:'Live simulation',    hasSim:true,  simName:'Client Onboarding'},
+  {id:2, title:'Management Accounts Pack',    type:'Live simulation',    hasSim:true,  simName:'Management Accounts Pack'},
+  {id:3, title:'Advisory Reporting',          type:'Live simulation',    hasSim:true,  simName:'Advisory Reports'},
+  {id:4, title:'Year-End Preparation',        type:'Live simulation',    hasSim:true,  simName:'Year-End Close'},
+  {id:5, title:'Practice Management',         type:'Guided walkthrough', hasSim:false},
+  {id:6, title:'Xero Certification Review',   type:'Guided walkthrough', hasSim:false},
 ];
 
 const SIMS = {
@@ -659,24 +657,31 @@ function loadLesson(index) {
 }
 
 function launchSim(lessonIndex, wrapId) {
-  const wrap   = document.getElementById(wrapId);
-  const iframe = document.getElementById('iframe-' + lessonIndex);
+  var lesson = LESSONS[lessonIndex];
+  if (!lesson || !lesson.hasSim) return;
+  var wrap   = document.getElementById(wrapId);
+  var iframe = document.getElementById('iframe-' + lessonIndex);
   if (!wrap || !iframe) return;
-  const simIndex = LESSONS[lessonIndex].simIndex;
-  const directUrls = { 0: '/xero-mgmt-sim.html' };
-  try {
-    const b64  = SIMS[simIndex];
-    const html = atob(b64);
-    const blob = new Blob([html], {type:'text/html'});
-    const url  = URL.createObjectURL(blob);
-    if (simUrls[simIndex]) URL.revokeObjectURL(simUrls[simIndex]);
-    simUrls[simIndex] = url;
-    iframe.src = url;
-  } catch(e) {
-    iframe.src = directUrls[simIndex] || '';
-  }
+
+  // Map simName to URL
+    var simMap = {
+    'Xero Invoice':         '/xero-invoice-sim',
+    'Bank Reconciliation':  '/xero-bankrec-sim',
+    'Bills & Payments':     '/xero-invoice-sim',
+    'VAT Return':           '/xero-vat-sim',
+    'Bank Rules':           '/xero-transactions-sim',
+    'Financial Reports':    '/xero-reports-sim',
+    'Management Accounts':  '/xero-mgmt-sim',
+    'Management Accounts Pack': '/xero-mgmt-sim',
+    'Client Onboarding':    '/xero-invoice-sim',
+    'Advisory Reports':     '/xero-reports-sim',
+    'Year-End Close':       '/xero-mgmt-sim',
+  };
+
+  var url = simMap[lesson.simName] || '/xero-invoice-sim';
+  iframe.src = url;
   wrap.classList.add('open');
-  setTimeout(() => wrap.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+  setTimeout(function() { wrap.scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
 }
 
 function closeSim(wrapId) {
