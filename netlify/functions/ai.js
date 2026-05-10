@@ -30,8 +30,10 @@ const CORS = {
 
 // ── Question pool cache ────────────────────────────────────
 // Shared across all requests to this function instance
+const POOL_VERSION = 'v3-region-2026';  // Change to bust all cached questions
 const POOL = {
-  questions: {},  // { 'Invoicing:intermediate': [{...}, {...}] }
+  version:   POOL_VERSION,
+  questions: {},  // { 'Invoicing:intermediate:NG': [{...}, {...}] }
   ts:        {},  // { 'Invoicing:intermediate': timestamp }
   TTL:       6 * 60 * 60 * 1000,  // 6 hours
   MIN_SIZE:  3,   // Refill when pool drops below this
@@ -171,7 +173,17 @@ exports.handler = async function (event) {
         if (pool.length > 0 && !expired) {
           // Serve from pool — no API call
           const q = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
-          console.log(`[ai] scenario: pool hit for "${poolKey}" (pool size now: ${pool.length})`);
+          // Validate pool question has region context if non-UK
+      var _poolQuestion = pool[0];
+      var _questionStr  = JSON.stringify(_poolQuestion || '').toLowerCase();
+      var _expectTerm   = (region !== 'UK' && region !== 'GLOBAL') ? taxBody.toLowerCase() : '';
+      if (_expectTerm && !_questionStr.includes(_expectTerm) && pool.length > 0) {
+        // Stale UK questions in pool — clear and regenerate
+        console.log('[ai] Pool has stale UK questions for region ' + region + ' — clearing pool');
+        POOL.questions[poolKey] = [];
+        POOL.ts[poolKey] = 0;
+      }
+      console.log(`[ai] scenario: pool hit for "${poolKey}" (pool size now: ${pool.length})`);
 
           // Trigger background refill if pool is getting low
           if (pool.length < POOL.MIN_SIZE) {
