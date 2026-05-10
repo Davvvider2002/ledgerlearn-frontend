@@ -16,6 +16,27 @@
 
 const LLAPI = (function () {
 
+  // ── Region helper — reads localStorage, never relies on caller ──
+  var _REGIONS = {
+    UK:    {code:'UK',    label:'United Kingdom',  tax:'VAT',     taxRate:'20%',  taxBody:'HMRC',     currency:'£'},
+    ZA:    {code:'ZA',    label:'South Africa',    tax:'VAT',     taxRate:'15%',  taxBody:'SARS',     currency:'R'},
+    NG:    {code:'NG',    label:'Nigeria',          tax:'VAT',     taxRate:'7.5%', taxBody:'FIRS',     currency:'₦'},
+    US:    {code:'US',    label:'United States',    tax:'Sales Tax',taxRate:'varies',taxBody:'IRS',   currency:'$'},
+    AU:    {code:'AU',    label:'Australia',        tax:'GST',     taxRate:'10%',  taxBody:'ATO',      currency:'A$'},
+    NZ:    {code:'NZ',    label:'New Zealand',      tax:'GST',     taxRate:'15%',  taxBody:'IRD',      currency:'NZ$'},
+    IE:    {code:'IE',    label:'Ireland',          tax:'VAT',     taxRate:'23%',  taxBody:'Revenue',  currency:'€'},
+    AE:    {code:'AE',    label:'UAE',              tax:'VAT',     taxRate:'5%',   taxBody:'FTA',      currency:'AED'},
+    CA:    {code:'CA',    label:'Canada',           tax:'GST/HST', taxRate:'5-15%',taxBody:'CRA',     currency:'CA$'},
+    GLOBAL:{code:'GLOBAL',label:'Global',           tax:'Tax',     taxRate:'varies',taxBody:'Tax Authority',currency:''},
+  };
+  function _getRegionConfig() {
+    try {
+      var code = JSON.parse(localStorage.getItem('ll_user') || '{}').region || 'UK';
+      return _REGIONS[code] || _REGIONS['UK'];
+    } catch(e) { return _REGIONS['UK']; }
+  }
+
+
   const ENDPOINT = '/.netlify/functions/ai';
 
   // ── Core fetch wrapper ──────────────────────────────────
@@ -43,8 +64,17 @@ const LLAPI = (function () {
   }
 
   // ── Generate scenario / MCQ question ───────────────────
-  async function generateScenario({ track = 'Xero', module: mod = 'Invoicing', difficulty = 'intermediate', region = 'UK', regionLabel = 'United Kingdom', tax = 'VAT', taxRate = '20%', taxBody = 'HMRC' } = {}) {
-    return call('scenario', { track, module: mod, difficulty, region, regionLabel, tax, taxRate, taxBody });
+  async function generateScenario({ track = 'Xero', module: mod = 'Invoicing', difficulty = 'intermediate', region, regionLabel, tax, taxRate, taxBody } = {}) {
+    // Always read region from localStorage — works even if caller doesn't pass it
+    var _r = _getRegionConfig();
+    var _region      = region      || _r.code;
+    var _regionLabel = regionLabel || _r.label;
+    var _tax         = tax         || _r.tax;
+    var _taxRate     = taxRate     || _r.taxRate;
+    var _taxBody     = taxBody     || _r.taxBody;
+    return call('scenario', { track, module: mod, difficulty,
+      region: _region, regionLabel: _regionLabel,
+      tax: _tax, taxRate: _taxRate, taxBody: _taxBody });
   }
 
   // ── Get feedback on answered question ──────────────────
@@ -59,8 +89,13 @@ const LLAPI = (function () {
   }
 
   // ── Get lesson simulation content ──────────────────────
-  async function getLesson({ lessonTitle, lessonType = 'guided walkthrough', track = 'Xero', level = 'L1 Associate', region = 'UK', regionLabel = 'United Kingdom', tax = 'VAT', taxBody = 'HMRC' } = {}) {
-    return call('lesson', { lessonTitle, lessonType, track, level, region, regionLabel, tax, taxBody });
+  async function getLesson({ lessonTitle, lessonType = 'guided walkthrough', track = 'Xero', level = 'L1 Associate', region, regionLabel, tax, taxBody } = {}) {
+    var _r = _getRegionConfig();
+    return call('lesson', { lessonTitle, lessonType, track, level,
+      region: region || _r.code,
+      regionLabel: regionLabel || _r.label,
+      tax: tax || _r.tax,
+      taxBody: taxBody || _r.taxBody });
   }
 
   // ── Fallback question bank (used if API fails) ──────────

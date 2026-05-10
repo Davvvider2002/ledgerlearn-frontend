@@ -1,4 +1,4 @@
-<!-- LedgerLearn test.html v2.1 - 2026-05-08 - DOM API rebuild - SYNTAX CLEAN -->
+<!-- LedgerLearn test.html v3.0 - 2026-05-10 - REGION BUILD -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -395,12 +395,21 @@ body { background: var(--off-white); }
   </div>
 </footer>
 
-<script src="/ll-shared.js"></script>
-<script src="/ll-api.js"></script>
-<script src="/ll-jobs.js"></script>
+<script src="/ll-shared.js?v=20260510"></script>
+<script src="/ll-api.js?v=20260510"></script>
+<script src="/ll-jobs.js?v=20260510"></script>
 <script>
 
 // Standalone toast — no LL dependency
+// ── VERSION CHECK ────────────────────────────────────────
+(function(){
+  var r = 'UK';
+  try { r = JSON.parse(localStorage.getItem('ll_user')||'{}').region || 'UK'; } catch(e){}
+  console.log('%c[LedgerLearn v3.0] Region-aware build loaded. Your region: ' + r,
+    'background:#D4A843;color:#0B1F3A;font-weight:bold;padding:4px 10px;border-radius:4px;');
+  console.log('[LedgerLearn] To change region: localStorage.setItem("ll_user", JSON.stringify({...JSON.parse(localStorage.getItem("ll_user")||"{}"), region:"NG"}))');
+})();
+
 // ── Security: sanitize strings before DOM insertion ──────
 
 // ── Region configuration ─────────────────────────────────
@@ -632,6 +641,12 @@ function showLevelDashboard(level, progress, isAdmin, paidL2) {
 
 // ── Start test ────────────────────────────────────────────
 async function startTest() {
+  // Update region indicator
+  try {
+    var _rconf = getRegionConfig();
+    var _ri = document.getElementById('test-region-indicator');
+    if (_ri) _ri.textContent = (_rconf.flag||'🌍') + ' ' + _rconf.label + ' · ' + _rconf.tax + ' ' + _rconf.taxRate;
+  } catch(e) {}
   var _saved = {};
   try { _saved = JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) {}
   var _name = await captureNameBeforeTest(_saved.name || '');
@@ -674,13 +689,30 @@ async function fetchTestQuestions(cfg) {
     if (test.finished) break;
     const topic = topicCycle[i % topicCycle.length];
     var _rc = getRegionConfig();
-    const q = await LLAPI.generateScenario({
-      track: 'Xero', module: topic,
-      difficulty: test.level === 'l1' ? 'intermediate' : 'advanced',
-      region: getRegion(),
-      regionLabel: _rc.label,
-      tax: _rc.tax, taxRate: _rc.taxRate, taxBody: _rc.taxBody,
-    });
+    var _rcode = getRegion();
+    console.log('[LedgerLearn] Question ' + i + ': fetching with region=' + _rcode + ' (' + _rc.label + '), tax=' + _rc.tax + ' ' + _rc.taxRate + ', taxBody=' + _rc.taxBody);
+    // Direct fetch bypasses ll-api.js cache — always sends correct region
+    var q;
+    try {
+      var _resp = await fetch('/.netlify/functions/ai', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          action: 'scenario',
+          track: 'Xero',
+          module: topic,
+          difficulty: test.level === 'l1' ? 'intermediate' : 'advanced',
+          region: _rcode,
+          regionLabel: _rc.label,
+          tax: _rc.tax,
+          taxRate: _rc.taxRate,
+          taxBody: _rc.taxBody,
+        })
+      });
+      q = await _resp.json();
+    } catch(e) {
+      q = { error: true };
+    }
 
     if (!q.error && q.question && q.options) {
       test.questions[i] = q;
@@ -1419,6 +1451,6 @@ window.adminReset=adminReset;
 
 initLevels();
 </script>
-<script src="/certificate-engine.js"></script>
+<script src="/certificate-engine.js?v=20260510"></script>
 </body>
 </html>

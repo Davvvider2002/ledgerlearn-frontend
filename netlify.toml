@@ -131,11 +131,21 @@
   status = 200
 
 [[redirects]]
+  from = "/region-test"
+  to   = "/region-test.html"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 404
 
 # ── Security headers ──────────────────────────────────────
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/*"
@@ -147,9 +157,9 @@
 [[headers]]
   for = "/*.css"
   [headers.values]
-    Cache-Control = "public, max-age=86400"
+    Cache-Control = "public, max-age=3600"
 
 [[headers]]
   for = "/*.js"
   [headers.values]
-    Cache-Control = "public, max-age=86400"
+    Cache-Control = "public, max-age=0, must-revalidate"

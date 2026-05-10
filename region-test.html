@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Region Test — LedgerLearn</title>
+<style>
+body{font-family:monospace;background:#0B1F3A;color:#fff;padding:2rem;max-width:800px;margin:0 auto;}
+h1{color:#D4A843;margin-bottom:1rem;font-size:1.2rem;}
+.box{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1rem;margin:1rem 0;white-space:pre-wrap;font-size:0.78rem;max-height:400px;overflow-y:auto;}
+.ok{color:#1DA98A;}.fail{color:#E24B4A;}.warn{color:#D4A843;}
+button{background:#D4A843;color:#0B1F3A;border:none;padding:10px 20px;border-radius:6px;font-weight:700;cursor:pointer;margin:0.5rem 0.5rem 0.5rem 0;font-family:monospace;}
+input{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:8px;border-radius:6px;width:200px;font-family:monospace;}
+</style>
+</head>
+<body>
+<h1>🔬 LedgerLearn Region Diagnostic</h1>
+
+<div id="status"></div>
+
+<div>
+  Set region: <input id="region-input" value="NG" placeholder="NG, ZA, UK..."/>
+  <button onclick="setRegion()">Set &amp; reload</button>
+  <button onclick="runTest()">Run full test</button>
+  <button onclick="clearAll()">Clear all data</button>
+</div>
+
+<div class="box" id="output">Click "Run full test" to diagnose...</div>
+
+<script>
+function log(msg, cls) {
+  var el = document.getElementById('output');
+  var span = document.createElement('span');
+  span.className = cls || '';
+  span.textContent = msg + '\n';
+  el.appendChild(span);
+}
+function clear() { document.getElementById('output').innerHTML = ''; }
+
+function setRegion() {
+  var code = document.getElementById('region-input').value.trim().toUpperCase();
+  var u = JSON.parse(localStorage.getItem('ll_user') || '{}');
+  u.region = code;
+  localStorage.setItem('ll_user', JSON.stringify(u));
+  log('✓ Region set to: ' + code, 'ok');
+  log('ll_user: ' + JSON.stringify(u), '');
+}
+
+async function runTest() {
+  clear();
+  log('=== LEDGERLEARN REGION DIAGNOSTIC ===\n');
+  
+  // Step 1: Check localStorage
+  log('STEP 1: localStorage check');
+  var ll_user = null;
+  try {
+    ll_user = JSON.parse(localStorage.getItem('ll_user') || 'null');
+    log('  ll_user: ' + JSON.stringify(ll_user), ll_user ? 'ok' : 'warn');
+    log('  region: ' + (ll_user && ll_user.region ? ll_user.region : 'NOT SET — defaulting to UK'), 
+        ll_user && ll_user.region ? 'ok' : 'fail');
+  } catch(e) { log('  ERROR: ' + e.message, 'fail'); }
+  
+  // Step 2: Check version marker
+  log('\nSTEP 2: File version check (fetch test.html head)');
+  try {
+    var r = await fetch('/test', {method:'GET', headers:{'Cache-Control':'no-cache'}});
+    var text = await r.text();
+    var firstLine = text.split('\n')[0];
+    log('  First line: ' + firstLine, firstLine.includes('v3.0') ? 'ok' : 'fail');
+    if (!firstLine.includes('v3.0')) {
+      log('  ⚠ OLD FILE STILL SERVING - v3.0 not deployed!', 'fail');
+    }
+  } catch(e) { log('  ERROR: ' + e.message, 'fail'); }
+  
+  // Step 3: Check ai.js version
+  log('\nSTEP 3: ai.js version check');
+  try {
+    var r2 = await fetch('/.netlify/functions/ai', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({action:'version'})
+    });
+    var d = await r2.json();
+    log('  Response: ' + JSON.stringify(d).substring(0,100), '');
+  } catch(e) { log('  (version action not supported - ok)', 'warn'); }
+  
+  // Step 4: Call AI with Nigeria region
+  log('\nSTEP 4: AI scenario call with Nigeria region');
+  var region = (ll_user && ll_user.region) || 'NG';
+  var REGIONS = {
+    UK:{label:"United Kingdom",tax:"VAT",taxRate:"20%",taxBody:"HMRC",currency:"£"},
+    ZA:{label:"South Africa",tax:"VAT",taxRate:"15%",taxBody:"SARS",currency:"R"},
+    NG:{label:"Nigeria",tax:"VAT",taxRate:"7.5%",taxBody:"FIRS",currency:"₦"},
+    US:{label:"United States",tax:"Sales Tax",taxRate:"varies",taxBody:"IRS",currency:"$"},
+    AE:{label:"UAE",tax:"VAT",taxRate:"5%",taxBody:"FTA",currency:"AED"},
+  };
+  var rc = REGIONS[region] || REGIONS['NG'];
+  log('  Sending: region=' + region + ' label=' + rc.label + ' taxBody=' + rc.taxBody + ' currency=' + rc.currency, 'warn');
+  
+  try {
+    var r3 = await fetch('/.netlify/functions/ai', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action: 'scenario',
+        track: 'Xero',
+        module: 'VAT Returns',
+        difficulty: 'intermediate',
+        region: region,
+        regionLabel: rc.label,
+        tax: rc.tax,
+        taxRate: rc.taxRate,
+        taxBody: rc.taxBody
+      })
+    });
+    var d2 = await r3.json();
+    log('  HTTP status: ' + r3.status, r3.ok ? 'ok' : 'fail');
+    log('  Response: ' + JSON.stringify(d2).substring(0,500), '');
+    
+    // Check if question contains region-specific terms
+    var qstr = JSON.stringify(d2).toLowerCase();
+    var hasRegionTerms = qstr.includes(rc.taxBody.toLowerCase()) || 
+                         qstr.includes(rc.currency) ||
+                         qstr.includes(rc.taxRate);
+    log('\n  Contains ' + rc.taxBody + ': ' + (qstr.includes(rc.taxBody.toLowerCase()) ? 'YES ✓' : 'NO ✗'), 
+        qstr.includes(rc.taxBody.toLowerCase()) ? 'ok' : 'fail');
+    log('  Contains ' + rc.currency + ': ' + (qstr.includes(rc.currency) ? 'YES ✓' : 'NO ✗'),
+        qstr.includes(rc.currency) ? 'ok' : 'fail');
+    log('  Contains ' + rc.taxRate + ': ' + (qstr.includes(rc.taxRate) ? 'YES ✓' : 'NO ✗'),
+        qstr.includes(rc.taxRate) ? 'ok' : 'fail');
+    log('\n  ' + (hasRegionTerms ? '✓ REGION IS WORKING' : '✗ STILL RETURNING UK CONTENT'), 
+        hasRegionTerms ? 'ok' : 'fail');
+        
+  } catch(e) { log('  ERROR: ' + e.message, 'fail'); }
+  
+  log('\n=== TEST COMPLETE ===');
+}
+
+function clearAll() {
+  localStorage.removeItem('ll_user');
+  localStorage.removeItem('ll_progress');
+  log('Cleared ll_user and ll_progress', 'warn');
+}
+</script>
+</body>
+</html>
