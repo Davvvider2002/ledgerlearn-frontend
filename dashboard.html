@@ -570,7 +570,7 @@
     <span class="nav-brand">Ledger<span>Learn</span> Pro</span>
   </a>
   <ul class="nav-links">
-    <li><a href="/learn">Learn</a></li>
+    <li><a href="/learn" id="dash-learn-link">Learn</a></li>
     <li><a href="/practice">Practice</a></li>
     <li><a href="/test">Assessment</a></li>
   </ul>
@@ -853,6 +853,23 @@
     const user     = getUser();
     const progress = getProgress();
     initRegionCard();
+    // Update Learn nav link to correct level
+    try {
+      var _p = JSON.parse(localStorage.getItem('ll_progress')||'{}');
+      var _completed = _p.completedLevels || [];
+      var _isAdmin = _p.adminMode === true || sessionStorage.getItem('ll_admin_token');
+      var _paidL2  = _p.paid_l2 === true;
+      var _passedL1 = _completed.includes('l1') && (_p.lastScore != null || _p.l1Score != null || _isAdmin);
+      var _passedL2 = _completed.includes('l2') && (_p.l2Score != null || _isAdmin);
+      var _accessL2 = _passedL1 && (_paidL2 || _isAdmin);
+      var _accessL3 = _passedL2 || (_isAdmin && _accessL2);
+      var _learnLink = document.getElementById('dash-learn-link');
+      if (_learnLink) {
+        if (_accessL3)      _learnLink.href = '/learn-l3';
+        else if (_accessL2) _learnLink.href = '/learn-l2';
+        else                _learnLink.href = '/learn';
+      }
+    } catch(e) {}
 
     // ── Personalise nav ───────────────────────────────────
     if (user && user.name) {

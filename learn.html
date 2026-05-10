@@ -202,60 +202,103 @@ nav{
 @media(max-width:600px){.page{padding:1rem;}.sim-iframe{height:500px;}}
 </style>
 <script>
-  // ── Level routing — runs before page renders ──────────────
-  (function levelRoute() {
-    try {
-      var p         = JSON.parse(localStorage.getItem('ll_progress') || '{}');
-      var completed = p.completedLevels || [];
-      var isAdmin   = p.adminMode === true || sessionStorage.getItem('ll_admin_token');
-      var paidL2    = p.paid_l2 === true;
-      var passedL1  = completed.includes('l1');
-      var passedL2  = completed.includes('l2') || p.l2Score != null;
-      var currentPage = window.location.pathname.replace(/\/+$/,'');
+// ╔══════════════════════════════════════════════════════════╗
+// ║  LedgerLearn — Central Routing Module v4.0              ║
+// ║  Single source of truth for ALL level/nav logic         ║
+// ╚══════════════════════════════════════════════════════════╝
 
-      // Determine minimum accessible page for this user
-      // Only redirect UP (never redirect someone away from a page they can access)
-      var currentPage = window.location.pathname.replace(/\/+$/,'');
-      var onLearn   = currentPage === '/learn'    || currentPage.endsWith('/learn.html');
-      var onLearnL2 = currentPage === '/learn-l2' || currentPage.endsWith('/learn-l2.html');
-      var onLearnL3 = currentPage === '/learn-l3' || currentPage.endsWith('/learn-l3.html');
+var LL = LL || {};
 
-      // Redirect UP only: if user landed on a page they can't access yet
-      // Never redirect DOWN: if they clicked L2, keep them on L2
-      // Never redirect if user navigated here from within the site (back button / banner click)
-      var cameFromSite = document.referrer.indexOf('ledgerlearn.pro') > -1 || 
-                         document.referrer.indexOf(window.location.hostname) > -1;
-
-      if (onLearn && !cameFromSite && (passedL2 || (passedL1 && (paidL2 || isAdmin)))) {
-        // Direct load of /learn but user has higher level access — redirect up
-        if (passedL2) { window.location.replace('/learn-l3'); return; }
-        if (passedL1 && (paidL2 || isAdmin)) { window.location.replace('/learn-l2'); return; }
-      }
-      // Always allow L2/L3 if user navigated there (banner, back button, etc)
-      // Only block if genuinely locked
-      if (onLearnL2 && !passedL1 && !isAdmin) { window.location.replace('/learn'); return; }
-      if (onLearnL3 && !passedL2 && !isAdmin) {
-        if (passedL1 && (paidL2 || isAdmin)) { window.location.replace('/learn-l2'); return; }
-        window.location.replace('/learn'); return;
-      }
-
-    } catch(e) { /* silent fail — stay on current page */ }
-  
-function scrollToPractice(e) {
-  // If already on this page, scroll to practice section instead of navigating
-  var practiceBtn = document.querySelector('.lesson-item');
-  if (practiceBtn && window.location.pathname === '/learn') {
-    e.preventDefault();
-    // Load the practice lesson (last lesson or dedicated practice)
-    var items = document.querySelectorAll('.lesson-item');
-    if (items.length > 0) {
-      items[0].click();
-      document.querySelector('.lesson-main') && document.querySelector('.lesson-main').scrollIntoView({behavior:'smooth'});
-    }
+LL.progress = (function() {
+  function get() {
+    try { return JSON.parse(localStorage.getItem('ll_progress') || '{}'); } catch(e) { return {}; }
   }
-  // Otherwise navigate normally to the page
-}
+  function user() {
+    try { return JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) { return {}; }
+  }
+
+  // ── Core state — single definition used everywhere ──────
+  function state() {
+    var p         = get();
+    var completed = p.completedLevels || [];
+    var adminToken = sessionStorage.getItem('ll_admin_token');
+    var adminExp   = sessionStorage.getItem('ll_admin_expires');
+    var adminValid = adminToken && adminExp && new Date(adminExp) > new Date();
+    var isAdmin    = (p.adminMode === true && adminValid);
+
+    // A level is "passed" only when it appears in completedLevels WITH a real score
+    // Admin mode does NOT count as passing — it only unlocks for testing
+    var passedL1 = completed.includes('l1') && (p.lastScore != null || p.l1Score != null || isAdmin);
+    var passedL2 = completed.includes('l2') && (p.l2Score != null || isAdmin);
+    var passedL3 = completed.includes('l3') && (p.l3Score != null || isAdmin);
+
+    // Access (can see/use the level)
+    var paidL2    = p.paid_l2 === true;
+    var accessL1  = true;                           // Always accessible
+    var accessL2  = passedL1 && (paidL2 || isAdmin); // L1 done + paid OR admin
+    var accessL3  = passedL2 || (isAdmin && accessL2); // L2 done OR admin with L2 access
+
+    // Highest accessible level
+    var currentLevel = accessL3 ? 'l3' : accessL2 ? 'l2' : 'l1';
+
+    return {
+      p: p, completed: completed, isAdmin: isAdmin,
+      passedL1: passedL1, passedL2: passedL2, passedL3: passedL3,
+      paidL2: paidL2,
+      accessL1: accessL1, accessL2: accessL2, accessL3: accessL3,
+      currentLevel: currentLevel,
+    };
+  }
+
+  // ── Learn page for a given state ────────────────────────
+  function learnPage(s) {
+    if (s.accessL3) return '/learn-l3';
+    if (s.accessL2) return '/learn-l2';
+    return '/learn';
+  }
+
+  return { get: get, user: user, state: state, learnPage: learnPage };
 })();
+
+// ── Page-level routing ────────────────────────────────────
+// Call once at page load. page = 'learn' | 'learn-l2' | 'learn-l3' | 'practice'
+LL.route = function(page) {
+  try {
+    var s    = LL.progress.state();
+    var from = document.referrer;
+    var fromSelf = from.indexOf(window.location.hostname) > -1;
+
+    if (page === 'practice') {
+      // Always route practice to the correct learn page immediately
+      if (s.accessL3)      { window.location.replace('/learn-l3'); }
+      else if (s.accessL2) { window.location.replace('/learn-l2'); }
+      else                  { window.location.replace('/learn');    }
+      return;
+    }
+
+    if (page === 'learn') {
+      // On /learn — only auto-redirect UP on direct (non-site) loads
+      // Never redirect when user explicitly navigated here (back button, L1 banner)
+      if (!fromSelf && s.accessL3) { window.location.replace('/learn-l3'); return; }
+      if (!fromSelf && s.accessL2) { window.location.replace('/learn-l2'); return; }
+    }
+
+    if (page === 'learn-l2') {
+      // Block if no L2 access — redirect down
+      if (!s.accessL2 && !s.accessL1) { window.location.replace('/learn'); return; }
+      if (!s.accessL2)                 { window.location.replace('/learn'); return; }
+    }
+
+    if (page === 'learn-l3') {
+      // Block if no L3 access — redirect to highest accessible
+      if (!s.accessL3 && s.accessL2) { window.location.replace('/learn-l2'); return; }
+      if (!s.accessL3)               { window.location.replace('/learn');    return; }
+    }
+
+  } catch(e) { /* silent */ }
+};
+
+LL.route('learn');
 </script>
 </head>
 <body>
@@ -267,7 +310,7 @@ function scrollToPractice(e) {
   </a>
   <ul class="nav-links">
     <li><a href="/learn" class="active">Learn</a></li>
-    <li><a href="/learn" onclick="scrollToPractice(event)">Practice</a></li>
+    <li><a href="/practice">Practice</a></li>
     <li><a href="/test">Assessment</a></li>
     <li><a href="/dashboard">Dashboard</a></li>
     <li><a href="/placement" class="nav-cta">Find my starting point</a></li>
