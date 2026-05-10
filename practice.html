@@ -5,118 +5,435 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Practice — LedgerLearn Pro</title>
 <link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#0B1F3A;min-height:100vh;}
+/* Nav */
+nav{height:56px;background:rgba(11,31,58,0.98);border-bottom:2px solid #D4A843;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:100;}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.nav-hex{width:20px;height:20px;background:#D4A843;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.nav-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:#fff;}
+.nav-brand span{color:#D4A843;}
+.nav-links{display:flex;align-items:center;gap:0.25rem;list-style:none;}
+.nav-links li a{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.875rem;padding:6px 12px;border-radius:6px;transition:all .15s;}
+.nav-links li a:hover{color:#fff;background:rgba(255,255,255,0.08);}
+.nav-links li a.active{color:#fff;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.3);}
+.nav-level-badge{display:inline-flex;align-items:center;padding:4px 12px;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.4);color:#D4A843;font-size:0.72rem;font-weight:700;border-radius:100px;margin-left:4px;}
+/* Level banner */
+.level-banner{background:#0d2044;border-bottom:1px solid rgba(255,255,255,0.08);padding:8px 2rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.lbanner-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.3);font-weight:600;margin-right:4px;}
+.lbanner-link{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;font-size:0.73rem;font-weight:700;text-decoration:none;transition:all .15s;}
+.lb-grey{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);}
+.lb-gold{background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.4);color:#D4A843;}
+.lb-green{background:rgba(29,169,138,0.15);border:1px solid rgba(29,169,138,0.4);color:#26c9a5;}
+.lb-arrow{color:rgba(255,255,255,0.2);font-size:0.7rem;margin:0 2px;}
+/* Main */
+.main{max-width:900px;margin:0 auto;padding:2rem;}
+.page-header{margin-bottom:2rem;}
+.page-eyebrow{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:#D4A843;font-weight:700;margin-bottom:0.5rem;}
+.page-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:0.4rem;}
+.page-sub{font-size:0.9rem;color:rgba(255,255,255,0.5);line-height:1.6;}
+/* Topic grid */
+.topics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.75rem;margin-bottom:2rem;}
+.topic-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:1rem;text-align:left;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;flex-direction:column;gap:4px;}
+.topic-btn:hover{border-color:#D4A843;background:rgba(212,168,67,0.08);}
+.topic-btn.active{border-color:#D4A843;background:rgba(212,168,67,0.12);}
+.topic-icon{font-size:1.5rem;margin-bottom:4px;}
+.topic-name{font-size:0.85rem;font-weight:700;color:#fff;}
+.topic-meta{font-size:0.7rem;color:rgba(255,255,255,0.4);}
+/* Question card */
+.q-wrap{display:none;}
+.q-wrap.visible{display:block;}
+.q-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:1.5rem;margin-bottom:1rem;}
+.q-header{display:flex;align-items:center;gap:8px;margin-bottom:1rem;}
+.q-num{width:28px;height:28px;border-radius:50%;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.3);color:#D4A843;font-size:0.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.q-topic-tag{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 8px;border-radius:100px;background:rgba(29,169,138,0.12);border:1px solid rgba(29,169,138,0.25);color:#26c9a5;}
+.q-context{font-size:0.8rem;color:rgba(255,255,255,0.45);margin-bottom:0.6rem;font-style:italic;line-height:1.5;}
+.q-text{font-size:0.92rem;color:#fff;font-weight:500;line-height:1.65;margin-bottom:1.1rem;}
+.q-options{display:flex;flex-direction:column;gap:0.45rem;}
+.q-opt{padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);font-size:0.83rem;color:rgba(255,255,255,0.75);cursor:pointer;transition:all .15s;background:transparent;text-align:left;font-family:inherit;line-height:1.4;}
+.q-opt:hover:not(:disabled){border-color:rgba(212,168,67,0.5);color:#fff;background:rgba(212,168,67,0.06);}
+.q-opt.correct{border-color:#1DA98A;background:rgba(29,169,138,0.12);color:#26c9a5;font-weight:600;}
+.q-opt.wrong{border-color:#E24B4A;background:rgba(226,75,74,0.08);color:#ff8080;}
+.q-explanation{margin-top:0.75rem;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:0.78rem;color:rgba(255,255,255,0.55);line-height:1.6;border-left:3px solid rgba(29,169,138,0.5);display:none;}
+.q-explanation.show{display:block;}
+/* Controls */
+.controls{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+.btn{padding:10px 20px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn-gold{background:#D4A843;color:#0B1F3A;}
+.btn-gold:hover{background:#f0c860;transform:translateY(-1px);}
+.btn-ghost{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);}
+.btn-ghost:hover{background:rgba(255,255,255,0.12);color:#fff;}
+/* Score bar */
+.score-bar{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;}
+.score-num{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#D4A843;flex-shrink:0;}
+.score-track{flex:1;min-width:120px;}
+.score-label{font-size:0.72rem;color:rgba(255,255,255,0.4);margin-bottom:4px;}
+.score-track-bar{height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;}
+.score-track-fill{height:100%;background:linear-gradient(90deg,#D4A843,#1DA98A);border-radius:4px;transition:width .5s;}
+.score-msg{font-size:0.78rem;color:rgba(255,255,255,0.5);flex-shrink:0;}
+/* Loading */
+.loading-state{text-align:center;padding:3rem 1rem;}
+.spinner{width:40px;height:40px;border:3px solid rgba(212,168,67,0.2);border-top-color:#D4A843;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:rgba(255,255,255,0.4);font-size:0.85rem;}
+/* Empty state */
+.empty-state{text-align:center;padding:3rem;color:rgba(255,255,255,0.4);}
+.empty-icon{font-size:3rem;margin-bottom:1rem;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><div class="nav-hex"></div><span class="nav-brand">Ledger<span>Learn</span> Pro</span></a>
+  <ul class="nav-links">
+    <li><a href="/learn" id="nav-learn-link">Learn</a></li>
+    <li><a href="/practice" class="active">Practice</a></li>
+    <li><a href="/test">Assessment</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><span class="nav-level-badge" id="nav-level-badge">L1</span></li>
+  </ul>
+</nav>
+
+<div class="level-banner">
+  <span class="lbanner-label">Your track:</span>
+  <a href="/learn"    class="lbanner-link lb-grey" id="lb-l1">L1 Xero Associate</a>
+  <span class="lb-arrow">›</span>
+  <a href="/learn-l2" class="lbanner-link lb-grey" id="lb-l2">L2 Xero Professional</a>
+  <span class="lb-arrow">›</span>
+  <a href="/learn-l3" class="lbanner-link lb-grey" id="lb-l3">L3 Xero Advisor</a>
+  <span id="lb-status" style="margin-left:auto;font-size:0.72rem;color:rgba(255,255,255,0.35);"></span>
+</div>
+
+<div class="main">
+  <div class="page-header">
+    <div class="page-eyebrow" id="page-eyebrow">Practice</div>
+    <div class="page-title" id="page-title">Practice Questions</div>
+    <div class="page-sub" id="page-sub">Select a topic below to generate AI practice questions for your region and level.</div>
+  </div>
+
+  <!-- Topic selector -->
+  <div class="topics-grid" id="topics-grid"></div>
+
+  <!-- Score bar -->
+  <div class="score-bar" id="score-bar" style="display:none">
+    <div class="score-num" id="score-num">0/0</div>
+    <div class="score-track">
+      <div class="score-label" id="score-label">Questions answered</div>
+      <div class="score-track-bar"><div class="score-track-fill" id="score-fill" style="width:0%"></div></div>
+    </div>
+    <div class="score-msg" id="score-msg"></div>
+    <button class="btn btn-ghost" onclick="resetPractice()">← Back to topics</button>
+    <button class="btn btn-gold" onclick="loadMoreQuestions()">More questions →</button>
+  </div>
+
+  <!-- Questions -->
+  <div id="q-area">
+    <div class="loading-state" id="loading-state" style="display:none">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loading-text">Generating questions...</div>
+    </div>
+    <div id="questions-list"></div>
+  </div>
+</div>
+
 <script>
-// ╔══════════════════════════════════════════════════════════════╗
-// ║  LedgerLearn — Routing Module v6.0                          ║
-// ║  Single source of truth. Identical copy in every page.      ║
-// ╚══════════════════════════════════════════════════════════════╝
+// ── Routing module (inline) ──────────────────────────────
 var LL = LL || {};
-
 LL.progress = (function() {
-  function getRaw() {
-    try { return JSON.parse(localStorage.getItem('ll_progress') || '{}'); } catch(e) { return {}; }
-  }
-  function getUser() {
-    try { return JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) { return {}; }
-  }
-
+  function getRaw() { try{return JSON.parse(localStorage.getItem('ll_progress')||'{}');}catch(e){return{};} }
+  function getUser(){ try{return JSON.parse(localStorage.getItem('ll_user')||'{}');}catch(e){return{};} }
   function state() {
-    var p         = getRaw();
-    var completed = p.completedLevels || [];
-
-    // Admin valid only while sessionStorage token exists (clears on tab/browser close)
-    var tok = sessionStorage.getItem('ll_admin_token');
-    var exp = sessionStorage.getItem('ll_admin_expires');
-    var isAdmin = !!(tok && exp && new Date(exp) > new Date());
-
-    // PASSED = in completedLevels AND real score exists
-    var passedL1 = completed.includes('l1') && (p.lastScore != null || p.l1Score != null);
-    var passedL2 = completed.includes('l2') && (p.l2Score  != null);
-    var passedL3 = completed.includes('l3') && (p.l3Score  != null);
-
-    // PAID = confirmed PayPal payment
-    var paidL2 = p.paid_l2 === true;
-
-    // ACCESS
-    var accessL1 = true;
-    var accessL2 = (passedL1 && paidL2) || isAdmin;
-    var accessL3 = passedL2 || isAdmin;
-
-    // WORKING LEVEL — where the user currently is
-    var workingLevel;
-    if (!passedL1 && !isAdmin) {
-      workingLevel = 'l1';
-    } else if (!accessL2) {
-      workingLevel = 'l1';   // L1 done, not yet unlocked L2
-    } else if (!passedL2) {
-      workingLevel = 'l2';   // L2 unlocked, working through it
-    } else if (!passedL3) {
-      workingLevel = 'l3';   // L2 done, working on L3
-    } else {
-      workingLevel = 'l3';   // All done
-    }
-    if (isAdmin) workingLevel = 'l3';
-
-    return {
-      p, completed, isAdmin,
-      passedL1, passedL2, passedL3,
-      paidL2,
-      accessL1, accessL2, accessL3,
-      workingLevel,
-    };
+    var p=getRaw(), completed=p.completedLevels||[];
+    var tok=sessionStorage.getItem('ll_admin_token'), exp=sessionStorage.getItem('ll_admin_expires');
+    var isAdmin=!!(tok&&exp&&new Date(exp)>new Date());
+    var passedL1=completed.includes('l1')&&(p.lastScore!=null||p.l1Score!=null);
+    var passedL2=completed.includes('l2')&&p.l2Score!=null;
+    var passedL3=completed.includes('l3')&&p.l3Score!=null;
+    var paidL2=p.paid_l2===true;
+    var accessL2=(passedL1&&paidL2)||isAdmin;
+    var accessL3=passedL2||isAdmin;
+    var wl = (!passedL1&&!isAdmin)?'l1':!accessL2?'l1':!passedL2?'l2':!passedL3?'l3':'l3';
+    if(isAdmin) wl='l3';
+    return {p,completed,isAdmin,passedL1,passedL2,passedL3,paidL2,accessL1:true,accessL2,accessL3,workingLevel:wl};
   }
-
-  function learnPage(s) {
-    return s.workingLevel === 'l3' ? '/learn-l3' :
-           s.workingLevel === 'l2' ? '/learn-l2' : '/learn';
-  }
-
-  return { getRaw, getUser, state, learnPage };
+  function learnPage(s){return s.workingLevel==='l3'?'/learn-l3':s.workingLevel==='l2'?'/learn-l2':'/learn';}
+  return {getRaw,getUser,state,learnPage};
 })();
 
-// Page routing — call once at page load
-LL.route = function(page) {
-  try {
-    var s = LL.progress.state();
+// ── Region config ────────────────────────────────────────
+var REGIONS = {
+  UK:{label:'United Kingdom',flag:'🇬🇧',tax:'VAT',taxRate:'20%',taxBody:'HMRC',currency:'£'},
+  ZA:{label:'South Africa',  flag:'🇿🇦',tax:'VAT',taxRate:'15%',taxBody:'SARS',currency:'R'},
+  NG:{label:'Nigeria',       flag:'🇳🇬',tax:'VAT',taxRate:'7.5%',taxBody:'FIRS',currency:'₦'},
+  US:{label:'United States', flag:'🇺🇸',tax:'Sales Tax',taxRate:'varies',taxBody:'IRS',currency:'$'},
+  AU:{label:'Australia',     flag:'🇦🇺',tax:'GST',taxRate:'10%',taxBody:'ATO',currency:'A$'},
+  NZ:{label:'New Zealand',   flag:'🇳🇿',tax:'GST',taxRate:'15%',taxBody:'IRD',currency:'NZ$'},
+  IE:{label:'Ireland',       flag:'🇮🇪',tax:'VAT',taxRate:'23%',taxBody:'Revenue',currency:'€'},
+  AE:{label:'UAE',           flag:'🇦🇪',tax:'VAT',taxRate:'5%', taxBody:'FTA',currency:'AED'},
+  CA:{label:'Canada',        flag:'🇨🇦',tax:'GST/HST',taxRate:'5-15%',taxBody:'CRA',currency:'CA$'},
+  GLOBAL:{label:'Global',    flag:'🌍',tax:'Tax',taxRate:'varies',taxBody:'Tax Authority',currency:''},
+};
+function getRegion(){try{return JSON.parse(localStorage.getItem('ll_user')||'{}').region||'UK';}catch(e){return'UK';}}
+function getRC(){return REGIONS[getRegion()]||REGIONS['UK'];}
 
-    if (page === 'practice') {
-      window.location.replace(LL.progress.learnPage(s));
-      return;
+// ── Topics per level ────────────────────────────────────
+var LEVEL_TOPICS = {
+  l1:[
+    {icon:'📊',name:'Dashboard & Navigation',     difficulty:'beginner'},
+    {icon:'🏢',name:'Organisation Setup',          difficulty:'beginner'},
+    {icon:'🧾',name:'Creating & Managing Invoices',difficulty:'intermediate'},
+    {icon:'🏦',name:'Bank Reconciliation',         difficulty:'intermediate'},
+    {icon:'📋',name:'Chart of Accounts',           difficulty:'intermediate'},
+    {icon:'📈',name:'Financial Reports',           difficulty:'intermediate'},
+  ],
+  l2:[
+    {icon:'💸',name:'Bills & Accounts Payable',   difficulty:'intermediate'},
+    {icon:'🧾',name:'VAT Returns',                difficulty:'advanced'},
+    {icon:'⚙️',name:'Bank Rules & Automation',    difficulty:'advanced'},
+    {icon:'📊',name:'Financial Reporting',         difficulty:'advanced'},
+    {icon:'💱',name:'Multi-Currency',             difficulty:'advanced'},
+    {icon:'📈',name:'Management Accounts',         difficulty:'advanced'},
+  ],
+  l3:[
+    {icon:'🤝',name:'Client Onboarding',          difficulty:'advanced'},
+    {icon:'📋',name:'Management Accounts Pack',   difficulty:'advanced'},
+    {icon:'💡',name:'Advisory Reporting',         difficulty:'advanced'},
+    {icon:'📅',name:'Year-End Preparation',       difficulty:'advanced'},
+    {icon:'🏢',name:'Practice Management',        difficulty:'advanced'},
+    {icon:'✅',name:'Certification Review',        difficulty:'advanced'},
+  ],
+};
+
+var LEVEL_NAMES = {l1:'L1 Xero Associate', l2:'L2 Xero Professional', l3:'L3 Xero Advisor'};
+
+var st, currentLevel, currentTopic;
+var score=0, answered=0, questions=[];
+
+// ── Init ─────────────────────────────────────────────────
+(function init() {
+  st = LL.progress.state();
+  currentLevel = st.workingLevel;
+
+  // Update nav Learn link
+  var ll = document.getElementById('nav-learn-link');
+  if(ll) ll.href = LL.progress.learnPage(st);
+
+  // Update nav badge
+  var badge = document.getElementById('nav-level-badge');
+  if(badge) badge.textContent = currentLevel.toUpperCase() + ' ' + LEVEL_NAMES[currentLevel];
+
+  // Update level banner
+  updateBanner();
+
+  // Update page header
+  var rc = getRC();
+  document.getElementById('page-eyebrow').textContent = LEVEL_NAMES[currentLevel] + ' Practice';
+  document.getElementById('page-title').textContent   = 'Practice Questions';
+  document.getElementById('page-sub').textContent     =
+    'AI-generated questions for your region: ' + (rc.flag||'') + ' ' + rc.label +
+    ' · ' + rc.tax + ' ' + rc.taxRate + ' (' + rc.taxBody + ')';
+
+  // Render topics
+  renderTopics();
+})();
+
+function updateBanner() {
+  var l1=document.getElementById('lb-l1'),l2=document.getElementById('lb-l2'),l3=document.getElementById('lb-l3');
+  var gold='lb-gold', green='lb-green', grey='lb-grey';
+  function setStyle(el, cls){
+    el.className='lbanner-link '+cls;
+    if(cls===grey){el.style.pointerEvents='';el.style.opacity='';}
+  }
+  if(l1) setStyle(l1, st.passedL1?green:(currentLevel==='l1'?gold:grey));
+  if(l2) {
+    setStyle(l2, st.passedL2?green:(currentLevel==='l2'?gold:grey));
+    if(!st.accessL2){l2.style.pointerEvents='none';l2.style.opacity='0.4';}
+  }
+  if(l3) {
+    setStyle(l3, st.passedL3?green:(currentLevel==='l3'?gold:grey));
+    if(!st.accessL3){l3.style.pointerEvents='none';l3.style.opacity='0.4';}
+  }
+  var status=document.getElementById('lb-status');
+  if(status){
+    var lbs=[];
+    if(st.passedL1)lbs.push('L1 ✓');
+    if(st.passedL2)lbs.push('L2 ✓');
+    if(st.passedL3)lbs.push('L3 ✓');
+    if(st.isAdmin) lbs.push('Admin');
+    status.textContent=lbs.join(' · ');
+  }
+}
+
+function renderTopics() {
+  var topics = LEVEL_TOPICS[currentLevel] || LEVEL_TOPICS['l1'];
+  var grid = document.getElementById('topics-grid');
+  grid.innerHTML = topics.map(function(t,i) {
+    return '<button class="topic-btn" onclick="selectTopic('+i+')" id="topic-'+i+'">' +
+      '<div class="topic-icon">'+t.icon+'</div>' +
+      '<div class="topic-name">'+t.name+'</div>' +
+      '<div class="topic-meta">'+t.difficulty+' · Click to practice</div>' +
+    '</button>';
+  }).join('');
+  document.getElementById('topics-grid').style.display='grid';
+  document.getElementById('score-bar').style.display='none';
+  document.getElementById('questions-list').innerHTML='';
+  score=0; answered=0; questions=[];
+}
+
+function selectTopic(idx) {
+  var topics = LEVEL_TOPICS[currentLevel] || LEVEL_TOPICS['l1'];
+  currentTopic = topics[idx];
+  document.querySelectorAll('.topic-btn').forEach(function(b){b.classList.remove('active');});
+  var btn = document.getElementById('topic-'+idx);
+  if(btn) btn.classList.add('active');
+  score=0; answered=0; questions=[];
+  document.getElementById('score-bar').style.display='flex';
+  document.getElementById('score-num').textContent='0/0';
+  document.getElementById('score-fill').style.width='0%';
+  document.getElementById('score-msg').textContent='';
+  document.getElementById('topics-grid').style.display='none';
+  loadQuestions();
+}
+
+async function loadQuestions() {
+  var rc = getRC();
+  document.getElementById('loading-state').style.display='block';
+  document.getElementById('loading-text').textContent=
+    'Generating '+currentTopic.name+' questions for '+rc.label+'...';
+  document.getElementById('questions-list').innerHTML='';
+
+  try {
+    var resp = await fetch('/.netlify/functions/ai', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action:      'scenario',
+        track:       'Xero',
+        module:      currentTopic.name,
+        difficulty:  currentTopic.difficulty,
+        region:      getRegion(),
+        regionLabel: rc.label,
+        tax:         rc.tax,
+        taxRate:     rc.taxRate,
+        taxBody:     rc.taxBody,
+      })
+    });
+    var data = await resp.json();
+    document.getElementById('loading-state').style.display='none';
+
+    if(data.error || !data.question) {
+      showError('Could not load questions. Please try again.'); return;
     }
-    if (page === 'learn') {
-      // Never auto-redirect from /learn — user chose to be here
-      return;
-    }
-    if (page === 'learn-l2') {
-      if (!s.accessL2) { window.location.replace('/learn'); return; }
-      return;
-    }
-    if (page === 'learn-l3') {
-      if (!s.accessL3) {
-        window.location.replace(s.accessL2 ? '/learn-l2' : '/learn');
-        return;
+    questions=[data];
+    renderQuestion(data, 0);
+    // Pre-fetch more
+    prefetchMore();
+  } catch(e) {
+    document.getElementById('loading-state').style.display='none';
+    showError('Network error. Please check your connection and try again.');
+  }
+}
+
+async function prefetchMore() {
+  var rc = getRC();
+  for(var i=0;i<4;i++){
+    try{
+      var resp = await fetch('/.netlify/functions/ai', {
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'scenario',track:'Xero',module:currentTopic.name,
+          difficulty:currentTopic.difficulty,region:getRegion(),regionLabel:rc.label,
+          tax:rc.tax,taxRate:rc.taxRate,taxBody:rc.taxBody})
+      });
+      var data = await resp.json();
+      if(!data.error && data.question) {
+        questions.push(data);
+        renderQuestion(data, questions.length-1);
       }
-      return;
-    }
-  } catch(e) {}
-};
+    }catch(e){}
+    await new Promise(function(r){setTimeout(r,300);});
+  }
+}
 
-// Update a nav "Learn" link to point to working level
-LL.updateLearnLink = function(id) {
-  try {
-    var el = document.getElementById(id || 'nav-learn-link');
-    if (el) el.href = LL.progress.learnPage(LL.progress.state());
-  } catch(e) {}
-};
+function renderQuestion(q, idx) {
+  var list = document.getElementById('questions-list');
+  var div  = document.createElement('div');
+  div.id   = 'q-card-'+idx;
+  div.className='q-card';
+  var rc = getRC();
+  div.innerHTML =
+    '<div class="q-header">'+
+      '<div class="q-num">'+(idx+1)+'</div>'+
+      '<span class="q-topic-tag">'+(rc.flag||'')+' '+currentTopic.name+'</span>'+
+    '</div>'+
+    (q.context?'<div class="q-context">'+esc(q.context)+'</div>':'')+
+    '<div class="q-text">'+esc(q.question)+'</div>'+
+    '<div class="q-options">'+
+      (q.options||[]).map(function(opt,oi){
+        return '<button class="q-opt" id="opt-'+idx+'-'+oi+'" onclick="answerQ('+idx+','+oi+','+q.correct_index+',this)">'+
+          esc(opt)+'</button>';
+      }).join('')+
+    '</div>'+
+    '<div class="q-explanation" id="exp-'+idx+'">'+
+      '<strong style="color:#D4A843">Explanation:</strong> '+esc(q.explanation||'')+'</div>';
+  list.appendChild(div);
+}
 
-LL.route('practice');
+function answerQ(qIdx, chosen, correct, btn) {
+  // Disable all options for this question
+  var card = document.getElementById('q-card-'+qIdx);
+  card.querySelectorAll('.q-opt').forEach(function(b){b.disabled=true;});
+  // Colour correct/wrong
+  document.getElementById('opt-'+qIdx+'-'+correct).classList.add('correct');
+  if(chosen !== correct) btn.classList.add('wrong');
+  // Show explanation
+  var exp = document.getElementById('exp-'+qIdx);
+  if(exp) exp.classList.add('show');
+  // Update score
+  answered++;
+  if(chosen===correct) score++;
+  var pct = answered>0?Math.round(score/answered*100):0;
+  document.getElementById('score-num').textContent=score+'/'+answered;
+  document.getElementById('score-fill').style.width=pct+'%';
+  var msgs={0:'Keep going!',25:'Getting started',50:'Halfway there!',75:'Great work!',100:'Perfect score! 🎉'};
+  var tier=pct>=100?100:pct>=75?75:pct>=50?50:pct>=25?25:0;
+  document.getElementById('score-msg').textContent=msgs[tier];
+  document.getElementById('score-label').textContent=
+    'Score: '+pct+'% ('+score+' correct of '+answered+')';
+}
+
+function loadMoreQuestions() {
+  // Reset and fetch fresh batch
+  var list=document.getElementById('questions-list');
+  list.innerHTML='';
+  score=0;answered=0;questions=[];
+  document.getElementById('score-num').textContent='0/0';
+  document.getElementById('score-fill').style.width='0%';
+  loadQuestions();
+}
+
+function resetPractice() {
+  document.getElementById('topics-grid').style.display='grid';
+  document.getElementById('score-bar').style.display='none';
+  document.getElementById('questions-list').innerHTML='';
+  document.getElementById('loading-state').style.display='none';
+  document.querySelectorAll('.topic-btn').forEach(function(b){b.classList.remove('active');});
+  score=0;answered=0;questions=[];currentTopic=null;
+}
+
+function showError(msg) {
+  document.getElementById('questions-list').innerHTML=
+    '<div class="empty-state"><div class="empty-icon">⚠️</div><div>'+esc(msg)+'</div>'+
+    '<button class="btn btn-ghost" style="margin-top:1rem;" onclick="loadQuestions()">Try again</button></div>';
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// Re-init when region changes in another tab
+window.addEventListener('storage',function(e){
+  if(e.key==='ll_user'||e.key==='ll_progress'){location.reload();}
+});
 </script>
-</head>
-<body style="font-family:sans-serif;background:#0B1F3A;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;">
-  <div style="text-align:center;">
-    <div style="width:40px;height:40px;border:3px solid rgba(212,168,67,0.3);border-top-color:#D4A843;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem;"></div>
-    <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;">Loading your practice page...</p>
-  </div>
-  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </body>
 </html>
