@@ -1,3 +1,4 @@
+// LedgerLearn ai.js v3.0 - region-aware - 2026-05-10
 /**
  * LedgerLearn Pro — AI Function with Caching (Netlify)
  * ======================================================
@@ -147,6 +148,7 @@ exports.handler = async function (event) {
       case 'scenario': {
         // DEBUG: log incoming region params
         console.log('[ai] scenario called with region:', body.region, 'regionLabel:', body.regionLabel);
+        console.log('[ai.js] scenario request received. region=' + (body.region||'NOT SET') + ' regionLabel=' + (body.regionLabel||'NOT SET') + ' tax=' + (body.tax||'NOT SET'));
         const track       = body.track        || 'Xero';
         const module_     = body.module       || 'Invoicing';
         const difficulty  = body.difficulty   || 'intermediate';
