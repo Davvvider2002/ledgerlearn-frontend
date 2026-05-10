@@ -186,6 +186,21 @@ document.addEventListener('click', function(e) {
     nav.classList.remove('open');
   }
 });
+
+function scrollToPractice(e) {
+  // If already on this page, scroll to practice section instead of navigating
+  var practiceBtn = document.querySelector('.lesson-item');
+  if (practiceBtn && window.location.pathname === '/learn-l3') {
+    e.preventDefault();
+    // Load the practice lesson (last lesson or dedicated practice)
+    var items = document.querySelectorAll('.lesson-item');
+    if (items.length > 0) {
+      items[0].click();
+      document.querySelector('.lesson-main') && document.querySelector('.lesson-main').scrollIntoView({behavior:'smooth'});
+    }
+  }
+  // Otherwise navigate normally to the page
+}
 })();
 </script>
 </head>
@@ -194,9 +209,9 @@ document.addEventListener('click', function(e) {
   <a href="/" class="nav-logo"><div class="nav-hex"></div><span class="nav-brand">Ledger<span>Learn</span> Pro</span></a>
   <ul class="nav-links">
     <li><a href="/learn">L1</a></li>
-    <li><a href="/learn-l3" class="active">L2</a></li>
-    <li><a href="/learn-l3">L3</a></li>
-    <li><a href="/practice">Practice</a></li>
+    <li><a href="/learn-l2">L2</a></li>
+    <li><a href="/learn-l3" class="active">L3</a></li>
+    <li><a href="/learn-l3" onclick="scrollToPractice(event)">Practice</a></li>
     <li><a href="/test">Assessment</a></li>
     <li><a href="/dashboard">Dashboard</a></li>
     <li><a href="/test" class="nav-cta">L3 Assessment →</a></li>

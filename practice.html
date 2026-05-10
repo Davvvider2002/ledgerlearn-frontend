@@ -5,29 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Practice — LedgerLearn Pro</title>
 <link rel="icon" href="/favicon.svg">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script>
-// ── Immediate level routing (before render) ──────────
 (function() {
   try {
-    var p = JSON.parse(localStorage.getItem('ll_progress')||'{}');
+    var p         = JSON.parse(localStorage.getItem('ll_progress') || '{}');
     var completed = p.completedLevels || [];
-    var isAdmin = p.adminMode === true || sessionStorage.getItem('ll_admin_token');
-    var paidL2  = p.paid_l2 === true;
-    var passedL1 = completed.includes('l1');
-    var passedL2 = completed.includes('l2') || p.l2Score != null;
-    // Route to the correct learn page which has practice embedded
-    var cameFromSite = document.referrer.indexOf(window.location.hostname) > -1;
-    if (!cameFromSite) {
-      if (passedL2 || isAdmin) { window.location.replace('/learn-l3'); return; }
-      if (passedL1 && (paidL2 || isAdmin)) { window.location.replace('/learn-l2'); return; }
-      window.location.replace('/learn');
+    var isAdmin   = p.adminMode === true || sessionStorage.getItem('ll_admin_token');
+    var paidL2    = p.paid_l2 === true;
+    var passedL1  = completed.includes('l1');
+    var passedL2  = completed.includes('l2') || p.l2Score != null;
+    // ALWAYS redirect to correct level
+    if (passedL2 || isAdmin) {
+      window.location.replace('/learn-l3#practice');
+    } else if (passedL1 && (paidL2 || isAdmin)) {
+      window.location.replace('/learn-l2#practice');
+    } else {
+      window.location.replace('/learn#practice');
     }
-  } catch(e) { window.location.replace('/learn'); }
+  } catch(e) {
+    window.location.replace('/learn#practice');
+  }
 })();
 </script>
 </head>
-<body>
-<p style="font-family:sans-serif;padding:2rem;color:#666;">Redirecting to your practice page...</p>
+<body style="font-family:sans-serif;background:#0B1F3A;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;">
+  <div style="text-align:center;">
+    <div style="width:40px;height:40px;border:3px solid rgba(212,168,67,0.3);border-top-color:#D4A843;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem;"></div>
+    <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;">Loading your practice page...</p>
+  </div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </body>
 </html>

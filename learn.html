@@ -240,7 +240,22 @@ nav{
       }
 
     } catch(e) { /* silent fail — stay on current page */ }
-  })();
+  
+function scrollToPractice(e) {
+  // If already on this page, scroll to practice section instead of navigating
+  var practiceBtn = document.querySelector('.lesson-item');
+  if (practiceBtn && window.location.pathname === '/learn') {
+    e.preventDefault();
+    // Load the practice lesson (last lesson or dedicated practice)
+    var items = document.querySelectorAll('.lesson-item');
+    if (items.length > 0) {
+      items[0].click();
+      document.querySelector('.lesson-main') && document.querySelector('.lesson-main').scrollIntoView({behavior:'smooth'});
+    }
+  }
+  // Otherwise navigate normally to the page
+}
+})();
 </script>
 </head>
 <body>
@@ -252,7 +267,7 @@ nav{
   </a>
   <ul class="nav-links">
     <li><a href="/learn" class="active">Learn</a></li>
-    <li><a href="/practice">Practice</a></li>
+    <li><a href="/learn" onclick="scrollToPractice(event)">Practice</a></li>
     <li><a href="/test">Assessment</a></li>
     <li><a href="/dashboard">Dashboard</a></li>
     <li><a href="/placement" class="nav-cta">Find my starting point</a></li>
