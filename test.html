@@ -592,7 +592,26 @@ function showLevelDashboard(level, progress, isAdmin, paidL2) {
   var learnHref = isL2 ? '/learn-l2' : '/learn-l3';
   tabs.appendChild(tabCard('📚', 'Learn', '6 structured lessons covering all ' + levelNum + ' topics with guided walkthroughs', learnHref, isUnlocked, isUnlocked ? 'Go to lessons →' : 'Locked'));
   tabs.appendChild(tabCard('🖥️', 'Practice', 'AI-powered practice questions and live software simulations', learnHref + '#practice', isUnlocked, isUnlocked ? 'Practice now →' : 'Locked'));
-  tabs.appendChild(tabCard('🎯', 'Assessment', 'Timed ' + (isL2?'25':'30') + '-question assessment. Pass to earn your certificate', '/test', isUnlocked, isUnlocked ? 'Start assessment →' : 'Locked'));
+  // Assessment tab - uses button not link to avoid page navigation
+  var assessTabCard = tabCard('🎯', 'Assessment', 'Timed ' + (isL2?'25':'30') + '-question assessment. Pass to earn your certificate', '#', isUnlocked, isUnlocked ? 'Start assessment →' : 'Locked');
+  if (isUnlocked) {
+    var assessTabBtn = assessTabCard.querySelector('a');
+    if (assessTabBtn) {
+      assessTabBtn.href = '#';
+      assessTabBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        overlay.remove();
+        test.level = level;
+        document.querySelectorAll('.level-option').forEach(function(el){ el.classList.remove('selected-level'); });
+        var el = document.getElementById('level-'+level);
+        if (el) el.classList.add('selected-level');
+        var cfg = TEST_CONFIG[level];
+        var sb = document.getElementById('btn-start-test');
+        if (sb) { sb.textContent = 'Start ' + cfg.level + ' assessment →'; sb.scrollIntoView({behavior:'smooth',block:'center'}); }
+      });
+    }
+  }
+  tabs.appendChild(assessTabCard);
 
   // CTA based on state
   var cta = document.createElement('div');
@@ -621,8 +640,8 @@ function showLevelDashboard(level, progress, isAdmin, paidL2) {
       document.querySelectorAll('.level-option').forEach(function(el){ el.classList.remove('selected-level'); });
       var el = document.getElementById('level-'+level);
       if (el) el.classList.add('selected-level');
-      var cfg = TEST_CONFIG[level];
-      document.getElementById('btn-start-test').textContent = 'Start ' + cfg.level + ' assessment →';
+      // Directly start the assessment — no extra click needed
+      startTest();
     });
     cta.appendChild(assessBtn);
   }
