@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="shortcut icon" href="/favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -561,161 +561,8 @@
     nav .nav-links { display: none; }
   }
 </style>
-<script>
-// ╔══════════════════════════════════════════════════════════════╗
-// ║  LedgerLearn — Central Routing Module v5.0                  ║
-// ║  Single source of truth for ALL level/nav logic             ║
-// ║                                                             ║
-// ║  DESIGN RULES:                                              ║
-// ║  1. "Learn" nav → current WORKING level (not highest)       ║
-// ║  2. Auto-redirect only blocks LOCKED pages (can't access)   ║
-// ║  3. Auto-redirect NEVER pushes user to a higher level       ║
-// ║  4. User can always manually navigate to any unlocked level ║
-// ║  5. Admin token in sessionStorage only — clears on tab close║
-// ╚══════════════════════════════════════════════════════════════╝
 
-var LL = LL || {};
-
-LL.progress = (function() {
-
-  function getRaw() {
-    try { return JSON.parse(localStorage.getItem('ll_progress') || '{}'); } catch(e) { return {}; }
-  }
-  function getUser() {
-    try { return JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) { return {}; }
-  }
-
-  // ── Core state ────────────────────────────────────────────
-  function state() {
-    var p         = getRaw();
-    var completed = p.completedLevels || [];
-
-    // Admin: valid only while sessionStorage token exists (clears on tab close)
-    var adminToken = sessionStorage.getItem('ll_admin_token');
-    var adminExp   = sessionStorage.getItem('ll_admin_expires');
-    var isAdmin    = !!(adminToken && adminExp && new Date(adminExp) > new Date());
-
-    // PASSED = level in completedLevels + real score recorded
-    var passedL1 = completed.includes('l1') && (p.lastScore != null || p.l1Score != null);
-    var passedL2 = completed.includes('l2') && (p.l2Score  != null);
-    var passedL3 = completed.includes('l3') && (p.l3Score  != null);
-
-    // PAID = real PayPal payment confirmed
-    var paidL2 = p.paid_l2 === true;
-
-    // ACCESS = can navigate to and use this level
-    // L1: always
-    // L2: must have passed L1 AND paid (or admin bypasses payment only)
-    // L3: must have passed L2 (free after L2) — admin bypasses
-    var accessL1 = true;
-    var accessL2 = (passedL1 && paidL2) || (isAdmin);
-    var accessL3 = passedL2              || (isAdmin);
-
-    // WORKING LEVEL = the level the user is currently focused on
-    // This is where Learn/Practice should take them
-    // Logic: highest level they have STARTED (have access to) but not yet PASSED
-    // If all passed → L3 (their most advanced)
-    var workingLevel;
-    if (!passedL1) {
-      workingLevel = 'l1';                          // Doing L1
-    } else if (!accessL2) {
-      workingLevel = 'l1';                          // L1 done, L2 not unlocked yet
-    } else if (!passedL2) {
-      workingLevel = 'l2';                          // In L2
-    } else if (!accessL3) {
-      workingLevel = 'l2';                          // Should not happen (L3 free after L2)
-    } else if (!passedL3) {
-      workingLevel = 'l3';                          // In L3
-    } else {
-      workingLevel = 'l3';                          // All done, default to L3
-    }
-
-    // Admin override: if admin, use highest unlocked for navigation
-    if (isAdmin) workingLevel = 'l3';
-
-    return {
-      p:            p,
-      completed:    completed,
-      isAdmin:      isAdmin,
-      passedL1:     passedL1,
-      passedL2:     passedL2,
-      passedL3:     passedL3,
-      paidL2:       paidL2,
-      accessL1:     accessL1,
-      accessL2:     accessL2,
-      accessL3:     accessL3,
-      workingLevel: workingLevel,
-    };
-  }
-
-  // ── Convenience: URL for current working level ─────────
-  function workingLearnPage(s) {
-    if (s.workingLevel === 'l3') return '/learn-l3';
-    if (s.workingLevel === 'l2') return '/learn-l2';
-    return '/learn';
-  }
-
-  return { getRaw: getRaw, getUser: getUser, state: state, workingLearnPage: workingLearnPage };
-})();
-
-
-// ── Page routing ──────────────────────────────────────────
-// Called once at page load. page = 'learn'|'learn-l2'|'learn-l3'|'practice'
-LL.route = function(page) {
-  try {
-    var s = LL.progress.state();
-
-    // ── PRACTICE: always go to working level ─────────────
-    if (page === 'practice') {
-      window.location.replace(LL.progress.workingLearnPage(s));
-      return;
-    }
-
-    // ── LEARN (L1): block only if user doesn't belong here
-    // Never auto-redirect UP — user explicitly navigated here
-    if (page === 'learn') {
-      // No blocking needed — L1 is always accessible
-      // Nothing to do — stay on page
-      return;
-    }
-
-    // ── LEARN-L2: block if no L2 access ──────────────────
-    if (page === 'learn-l2') {
-      if (!s.accessL2) {
-        window.location.replace('/learn');
-        return;
-      }
-      return;
-    }
-
-    // ── LEARN-L3: block if no L3 access ──────────────────
-    if (page === 'learn-l3') {
-      if (!s.accessL3) {
-        if (s.accessL2) {
-          window.location.replace('/learn-l2');
-        } else {
-          window.location.replace('/learn');
-        }
-        return;
-      }
-      return;
-    }
-
-  } catch(e) { /* silent — stay on page */ }
-};
-
-
-// ── Update nav "Learn" link to working level ──────────────
-// Call after DOM is ready. Pass the nav link element ID.
-LL.updateLearnLink = function(elementId) {
-  try {
-    var s = LL.progress.state();
-    var el = document.getElementById(elementId || 'nav-learn-link');
-    if (el) el.href = LL.progress.workingLearnPage(s);
-  } catch(e) {}
-};
-
-</script>
+<!-- Routing module -->
 <script>
 // ╔══════════════════════════════════════════════════════════════╗
 // ║  LedgerLearn — Routing Module v6.0                          ║
@@ -820,8 +667,11 @@ LL.updateLearnLink = function(id) {
   } catch(e) {}
 };
 
-document.addEventListener("DOMContentLoaded",function(){LL.updateLearnLink("dash-learn-link");});
+document.addEventListener('DOMContentLoaded', function() {
+  LL.updateLearnLink('dash-learn-link');
+});
 </script>
+
 </head>
 <body>
 
@@ -834,6 +684,7 @@ document.addEventListener("DOMContentLoaded",function(){LL.updateLearnLink("dash
     <li><a href="/learn" id="dash-learn-link">Learn</a></li>
     <li><a href="/practice">Practice</a></li>
     <li><a href="/test">Assessment</a></li>
+    <li><a href="/dashboard" class="active">Dashboard</a></li>
   </ul>
   <div class="nav-user">
     <span class="nav-user-name" id="nav-user-name">Guest</span>
@@ -848,137 +699,164 @@ document.addEventListener("DOMContentLoaded",function(){LL.updateLearnLink("dash
     <div class="welcome-text">
       <div class="welcome-greeting" id="welcome-greeting">Welcome to LedgerLearn Pro</div>
       <h1 id="welcome-headline">Start your Xero certification today</h1>
-      <p id="welcome-sub">Your first module is completely free. Complete all six L1 lessons, pass the assessment, and download your verifiable certificate.</p>
+      <p id="welcome-sub" class="welcome-sub">Your first module is completely free. Complete all six L1 lessons, pass the assessment, and download your verifiable certificate.</p>
     </div>
     <a href="/learn" class="welcome-cta" id="welcome-cta">
       Begin Xero L1 — it's free
-      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h9M8.5 4l3.5 3.5L8.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h9M8.5 4l3.5 3.5L8.5 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </a>
+    <a href="/recover" id="recover-cert-link" class="welcome-cta" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);margin-top:0.5rem;display:none;">Download your certificate →</a>
   </div>
 
-  <!-- ONBOARDING STEPS — shown only to new users -->
-  <div class="onboarding" id="onboarding-block">
-    <div class="onboarding-header">
-      <h2>Your path to certification</h2>
-      <span class="onboarding-progress-text" id="ob-progress-text">0 of 4 complete</span>
+  <!-- LEVEL DASHBOARD TABS -->
+  <div class="level-dash-wrap">
+    <div class="level-dash-tabs" id="level-dash-tabs">
+      <button class="ldt-tab active" id="ldt-overview" onclick="showDashLevel('overview',this)">📊 Overview</button>
+      <button class="ldt-tab" id="ldt-l1" onclick="showDashLevel('l1',this)">L1 Associate</button>
+      <button class="ldt-tab ldt-locked" id="ldt-l2" onclick="showDashLevel('l2',this)">L2 Professional</button>
+      <button class="ldt-tab ldt-locked" id="ldt-l3" onclick="showDashLevel('l3',this)">L3 Advisor</button>
     </div>
-    <div class="onboarding-bar">
-      <div class="onboarding-bar-fill" id="ob-bar" style="width: 0%"></div>
-    </div>
-    <div class="onboarding-steps">
-      <a href="/learn" class="ob-step active" id="ob-step-1">
-        <div class="ob-icon">📚</div>
-        <div class="ob-info">
-          <div class="ob-label">Complete the free L1 module</div>
-          <div class="ob-sub">6 lessons · Guided walkthroughs + live simulations</div>
-        </div>
-        <span class="ob-action">Start now →</span>
-      </a>
-      <a href="/practice" class="ob-step locked" id="ob-step-2">
-        <div class="ob-icon">🎯</div>
-        <div class="ob-info">
-          <div class="ob-label">Practice with scenario questions</div>
-          <div class="ob-sub">AI-generated questions · Instant explanations</div>
-        </div>
-        <span class="ob-action">Locked</span>
-      </a>
-      <a href="/test" class="ob-step locked" id="ob-step-3">
-        <div class="ob-icon">📝</div>
-        <div class="ob-info">
-          <div class="ob-label">Sit the L1 assessment ($49)</div>
-          <div class="ob-sub">20 questions · 40 mins · Pass at 70% to certify</div>
-        </div>
-        <span class="ob-action">Locked</span>
-      </a>
-      <div class="ob-step locked" id="ob-step-4">
-        <div class="ob-icon">🏆</div>
-        <div class="ob-info">
-          <div class="ob-label">Download your certificate</div>
-          <div class="ob-sub">PDF certificate + LinkedIn share + employer verification</div>
-        </div>
-        <span class="ob-action">Locked</span>
-      </div>
-    </div>
-  </div>
 
-  <!-- STATS -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Lessons completed</div>
-      <div class="stat-value zero" id="stat-lessons">0</div>
-      <div class="stat-hint"><a href="/learn">Start your first →</a></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Practice questions</div>
-      <div class="stat-value zero" id="stat-practice">0</div>
-      <div class="stat-hint"><a href="/practice">Try a scenario →</a></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Last test score</div>
-      <div class="stat-value zero" id="stat-score">—</div>
-      <div class="stat-hint" id="stat-score-hint">Complete lessons first</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Certificates earned</div>
-      <div class="stat-value zero" id="stat-certs">0</div>
-      <div class="stat-hint">Pass assessment to earn</div>
-    </div>
-  </div>
-
-  <!-- XERO COURSE CARD -->
-  <div class="section-heading">Your current track</div>
-  <div class="course-card">
-    <div class="course-header">
-      <div class="course-logo">XRO</div>
-      <div class="course-header-text">
-        <h3>Xero Certified Practitioner — Level 1</h3>
-        <p>Associate · 6 lessons · Timed assessment · Verifiable certificate</p>
-      </div>
-    </div>
-    <div class="course-body">
-      <div class="course-progress-row">
-        <div class="course-progress-bar">
-          <div class="course-progress-fill" id="xero-progress-fill" style="width:0%"></div>
+    <!-- OVERVIEW TAB -->
+    <div class="ldt-panel" id="panel-overview">
+      <!-- Stats row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Lessons complete</div>
+          <div class="stat-val" id="stat-lessons">0</div>
+          <div class="stat-hint"><a href="/learn" id="stat-learn-link">Start your first →</a></div>
         </div>
-        <span class="course-progress-pct" id="xero-progress-pct">0% complete</span>
+        <div class="stat-card">
+          <div class="stat-label">Practice questions</div>
+          <div class="stat-val" id="stat-practice">0</div>
+          <div class="stat-hint"><a href="/practice">Go to practice →</a></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Best assessment score</div>
+          <div class="stat-val" id="stat-score">—</div>
+          <div class="stat-hint" id="stat-score-hint">Pass mark: 70%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Certificates earned</div>
+          <div class="stat-val" id="stat-certs">0</div>
+        </div>
       </div>
-      <div class="lesson-list" id="dashboard-lesson-list">
-        <!-- Populated dynamically by JS based on real progress -->
-      </div>
-      <div class="course-actions">
-        <a href="/learn" class="btn-primary" id="continue-lesson-btn">
-          Continue learning
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7.5 4l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </a>
-        <a href="/practice" class="btn-ghost">Practice scenarios</a>
-        <a href="/test" class="btn-ghost">Sit assessment</a>
-      </div>
-    </div>
-  </div>
 
-  <!-- QB WAITLIST -->
-  <div class="qb-card">
-    <div class="qb-logo">QB</div>
-    <div class="qb-text">
-      <div class="qb-badge">Coming soon</div>
-      <h3>QuickBooks certification — join the waitlist</h3>
-      <p>Be first in line when QuickBooks L1 launches. You'll get early access and a founding member discount.</p>
-    </div>
-    <form class="qb-form" onsubmit="handleQBWaitlist(event)">
-      <input type="email" class="qb-input" placeholder="Your email address" id="qb-email" required />
-      <button type="submit" class="qb-submit">Notify me →</button>
-    </form>
-  </div>
+      <!-- Level progress cards -->
+      <div class="level-progress-grid" id="level-progress-grid">
+        <!-- Rendered by JS -->
+      </div>
 
-  <!-- UPSELL -->
-  <div class="upsell-strip">
-    <div>
-      <h3>🚀 Ready to become an ERP consultant?</h3>
-      <p>Turn your certification into consulting income. ERP.SaaS Academy teaches you to land $5,000+ projects.</p>
-      <div class="upsell-code">Use code <strong>LEDGER30</strong> for 30% off your first month</div>
+      <!-- Onboarding steps -->
+      <div class="onboarding-block" id="onboarding-block">
+        <div class="ob-header">
+          <div class="ob-title">Getting started</div>
+          <div class="ob-progress-text" id="ob-progress-text">0 of 4 complete</div>
+        </div>
+        <div class="ob-bar-wrap"><div class="ob-bar" id="ob-bar" style="width:0%"></div></div>
+        <div class="ob-steps">
+          <div class="ob-step" id="ob-step-1" onclick="markObDone(1)">
+            <div class="ob-check">✓</div><div class="ob-step-text"><strong>Create your account</strong> — Register with name and email</div>
+          </div>
+          <div class="ob-step" id="ob-step-2" onclick="markObDone(2)">
+            <div class="ob-check"></div><div class="ob-step-text"><strong>Complete L1 lessons</strong> — 6 lessons, ~2 hours total</div>
+          </div>
+          <div class="ob-step" id="ob-step-3" onclick="markObDone(3)">
+            <div class="ob-check"></div><div class="ob-step-text"><strong>Pass the L1 assessment</strong> — Score 70%+ to earn your certificate</div>
+          </div>
+          <div class="ob-step" id="ob-step-4" onclick="markObDone(4)">
+            <div class="ob-check"></div><div class="ob-step-text"><strong>Download your certificate</strong> — Share on LinkedIn</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <a href="https://skool.com/erp-saas-academy" class="upsell-strip-cta" target="_blank">Join ERP.SaaS Academy →</a>
-  </div>
+
+    <!-- L1 TAB -->
+    <div class="ldt-panel" id="panel-l1" style="display:none">
+      <div class="level-panel-header">
+        <div>
+          <div class="lph-eyebrow">L1 · Free</div>
+          <div class="lph-title">Xero Associate</div>
+          <div class="lph-sub">Invoicing, bank reconciliation, chart of accounts, contacts, and basic navigation.</div>
+        </div>
+        <div class="lph-actions">
+          <a href="/learn" class="btn btn-gold" id="l1-cta">Go to L1 lessons</a>
+          <a href="/test" class="btn btn-ghost">L1 Assessment</a>
+        </div>
+      </div>
+      <div class="level-stats-row">
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l1-lessons-done">0/6</div><div class="lvl-stat-label">Lessons done</div></div>
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l1-score">—</div><div class="lvl-stat-label">Assessment score</div></div>
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l1-status">Not started</div><div class="lvl-stat-label">Status</div></div>
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l1-cert">—</div><div class="lvl-stat-label">Certificate</div></div>
+      </div>
+      <div class="course-progress-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span class="course-progress-label">L1 lesson progress</span>
+          <span class="course-progress-pct" id="l1-pct">0%</span>
+        </div>
+        <div class="course-progress-bar"><div class="course-progress-fill" id="l1-bar" style="width:0%"></div></div>
+      </div>
+      <div class="dashboard-lesson-list" id="l1-lesson-list"></div>
+    </div>
+
+    <!-- L2 TAB -->
+    <div class="ldt-panel" id="panel-l2" style="display:none">
+      <div class="level-panel-header">
+        <div>
+          <div class="lph-eyebrow">L2 · $49 one-time</div>
+          <div class="lph-title">Xero Professional</div>
+          <div class="lph-sub">Bills, VAT returns, financial reporting, bank rules, multi-currency.</div>
+        </div>
+        <div class="lph-actions" id="l2-actions">
+          <!-- Rendered by JS based on access -->
+        </div>
+      </div>
+      <div class="level-stats-row">
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l2-lessons-done">0/6</div><div class="lvl-stat-label">Lessons done</div></div>
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l2-score">—</div><div class="lvl-stat-label">Assessment score</div></div>
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l2-status">Locked</div><div class="lvl-stat-label">Status</div></div>
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l2-cert">—</div><div class="lvl-stat-label">Certificate</div></div>
+      </div>
+      <div class="course-progress-wrap" id="l2-progress-wrap" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span class="course-progress-label">L2 lesson progress</span>
+          <span class="course-progress-pct" id="l2-pct">0%</span>
+        </div>
+        <div class="course-progress-bar"><div class="course-progress-fill" id="l2-bar" style="width:0%"></div></div>
+      </div>
+      <div class="dashboard-lesson-list" id="l2-lesson-list"></div>
+    </div>
+
+    <!-- L3 TAB -->
+    <div class="ldt-panel" id="panel-l3" style="display:none">
+      <div class="level-panel-header">
+        <div>
+          <div class="lph-eyebrow">L3 · Free after L2</div>
+          <div class="lph-title">Xero Advisor</div>
+          <div class="lph-sub">Advisory reporting, client onboarding, practice management, year-end.</div>
+        </div>
+        <div class="lph-actions" id="l3-actions">
+          <!-- Rendered by JS based on access -->
+        </div>
+      </div>
+      <div class="level-stats-row">
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l3-lessons-done">0/6</div><div class="lvl-stat-label">Lessons done</div></div>
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l3-score">—</div><div class="lvl-stat-label">Assessment score</div></div>
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l3-status">Locked</div><div class="lvl-stat-label">Status</div></div>
+        <div class="lvl-stat"><div class="lvl-stat-val" id="l3-cert">—</div><div class="lvl-stat-label">Certificate</div></div>
+      </div>
+      <div class="course-progress-wrap" id="l3-progress-wrap" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span class="course-progress-label">L3 lesson progress</span>
+          <span class="course-progress-pct" id="l3-pct">0%</span>
+        </div>
+        <div class="course-progress-bar"><div class="course-progress-fill" id="l3-bar" style="width:0%"></div></div>
+      </div>
+      <div class="dashboard-lesson-list" id="l3-lesson-list"></div>
+    </div>
+
+  </div><!-- /level-dash-wrap -->
 
   <!-- REGION SETTINGS -->
   <div class="region-settings-card" id="region-settings-card" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-top:1rem;">
@@ -1000,9 +878,53 @@ document.addEventListener("DOMContentLoaded",function(){LL.updateLearnLink("dash
     </div>
   </div>
 
-</div>
+</div><!-- /page -->
+
+<style>
+/* Level dashboard tabs */
+.level-dash-wrap{margin-top:1.5rem;}
+.level-dash-tabs{display:flex;gap:0.5rem;margin-bottom:1rem;border-bottom:2px solid var(--border);padding-bottom:0;}
+.ldt-tab{padding:10px 20px;border-radius:8px 8px 0 0;font-size:0.85rem;font-weight:600;cursor:pointer;border:1px solid transparent;border-bottom:none;background:transparent;color:var(--text-mid);font-family:inherit;transition:all .15s;margin-bottom:-2px;}
+.ldt-tab:hover{background:rgba(11,31,58,0.04);color:var(--navy);}
+.ldt-tab.active{background:#fff;border-color:var(--border);border-bottom-color:#fff;color:var(--navy);}
+.ldt-tab.ldt-locked{color:#b0bec5;}
+.ldt-tab.ldt-unlocked{color:var(--teal);}
+.ldt-panel{background:#fff;border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:1.5rem;}
+/* Level panel header */
+.level-panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+.lph-eyebrow{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--teal);font-weight:700;margin-bottom:4px;}
+.lph-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--navy);margin-bottom:4px;}
+.lph-sub{font-size:0.82rem;color:var(--text-mid);line-height:1.6;}
+.lph-actions{display:flex;gap:0.5rem;flex-wrap:wrap;align-items:flex-start;flex-shrink:0;}
+/* Level stats row */
+.level-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
+.lvl-stat{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center;}
+.lvl-stat-val{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--navy);line-height:1;}
+.lvl-stat-label{font-size:0.68rem;color:var(--text-mid);margin-top:4px;text-transform:uppercase;letter-spacing:0.06em;}
+/* Level progress grid */
+.level-progress-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;}
+.lp-card{border:1px solid var(--border);border-radius:12px;padding:1.25rem;background:#f8fafc;}
+.lp-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;}
+.lp-card-title{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;color:var(--navy);}
+.lp-badge{font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:100px;}
+.lp-badge-green{background:#e1f7f2;color:#0F6E56;}
+.lp-badge-gold{background:#fef3c7;color:#92400e;}
+.lp-badge-grey{background:#f0f2f5;color:#6b87a3;}
+.lp-score{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--navy);line-height:1;margin-bottom:4px;}
+.lp-score-sub{font-size:0.72rem;color:var(--text-mid);}
+.lp-bar-bg{height:6px;background:#e2e8f0;border-radius:3px;margin-top:0.75rem;overflow:hidden;}
+.lp-bar-fill{height:100%;border-radius:3px;transition:width .5s;}
+@media(max-width:700px){
+  .level-stats-row{grid-template-columns:1fr 1fr;}
+  .level-progress-grid{grid-template-columns:1fr;}
+  .level-dash-tabs{flex-wrap:wrap;}
+  .ldt-tab{border-radius:8px;border:1px solid var(--border);}
+  .ldt-panel{border-radius:12px;border-top:1px solid var(--border);}
+}
+</style>
 
 <script>
+
   const STORAGE_KEY = 'll_user';
   const PROGRESS_KEY = 'll_progress';
 
@@ -1382,8 +1304,144 @@ document.addEventListener("DOMContentLoaded",function(){LL.updateLearnLink("dash
   }
 
   renderDashboardLessons();
+
+
+// ── Level dashboard tabs ──────────────────────────────────
+function showDashLevel(level, el) {
+  // Hide all panels
+  ['overview','l1','l2','l3'].forEach(function(lv) {
+    var panel = document.getElementById('panel-'+lv);
+    if (panel) panel.style.display = 'none';
+  });
+  // Show selected
+  var target = document.getElementById('panel-'+level);
+  if (target) target.style.display = 'block';
+  // Update tabs
+  document.querySelectorAll('.ldt-tab').forEach(function(t){t.classList.remove('active');});
+  if (el) el.classList.add('active');
+}
+
+// ── Level-specific init ────────────────────────────────────
+function initLevelDashboards() {
+  var s   = LL.progress.state();
+  var p   = s.p;
+
+  // Update tab states
+  var tabL2 = document.getElementById('ldt-l2');
+  var tabL3 = document.getElementById('ldt-l3');
+  if (tabL2) {
+    tabL2.classList.remove('ldt-locked','ldt-unlocked');
+    tabL2.classList.add(s.accessL2 ? 'ldt-unlocked' : 'ldt-locked');
+  }
+  if (tabL3) {
+    tabL3.classList.remove('ldt-locked','ldt-unlocked');
+    tabL3.classList.add(s.accessL3 ? 'ldt-unlocked' : 'ldt-locked');
+  }
+
+  // L1 panel
+  var l1Lessons = 0;
+  try {
+    var ll1 = JSON.parse(localStorage.getItem('ll_completed')||'[]');
+    l1Lessons = Array.isArray(ll1) ? ll1.length : 0;
+  } catch(e){}
+  var l1Pct  = Math.round(l1Lessons / 6 * 100);
+  var l1Score = p.lastScore || p.l1Score || null;
+  document.getElementById('l1-lessons-done').textContent = l1Lessons + '/6';
+  document.getElementById('l1-score').textContent  = l1Score != null ? l1Score + '%' : '—';
+  document.getElementById('l1-pct').textContent    = l1Pct + '%';
+  document.getElementById('l1-bar').style.width    = l1Pct + '%';
+  document.getElementById('l1-status').textContent = s.passedL1 ? '✓ Passed' : l1Lessons>0 ? 'In progress' : 'Not started';
+  document.getElementById('l1-status').style.color = s.passedL1 ? '#1DA98A' : l1Lessons>0 ? '#D4A843' : '#6b87a3';
+  document.getElementById('l1-cert').textContent   = s.passedL1 ? '✓ Earned' : '—';
+  document.getElementById('l1-cta').textContent    = l1Lessons>0 ? 'Continue L1 lessons' : 'Start L1 lessons';
+
+  // L2 panel
+  var l2Score = p.l2Score || null;
+  var l2Lessons = p.l2LessonsCompleted || 0;
+  var l2Actions = document.getElementById('l2-actions');
+  if (l2Actions) {
+    if (s.passedL2) {
+      l2Actions.innerHTML = '<a href="/learn-l2" class="btn btn-gold">Review L2</a><a href="/test" class="btn btn-ghost">L2 Assessment</a>';
+    } else if (s.accessL2) {
+      l2Actions.innerHTML = '<a href="/learn-l2" class="btn btn-gold">Go to L2 lessons</a><a href="/test" class="btn btn-ghost">L2 Assessment</a>';
+    } else {
+      l2Actions.innerHTML = '<a href="/test" class="btn btn-gold">Unlock L2 — $49</a>';
+    }
+  }
+  document.getElementById('l2-score').textContent  = l2Score != null ? l2Score + '%' : '—';
+  document.getElementById('l2-status').textContent = s.passedL2 ? '✓ Passed' : s.accessL2 ? 'In progress' : '🔒 Locked';
+  document.getElementById('l2-status').style.color = s.passedL2 ? '#1DA98A' : s.accessL2 ? '#D4A843' : '#6b87a3';
+  document.getElementById('l2-cert').textContent   = s.passedL2 ? '✓ Earned' : '—';
+  if (s.accessL2) {
+    document.getElementById('l2-progress-wrap').style.display = 'block';
+    var l2Pct = Math.round(l2Lessons / 6 * 100);
+    document.getElementById('l2-pct').textContent  = l2Pct + '%';
+    document.getElementById('l2-bar').style.width  = l2Pct + '%';
+    document.getElementById('l2-lessons-done').textContent = l2Lessons + '/6';
+  }
+
+  // L3 panel
+  var l3Score = p.l3Score || null;
+  var l3Lessons = p.l3LessonsCompleted || 0;
+  var l3Actions = document.getElementById('l3-actions');
+  if (l3Actions) {
+    if (s.passedL3) {
+      l3Actions.innerHTML = '<a href="/learn-l3" class="btn btn-gold">Review L3</a><a href="/test" class="btn btn-ghost">L3 Assessment</a>';
+    } else if (s.accessL3) {
+      l3Actions.innerHTML = '<a href="/learn-l3" class="btn btn-gold">Go to L3 lessons — free</a><a href="/test" class="btn btn-ghost">L3 Assessment</a>';
+    } else {
+      l3Actions.innerHTML = '<span style="font-size:0.82rem;color:#6b87a3;padding:10px 0;display:block;">🔒 Pass L2 to unlock L3 free</span>';
+    }
+  }
+  document.getElementById('l3-score').textContent  = l3Score != null ? l3Score + '%' : '—';
+  document.getElementById('l3-status').textContent = s.passedL3 ? '✓ Passed' : s.accessL3 ? 'In progress' : '🔒 Locked';
+  document.getElementById('l3-status').style.color = s.passedL3 ? '#1DA98A' : s.accessL3 ? '#D4A843' : '#6b87a3';
+  document.getElementById('l3-cert').textContent   = s.passedL3 ? '✓ Earned' : '—';
+  if (s.accessL3) {
+    document.getElementById('l3-progress-wrap').style.display = 'block';
+    var l3Pct = Math.round(l3Lessons / 6 * 100);
+    document.getElementById('l3-pct').textContent  = l3Pct + '%';
+    document.getElementById('l3-bar').style.width  = l3Pct + '%';
+    document.getElementById('l3-lessons-done').textContent = l3Lessons + '/6';
+  }
+
+  // Overview — level progress cards
+  renderLevelProgressGrid(s, p);
+
+  // Auto-switch to working level tab
+  var wl = s.workingLevel;
+  var activeTab = document.getElementById('ldt-' + wl);
+  if (activeTab) showDashLevel(wl, activeTab);
+}
+
+function renderLevelProgressGrid(s, p) {
+  var grid = document.getElementById('level-progress-grid');
+  if (!grid) return;
+  var levels = [
+    { id:'l1', name:'L1 Associate',    score:p.lastScore||p.l1Score, passed:s.passedL1, access:true,       pct:Math.round((JSON.parse(localStorage.getItem('ll_completed')||'[]').length||0)/6*100), color:'#1DA98A' },
+    { id:'l2', name:'L2 Professional', score:p.l2Score,              passed:s.passedL2, access:s.accessL2, pct:Math.round((p.l2LessonsCompleted||0)/6*100), color:'#D4A843' },
+    { id:'l3', name:'L3 Advisor',      score:p.l3Score,              passed:s.passedL3, access:s.accessL3, pct:Math.round((p.l3LessonsCompleted||0)/6*100), color:'#1AB4D7' },
+  ];
+  grid.innerHTML = levels.map(function(lv) {
+    var badge = lv.passed ? '<span class="lp-badge lp-badge-green">✓ Passed</span>' :
+                lv.access ? '<span class="lp-badge lp-badge-gold">In progress</span>' :
+                            '<span class="lp-badge lp-badge-grey">Locked</span>';
+    var scoreDisp = lv.score != null ? lv.score + '%' : '—';
+    return '<div class="lp-card">'  +
+      '<div class="lp-card-header"><div class="lp-card-title">' + lv.name + '</div>' + badge + '</div>' +
+      '<div class="lp-score">' + scoreDisp + '</div>' +
+      '<div class="lp-score-sub">' + (lv.score!=null ? 'Best assessment score' : lv.access ? 'Not assessed yet' : 'Complete previous level first') + '</div>' +
+      '<div class="lp-bar-bg"><div class="lp-bar-fill" style="width:' + (lv.access?lv.pct:0) + '%;background:' + lv.color + '"></div></div>' +
+    '</div>';
+  }).join('');
+}
+
+// Wrap original init to also call initLevelDashboards
+var _origInit = typeof init === 'function' ? init : null;
+function init() {
+  if (_origInit) _origInit();
+  initLevelDashboards();
+}
 </script>
-<script src="/ll-progress.js"></script>
-<script src="/brevo.js"></script>
 </body>
 </html>

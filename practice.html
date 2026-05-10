@@ -81,6 +81,13 @@ nav{height:56px;background:rgba(11,31,58,0.98);border-bottom:2px solid #D4A843;d
 /* Empty state */
 .empty-state{text-align:center;padding:3rem;color:rgba(255,255,255,0.4);}
 .empty-icon{font-size:3rem;margin-bottom:1rem;}
+
+/* Level tabs */
+.level-tabs{display:flex;gap:0.5rem;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.08);}
+.level-tab{padding:8px 20px;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);transition:all .15s;font-family:inherit;}
+.level-tab:hover{border-color:rgba(212,168,67,0.4);color:rgba(255,255,255,0.8);}
+.level-tab.active{background:rgba(212,168,67,0.15);border-color:#D4A843;color:#D4A843;}
+.level-tab:disabled{opacity:0.3;cursor:not-allowed;pointer-events:none;}
 </style>
 </head>
 <body>
@@ -114,6 +121,13 @@ nav{height:56px;background:rgba(11,31,58,0.98);border-bottom:2px solid #D4A843;d
   </div>
 
   <!-- Topic selector -->
+  <!-- Level tabs -->
+  <div class="level-tabs" id="level-tabs">
+    <button class="level-tab" id="tab-l1" onclick="switchLevel('l1')">L1 Associate</button>
+    <button class="level-tab" id="tab-l2" onclick="switchLevel('l2')">L2 Professional</button>
+    <button class="level-tab" id="tab-l3" onclick="switchLevel('l3')">L3 Advisor</button>
+  </div>
+
   <div class="topics-grid" id="topics-grid"></div>
 
   <!-- Score bar -->
@@ -237,6 +251,7 @@ var score=0, answered=0, questions=[];
 
   // Render topics
   renderTopics();
+  renderLevelTabs();
 })();
 
 function updateBanner() {
@@ -434,6 +449,27 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 window.addEventListener('storage',function(e){
   if(e.key==='ll_user'||e.key==='ll_progress'){location.reload();}
 });
+
+function switchLevel(level) {
+  var s = LL.progress.state();
+  if(level==='l2' && !s.accessL2){ alert('Complete L1 and purchase L2 to access L2 practice.'); return; }
+  if(level==='l3' && !s.accessL3){ alert('Complete L2 to access L3 practice for free.'); return; }
+  currentLevel = level;
+  renderTopics();
+  renderLevelTabs();
+  var badge=document.getElementById('nav-level-badge');
+  if(badge) badge.textContent=level.toUpperCase()+' '+LEVEL_NAMES[level];
+}
+
+function renderLevelTabs() {
+  var s = LL.progress.state();
+  ['l1','l2','l3'].forEach(function(lv) {
+    var tab = document.getElementById('tab-'+lv);
+    if (!tab) return;
+    tab.classList.toggle('active', lv === currentLevel);
+    tab.disabled = (lv==='l2' && !s.accessL2) || (lv==='l3' && !s.accessL3);
+  });
+}
 </script>
 </body>
 </html>
