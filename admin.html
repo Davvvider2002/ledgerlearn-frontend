@@ -211,6 +211,7 @@ tr:hover td{background:#fafbfc;}
       </div>
       <div class="table-card">
         <div class="table-hdr"><div class="table-title">Payment records</div></div>
+        <div id="revenue-stats" style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1rem;"></div>
         <div id="payments-table"><div class="empty-state"><div class="empty-icon">💳</div><div class="empty-text">Loading payment data…</div></div></div>
       </div>
     </div>
@@ -535,7 +536,7 @@ async function loadRevenue() {
 
 async function loadCertificates() {
   var data = await fetchSupabase('/rest/v1/certificates?select=*&order=created_at.desc&limit=50');
-  var el = document.getElementById('certs-table-body');
+  var el = document.getElementById('certs-table');
   if (!el) return;
   if (!data || !Array.isArray(data) || data.length === 0) {
     el.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:1.5rem;">No certificates issued yet.</td></tr>';
@@ -727,9 +728,9 @@ async function loadAffiliates() {
   var totalPending = AFFILIATES.reduce(function(s,a){return s+(parseFloat(a.pending)||0);},0);
   var totalPaid    = AFFILIATES.reduce(function(s,a){return s+(parseFloat(a.paid)||0);},0);
 
-  document.getElementById('aff-count').textContent   = AFFILIATES.length;
-  document.getElementById('aff-pending').textContent  = '$'+totalPending.toFixed(0);
-  document.getElementById('aff-total-paid').textContent = '$'+totalPaid.toFixed(0);
+  var _acEl = document.getElementById('aff-count');   if(_acEl) _acEl.textContent = AFFILIATES.length;
+  var _apEl = document.getElementById('aff-pending');  if(_apEl) _apEl.textContent = '$'+totalPending.toFixed(0);
+  var _atEl=document.getElementById('aff-total'); if(_atEl) _atEl.textContent='$'+totalPaid.toFixed(0);
 
   var html = AFFILIATES.length
     ? '<table><thead><tr><th>Name</th><th>Email</th><th>Code</th><th>Commission</th><th>Referrals</th><th>Revenue</th><th>Pending</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
@@ -748,7 +749,7 @@ async function loadAffiliates() {
       }).join('') + '</tbody></table>'
     : '<p style="color:#6b87a3;padding:1.5rem;text-align:center;">No affiliates yet.</p>';
 
-  var container = document.getElementById('aff-table');
+  var container = document.getElementById('affiliates-table');
   if (container) container.innerHTML = html;
 }
 function openAffiliateModal(){ document.getElementById('aff-modal').classList.add('open'); }
@@ -789,10 +790,8 @@ async function loadPartners() {
   }
 
   var pendingCount = PARTNERS.filter(function(p){return p.status==='pending';}).length;
-  var el = document.getElementById('partners-count');
-  if (el) el.textContent = PARTNERS.length;
-  var pendEl = document.getElementById('partners-pending');
-  if (pendEl) pendEl.textContent = pendingCount + ' pending';
+  
+  
 
   var html = PARTNERS.length
     ? '<table><thead><tr><th>Institution</th><th>Contact</th><th>Email</th><th>Country</th><th>Status</th><th>Commission</th><th>Joined</th><th>Actions</th></tr></thead><tbody>' +
@@ -879,10 +878,9 @@ function renderCertsTable(certs) {
       }).join('') + '</tbody></table>'
     : '<p style="text-align:center;color:#6b87a3;padding:2rem;">No certificates issued yet.</p>';
 
-  var el = document.getElementById('certs-table-body');
+  var el = document.getElementById('certs-table');
   if (el) el.innerHTML = html;
-  var countEl = document.getElementById('certs-count');
-  if (countEl) countEl.textContent = certs.length;
+  // certs count shown inline
 }
 function filterCerts(){ var q=document.getElementById('cert-search').value.toLowerCase(); renderCertsTable(ALL_CERTS.filter(function(c){ return (c.candidateName+c.certId).toLowerCase().includes(q); })); }
 
