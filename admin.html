@@ -260,6 +260,28 @@ tr:hover td{background:#fafbfc;}
 
     <!-- SETTINGS -->
     <div class="page-view" id="view-settings">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
+        <div style="font-size:0.85rem;font-weight:700;color:#0B1F3A;margin-bottom:1rem;">🔗 Supabase Connection</div>
+        <div style="margin-bottom:0.75rem;">
+          <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#6b87a3;display:block;margin-bottom:4px;">Project URL</label>
+          <input id="supa-url-input" type="text" placeholder="https://xxxx.supabase.co" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;font-family:inherit;"/>
+        </div>
+        <div style="margin-bottom:0.75rem;">
+          <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#6b87a3;display:block;margin-bottom:4px;">Anon Key</label>
+          <input id="supa-key-input" type="password" placeholder="eyJhbGci..." style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;font-family:inherit;"/>
+        </div>
+        <button onclick="saveSupaConfig()" style="padding:8px 20px;background:#0B1F3A;color:#fff;border:none;border-radius:6px;font-size:0.85rem;font-weight:600;cursor:pointer;">Save &amp; Test Connection</button>
+        <span id="supa-status" style="margin-left:1rem;font-size:0.78rem;color:#6b87a3;"></span>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.5rem;">
+        <div style="font-size:0.85rem;font-weight:700;color:#0B1F3A;margin-bottom:0.5rem;">📊 Live Data Actions</div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+          <button onclick="loadUsers()" style="padding:8px 16px;background:#0B1F3A;color:#fff;border:none;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;">Refresh Users</button>
+          <button onclick="loadCertificates()" style="padding:8px 16px;background:#1DA98A;color:#fff;border:none;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;">Load Certificates</button>
+          <button onclick="loadRevenue()" style="padding:8px 16px;background:#D4A843;color:#0B1F3A;border:none;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;">Load Revenue</button>
+        </div>
+      </div>
+
       <div class="page-hdr"><div><div class="page-title">Settings</div><div class="page-sub">Platform configuration</div></div></div>
       <div class="form-card">
         <div class="form-title">Platform settings</div>
@@ -424,14 +446,133 @@ function loadDashboard() {
 
 // ── Users ─────────────────────────────────────────────
 var ALL_USERS = [];
+// ── Supabase admin queries ──────────────────────────────
+var SUPA_URL = '';
+var SUPA_KEY = '';
+
+// Fetch Supabase config from meta tags (injected server-side) or prompt
+async function getSupaConfig() {
+  if (SUPA_URL && SUPA_KEY) return;
+  // Try window config (set via Netlify env injection)
+  if (window.SUPABASE_URL)     SUPA_URL = window.SUPABASE_URL;
+  if (window.SUPABASE_ANON_KEY) SUPA_KEY = window.SUPABASE_ANON_KEY;
+  if (!SUPA_URL || !SUPA_KEY) {
+    // Fallback: read from localStorage (admin sets this once)
+    try {
+      var cfg = JSON.parse(localStorage.getItem('ll_supa_config')||'{}');
+      SUPA_URL = cfg.url || '';
+      SUPA_KEY = cfg.key || '';
+    } catch(e){}
+  }
+}
+
+async function fetchSupabase(path, method, body) {
+  await getSupaConfig();
+  if (!SUPA_URL || !SUPA_KEY) return null;
+  try {
+    var res = await fetch(SUPA_URL + path, {
+      method:  method || 'GET',
+      headers: {
+        'Content-Type':  'application/json',
+        'apikey':         SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    return res.json();
+  } catch(e) { return null; }
+}
+
+async function saveSupaConfig() {
+  var url = (document.getElementById('supa-url-input')||{}).value || '';
+  var key = (document.getElementById('supa-key-input')||{}).value || '';
+  url = url.trim(); key = key.trim();
+  if (!url || !key) { var st = document.getElementById('supa-status'); if(st) st.textContent='⚠ Both fields required'; return; }
+  try {
+    localStorage.setItem('ll_supa_config', JSON.stringify({url:url, key:key}));
+    SUPA_URL = url; SUPA_KEY = key;
+    var test = await fetchSupabase('/rest/v1/profiles?select=id&limit=1');
+    var st = document.getElementById('supa-status');
+    if (test !== null) {
+      if(st){st.textContent='✓ Connected!';st.style.color='#1DA98A';}
+      loadUsers();
+    } else {
+      if(st){st.textContent='✗ Connection failed — check URL and key';st.style.color='#E74C3C';}
+    }
+  } catch(e) {
+    var st = document.getElementById('supa-status');
+    if(st){st.textContent='✗ Error: '+e.message;st.style.color='#E74C3C';}
+  }
+}
+
+async function loadRevenue() {
+  var data = await fetchSupabase('/rest/v1/admin_revenue_summary?select=*&order=month.desc&limit=12');
+  var statsEl = document.getElementById('revenue-stats');
+  if (!statsEl || !data || !Array.isArray(data)) return;
+  var total = data.reduce(function(s,r){return s+(parseFloat(r.revenue_usd)||0);},0);
+  var totalPay = data.reduce(function(s,r){return s+(parseInt(r.payments)||0);},0);
+  statsEl.innerHTML =
+    '<div class="rev-card"><div class="rev-val">$'+total.toFixed(0)+'</div><div class="rev-label">Total Revenue</div></div>' +
+    '<div class="rev-card"><div class="rev-val">'+totalPay+'</div><div class="rev-label">Total Payments</div></div>' +
+    '<div class="rev-card"><div class="rev-val">'+data.length+'</div><div class="rev-label">Active Months</div></div>';
+}
+
+async function loadCertificates() {
+  var data = await fetchSupabase('/rest/v1/certificates?select=*&order=created_at.desc&limit=50');
+  var el = document.getElementById('certs-table-body');
+  if (!el) return;
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    el.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:1.5rem;">No certificates issued yet.</td></tr>';
+    return;
+  }
+  el.innerHTML = data.map(function(c) {
+    return '<tr>' +
+      '<td>'+esc(c.candidate_name||'—')+'</td>' +
+      '<td>'+esc(c.email||'—')+'</td>' +
+      '<td>'+esc(c.cert_title||'—')+'</td>' +
+      '<td>'+esc(c.cert_region_label||'—')+'</td>' +
+      '<td><strong>'+esc(String(c.score||'—'))+'%</strong></td>' +
+      '<td>'+esc(c.issue_date||'—')+'</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
 function getLocalUsers() {
   try { return JSON.parse(localStorage.getItem('ll_admin_users') || '[]'); } catch(e){ return []; }
 }
 function saveLocalUsers(users) {
   localStorage.setItem('ll_admin_users', JSON.stringify(users));
 }
-function loadUsers() {
-  ALL_USERS = getLocalUsers();
+async function loadUsers() {
+  try {
+    // Try Supabase admin view first
+    var supa = await fetchSupabase('/rest/v1/admin_user_summary?select=*&order=registered_at.desc');
+    if (supa && Array.isArray(supa) && supa.length >= 0) {
+      ALL_USERS = supa.map(function(r) {
+        return {
+          id:              r.id,
+          name:            r.full_name || '—',
+          email:           r.email || '—',
+          region:          r.region || 'UK',
+          registered:      r.registered_at ? r.registered_at.split('T')[0] : '—',
+          completedLevels: r.completed_levels || [],
+          l1Score:         r.l1_score,
+          l2Score:         r.l2_score,
+          l3Score:         r.l3_score,
+          paid_l2:         r.paid_l2 || false,
+          certCount:       r.cert_count || 0,
+        };
+      });
+      // Cache locally
+      try { localStorage.setItem('ll_admin_users', JSON.stringify(ALL_USERS)); } catch(e){}
+    } else {
+      ALL_USERS = getLocalUsers();
+    }
+  } catch(e) {
+    ALL_USERS = getLocalUsers();
+  }
   renderUsersTable(ALL_USERS);
 }
 function renderUsersTable(users) {
@@ -574,5 +715,6 @@ function filterCerts(){ var q=document.getElementById('cert-search').value.toLow
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
+<script src="/ll-chatbot.js"></script>
 </body>
 </html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#0B1F3A;min-height:100vh;}
+nav{height:56px;background:rgba(11,31,58,0.98);border-bottom:2px solid #D4A843;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:20px;height:20px;background:#D4A843;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:#fff;}.brand span{color:#D4A843;}
+.nav-links{display:flex;gap:0.25rem;list-style:none;}
+.nav-links a{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.875rem;padding:6px 12px;border-radius:6px;}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,0.08);}
+.hero{padding:4rem 2rem 3rem;text-align:center;background:radial-gradient(ellipse at 50% 100%,rgba(29,169,138,0.08) 0%,transparent 60%);}
+.hero-eyebrow{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:#D4A843;font-weight:700;margin-bottom:0.75rem;}
+.hero-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#fff;margin-bottom:0.75rem;letter-spacing:-0.02em;}
+.hero-sub{font-size:1rem;color:rgba(255,255,255,0.5);max-width:520px;margin:0 auto 2rem;line-height:1.7;}
+.search-wrap{max-width:480px;margin:0 auto;position:relative;}
+.search-wrap input{width:100%;padding:14px 48px 14px 18px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:0.95rem;font-family:inherit;outline:none;}
+.search-wrap input:focus{border-color:#D4A843;}
+.search-wrap input::placeholder{color:rgba(255,255,255,0.3);}
+.search-wrap .search-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.3);font-size:1rem;pointer-events:none;}
+.main{max-width:840px;margin:0 auto;padding:2rem;}
+.categories{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:2rem;}
+.cat-btn{padding:7px 16px;border-radius:100px;font-size:0.78rem;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-family:inherit;transition:all .15s;}
+.cat-btn:hover,.cat-btn.active{background:rgba(212,168,67,0.15);border-color:rgba(212,168,67,0.4);color:#D4A843;}
+.faq-section{margin-bottom:2.5rem;}
+.section-title{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;color:#D4A843;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:1px;background:rgba(212,168,67,0.2);}
+.faq-item{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:0.5rem;overflow:hidden;transition:border-color .15s;}
+.faq-item:hover{border-color:rgba(212,168,67,0.3);}
+.faq-item.open{border-color:rgba(212,168,67,0.3);}
+.faq-q{padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:1rem;}
+.faq-q-text{font-size:0.88rem;font-weight:600;color:#fff;line-height:1.4;}
+.faq-chevron{color:#D4A843;font-size:0.85rem;flex-shrink:0;transition:transform .2s;}
+.faq-item.open .faq-chevron{transform:rotate(180deg);}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+.faq-item.open .faq-a{max-height:400px;}
+.faq-a-inner{padding:0 1.25rem 1rem;font-size:0.83rem;color:rgba(255,255,255,0.6);line-height:1.75;border-top:1px solid rgba(255,255,255,0.06);}
+.faq-a-inner strong{color:#fff;}
+.faq-a-inner a{color:#D4A843;text-decoration:none;}
+.faq-a-inner a:hover{text-decoration:underline;}
+.faq-a-inner ul{padding-left:1.25rem;margin:0.5rem 0;}
+.faq-a-inner li{margin-bottom:4px;}
+.cta-banner{background:linear-gradient(135deg,rgba(29,169,138,0.12),rgba(212,168,67,0.08));border:1px solid rgba(29,169,138,0.25);border-radius:14px;padding:2rem;text-align:center;margin-top:2.5rem;}
+.cta-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:0.5rem;}
+.cta-sub{font-size:0.85rem;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;}
+.cta-btns{display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;}
+.btn-gold{padding:11px 24px;background:#D4A843;color:#0B1F3A;border:none;border-radius:8px;font-size:0.88rem;font-weight:700;cursor:pointer;text-decoration:none;font-family:inherit;}
+.btn-ghost{padding:11px 24px;background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit;}
+.no-results{text-align:center;padding:3rem;color:rgba(255,255,255,0.3);}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <ul class="nav-links">
+    <li><a href="/learn">Learn</a></li>
+    <li><a href="/practice">Practice</a></li>
+    <li><a href="/test">Assessment</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">Help Centre</div>
+  <h1 class="hero-title">Frequently Asked Questions</h1>
+  <p class="hero-sub">Everything you need to know about LedgerLearn Pro certifications, pricing, and your learning journey.</p>
+  <div class="search-wrap">
+    <input type="text" id="faq-search" placeholder="Search questions..." oninput="filterFAQ(this.value)"/>
+    <span class="search-icon">🔍</span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="categories">
+    <button class="cat-btn active" onclick="filterCat('all',this)">All questions</button>
+    <button class="cat-btn" onclick="filterCat('getting-started',this)">Getting started</button>
+    <button class="cat-btn" onclick="filterCat('levels',this)">Levels & pricing</button>
+    <button class="cat-btn" onclick="filterCat('certificates',this)">Certificates</button>
+    <button class="cat-btn" onclick="filterCat('assessments',this)">Assessments</button>
+    <button class="cat-btn" onclick="filterCat('regions',this)">Regions</button>
+    <button class="cat-btn" onclick="filterCat('technical',this)">Technical</button>
+    <button class="cat-btn" onclick="filterCat('partners',this)">Partners</button>
+  </div>
+
+  <div id="faq-container"></div>
+
+  <div class="no-results" id="no-results" style="display:none">
+    <div style="font-size:2rem;margin-bottom:0.75rem;">🤔</div>
+    <div>No matching questions found.</div>
+    <div style="margin-top:0.5rem;font-size:0.78rem;">Try the chatbot for a direct answer →</div>
+  </div>
+
+  <div class="cta-banner">
+    <div class="cta-title">Still have questions?</div>
+    <p class="cta-sub">Our AI assistant is available on every page to help you navigate LedgerLearn and answer Xero questions instantly.</p>
+    <div class="cta-btns">
+      <button class="btn-gold" onclick="window.LLChat && LLChat.open()">💬 Ask the AI assistant</button>
+      <a href="/register" class="btn-ghost">Start learning free →</a>
+    </div>
+  </div>
+</div>
+
+<script src="/ll-chatbot.js"></script>
+<script>
+var FAQS = [
+  // Getting started
+  {cat:'getting-started', q:'What is LedgerLearn Pro?', a:'LedgerLearn Pro is a Xero and bookkeeping certification platform for bookkeepers and accountants. It offers three certification levels — L1 (free), L2 ($49), and L3 (free after L2) — with AI-generated practice questions, interactive simulations, and verifiable digital certificates.'},
+  {cat:'getting-started', q:'Do I need any prior experience to start?', a:'No prior experience is needed for L1. The Xero Associate level covers everything from scratch — how to navigate Xero, create invoices, reconcile your bank, and run basic reports. If you already use Xero in your job, you\'ll likely move through L1 quickly.'},
+  {cat:'getting-started', q:'How long does each level take to complete?', a:'<ul><li><strong>L1:</strong> 4–6 hours across 6 lessons (spread over a few days or a weekend)</li><li><strong>L2:</strong> 8–12 hours across 6 advanced lessons</li><li><strong>L3:</strong> 6–10 hours focusing on advisory and practice management</li></ul>'},
+  {cat:'getting-started', q:'Do I need to install anything?', a:'No. LedgerLearn Pro runs entirely in your browser. You don\'t need to install Xero or any other software — all simulations run as interactive in-browser experiences.'},
+  {cat:'getting-started', q:'Can I access LedgerLearn on mobile?', a:'Yes. The platform is fully responsive and works on mobile phones and tablets. For the interactive simulations, a larger screen (laptop or tablet) gives the best experience.'},
+
+  // Levels & pricing
+  {cat:'levels', q:'What is included in each level?', a:'<ul><li><strong>L1 — Xero Associate (Free):</strong> Dashboard navigation, organisation setup, invoices, bank reconciliation, chart of accounts, financial reports</li><li><strong>L2 — Xero Professional ($49):</strong> Bills & payables, VAT/tax returns, bank rules, financial reporting, multi-currency, management accounts</li><li><strong>L3 — Xero Advisor (Free after L2):</strong> Client onboarding, management accounts pack, advisory reporting, year-end preparation, practice management</li></ul>'},
+  {cat:'levels', q:'Why is L1 free?', a:'We believe certification should be accessible. L1 demonstrates your Xero foundations to employers and clients — making it free removes the barrier to proving your skills. L2 is where deeper, job-ready skills are covered, and that\'s where we charge.'},
+  {cat:'levels', q:'Is the $49 for L2 a one-time payment or subscription?', a:'It\'s a one-time payment of $49 — not a subscription. You pay once and have permanent access to L2 lessons, practice questions, and assessments.'},
+  {cat:'levels', q:'How do I unlock L3?', a:'L3 unlocks automatically and for free once you pass the L2 assessment with 70% or above. There\'s no additional payment required.'},
+  {cat:'levels', q:'Can I do L2 without completing L1?', a:'No. L1 must be completed first. This ensures you have the foundation to succeed in L2. L1 typically takes less than a week for most learners.'},
+
+  // Certificates
+  {cat:'certificates', q:'Are LedgerLearn certificates recognised by employers?', a:'LedgerLearn certificates are independently issued verifiable credentials. They can be verified by any employer via <strong>ledgerlearn.pro/verify</strong> using your certificate ID. They demonstrate practical Xero competency — skills directly relevant to bookkeeping and accounting roles.'},
+  {cat:'certificates', q:'How do I download my certificate?', a:'After passing an assessment, your certificate is generated instantly. You\'ll see a <strong>"Download certificate"</strong> button on the results screen. You can also download it anytime from your Dashboard. Certificates are issued as PNG images suitable for framing or digital sharing.'},
+  {cat:'certificates', q:'Can I share my certificate on LinkedIn?', a:'Yes. After passing, click <strong>"Share on LinkedIn"</strong> on the results page. This creates a LinkedIn post with your certificate details, LedgerLearn Pro attribution, and a verification link so connections can confirm it\'s real.'},
+  {cat:'certificates', q:'Does my certificate expire?', a:'No. Your certificate does not expire. It represents the skills you demonstrated at the time of assessment. The verification page at ledgerlearn.pro/verify will remain active indefinitely.'},
+  {cat:'certificates', q:'What does my certificate show?', a:'Your certificate includes: your full name, the level achieved (e.g. "Xero Certified Practitioner — Level 1"), your score, the date issued, your region (e.g. "Nigeria Practice · FIRS · VAT 7.5%"), a unique certificate ID, and a QR code linking to the verification page.'},
+  {cat:'certificates', q:'I lost my certificate. Can I get it again?', a:'Yes. Go to your Dashboard and scroll to the certificate section, or visit <strong>/recover</strong> and enter your email address to retrieve all certificates linked to your account.'},
+
+  // Assessments
+  {cat:'assessments', q:'What is the pass mark?', a:'<ul><li><strong>L1:</strong> 70% (20 questions, 40 minutes)</li><li><strong>L2:</strong> 70% (25 questions, 50 minutes)</li><li><strong>L3:</strong> 75% (30 questions, 60 minutes)</li></ul>'},
+  {cat:'assessments', q:'How many times can I retake the assessment?', a:'Unlimited retakes. There\'s no penalty for retaking. We recommend reviewing the lessons and doing more practice questions before retaking.'},
+  {cat:'assessments', q:'Are the assessment questions the same every time?', a:'No. Questions are AI-generated fresh for every assessment attempt, drawing from a large pool of topics and difficulty levels. This prevents memorisation and ensures genuine competency.'},
+  {cat:'assessments', q:'What topics does the L1 assessment cover?', a:'The L1 assessment covers all six lesson areas: Dashboard & Navigation, Organisation Setup, Creating & Managing Invoices, Bank Reconciliation, Chart of Accounts, and Running Financial Reports.'},
+  {cat:'assessments', q:'Can I pause the assessment and continue later?', a:'No. The assessment is timed and must be completed in one sitting. Make sure you have sufficient time before starting. The timer continues if you navigate away.'},
+
+  // Regions
+  {cat:'regions', q:'Which countries are supported?', a:'LedgerLearn Pro supports: 🇬🇧 United Kingdom (VAT/HMRC), 🇳🇬 Nigeria (VAT/FIRS), 🇿🇦 South Africa (VAT/SARS), 🇺🇸 United States (Sales Tax/IRS), 🇦🇺 Australia (GST/ATO), 🇳🇿 New Zealand (GST/IRD), 🇮🇪 Ireland (VAT/Revenue), 🇦🇪 UAE (VAT/FTA), 🇨🇦 Canada (GST-HST/CRA), and a Global option.'},
+  {cat:'regions', q:'What changes based on my region?', a:'All AI-generated practice and assessment questions use your region\'s: <ul><li>Tax body (e.g. FIRS for Nigeria, SARS for South Africa, HMRC for UK)</li><li>Tax rate (e.g. 7.5% VAT for Nigeria, 15% VAT for South Africa, 20% VAT for UK)</li><li>Currency (₦, R, £, $, etc.)</li><li>Filing terminology (e.g. TaxPro Max for Nigeria, MTD for UK)</li></ul>Your certificate also shows the region badge.'},
+  {cat:'regions', q:'Can I change my region after registering?', a:'Yes. Go to your Dashboard and scroll to the "Assessment region" card. Select a new region and all future questions will use the updated regional context. Certificates already issued keep their original region.'},
+  {cat:'regions', q:'I\'m based in Africa but use UK Xero settings for my clients. Which region should I choose?', a:'Choose based on the tax jurisdiction you primarily work in. If you prepare returns under HMRC/UK VAT rules, choose UK. If you work with Nigerian clients under FIRS, choose Nigeria. You can always change it later.'},
+
+  // Technical
+  {cat:'technical', q:'My progress isn\'t saving. What should I do?', a:'Progress saves automatically. If it\'s not saving: <ul><li>Make sure you\'re logged in (check the nav bar for your name)</li><li>Try refreshing the page</li><li>Ensure your browser allows localStorage (some privacy modes block it)</li><li>If issues persist, contact us via the chatbot</li></ul>'},
+  {cat:'technical', q:'Can I access LedgerLearn from multiple devices?', a:'Yes. Your progress is synced to your account via Supabase. Log in on any device — phone, tablet, laptop — and your progress, scores, and certificates will be there.'},
+  {cat:'technical', q:'Why are my questions in the wrong currency/tax system?', a:'Check your region setting on the Dashboard. If your region is set to UK but you\'re in Nigeria, questions will use £ and HMRC. Change your region to NG for ₦ and FIRS questions.'},
+  {cat:'technical', q:'How do I reset my progress (start fresh)?', a:'Contact us via the chatbot or open F12 console and run: <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-size:0.8em;">localStorage.removeItem(\'ll_progress\')</code> — note this removes local data but your Supabase account record is preserved.'},
+
+  // Partners
+  {cat:'partners', q:'What is the LedgerLearn Partner Program?', a:'The Partner Program lets accounting schools, bookkeeping academies, AAT/ACCA tutors, and accounting firms earn commission by referring students to LedgerLearn. Partners earn 20% on the first 20 student enrolments and 25% thereafter.'},
+  {cat:'partners', q:'How do I become a partner?', a:'Visit <a href="/partners">ledgerlearn.pro/partners</a> and complete the application form. Your application will be reviewed within 2–3 business days. If approved, you\'ll receive a referral code and access to a partner dashboard.'},
+  {cat:'partners', q:'When and how do partners get paid?', a:'Commission is paid monthly via PayPal or bank transfer. The minimum payout threshold is $50. You\'ll receive a breakdown of which students enrolled using your referral code and the commission earned per enrolment.'},
+  {cat:'partners', q:'Can individual tutors apply, or only schools?', a:'Both. Any person or organisation that works with bookkeeping or accounting students can apply — individual tutors, online academies, professional training providers, apprenticeship programmes, or accounting firms that train staff.'},
+];
+
+var currentCat = 'all';
+var currentSearch = '';
+
+function renderFAQ() {
+  var filtered = FAQS.filter(function(f) {
+    var catOk = currentCat === 'all' || f.cat === currentCat;
+    var srchOk = !currentSearch || f.q.toLowerCase().includes(currentSearch) || f.a.toLowerCase().includes(currentSearch);
+    return catOk && srchOk;
+  });
+
+  document.getElementById('no-results').style.display = filtered.length === 0 ? 'block' : 'none';
+
+  // Group by category
+  var groups = {};
+  var catNames = {
+    'getting-started': '🚀 Getting Started',
+    'levels':          '📚 Levels & Pricing',
+    'certificates':    '🏆 Certificates',
+    'assessments':     '📝 Assessments',
+    'regions':         '🌍 Regions & Tax',
+    'technical':       '⚙️ Technical',
+    'partners':        '🤝 Partner Program',
+  };
+  filtered.forEach(function(f) {
+    if (!groups[f.cat]) groups[f.cat] = [];
+    groups[f.cat].push(f);
+  });
+
+  var html = '';
+  Object.keys(groups).forEach(function(cat) {
+    html += '<div class="faq-section" data-cat="'+cat+'">';
+    html += '<div class="section-title">'+(catNames[cat]||cat)+'</div>';
+    groups[cat].forEach(function(f, i) {
+      var id = cat + '-' + i;
+      html += '<div class="faq-item" id="faq-'+id+'">' +
+        '<div class="faq-q" onclick="toggleFAQ(\''+id+'\')">' +
+          '<div class="faq-q-text">'+escapeHTML(f.q)+'</div>' +
+          '<span class="faq-chevron">▾</span>' +
+        '</div>' +
+        '<div class="faq-a"><div class="faq-a-inner">'+f.a+'</div></div>' +
+      '</div>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('faq-container').innerHTML = html;
+}
+
+function toggleFAQ(id) {
+  var el = document.getElementById('faq-'+id);
+  if (!el) return;
+  var wasOpen = el.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.faq-item.open').forEach(function(e){e.classList.remove('open');});
+  if (!wasOpen) el.classList.add('open');
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active');});
+  if (btn) btn.classList.add('active');
+  renderFAQ();
+}
+
+function filterFAQ(val) {
+  currentSearch = val.toLowerCase().trim();
+  renderFAQ();
+}
+
+function escapeHTML(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+renderFAQ();
+</script>
+</body>
+</html>
