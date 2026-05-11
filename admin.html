@@ -411,8 +411,17 @@ document.getElementById('admin-pass').addEventListener('keydown', function(e){
 function nav(page) {
   document.querySelectorAll('.page-view').forEach(function(v){ v.classList.remove('active'); });
   document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('active'); });
-  document.getElementById('view-'+page).classList.add('active');
-  event.currentTarget.classList.add('active');
+  var view = document.getElementById('view-'+page);
+  if (view) view.classList.add('active');
+  if (event && event.currentTarget) event.currentTarget.classList.add('active');
+  // Load data when tab is opened
+  if (page === 'dashboard')  loadDashboard();
+  if (page === 'users')      loadUsers();
+  if (page === 'certs')      loadCerts();
+  if (page === 'payments')   loadPayments();
+  if (page === 'affiliates') loadAffiliates();
+  if (page === 'partners')   loadPartners();
+  if (page === 'upgrades')   loadUpgrades();
 }
 
 // ── Load data from Netlify Blobs via progress function ─
@@ -431,19 +440,19 @@ async function loadDashboard() {
     var pays     = await fetchSupabase('/rest/v1/payments?select=amount_usd');
     var pending  = await fetchSupabase('/rest/v1/partners?select=id&status=eq.pending');
 
-    var userCount    = Array.isArray(profiles) ? profiles.length : getLocalUsers().length;
-    var certCount    = Array.isArray(certs)    ? certs.length    : 0;
-    var revenue      = Array.isArray(pays)     ? pays.reduce(function(s,p){return s+(parseFloat(p.amount_usd)||49);},0) : 0;
-    var pendCount    = Array.isArray(pending)  ? pending.length  : 0;
+    var userCount = Array.isArray(profiles) ? profiles.length : getLocalUsers().length;
+    var certCount = Array.isArray(certs)    ? certs.length    : 0;
+    var revenue   = Array.isArray(pays)     ? pays.reduce(function(s,p){return s+(parseFloat(p.amount_usd)||49);},0) : 0;
+    var pendCount = Array.isArray(pending)  ? pending.length  : 0;
 
     var uEl = document.getElementById('stat-users');
     var cEl = document.getElementById('stat-certs');
     var rEl = document.getElementById('stat-revenue');
-    var pEl = document.getElementById('stat-partners');
+    var aEl = document.getElementById('stat-affiliates'); // correct ID in HTML
     if (uEl) uEl.textContent = userCount;
     if (cEl) cEl.textContent = certCount;
     if (rEl) rEl.textContent = '$' + revenue.toFixed(0);
-    if (pEl) pEl.textContent = pendCount + ' pending';
+    if (aEl) aEl.textContent = pendCount + ' pending';
   } catch(e) {
     var allUsers = getLocalUsers();
     var uEl = document.getElementById('stat-users');
@@ -827,11 +836,29 @@ async function rejectPartner(i) {
 
 // ── Certificates ──────────────────────────────────────
 var ALL_CERTS = [];
-function loadCerts(){
-  // Pull from localStorage for now
-  ALL_CERTS = [];
-  var users = getLocalUsers();
-  users.forEach(function(u){ if(u.cert) ALL_CERTS.push(Object.assign({},u.cert,{userName:u.name,userEmail:u.email})); });
+async function loadCerts() {
+  try {
+    var data = await fetchSupabase('/rest/v1/certificates?select=*&order=created_at.desc&limit=200');
+    if (Array.isArray(data)) {
+      ALL_CERTS = data.map(function(c) {
+        return {
+          certId:       c.cert_id||'—',
+          userName:     c.candidate_name||'—',
+          userEmail:    c.email||'—',
+          certTitle:    c.cert_title||'—',
+          certRegion:   c.cert_region_label||c.cert_region||'—',
+          score:        c.score||0,
+          level:        c.level||'l1',
+          issueDate:    (c.issue_date||(c.created_at||'').split('T')[0]),
+          verified:     c.verified !== false,
+        };
+      });
+    } else {
+      ALL_CERTS = [];
+    }
+  } catch(e) {
+    ALL_CERTS = [];
+  }
   renderCertsTable(ALL_CERTS);
 }
 function renderCertsTable(certs) {
