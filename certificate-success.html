@@ -2,12 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="shortcut icon" href="/favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Congratulations! — LedgerLearn Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{
   --navy:#0B1F3A;--gold:#D4A843;--gold-light:#f0c860;
@@ -360,7 +357,7 @@ h1 span{color:var(--gold);}
 
 </div>
 
-<script src="/certificate.js"></script>
+<script src="/certificate-engine-v2.js"></script>
 <script>
   // ── Spawn confetti ──────────────────────────────────────
   const colors = ['#D4A843','#1DA98A','#ffffff','#f0c860','#26c9a5'];
@@ -408,20 +405,21 @@ h1 span{color:var(--gold);}
   document.getElementById('btn-download').addEventListener('click', async () => {
     const overlay = document.getElementById('gen-overlay');
     overlay.style.display = 'flex';
-    // Small delay so overlay renders before jsPDF blocks the thread
+    // Small delay so overlay renders before certificate generation
     await new Promise(r => setTimeout(r, 100));
     try {
-      LedgerCert.generate({ ...certData, action: 'download' });
+      if (window.CertEngine) {
+        CertEngine.download(certData);
+      }
     } catch(e) { console.error(e); }
     overlay.style.display = 'none';
   });
 
   // ── LinkedIn button ──────────────────────────────────────
   document.getElementById('btn-linkedin').addEventListener('click', () => {
-    LedgerCert.shareLinkedIn({
-      certTitle: certData.certTitle,
-      certId:    certData.certId,
-    });
+    if (window.CertEngine) {
+      CertEngine.share(certData);
+    }
   });
 </script>
 </body>
