@@ -173,6 +173,13 @@
   to   = "/faq.html"
   status = 200
 
+
+[[headers]]
+  for = "/certificate-engine*.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+
 [[redirects]]
   from = "/*"
   to   = "/index.html"
