@@ -1,4 +1,4 @@
-// LedgerLearn certificate-engine.js v3.1 — MutationObserver fix
+// LedgerLearn certificate-engine.js v3.2 — LinkedIn-style design, safe polling
 /**
  * LedgerLearn Pro — Certificate Engine v3.0
  * ==========================================
@@ -430,23 +430,29 @@
     } catch(e) { console.warn('[CertEngine] preview error:', e); }
   }
 
-  // ── Watch for results / init ──────────────────────────────
+  // ── Init ──────────────────────────────────────────────────
   function init() {
-    var cert = getCert();
-    wireButtons(cert);
-    if (cert) showPreview(cert);
-
-    // Re-run when results appear
-    // Only observe if results-card exists (test page only)
-    var target = document.getElementById('results-card');
-    if (target) {
-      var observer = new MutationObserver(function() {
-        var c = getCert();
-        if (c) { wireButtons(c); showPreview(c); }
-      });
-      observer.observe(target, { childList: true, subtree: true, attributes: true });
-    }
+    try {
+      var cert = getCert();
+      wireButtons(cert);
+      if (cert) showPreview(cert);
+    } catch(e) { /* silent — cert not ready yet */ }
   }
+
+  // Re-check every 500ms for up to 30s (handles async cert generation)
+  var _pollCount = 0;
+  var _pollInterval = setInterval(function() {
+    _pollCount++;
+    if (_pollCount > 60) { clearInterval(_pollInterval); return; }
+    try {
+      var c = getCert();
+      if (c && c.certId) {
+        wireButtons(c);
+        showPreview(c);
+        clearInterval(_pollInterval);
+      }
+    } catch(e) {}
+  }, 500);
 
   // Public API
   window.CertEngine = {
