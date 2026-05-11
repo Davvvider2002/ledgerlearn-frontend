@@ -673,6 +673,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script src="/ll-auth.js"></script>
+<script src="/ll-progress.js"></script>
+<script src="/certificate-engine.js"></script>
 
 <script>
 // Auth guard — redirects to /login if not signed in
@@ -769,8 +771,27 @@ document.addEventListener('DOMContentLoaded', async function() {
         </div>
         <div class="ob-bar-wrap"><div class="ob-bar" id="ob-bar" style="width:0%"></div></div>
         <div class="ob-steps">
-          <div class="ob-step" id="ob-step-1" onclick="markObDone(1)">
-            <div class="ob-check">✓</div><div class="ob-step-text"><strong>Create your account</strong> — Register with name and email</div>
+          <div id="ob-step-1" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">
+            <div id="ob-check-1" style="width:24px;height:24px;border-radius:50%;border:2px solid #e2e8f0;background:#fff;font-size:0.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;"></div>
+            <div style="flex:1;"><div style="font-size:0.83rem;font-weight:600;color:#0B1F3A;">Create your account</div><div style="font-size:0.72rem;color:#94a3b8;">Register with name and email</div></div>
+            <span id="ob-action-1" style="font-size:0.72rem;color:#D4A843;font-weight:600;">→</span>
+          </div>
+          <div id="ob-step-2" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">
+            <div id="ob-check-2" style="width:24px;height:24px;border-radius:50%;border:2px solid #e2e8f0;background:#fff;font-size:0.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;"></div>
+            <div style="flex:1;"><div style="font-size:0.83rem;font-weight:600;color:#0B1F3A;">Complete all 6 L1 lessons</div><div style="font-size:0.72rem;color:#94a3b8;" id="ob-lesson-progress">6 lessons · ~2 hours</div></div>
+            <a href="/learn" id="ob-action-2" style="font-size:0.72rem;color:#D4A843;font-weight:600;text-decoration:none;">Start →</a>
+          </div>
+          <div id="ob-step-3" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">
+            <div id="ob-check-3" style="width:24px;height:24px;border-radius:50%;border:2px solid #e2e8f0;background:#fff;font-size:0.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;"></div>
+            <div style="flex:1;"><div style="font-size:0.83rem;font-weight:600;color:#0B1F3A;">Pass the L1 assessment</div><div style="font-size:0.72rem;color:#94a3b8;">Score 70%+ to earn your certificate</div></div>
+            <a href="/test" id="ob-action-3" style="font-size:0.72rem;color:#D4A843;font-weight:600;text-decoration:none;">Take test →</a>
+          </div>
+          <div id="ob-step-4" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">
+            <div id="ob-check-4" style="width:24px;height:24px;border-radius:50%;border:2px solid #e2e8f0;background:#fff;font-size:0.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;"></div>
+            <div style="flex:1;"><div style="font-size:0.83rem;font-weight:600;color:#0B1F3A;">Download your certificate</div><div style="font-size:0.72rem;color:#94a3b8;">Share on LinkedIn to showcase your skills</div></div>
+            <button id="ob-action-4" onclick="downloadCertFromOb()" style="font-size:0.72rem;color:#fff;font-weight:600;background:#D4A843;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:inherit;display:none;">⬇ Download</button>
+          </div>
+        </div></div><div class="ob-step-text"><strong>Create your account</strong> — Register with name and email</div>
           </div>
           <div class="ob-step" id="ob-step-2" onclick="markObDone(2)">
             <div class="ob-check"></div><div class="ob-step-text"><strong>Complete L1 lessons</strong> — 6 lessons, ~2 hours total</div>
@@ -812,6 +833,19 @@ document.addEventListener('DOMContentLoaded', async function() {
         <div class="course-progress-bar"><div class="course-progress-fill" id="l1-bar" style="width:0%"></div></div>
       </div>
       <div class="dashboard-lesson-list" id="l1-lesson-list"></div>
+
+      <!-- Certificate card for L1 -->
+      <div id="l1-cert-card" style="display:none;margin-top:1rem;background:linear-gradient(135deg,#f8fafc,#f1f5f9);border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div style="font-size:2rem;">🏆</div>
+        <div style="flex:1;">
+          <div style="font-size:0.85rem;font-weight:700;color:#0B1F3A;" id="l1-cert-title">Xero Certified Practitioner — Level 1</div>
+          <div style="font-size:0.75rem;color:#6b87a3;margin-top:2px;" id="l1-cert-meta">Score: — · Issued: —</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <button id="l1-cert-download" style="padding:9px 18px;background:#D4A843;color:#0B1F3A;border:none;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;">⬇ Download</button>
+          <button id="l1-cert-share" style="padding:9px 18px;background:#0B1F3A;color:#fff;border:none;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;">Share on LinkedIn</button>
+        </div>
+      </div>
     </div>
 
     <!-- L2 TAB -->
@@ -1050,6 +1084,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     const user     = getUser();
     const progress = getProgress();
     initRegionCard();
+    // Show certificate download in welcome banner if earned
+    try {
+      var _pr = JSON.parse(localStorage.getItem('ll_progress')||'{}');
+      var _certLink = document.getElementById('recover-cert-link');
+      if (_certLink && _pr.certificate) {
+        _certLink.style.display = 'inline-flex';
+        _certLink.textContent = '📄 Download your certificate →';
+        _certLink.onclick = function(e) {
+          e.preventDefault();
+          if (window.CertEngine) CertEngine.download(_pr.certificate);
+        };
+      }
+    } catch(_e) {}
     // Update Learn nav link using v5 routing module
     try {
       LL.updateLearnLink('dash-learn-link');
@@ -1139,38 +1186,70 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Step 2: practice with scenarios (any practice done)
     // Step 3: sit the assessment (any score recorded)
     // Step 4: download certificate (cert exists)
-    let obComplete = 0;
+    var obComplete = 0;
 
-    if (lessonsCompleted >= 6) {
-      markObDone('ob-step-1'); obComplete++;
-      unlockObStep('ob-step-2');
-    } else if (lessonsCompleted > 0) {
-      // Partially done — mark active
-      const el = document.getElementById('ob-step-1');
-      if (el) {
-        el.className = el.className.replace('locked','active');
-        const action = el.querySelector('.ob-action');
-        const label  = el.querySelector('.ob-label');
-        if (action) action.textContent = lessonsCompleted + '/6 done →';
-        if (label)  label.textContent  = 'Complete the free L1 module (' + lessonsCompleted + '/6)';
+    // ── Step 1: Account created (always done if on dashboard) ──
+    obComplete++;
+    (function() {
+      var c1 = document.getElementById('ob-check-1');
+      var a1 = document.getElementById('ob-action-1');
+      if (c1) { c1.textContent='✓'; c1.style.background='#1DA98A'; c1.style.color='#fff'; c1.style.border='none'; }
+      if (a1) a1.textContent = 'Done ✓';
+    })();
+
+    // ── Step 2: Lessons completed ──────────────────────────────
+    var obLessons = lessonsCompleted || 0;
+    (function() {
+      var c2 = document.getElementById('ob-check-2');
+      var a2 = document.getElementById('ob-action-2');
+      var lp2 = document.getElementById('ob-lesson-progress');
+      if (obLessons >= 6) {
+        obComplete++;
+        if (c2) { c2.textContent='✓'; c2.style.background='#1DA98A'; c2.style.color='#fff'; c2.style.border='none'; }
+        if (a2) { a2.textContent='Done ✓'; a2.style.color='#1DA98A'; }
+        if (lp2) lp2.textContent = '6/6 lessons completed';
+      } else if (obLessons > 0) {
+        if (lp2) lp2.textContent = obLessons + '/6 lessons done';
+        if (a2)  a2.textContent  = 'Continue →';
       }
-    }
+    })();
 
-    if (practiceAnswered > 0) {
-      markObDone('ob-step-2'); obComplete++;
-      unlockObStep('ob-step-3');
-    }
+    // ── Step 3: Assessment passed ──────────────────────────────
+    (function() {
+      var c3 = document.getElementById('ob-check-3');
+      var a3 = document.getElementById('ob-action-3');
+      try {
+        var _pr = JSON.parse(localStorage.getItem('ll_progress')||'{}');
+        var _sc = _pr.lastScore || _pr.l1Score || null;
+        if (_sc !== null && _sc >= 70) {
+          obComplete++;
+          if (c3) { c3.textContent='✓'; c3.style.background='#1DA98A'; c3.style.color='#fff'; c3.style.border='none'; }
+          if (a3) { a3.textContent='Passed ' + _sc + '% ✓'; a3.style.color='#1DA98A'; a3.removeAttribute('href'); }
+        } else if (_sc !== null) {
+          if (a3) { a3.textContent='Retake →'; }
+        }
+      } catch(e){}
+    })();
 
-    if (lastScore !== null) {
-      markObDone('ob-step-3'); obComplete++;
-      unlockObStep('ob-step-4');
-    }
+    // ── Step 4: Certificate downloaded ─────────────────────────
+    (function() {
+      var c4 = document.getElementById('ob-check-4');
+      var a4 = document.getElementById('ob-action-4');
+      try {
+        var _pr4 = JSON.parse(localStorage.getItem('ll_progress')||'{}');
+        var _cert = _pr4.certificate;
+        if (_cert && _cert.certId) {
+          obComplete++;
+          if (c4) { c4.textContent='✓'; c4.style.background='#1DA98A'; c4.style.color='#fff'; c4.style.border='none'; }
+          if (a4) { a4.style.display='inline-block'; a4.textContent='Download ↓'; a4.style.background='#1DA98A'; }
+        } else if (_pr4.lastScore >= 70 || _pr4.l1Score >= 70) {
+          // Passed but no cert object — show download button anyway
+          if (a4) { a4.style.display='inline-block'; a4.textContent='Download ↓'; }
+        }
+      } catch(e){}
+    })();
 
-    if (certsEarned > 0) {
-      markObDone('ob-step-4'); obComplete++;
-    }
-
-    document.getElementById('ob-progress-text').textContent = obComplete + ' of 4 complete';
+    document.getElementById('ob-progress-text').textContent = obComplete + ' of 4 complete'
     document.getElementById('ob-bar').style.width = (obComplete / 4 * 100) + '%';
 
     // ── Welcome banner ────────────────────────────────────
@@ -1206,10 +1285,12 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   function markObDone(id) {
-    const el = document.getElementById(id);
+    var elId = (typeof id === 'number') ? 'ob-step-' + id : id;
+    var el = document.getElementById(elId);
     if (!el) return;
-    el.className = el.className.replace('active', 'done').replace('locked', 'done');
-    const action = el.querySelector('.ob-action');
+    var check = el.querySelector('[id^="ob-check-"]');
+    if (check) { check.textContent='✓'; check.style.background='#1DA98A'; check.style.color='#fff'; check.style.border='none'; }
+    var action = el.querySelector('[id^="ob-action-"]');
     if (action) action.textContent = 'Done ✓';
   }
 
@@ -1366,8 +1447,40 @@ function initLevelDashboards() {
   document.getElementById('l1-bar').style.width    = l1Pct + '%';
   document.getElementById('l1-status').textContent = s.passedL1 ? '✓ Passed' : l1Lessons>0 ? 'In progress' : 'Not started';
   document.getElementById('l1-status').style.color = s.passedL1 ? '#1DA98A' : l1Lessons>0 ? '#D4A843' : '#6b87a3';
-  document.getElementById('l1-cert').textContent   = s.passedL1 ? '✓ Earned' : '—';
+  // L1 Certificate
+  var l1CertEl = document.getElementById('l1-cert');
+  if (l1CertEl) {
+    if (s.passedL1) {
+      var cert = null;
+      try { var pp = JSON.parse(localStorage.getItem('ll_progress')||'{}'); cert = pp.certificate || null; } catch(e){}
+      if (cert) {
+        l1CertEl.innerHTML = '<button onclick="window.CertEngine && CertEngine.download(JSON.parse(localStorage.getItem(\'ll_progress\')||\'{}\').certificate)" ' +
+          'style="background:#D4A843;color:#0B1F3A;border:none;padding:6px 14px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;">⬇ Download</button>';
+      } else {
+        l1CertEl.textContent = '✓ Earned';
+      }
+    } else {
+      l1CertEl.textContent = '—';
+    }
+  }
   document.getElementById('l1-cta').textContent    = l1Lessons>0 ? 'Continue L1 lessons' : 'Start L1 lessons';
+  // Wire cert card
+  try {
+    var _pp = JSON.parse(localStorage.getItem('ll_progress')||'{}');
+    var _cc = _pp.certificate;
+    var _ccEl = document.getElementById('l1-cert-card');
+    if (_ccEl && s.passedL1 && _cc) {
+      _ccEl.style.display = 'flex';
+      var _titleEl = document.getElementById('l1-cert-title');
+      var _metaEl  = document.getElementById('l1-cert-meta');
+      if (_titleEl) _titleEl.textContent = _cc.certTitle || 'Xero Certified Practitioner — Level 1';
+      if (_metaEl)  _metaEl.textContent  = 'Score: ' + (_cc.score||'—') + '% · Issued: ' + (_cc.issueDate||'—') + ' · ID: ' + (_cc.certId||'—');
+      var _dlBtn  = document.getElementById('l1-cert-download');
+      var _shBtn  = document.getElementById('l1-cert-share');
+      if (_dlBtn) _dlBtn.onclick = function() { if(window.CertEngine) CertEngine.download(_cc); };
+      if (_shBtn) _shBtn.onclick = function() { if(window.CertEngine) CertEngine.share(_cc); };
+    }
+  } catch(_ce) {}
 
   // L2 panel
   var l2Score = p.l2Score || null;
@@ -1385,7 +1498,18 @@ function initLevelDashboards() {
   document.getElementById('l2-score').textContent  = l2Score != null ? l2Score + '%' : '—';
   document.getElementById('l2-status').textContent = s.passedL2 ? '✓ Passed' : s.accessL2 ? 'In progress' : '🔒 Locked';
   document.getElementById('l2-status').style.color = s.passedL2 ? '#1DA98A' : s.accessL2 ? '#D4A843' : '#6b87a3';
-  document.getElementById('l2-cert').textContent   = s.passedL2 ? '✓ Earned' : '—';
+  // L2 Certificate
+  var l2CertEl = document.getElementById('l2-cert');
+  if (l2CertEl) {
+    if (s.passedL2) {
+      var cert2 = null;
+      try { var pp2=JSON.parse(localStorage.getItem('ll_progress')||'{}'); cert2=pp2.certificate||null; } catch(e){}
+      if (cert2) {
+        l2CertEl.innerHTML = '<button onclick="window.CertEngine && CertEngine.download(JSON.parse(localStorage.getItem(\'ll_progress\')||\'{}\').certificate)" ' +
+          'style="background:#D4A843;color:#0B1F3A;border:none;padding:6px 14px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;">⬇ Download</button>';
+      } else { l2CertEl.textContent = '✓ Earned'; }
+    } else { l2CertEl.textContent = '—'; }
+  }
   if (s.accessL2) {
     document.getElementById('l2-progress-wrap').style.display = 'block';
     var l2Pct = Math.round(l2Lessons / 6 * 100);
@@ -1410,7 +1534,18 @@ function initLevelDashboards() {
   document.getElementById('l3-score').textContent  = l3Score != null ? l3Score + '%' : '—';
   document.getElementById('l3-status').textContent = s.passedL3 ? '✓ Passed' : s.accessL3 ? 'In progress' : '🔒 Locked';
   document.getElementById('l3-status').style.color = s.passedL3 ? '#1DA98A' : s.accessL3 ? '#D4A843' : '#6b87a3';
-  document.getElementById('l3-cert').textContent   = s.passedL3 ? '✓ Earned' : '—';
+  // L3 Certificate
+  var l3CertEl = document.getElementById('l3-cert');
+  if (l3CertEl) {
+    if (s.passedL3) {
+      var cert3 = null;
+      try { var pp3=JSON.parse(localStorage.getItem('ll_progress')||'{}'); cert3=pp3.certificate||null; } catch(e){}
+      if (cert3) {
+        l3CertEl.innerHTML = '<button onclick="window.CertEngine && CertEngine.download(JSON.parse(localStorage.getItem(\'ll_progress\')||\'{}\').certificate)" ' +
+          'style="background:#D4A843;color:#0B1F3A;border:none;padding:6px 14px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;">⬇ Download</button>';
+      } else { l3CertEl.textContent = '✓ Earned'; }
+    } else { l3CertEl.textContent = '—'; }
+  }
   if (s.accessL3) {
     document.getElementById('l3-progress-wrap').style.display = 'block';
     var l3Pct = Math.round(l3Lessons / 6 * 100);
@@ -1452,11 +1587,111 @@ function renderLevelProgressGrid(s, p) {
 
 // Wrap original init to also call initLevelDashboards
 var _origInit = typeof init === 'function' ? init : null;
-function init() {
+async function init() {
+  // Sync progress from Supabase before rendering
+  try {
+    if (window.LLAuth && LLAuth.isLoggedIn()) {
+      var _user = LLAuth.getUser();
+      if (_user && _user.email) {
+        // Load progress from Supabase
+        var _syncRes = await fetch('/.netlify/functions/supabase-progress', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ action: 'load', email: _user.email })
+        });
+        var _syncData = await _syncRes.json();
+        if (_syncData.ok && _syncData.found && _syncData.data) {
+          // Merge server data with local
+          var _local = {};
+          try { _local = JSON.parse(localStorage.getItem('ll_progress')||'{}'); } catch(e){}
+          var _server = _syncData.data;
+          // Score: take highest
+          var _merged = Object.assign({}, _local, _server);
+          for (var _k of ['lastScore','l1Score','l2Score','l3Score']) {
+            var _lv = typeof _local[_k]==='number' ? _local[_k] : -1;
+            var _sv = typeof _server[_k]==='number' ? _server[_k] : -1;
+            if (_lv>=0 || _sv>=0) _merged[_k] = Math.max(_lv, _sv);
+          }
+          // Levels: union
+          var _la = Array.isArray(_local.completedLevels)  ? _local.completedLevels  : [];
+          var _sa = Array.isArray(_server.completedLevels) ? _server.completedLevels : [];
+          _merged.completedLevels = [...new Set([..._la, ..._sa])];
+          // Payment status: true wins
+          if (_server.paid_l2) _merged.paid_l2 = true;
+          localStorage.setItem('ll_progress', JSON.stringify(_merged));
+        }
+        // Load certificate from Supabase if not in localStorage
+        var _pr = {};
+        try { _pr = JSON.parse(localStorage.getItem('ll_progress')||'{}'); } catch(e){}
+        if (!_pr.certificate && _user.email) {
+          var _cRes = await fetch('/.netlify/functions/supabase-progress', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ action: 'load', email: _user.email })
+          });
+          // Also check certificates table directly
+          try {
+            var _certRes = await fetch(
+              (localStorage.getItem('ll_supa_url')||'') + '/rest/v1/certificates?email=eq.' + encodeURIComponent(_user.email) + '&order=created_at.desc&limit=1',
+              { headers: { 'apikey': localStorage.getItem('ll_supa_anon')||'', 'Authorization': 'Bearer '+(localStorage.getItem('ll_supa_anon')||'') }}
+            );
+            var _certs = await _certRes.json();
+            if (Array.isArray(_certs) && _certs.length > 0) {
+              var _c = _certs[0];
+              _pr.certificate = {
+                candidateName:    _c.candidate_name || _user.name || '',
+                certTitle:        _c.cert_title    || '',
+                certLevel:        _c.cert_level    || '',
+                certRegion:       _c.cert_region   || 'UK',
+                certRegionLabel:  _c.cert_region_label || '',
+                certRegionSuffix: _c.cert_region_suffix || '',
+                score:            _c.score         || 0,
+                certId:           _c.cert_id       || '',
+                issueDate:        _c.issue_date    || '',
+                level:            _c.level         || 'l1',
+              };
+              _pr['l'+(_c.level||'1').replace('l','')+'Score'] = _c.score;
+              localStorage.setItem('ll_progress', JSON.stringify(_pr));
+            }
+          } catch(_ce2) {}
+        }
+      }
+    }
+  } catch(_se) {}
   if (_origInit) _origInit();
   initLevelDashboards();
 }
 </script>
 <script src="/ll-chatbot.js"></script>
 </body>
-</html>
+</html
+function downloadCertFromOb() {
+  try {
+    var p = JSON.parse(localStorage.getItem('ll_progress')||'{}');
+    var cert = p.certificate;
+    if (cert && window.CertEngine) {
+      CertEngine.download(cert);
+    } else {
+      // Build cert from available data
+      var u = {}; try { u = JSON.parse(localStorage.getItem('ll_user')||'{}'); } catch(e){}
+      var regions = {NG:'Nigeria',ZA:'South Africa',UK:'United Kingdom',AU:'Australia',US:'United States',AE:'UAE',CA:'Canada',IE:'Ireland',NZ:'New Zealand'};
+      var suffixes = {NG:'Nigeria Practice',ZA:'South Africa Practice',UK:'UK Practice',AU:'Australia Practice',US:'US Practice'};
+      var score = p.lastScore || p.l1Score || 0;
+      if (score < 70) { alert('No certificate found. Please complete and pass the L1 assessment.'); return; }
+      var built = {
+        candidateName:    u.name || 'Candidate',
+        certTitle:        'Xero Certified Practitioner — Level 1',
+        certLevel:        'L1 · Xero Cloud Accounting · LedgerLearn Pro',
+        certRegion:       u.region || 'UK',
+        certRegionLabel:  regions[u.region] || 'United Kingdom',
+        certRegionSuffix: suffixes[u.region] || 'UK Practice',
+        score:            score,
+        certId:           p.certId || ('LL-2026-' + Math.floor(1000+Math.random()*9000)),
+        issueDate:        p.issueDate || new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),
+      };
+      if (window.CertEngine) CertEngine.download(built);
+    }
+  } catch(e) { console.error('Cert download error:', e); }
+}
+
+>
