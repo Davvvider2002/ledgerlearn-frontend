@@ -424,24 +424,31 @@ function apiPost(path, body) {
 }
 
 // ── Dashboard ─────────────────────────────────────────
-function loadDashboard() {
-  // Read from localStorage for demo — in production call Netlify Blobs
-  var allUsers = getLocalUsers();
-  document.getElementById('stat-users').textContent   = allUsers.length;
-  document.getElementById('stat-certs').textContent   = allUsers.filter(function(u){ return u.hasCert; }).length;
-  document.getElementById('stat-revenue').textContent = '$' + (allUsers.filter(function(u){ return u.paid; }).length * 49);
-  document.getElementById('stat-affiliates').textContent = getLocalAffiliates().length;
+async function loadDashboard() {
+  try {
+    var profiles = await fetchSupabase('/rest/v1/profiles?select=id');
+    var certs    = await fetchSupabase('/rest/v1/certificates?select=id,score');
+    var pays     = await fetchSupabase('/rest/v1/payments?select=amount_usd');
+    var pending  = await fetchSupabase('/rest/v1/partners?select=id&status=eq.pending');
 
-  var recent = allUsers.slice(-10).reverse();
-  var html = recent.length ? '<table><thead><tr><th>Name</th><th>Email</th><th>Level</th><th>Region</th><th>Joined</th></tr></thead><tbody>' +
-    recent.map(function(u) {
-      return '<tr><td>'+esc(u.name)+'</td><td>'+esc(u.email)+'</td>'+
-             '<td><span class="badge badge-green">'+esc(u.level||'L1')+'</span></td>'+
-             '<td>'+esc(u.region||'UK')+'</td>'+
-             '<td>'+new Date(u.ts||Date.now()).toLocaleDateString()+'</td></tr>';
-    }).join('') + '</tbody></table>' :
-    '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No users yet.</div></div>';
-  document.getElementById('recent-users-table').innerHTML = html;
+    var userCount    = Array.isArray(profiles) ? profiles.length : getLocalUsers().length;
+    var certCount    = Array.isArray(certs)    ? certs.length    : 0;
+    var revenue      = Array.isArray(pays)     ? pays.reduce(function(s,p){return s+(parseFloat(p.amount_usd)||49);},0) : 0;
+    var pendCount    = Array.isArray(pending)  ? pending.length  : 0;
+
+    var uEl = document.getElementById('stat-users');
+    var cEl = document.getElementById('stat-certs');
+    var rEl = document.getElementById('stat-revenue');
+    var pEl = document.getElementById('stat-partners');
+    if (uEl) uEl.textContent = userCount;
+    if (cEl) cEl.textContent = certCount;
+    if (rEl) rEl.textContent = '$' + revenue.toFixed(0);
+    if (pEl) pEl.textContent = pendCount + ' pending';
+  } catch(e) {
+    var allUsers = getLocalUsers();
+    var uEl = document.getElementById('stat-users');
+    if (uEl) uEl.textContent = allUsers.length;
+  }
 }
 
 // ── Users ─────────────────────────────────────────────
@@ -627,38 +634,113 @@ function renderUpgradesTable(){
     '<div class="empty-state"><div class="empty-icon">⬆️</div><div class="empty-text">No upgrades yet.</div></div>';
   document.getElementById('upgrades-table').innerHTML = html;
 }
-(function loadUpgrades(){ try{ UPGRADE_LOG=JSON.parse(localStorage.getItem('ll_admin_upgrades')||'[]'); }catch(e){} renderUpgradesTable(); })();
+(async function loadUpgrades() {
+  try {
+    var data = await fetchSupabase('/rest/v1/manual_upgrades?select=*&order=created_at.desc&limit=100');
+    if (Array.isArray(data)) {
+      UPGRADE_LOG = data.map(function(u) {
+        return {
+          email:      u.email||'—',
+          level:      u.level||'—',
+          reason:     u.reason||'—',
+          note:       u.note||'—',
+          grantedBy:  u.granted_by||'admin',
+          date:       (u.created_at||'').split('T')[0],
+          id:         u.id,
+        };
+      });
+      // Cache to localStorage
+      try { localStorage.setItem('ll_admin_upgrades', JSON.stringify(UPGRADE_LOG)); } catch(e){}
+    } else {
+      try { UPGRADE_LOG = JSON.parse(localStorage.getItem('ll_admin_upgrades')||'[]'); } catch(e){}
+    }
+  } catch(e) {
+    try { UPGRADE_LOG = JSON.parse(localStorage.getItem('ll_admin_upgrades')||'[]'); } catch(e2){}
+  }
+  renderUpgradesTable();
+})();
 
 // ── Payments ──────────────────────────────────────────
-function loadPayments(){
-  // Show a placeholder table — real data would come from Netlify Blobs
-  document.getElementById('payments-table').innerHTML =
-    '<table><thead><tr><th>Email</th><th>Plan</th><th>Subscription ID</th><th>Status</th><th>Date</th></tr></thead><tbody>' +
-    '<tr><td colspan="5" style="text-align:center;color:#6b87a3;padding:2rem;font-size:0.82rem;">PayPal payment records will appear here once the verify-payment Netlify function is updated to store records in Blobs and expose a GET endpoint for admin retrieval.</td></tr>' +
-    '</tbody></table>';
+async function loadPayments() {
+  var tbody = document.getElementById('payments-table');
+  if (!tbody) return;
+  try {
+    var data = await fetchSupabase('/rest/v1/payments?select=*&order=created_at.desc&limit=100');
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<table><thead><tr><th>Email</th><th>Level</th><th>Subscription ID</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>' +
+        '<tbody><tr><td colspan="6" style="text-align:center;color:#6b87a3;padding:2rem;font-size:0.82rem;">No payments recorded yet.</td></tr></tbody></table>';
+      return;
+    }
+    tbody.innerHTML = '<table><thead><tr><th>Email</th><th>Level</th><th>Subscription ID</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>' +
+      data.map(function(p) {
+        return '<tr>' +
+          '<td>' + esc(p.email||'—') + '</td>' +
+          '<td><span style="background:#e1f7f2;color:#0F6E56;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:700;">' + esc((p.level||'').toUpperCase()) + '</span></td>' +
+          '<td style="font-size:0.75rem;color:#6b87a3;">' + esc(p.subscription_id||'—') + '</td>' +
+          '<td style="font-weight:700;color:#0F6E56;">$' + (parseFloat(p.amount_usd)||49).toFixed(2) + '</td>' +
+          '<td><span style="background:' + (p.status==='confirmed'?'#e1f7f2':'#fef9e7') + ';color:' + (p.status==='confirmed'?'#0F6E56':'#92400e') + ';padding:2px 8px;border-radius:4px;font-size:0.75rem;">' + esc(p.status||'—') + '</span></td>' +
+          '<td style="font-size:0.78rem;color:#6b87a3;">' + esc((p.created_at||'').split('T')[0]) + '</td>' +
+        '</tr>';
+      }).join('') + '</tbody></table>';
+  } catch(e) {
+    tbody.innerHTML = '<p style="color:#E74C3C;padding:1rem;">Error loading payments: ' + esc(e.message) + '</p>';
+  }
 }
 
 // ── Affiliates ────────────────────────────────────────
 var AFFILIATES = [];
 function getLocalAffiliates(){ try{ return JSON.parse(localStorage.getItem('ll_admin_affiliates')||'[]'); }catch(e){ return []; } }
-function loadAffiliates(){
-  AFFILIATES = getLocalAffiliates();
-  document.getElementById('aff-count').textContent = AFFILIATES.length;
-  var pending = AFFILIATES.reduce(function(a,af){ return a+(af.pending||0); }, 0);
-  var paid    = AFFILIATES.reduce(function(a,af){ return a+(af.paid||0); }, 0);
-  document.getElementById('aff-pending').textContent = '$'+pending;
-  document.getElementById('aff-total').textContent   = '$'+paid;
-  var html = AFFILIATES.length ? '<table><thead><tr><th>Name</th><th>Email</th><th>Commission</th><th>Referrals</th><th>Pending</th><th>Paid</th><th>Actions</th></tr></thead><tbody>' +
-    AFFILIATES.map(function(af,i){
-      return '<tr><td>'+esc(af.name)+'</td><td>'+esc(af.email)+'</td><td><span class="badge badge-blue">'+af.pct+'%</span></td>'+
-        '<td>'+( af.referrals||0)+'</td><td>$'+(af.pending||0)+'</td><td>$'+(af.paid||0)+'</td>'+
-        '<td style="display:flex;gap:0.4rem;">'+
-          '<button class="btn-sm btn-primary-sm" onclick="markPaid('+i+')">Mark paid</button>'+
-          '<button class="btn-sm btn-danger-sm" onclick="removeAffiliate('+i+')">Remove</button>'+
-        '</td></tr>';
-    }).join('')+'</tbody></table>' :
-    '<div class="empty-state"><div class="empty-icon">🤝</div><div class="empty-text">No affiliates yet. Add your first partner affiliate above.</div></div>';
-  document.getElementById('affiliates-table').innerHTML = html;
+async function loadAffiliates() {
+  try {
+    var data = await fetchSupabase('/rest/v1/affiliates?select=*&order=created_at.desc');
+    if (Array.isArray(data)) {
+      AFFILIATES = data.map(function(a) {
+        return {
+          name:       a.name||'—',
+          email:      a.email||'—',
+          code:       a.referral_code||'—',
+          commission: a.commission_pct||20,
+          referrals:  a.referrals||0,
+          total:      a.revenue_total||0,
+          pending:    a.commission_pending||0,
+          paid:       a.commission_paid||0,
+          status:     a.status||'active',
+          id:         a.id,
+        };
+      });
+    } else {
+      AFFILIATES = getLocalAffiliates();
+    }
+  } catch(e) {
+    AFFILIATES = getLocalAffiliates();
+  }
+
+  var totalPending = AFFILIATES.reduce(function(s,a){return s+(parseFloat(a.pending)||0);},0);
+  var totalPaid    = AFFILIATES.reduce(function(s,a){return s+(parseFloat(a.paid)||0);},0);
+
+  document.getElementById('aff-count').textContent   = AFFILIATES.length;
+  document.getElementById('aff-pending').textContent  = '$'+totalPending.toFixed(0);
+  document.getElementById('aff-total-paid').textContent = '$'+totalPaid.toFixed(0);
+
+  var html = AFFILIATES.length
+    ? '<table><thead><tr><th>Name</th><th>Email</th><th>Code</th><th>Commission</th><th>Referrals</th><th>Revenue</th><th>Pending</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+      AFFILIATES.map(function(af, i) {
+        return '<tr>' +
+          '<td><strong>' + esc(af.name) + '</strong></td>' +
+          '<td>' + esc(af.email) + '</td>' +
+          '<td style="font-family:monospace;font-size:0.75rem;">' + esc(af.code) + '</td>' +
+          '<td>' + af.commission + '%</td>' +
+          '<td>' + (af.referrals||0) + '</td>' +
+          '<td style="font-weight:700;">$' + parseFloat(af.total||0).toFixed(0) + '</td>' +
+          '<td style="color:#D4A843;font-weight:700;">$' + parseFloat(af.pending||0).toFixed(0) + '</td>' +
+          '<td><span style="background:' + (af.status==='active'?'#e1f7f2':'#fde8e8') + ';color:' + (af.status==='active'?'#0F6E56':'#C0392B') + ';padding:2px 8px;border-radius:4px;font-size:0.72rem;">' + esc(af.status) + '</span></td>' +
+          '<td><button onclick="markPaid(' + i + ')" style="padding:4px 10px;background:#0B1F3A;color:#fff;border:none;border-radius:4px;font-size:0.72rem;cursor:pointer;">Mark paid</button></td>' +
+        '</tr>';
+      }).join('') + '</tbody></table>'
+    : '<p style="color:#6b87a3;padding:1.5rem;text-align:center;">No affiliates yet.</p>';
+
+  var container = document.getElementById('aff-table');
+  if (container) container.innerHTML = html;
 }
 function openAffiliateModal(){ document.getElementById('aff-modal').classList.add('open'); }
 function saveAffiliate(){
@@ -670,23 +752,78 @@ function removeAffiliate(i){ if(!confirm('Remove affiliate?')) return; AFFILIATE
 
 // ── Partners ──────────────────────────────────────────
 var PARTNERS = [];
-function loadPartners(){
-  try{ PARTNERS=JSON.parse(localStorage.getItem('ll_admin_partners')||'[]'); }catch(e){}
-  var html = PARTNERS.length ? '<table><thead><tr><th>Institution</th><th>Contact</th><th>Email</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
-    PARTNERS.map(function(p,i){
-      return '<tr><td>'+esc(p.institution)+'</td><td>'+esc(p.contact)+'</td><td>'+esc(p.email)+'</td><td>'+esc(p.type||'—')+'</td>'+
-        '<td><span class="badge '+(p.status==='approved'?'badge-green':'badge-gold')+'">'+esc(p.status||'pending')+'</span></td>'+
-        '<td style="display:flex;gap:0.4rem;">'+
-          '<button class="btn-sm btn-primary-sm" onclick="approvePartner('+i+')">Approve</button>'+
-          '<button class="btn-sm btn-danger-sm" onclick="rejectPartner('+i+')">Reject</button>'+
-        '</td></tr>';
-    }).join('')+'</tbody></table>' :
-    '<div class="empty-state"><div class="empty-icon">🏫</div><div class="empty-text">No partner applications yet. Share the /partners page to receive applications.</div></div>';
-  document.getElementById('partners-table').innerHTML = html;
+async function loadPartners() {
+  try {
+    // Load from Supabase first
+    var data = await fetchSupabase('/rest/v1/partners?select=*&order=created_at.desc');
+    if (Array.isArray(data) && data.length >= 0) {
+      PARTNERS = data.map(function(p) {
+        return {
+          institution: p.institution||'—',
+          contact:     p.contact_name||'—',
+          email:       p.email||'—',
+          type:        p.org_type||'—',
+          country:     p.country||'—',
+          status:      p.status||'pending',
+          commission:  p.commission_pct||20,
+          code:        p.referral_code||'—',
+          id:          p.id,
+          message:     p.message||'',
+          created_at:  (p.created_at||'').split('T')[0],
+        };
+      });
+    } else {
+      try { PARTNERS = JSON.parse(localStorage.getItem('ll_admin_partners')||'[]'); } catch(e){}
+    }
+  } catch(e) {
+    try { PARTNERS = JSON.parse(localStorage.getItem('ll_admin_partners')||'[]'); } catch(e2){}
+  }
+
+  var pendingCount = PARTNERS.filter(function(p){return p.status==='pending';}).length;
+  var el = document.getElementById('partners-count');
+  if (el) el.textContent = PARTNERS.length;
+  var pendEl = document.getElementById('partners-pending');
+  if (pendEl) pendEl.textContent = pendingCount + ' pending';
+
+  var html = PARTNERS.length
+    ? '<table><thead><tr><th>Institution</th><th>Contact</th><th>Email</th><th>Country</th><th>Status</th><th>Commission</th><th>Joined</th><th>Actions</th></tr></thead><tbody>' +
+      PARTNERS.map(function(p, i) {
+        var statusColor = p.status==='approved'?'#e1f7f2':p.status==='rejected'?'#fde8e8':'#fef9e7';
+        var statusText  = p.status==='approved'?'#0F6E56':p.status==='rejected'?'#C0392B':'#92400e';
+        return '<tr>' +
+          '<td><strong>' + esc(p.institution) + '</strong></td>' +
+          '<td>' + esc(p.contact) + '</td>' +
+          '<td>' + esc(p.email) + '</td>' +
+          '<td>' + esc(p.country) + '</td>' +
+          '<td><span style="background:' + statusColor + ';color:' + statusText + ';padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:700;">' + esc(p.status) + '</span></td>' +
+          '<td style="font-weight:700;color:#D4A843;">' + (p.commission||20) + '%</td>' +
+          '<td style="font-size:0.75rem;color:#6b87a3;">' + esc(p.created_at) + '</td>' +
+          '<td style="display:flex;gap:4px;">' +
+            (p.status==='pending' ? '<button onclick="approvePartner(' + i + ')" style="padding:4px 10px;background:#1DA98A;color:#fff;border:none;border-radius:4px;font-size:0.72rem;cursor:pointer;">✓ Approve</button>' +
+            '<button onclick="rejectPartner(' + i + ')" style="padding:4px 10px;background:#E74C3C;color:#fff;border:none;border-radius:4px;font-size:0.72rem;cursor:pointer;">✗ Reject</button>' : '') +
+          '</td>' +
+        '</tr>';
+      }).join('') + '</tbody></table>'
+    : '<p style="color:#6b87a3;padding:1.5rem;text-align:center;">No partner applications yet.</p>';
+
+  var container = document.getElementById('partners-table');
+  if (container) container.innerHTML = html;
 }
 function openPartnerModal(){ /* TODO: open modal */ alert('Use the /partners page for new applications, or add manually via the partner modal (coming soon).'); }
-function approvePartner(i){ PARTNERS[i].status='approved'; localStorage.setItem('ll_admin_partners',JSON.stringify(PARTNERS)); loadPartners(); }
-function rejectPartner(i){ PARTNERS[i].status='rejected'; localStorage.setItem('ll_admin_partners',JSON.stringify(PARTNERS)); loadPartners(); }
+async function approvePartner(i) {
+  if (!PARTNERS[i]) return;
+  PARTNERS[i].status = 'approved';
+  if (PARTNERS[i].id) await fetchSupabase('/rest/v1/partners?id=eq.'+PARTNERS[i].id,'PATCH',{status:'approved'});
+  localStorage.setItem('ll_admin_partners',JSON.stringify(PARTNERS));
+  loadPartners(); inlineToast('Partner approved ✓','success');
+}
+async function rejectPartner(i) {
+  if (!PARTNERS[i]) return;
+  PARTNERS[i].status = 'rejected';
+  if (PARTNERS[i].id) await fetchSupabase('/rest/v1/partners?id=eq.'+PARTNERS[i].id,'PATCH',{status:'rejected'});
+  localStorage.setItem('ll_admin_partners',JSON.stringify(PARTNERS));
+  loadPartners(); inlineToast('Partner rejected','info');
+}
 
 // ── Certificates ──────────────────────────────────────
 var ALL_CERTS = [];
@@ -697,17 +834,28 @@ function loadCerts(){
   users.forEach(function(u){ if(u.cert) ALL_CERTS.push(Object.assign({},u.cert,{userName:u.name,userEmail:u.email})); });
   renderCertsTable(ALL_CERTS);
 }
-function renderCertsTable(certs){
-  var html = certs.length ? '<table><thead><tr><th>Name</th><th>Cert ID</th><th>Level</th><th>Score</th><th>Region</th><th>Date</th></tr></thead><tbody>' +
-    certs.map(function(c){
-      return '<tr><td>'+esc(c.candidateName||c.userName)+'</td><td><code style="font-size:0.75rem">'+esc(c.certId||'—')+'</code></td>'+
-        '<td><span class="badge badge-green">'+esc(c.certLevel||'L1')+'</span></td>'+
-        '<td><strong>'+esc(String(c.score||'—'))+'%</strong></td>'+
-        '<td>'+esc(c.certRegion||'UK')+'</td>'+
-        '<td>'+esc(c.issueDate||'—')+'</td></tr>';
-    }).join('')+'</tbody></table>' :
-    '<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">No certificates in admin records yet.</div></div>';
-  document.getElementById('certs-table').innerHTML = html;
+function renderCertsTable(certs) {
+  var html = certs.length
+    ? '<table><thead><tr><th>Candidate</th><th>Email</th><th>Cert ID</th><th>Title</th><th>Region</th><th>Score</th><th>Date</th><th>Verified</th></tr></thead><tbody>' +
+      certs.map(function(c) {
+        var levelColor = c.level==='l3'?'#1AB4D7':c.level==='l2'?'#D4A843':'#1DA98A';
+        return '<tr>' +
+          '<td><strong>' + esc(c.candidateName||c.userName||'—') + '</strong></td>' +
+          '<td style="font-size:0.75rem;color:#6b87a3;">' + esc(c.email||c.userEmail||'—') + '</td>' +
+          '<td><code style="font-size:0.72rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;">' + esc(c.certId||'—') + '</code></td>' +
+          '<td style="font-size:0.78rem;">' + esc(c.certTitle||c.certLevel||'Xero Certified Practitioner') + '</td>' +
+          '<td>' + esc(c.certRegion||c.certRegionLabel||'—') + '</td>' +
+          '<td style="font-weight:700;color:#1DA98A;">' + (c.score||0) + '%</td>' +
+          '<td style="font-size:0.75rem;color:#6b87a3;">' + esc(c.issueDate||c.certDate||'—') + '</td>' +
+          '<td>' + (c.verified!==false ? '<span style="color:#1DA98A;font-weight:700;">✓</span>' : '<span style="color:#E74C3C;">✗</span>') + '</td>' +
+        '</tr>';
+      }).join('') + '</tbody></table>'
+    : '<p style="text-align:center;color:#6b87a3;padding:2rem;">No certificates issued yet.</p>';
+
+  var el = document.getElementById('certs-table-body');
+  if (el) el.innerHTML = html;
+  var countEl = document.getElementById('certs-count');
+  if (countEl) countEl.textContent = certs.length;
 }
 function filterCerts(){ var q=document.getElementById('cert-search').value.toLowerCase(); renderCertsTable(ALL_CERTS.filter(function(c){ return (c.candidateName+c.certId).toLowerCase().includes(q); })); }
 
