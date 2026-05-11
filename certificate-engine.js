@@ -1,368 +1,455 @@
 /**
- * LedgerLearn Pro — Certificate Engine
- * Zero external dependencies. Browser Canvas API only.
- * Handles: PNG download, HTML/print fallback, LinkedIn share.
+ * LedgerLearn Pro — Certificate Engine v3.0
+ * ==========================================
+ * LinkedIn Learning-style certificate design.
+ * Clean white background, prominent branding,
+ * candidate name large and centered, skills pills,
+ * signature bottom-left, verification badge bottom-right.
  */
-(function () {
+
+(function() {
   'use strict';
 
+  // ── Helpers ───────────────────────────────────────────────
   function toast(msg, type) {
-    var c = {success:'#1DA98A',error:'#e05555',info:'#D4A843'};
     var el = document.createElement('div');
     el.textContent = msg;
-    el.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:99999;background:' +
-      (c[type]||c.success) + ';color:#fff;font-family:system-ui,sans-serif;font-size:14px;' +
-      'font-weight:600;padding:12px 20px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.3);' +
-      'max-width:340px;line-height:1.4;cursor:pointer;';
-    el.onclick = function(){ el.remove(); };
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);' +
+      'background:' + (type === 'error' ? '#E74C3C' : '#1DA98A') + ';color:#fff;' +
+      'padding:10px 22px;border-radius:8px;font-size:0.85rem;font-weight:600;z-index:9999;' +
+      'box-shadow:0 4px 20px rgba(0,0,0,0.2);font-family:sans-serif;';
     document.body.appendChild(el);
-    setTimeout(function(){
-      el.style.transition='opacity 0.4s'; el.style.opacity='0';
-      setTimeout(function(){ el.remove(); },400);
-    },4000);
+    setTimeout(function() { el.remove(); }, 3000);
   }
 
   function getCert() {
-    // 1. In-memory
-    if (window._lastCertData && window._lastCertData.score) return window._lastCertData;
-    // 2. localStorage
     try {
-      var keys=['ll_progress','ledgerlearn_progress'];
-      for(var i=0;i<keys.length;i++){
-        var d=JSON.parse(localStorage.getItem(keys[i])||'{}');
-        if(d.certificate && d.certificate.score){ window._lastCertData=d.certificate; return d.certificate; }
-      }
-    } catch(e){}
-    // 3. Read from visible results card on screen
-    try {
-      var se=document.getElementById('results-score');
-      if(se){
-        var score=parseInt((se.textContent||'').replace('%','').trim(),10);
-        if(score>=70){
-          var u={}; var p={};
-          try{u=JSON.parse(localStorage.getItem('ll_user')||'{}');}catch(e){}
-          try{p=JSON.parse(localStorage.getItem('ll_progress')||'{}');}catch(e){}
-          var ne=document.getElementById('nav-user-name');
-          var name=u.name||p.name||(ne?ne.textContent.trim():'')||'Candidate';
-          var cert={
-            candidateName:name,
-            certTitle:'Xero Certified Practitioner — Level 1',
-            certLevel:'L1 · Associate · Xero Cloud Accounting · LedgerLearn Pro',
-            certId:(p.certificate&&p.certificate.certId)||p.certId||('LLP-XCP1-'+new Date().getFullYear()+'-'+Math.floor(1000+Math.random()*9000)),
-            issueDate:(p.certificate&&p.certificate.issueDate)||new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),
-            score:score
-          };
-          window._lastCertData=cert;
-          console.log('[LedgerLearn] getCert: DOM score='+score+' name='+name);
-          return cert;
-        }
-      }
-    } catch(e){}
-    // 4. lastScore
-    try {
-      var p2=JSON.parse(localStorage.getItem('ll_progress')||'{}');
-      var u2=JSON.parse(localStorage.getItem('ll_user')||'{}');
-      if(p2.lastScore){
-        var cert2={
-          candidateName:u2.name||'Candidate',
-          certTitle:'Xero Certified Practitioner — Level 1',
-          certLevel:'L1 · Associate · Xero Cloud Accounting · LedgerLearn Pro',
-          certId:p2.certId||('LLP-XCP1-'+new Date().getFullYear()+'-'+Math.floor(1000+Math.random()*9000)),
-          issueDate:p2.issueDate||new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),
-          score:p2.lastScore
-        };
-        window._lastCertData=cert2; return cert2;
-      }
-    } catch(e){}
+      var p = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+      if (p.certificate) return p.certificate;
+    } catch(e) {}
+    if (window._certData) return window._certData;
     return null;
   }
 
-  function drawHex(ctx,cx,cy,r){
+  // ── Rounded rect ─────────────────────────────────────────
+  function rr(ctx, x, y, w, h, r) {
     ctx.beginPath();
-    for(var i=0;i<6;i++){var a=Math.PI/180*(90+60*i);var x=cx+r*Math.cos(a);var y=cy+r*Math.sin(a);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
-    ctx.closePath(); ctx.fill();
-  }
-
-  function rr(ctx,x,y,w,h,r){
-    ctx.beginPath();
-    ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-    ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-    ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-    ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.closePath();
   }
 
+  // ── Hex shape ─────────────────────────────────────────────
+  function drawHex(ctx, cx, cy, r, color) {
+    ctx.beginPath();
+    for (var i = 0; i < 6; i++) {
+      var angle = Math.PI / 180 * (60 * i - 30);
+      var x = cx + r * Math.cos(angle);
+      var y = cy + r * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    if (color) { ctx.fillStyle = color; ctx.fill(); }
+  }
+
+  // ── Signature-style text ──────────────────────────────────
+  function drawSignature(ctx, text, x, y, size) {
+    ctx.save();
+    ctx.font = 'italic ' + (size || 36) + 'px Georgia, "Times New Roman", serif';
+    ctx.fillStyle = '#1a1a2e';
+    // Slight tilt like a real signature
+    ctx.transform(1, -0.06, 0.08, 1, 0, 0);
+    ctx.fillText(text, x - 15, y + 8);
+    ctx.restore();
+  }
+
+  // ── Completion badge (circle with star/check) ─────────────
+  function drawBadge(ctx, cx, cy, r) {
+    // Outer ring — LedgerLearn gold
+    var grad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+    grad.addColorStop(0, '#D4A843');
+    grad.addColorStop(0.5, '#f0c860');
+    grad.addColorStop(1, '#b8892a');
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = grad; ctx.fill();
+
+    // Inner white circle
+    ctx.beginPath(); ctx.arc(cx, cy, r - 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+
+    // Inner gold ring
+    ctx.beginPath(); ctx.arc(cx, cy, r - 10, 0, Math.PI * 2);
+    ctx.strokeStyle = '#D4A843'; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Hex logo in centre
+    drawHex(ctx, cx, cy - 10, 14, '#D4A843');
+
+    // "CERTIFIED" text
+    ctx.fillStyle = '#0B1F3A';
+    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('CERTIFIED', cx, cy + 8);
+
+    // "PRACTITIONER" curved text — simplified as straight
+    ctx.font = 'bold 8px system-ui, sans-serif';
+    ctx.fillStyle = '#D4A843';
+    ctx.fillText('PRACTITIONER', cx, cy + 22);
+
+    // Outer dots
+    for (var i = 0; i < 24; i++) {
+      var angle = (i / 24) * Math.PI * 2;
+      var dx = cx + (r - 3) * Math.cos(angle);
+      var dy = cy + (r - 3) * Math.sin(angle);
+      ctx.beginPath(); ctx.arc(dx, dy, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = i % 2 === 0 ? '#D4A843' : '#f0c860';
+      ctx.fill();
+    }
+  }
+
+  // ── MAIN DRAW ─────────────────────────────────────────────
   function drawCertificate(cert) {
-    var W=1748,H=1240,cx=W/2;
-    var canvas=document.createElement('canvas');
-    canvas.width=W; canvas.height=H;
-    var ctx=canvas.getContext('2d');
+    // Canvas: A4 landscape proportions, high DPI
+    var W = 1680, H = 1188, cx = W / 2;
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext('2d');
 
-    // Background
-    ctx.fillStyle='#f8f7f4'; ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='#ffffff'; ctx.fillRect(24,24,W-48,H-48);
+    // ── Background: pure white like LinkedIn Learning ────────
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
 
-    // Top bar
-    var tg=ctx.createLinearGradient(0,0,W,0);
-    tg.addColorStop(0,'#0B1F3A'); tg.addColorStop(0.45,'#D4A843'); tg.addColorStop(1,'#1DA98A');
-    ctx.fillStyle=tg; ctx.fillRect(0,0,W,22);
+    // ── Subtle outer border ───────────────────────────────────
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, W - 2, H - 2);
 
-    // Bottom bar
-    var bg=ctx.createLinearGradient(0,0,W,0);
-    bg.addColorStop(0,'#1DA98A'); bg.addColorStop(0.6,'#D4A843'); bg.addColorStop(1,'#0B1F3A');
-    ctx.fillStyle=bg; ctx.fillRect(0,H-14,W,14);
+    // ── Top gradient stripe — LedgerLearn brand ───────────────
+    var topGrad = ctx.createLinearGradient(0, 0, W, 0);
+    topGrad.addColorStop(0, '#0B1F3A');
+    topGrad.addColorStop(0.4, '#D4A843');
+    topGrad.addColorStop(0.7, '#1DA98A');
+    topGrad.addColorStop(1, '#0B1F3A');
+    ctx.fillStyle = topGrad;
+    ctx.fillRect(0, 0, W, 12);
 
-    // Left accents
-    ctx.fillStyle='#D4A843'; ctx.fillRect(24,24,4,H-48);
-    ctx.fillStyle='#1DA98A'; ctx.fillRect(32,24,2,H-48);
+    // ── Bottom gradient stripe ────────────────────────────────
+    var botGrad = ctx.createLinearGradient(0, 0, W, 0);
+    botGrad.addColorStop(0, '#1DA98A');
+    botGrad.addColorStop(0.5, '#D4A843');
+    botGrad.addColorStop(1, '#0B1F3A');
+    ctx.fillStyle = botGrad;
+    ctx.fillRect(0, H - 12, W, 12);
 
-    // Watermark
-    ctx.save(); ctx.globalAlpha=0.025; ctx.fillStyle='#0B1F3A'; drawHex(ctx,W*0.82,H*0.48,280); ctx.restore();
+    // ── Very subtle background watermark ─────────────────────
+    ctx.save();
+    ctx.globalAlpha = 0.015;
+    drawHex(ctx, W * 0.85, H * 0.45, 320, '#0B1F3A');
+    drawHex(ctx, W * 0.12, H * 0.6, 180, '#D4A843');
+    ctx.restore();
 
-    // Logo
-    ctx.fillStyle='#D4A843'; drawHex(ctx,72,H-58,20);
-    ctx.textAlign='left'; ctx.font='bold 28px system-ui,sans-serif';
-    ctx.fillStyle='#0B1F3A';
-    var llw=ctx.measureText('LedgerLearn').width;
-    ctx.fillText('LedgerLearn',102,H-44);
-    ctx.fillStyle='#D4A843'; ctx.fillText(' Pro',102+llw,H-44);
+    // ── HEADER: LedgerLearn Pro logo centered ─────────────────
+    var logoY = 80;
+    // Hex logo icon
+    var hexR = 18;
+    drawHex(ctx, cx - 130, logoY, hexR, '#D4A843');
+    // Brand name
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 36px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = '#0B1F3A';
+    ctx.fillText('LedgerLearn', cx - 24, logoY + 12);
+    ctx.fillStyle = '#D4A843';
+    ctx.fillText(' Pro', cx + 70, logoY + 12);
 
-    // Cert ID
-    var idt='Certificate ID: '+(cert.certId||'LLP-XCP1-2026-0001');
-    ctx.font='20px system-ui,sans-serif';
-    var idw=ctx.measureText(idt).width+30;
-    ctx.fillStyle='#e8ecf0'; rr(ctx,W-idw-50,H-80,idw,36,6); ctx.fill();
-    ctx.fillStyle='#6b87a3'; ctx.fillText(idt,W-idw-35,H-57);
+    // Tagline
+    ctx.font = '18px system-ui, sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('Professional Xero Certification Platform', cx, logoY + 40);
 
-    // Certifies that
-    ctx.textAlign='center'; ctx.font='bold 22px system-ui,sans-serif';
-    ctx.fillStyle='#6b87a3'; ctx.fillText('THIS CERTIFIES THAT',cx,220);
+    // Thin divider under header
+    ctx.strokeStyle = '#f1f5f9';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(120, 140); ctx.lineTo(W - 120, 140); ctx.stroke();
 
-    // Name
-    ctx.font='bold italic 90px Georgia,serif'; ctx.fillStyle='#0B1F3A';
-    ctx.fillText(cert.candidateName||'Candidate',cx,340);
+    // ── "CERTIFICATE OF COMPLETION" label ─────────────────────
+    var labelY = 195;
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.letterSpacing = '0.1em';
+    ctx.fillText('C E R T I F I C A T E   O F   C O M P L E T I O N', cx, labelY);
 
-    // Underline
-    var nw=ctx.measureText(cert.candidateName||'Candidate').width*0.55;
-    var lg=ctx.createLinearGradient(cx-nw/2,0,cx+nw/2,0);
-    lg.addColorStop(0,'#D4A843'); lg.addColorStop(1,'#1DA98A');
-    ctx.strokeStyle=lg; ctx.lineWidth=5;
-    ctx.beginPath(); ctx.moveTo(cx-nw/2,358); ctx.lineTo(cx+nw/2,358); ctx.stroke();
-
-    // Subtitle
-    ctx.font='26px system-ui,sans-serif'; ctx.fillStyle='#6b87a3';
-    ctx.fillText('has successfully completed all requirements for',cx,410);
-
-    // Title
-    ctx.font='bold 48px system-ui,sans-serif'; ctx.fillStyle='#0B1F3A';
-    ctx.fillText(cert.certTitle||'Xero Certified Practitioner — Level 1',cx,490);
-
-    // Score badge
-    if(cert.score){
-      var sc='Score: '+cert.score+'%';
-      ctx.font='bold 22px system-ui,sans-serif';
-      var sw=ctx.measureText(sc).width+30;
-      ctx.fillStyle='#e1f7f2'; rr(ctx,cx-sw/2,508,sw,38,19); ctx.fill();
-      ctx.strokeStyle='rgba(29,169,138,0.4)'; ctx.lineWidth=1; rr(ctx,cx-sw/2,508,sw,38,19); ctx.stroke();
-      ctx.fillStyle='#1DA98A'; ctx.fillText(sc,cx,533);
+    // ── COURSE / CERT TITLE — large, like LinkedIn ────────────
+    var titleY = 310;
+    var title = cert.certTitle || 'Xero Certified Practitioner — Level 1';
+    // Measure and split if too long
+    ctx.font = 'bold 72px Georgia, "Times New Roman", serif';
+    ctx.fillStyle = '#0f172a';
+    var titleWidth = ctx.measureText(title).width;
+    if (titleWidth > W - 280) {
+      // Split at em dash
+      var parts = title.split('—');
+      if (parts.length > 1) {
+        ctx.font = 'bold 64px Georgia, serif';
+        ctx.fillText(parts[0].trim(), cx, titleY - 30);
+        ctx.fillStyle = '#D4A843';
+        ctx.font = 'bold 56px Georgia, serif';
+        ctx.fillText('— ' + parts[1].trim(), cx, titleY + 42);
+        ctx.fillStyle = '#0f172a';
+      } else {
+        ctx.font = 'bold 58px Georgia, serif';
+        ctx.fillText(title, cx, titleY);
+      }
+    } else {
+      ctx.fillText(title, cx, titleY);
     }
 
-    // Level badge
-    var lvl=cert.certLevel||'Associate · Xero Cloud Accounting · LedgerLearn Pro';
-    ctx.font='bold 20px system-ui,sans-serif';
-    var lw=ctx.measureText(lvl).width+40;
-    ctx.fillStyle='#e1f7f2'; rr(ctx,cx-lw/2,560,lw,36,18); ctx.fill();
-    ctx.strokeStyle='rgba(29,169,138,0.3)'; ctx.lineWidth=1; rr(ctx,cx-lw/2,560,lw,36,18); ctx.stroke();
-    ctx.fillStyle='#1DA98A'; ctx.fillText(lvl,cx,584);
+    // ── "Awarded to" ──────────────────────────────────────────
+    ctx.font = '22px system-ui, sans-serif';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText('Awarded to', cx, 400);
 
-    // Footer divider
-    ctx.strokeStyle='#e8ecf0'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(60,680); ctx.lineTo(W-60,680); ctx.stroke();
+    // ── CANDIDATE NAME — bold, prominent ─────────────────────
+    var nameY = 490;
+    var name = cert.candidateName || 'Candidate';
+    ctx.font = 'bold 80px Georgia, "Times New Roman", serif';
+    ctx.fillStyle = '#0f172a';
+    ctx.fillText(name, cx, nameY);
 
-    // Left sig
-    ctx.textAlign='center'; ctx.font='bold italic 28px Georgia,serif'; ctx.fillStyle='#0B1F3A';
-    ctx.fillText('David Ayomidotun',200,730);
-    ctx.font='18px system-ui,sans-serif'; ctx.fillStyle='#6b87a3';
-    ctx.fillText('Platform Director',200,756); ctx.fillText('LedgerLearn Pro',200,778);
-    ctx.strokeStyle='#e8ecf0'; ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.moveTo(80,680); ctx.lineTo(340,680); ctx.stroke();
+    // Name underline — gold gradient
+    var nw = Math.min(ctx.measureText(name).width * 0.6, 600);
+    var ulGrad = ctx.createLinearGradient(cx - nw / 2, 0, cx + nw / 2, 0);
+    ulGrad.addColorStop(0, 'rgba(212,168,67,0)');
+    ulGrad.addColorStop(0.3, '#D4A843');
+    ulGrad.addColorStop(0.7, '#1DA98A');
+    ulGrad.addColorStop(1, 'rgba(29,169,138,0)');
+    ctx.strokeStyle = ulGrad; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(cx - nw / 2, nameY + 12); ctx.lineTo(cx + nw / 2, nameY + 12); ctx.stroke();
 
-    // Right sig
-    ctx.font='bold 26px system-ui,sans-serif'; ctx.fillStyle='#0B1F3A';
-    var isd=cert.issueDate||new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-    ctx.fillText(isd,W-200,730);
-    ctx.font='18px system-ui,sans-serif'; ctx.fillStyle='#6b87a3';
-    ctx.fillText('Date of Issue',W-200,756);
-    ctx.strokeStyle='#e8ecf0'; ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.moveTo(W-340,680); ctx.lineTo(W-80,680); ctx.stroke();
+    // ── Date & Level info ─────────────────────────────────────
+    var dateStr = cert.issueDate || new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+    ctx.font = '22px system-ui, sans-serif';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText(dateStr, cx, 548);
 
-    // Seal
-    var sx=cx,sy=718,sr=56;
-    ctx.strokeStyle='#D4A843'; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.stroke();
-    ctx.setLineDash([4,6]); ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.arc(sx,sy,sr-10,0,Math.PI*2); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(sx,sy,sr-12,0,Math.PI*2); ctx.fill();
-    ctx.font='bold 14px system-ui,sans-serif'; ctx.fillStyle='#a07c2a';
-    ctx.fillText('LEDGERLEARN',sx,sy+4); ctx.fillText('VERIFIED',sx,sy+22);
-    ctx.fillStyle='#D4A843'; drawHex(ctx,sx,sy-14,9);
+    // ── Skills / level pills ──────────────────────────────────
+    var pillY = 600;
+    ctx.font = '16px system-ui, sans-serif';
+    ctx.fillStyle = '#475569';
+    ctx.fillText('Skills covered', cx, pillY);
 
-    // Verify URL
-    ctx.font='18px system-ui,sans-serif'; ctx.fillStyle='#6b87a3';
-    var dom=window.location.hostname==='localhost'?'ledgerlearn.pro':window.location.hostname;
-    ctx.fillText('Verify: '+dom+'/verify  ·  ID: '+(cert.certId||''),cx,H-32);
+    // Build pills from level
+    var levelParts = (cert.certLevel || '').split('·').map(function(s) { return s.trim(); }).filter(Boolean);
+    // Always include core skills
+    var skills = ['Xero Cloud Accounting'];
+    if (cert.certRegionLabel) skills.push(cert.certRegionLabel + ' Practice');
+    if (cert.certRegion && cert.certRegion !== 'GLOBAL') {
+      // Add tax body
+      var taxBodies = {UK:'HMRC/VAT',NG:'FIRS/VAT',ZA:'SARS/VAT',AU:'ATO/GST',NZ:'IRD/GST',IE:'Revenue/VAT',AE:'FTA/VAT',CA:'CRA/GST',US:'IRS/Tax'};
+      if (taxBodies[cert.certRegion]) skills.push(taxBodies[cert.certRegion]);
+    }
+    if ((cert.certTitle||'').includes('Level 1') || (cert.certTitle||'').includes('L1')) {
+      skills.push('Invoicing'); skills.push('Bank Reconciliation');
+    }
+    if ((cert.certTitle||'').includes('Level 2') || (cert.certTitle||'').includes('L2')) {
+      skills.push('VAT Returns'); skills.push('Financial Reporting');
+    }
+    if ((cert.certTitle||'').includes('Level 3') || (cert.certTitle||'').includes('L3')) {
+      skills.push('Advisory Reporting'); skills.push('Practice Management');
+    }
+    skills = skills.slice(0, 5); // max 5 pills
+
+    // Draw pills
+    ctx.font = 'bold 15px system-ui, sans-serif';
+    var pillWidths = skills.map(function(s) { return ctx.measureText(s).width + 32; });
+    var totalPillW = pillWidths.reduce(function(a,b){return a+b;},0) + (skills.length - 1) * 12;
+    var pillStartX = cx - totalPillW / 2;
+    var px = pillStartX;
+    for (var i = 0; i < skills.length; i++) {
+      var pw = pillWidths[i];
+      var ph = 34;
+      rr(ctx, px, pillY + 14, pw, ph, 17);
+      ctx.fillStyle = '#f1f5f9'; ctx.fill();
+      ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = '#334155';
+      ctx.textAlign = 'center';
+      ctx.fillText(skills[i], px + pw / 2, pillY + 14 + 22);
+      px += pw + 12;
+    }
+    ctx.textAlign = 'center';
+
+    // ── Horizontal divider ────────────────────────────────────
+    var divY = 680;
+    ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(100, divY); ctx.lineTo(W - 100, divY); ctx.stroke();
+
+    // ── BOTTOM ROW: Signature | Seal | Date/Info ──────────────
+    var botY = 760; // baseline for bottom section
+
+    // LEFT: Signature
+    var sigX = 240;
+    drawSignature(ctx, 'David Ayomidotun', sigX - 20, botY - 20, 40);
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sigX - 110, botY + 5); ctx.lineTo(sigX + 110, botY + 5); ctx.stroke();
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 16px system-ui, sans-serif';
+    ctx.fillStyle = '#0f172a';
+    ctx.fillText('David Ayomidotun', sigX, botY + 28);
+    ctx.font = '14px system-ui, sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('Platform Director', sigX, botY + 48);
+    ctx.fillText('LedgerLearn Pro', sigX, botY + 65);
+
+    // CENTRE: Verification badge (circular, like LinkedIn)
+    var badgeR = 58;
+    drawBadge(ctx, cx, botY + 18, badgeR);
+
+    // RIGHT: Score + Certificate ID
+    var infoX = W - 240;
+    ctx.textAlign = 'center';
+    if (cert.score) {
+      ctx.font = 'bold 44px system-ui, sans-serif';
+      ctx.fillStyle = '#1DA98A';
+      ctx.fillText(cert.score + '%', infoX, botY - 10);
+      ctx.font = '15px system-ui, sans-serif';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText('Assessment Score', infoX, botY + 12);
+    }
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(infoX - 110, botY + 22); ctx.lineTo(infoX + 110, botY + 22); ctx.stroke();
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('Certificate ID', infoX, botY + 44);
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillStyle = '#475569';
+    ctx.fillText(cert.certId || 'LL-2026-XXXX', infoX, botY + 62);
+
+    // ── Footer ────────────────────────────────────────────────
+    var footY = H - 36;
+    var dom = (typeof window !== 'undefined' && window.location) 
+      ? (window.location.hostname === 'localhost' ? 'ledgerlearn.pro' : window.location.hostname)
+      : 'ledgerlearn.pro';
+    ctx.textAlign = 'center';
+    ctx.font = '14px system-ui, sans-serif';
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillText(
+      'Verify this certificate at ' + dom + '/verify  ·  ID: ' + (cert.certId || '') + '  ·  Issued: ' + dateStr,
+      cx, footY
+    );
+
+    // ── Region badge (bottom-left corner) ─────────────────────
+    if (cert.certRegionLabel && cert.certRegion !== 'GLOBAL') {
+      var regionText = '🌍 ' + cert.certRegionLabel + ' · ' + (cert.certRegionSuffix || '');
+      ctx.font = '13px system-ui, sans-serif';
+      var rbW = ctx.measureText(regionText).width + 24;
+      rr(ctx, 60, H - 70, rbW, 28, 14);
+      ctx.fillStyle = '#f8fafc'; ctx.fill();
+      ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'left';
+      ctx.fillText(regionText, 72, H - 51);
+      ctx.textAlign = 'center';
+    }
 
     return canvas;
   }
 
+  // ── Download ──────────────────────────────────────────────
   function doDownload(cert) {
-    if(!cert){ toast('No certificate found. Complete the assessment first.','error'); return; }
-    toast('Generating certificate…','info');
-    setTimeout(function(){
-      try {
-        var canvas=drawCertificate(cert);
-        var fname='LedgerLearn_Certificate_'+(cert.candidateName||'Candidate').replace(/\s+/g,'_')+'_'+(cert.certId||'cert')+'.png';
-        canvas.toBlob(function(blob){
-          if(!blob){ openPrint(cert); return; }
-          var url=URL.createObjectURL(blob);
-          var a=document.createElement('a');
-          a.href=url; a.download=fname; a.style.display='none';
-          document.body.appendChild(a); a.click();
-          setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); },1000);
-          toast('Certificate downloaded! ✓','success');
-        },'image/png');
-      } catch(e){
-        console.error('[LedgerLearn] cert error:',e);
-        openPrint(cert);
-      }
-    },150);
+    var canvas = drawCertificate(cert);
+    var link = document.createElement('a');
+    var safeName = (cert.candidateName || 'Certificate').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/ /g, '_');
+    link.download = 'LedgerLearn_Certificate_' + safeName + '.png';
+    link.href = canvas.toDataURL('image/png', 1.0);
+    link.click();
+    toast('Certificate downloaded ✓', 'success');
   }
 
-  function openPrint(cert) {
-    if(!cert) cert=getCert();
-    if(!cert){ toast('No certificate data.','error'); return; }
-    var dom=window.location.hostname==='localhost'?'ledgerlearn.pro':window.location.hostname;
-    var isd=cert.issueDate||new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-    var h='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Certificate</title>'+
-      '<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Georgia,serif;background:#eee;padding:2rem;display:flex;flex-direction:column;align-items:center;gap:1rem;}'+
-      '.c{background:#fff;width:100%;max-width:900px;aspect-ratio:1.414/1;box-shadow:0 10px 40px rgba(0,0,0,0.2);display:flex;flex-direction:column;}'+
-      '.t{height:8px;background:linear-gradient(90deg,#0B1F3A,#D4A843 45%,#1DA98A);}'+
-      '.b{flex:1;padding:2.5rem 3rem;display:flex;flex-direction:column;align-items:center;text-align:center;}'+
-      '.lo{font-family:Arial,sans-serif;font-size:1rem;font-weight:700;color:#0B1F3A;margin-bottom:1.5rem;}'+
-      '.lo span{color:#D4A843;}'+
-      'h3{font-family:Arial,sans-serif;font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:#6b87a3;margin-bottom:.4rem;}'+
-      'h1{font-size:clamp(1.8rem,5vw,3rem);font-style:italic;color:#0B1F3A;margin-bottom:.4rem;}'+
-      '.ln{width:50px;height:2px;background:linear-gradient(90deg,#D4A843,#1DA98A);margin:.4rem auto;}'+
-      'h2{font-family:Arial,sans-serif;font-size:clamp(.9rem,2vw,1.2rem);color:#0B1F3A;margin-bottom:.4rem;}'+
-      '.pl{display:inline-block;background:#e1f7f2;border:1px solid rgba(29,169,138,.3);color:#1DA98A;font-family:Arial,sans-serif;font-size:.62rem;font-weight:700;text-transform:uppercase;padding:2px 10px;border-radius:100px;margin-bottom:.3rem;}'+
-      '.sc{display:inline-block;background:#fdf3dc;color:#9a7320;font-family:Arial,sans-serif;font-size:.62rem;font-weight:700;padding:2px 10px;border-radius:100px;margin-bottom:.75rem;}'+
-      '.ft{display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-top:auto;padding-top:.75rem;border-top:1px solid #e8ecf0;}'+
-      '.sg{text-align:center;font-family:Arial,sans-serif;}'+
-      '.sn{font-style:italic;font-family:Georgia,serif;font-size:.9rem;color:#0B1F3A;}'+
-      '.sr{font-size:.52rem;text-transform:uppercase;letter-spacing:.08em;color:#6b87a3;}'+
-      '.sl{width:55px;height:55px;border-radius:50%;border:2px solid #D4A843;display:flex;align-items:center;justify-content:center;}'+
-      '.sl span{font-family:Arial,sans-serif;font-size:.36rem;font-weight:700;text-transform:uppercase;text-align:center;color:#a07c2a;line-height:1.5;}'+
-      '.ve{font-family:Arial,sans-serif;font-size:.52rem;color:#6b87a3;margin-top:.4rem;}'+
-      '.bb{height:4px;background:linear-gradient(90deg,#1DA98A,#D4A843 60%,#0B1F3A);}'+
-      '.ac{display:flex;gap:.75rem;margin-top:1rem;}'+
-      'button{padding:11px 22px;border:none;border-radius:7px;font-size:.95rem;font-weight:700;cursor:pointer;}'+
-      '.d{background:#1DA98A;color:#fff;}.x{background:#f0f2f5;}'+
-      '@media print{body{background:#fff;padding:0;}.ac{display:none!important;}.c{box-shadow:none;max-width:100%;}}</style></head><body>'+
-      '<div class="c"><div class="t"></div><div class="b">'+
-      '<div class="lo">Ledger<span>Learn</span> Pro</div>'+
-      '<h3>This certifies that</h3>'+
-      '<h1>'+(cert.candidateName||'Candidate')+'</h1>'+
-      '<div class="ln"></div>'+
-      '<p style="font-family:Arial,sans-serif;font-size:.78rem;color:#6b87a3;margin-bottom:.4rem">has successfully completed all requirements for</p>'+
-      '<h2>'+(cert.certTitle||'Xero Certified Practitioner — Level 1')+'</h2>'+
-      '<div class="pl">'+(cert.certLevel||'Associate · Xero Cloud Accounting · LedgerLearn Pro')+'</div><br>'+
-      (cert.score?'<div class="sc">Score: '+cert.score+'% — Passed ✓</div>':'')+
-      '<div class="ft">'+
-      '<div class="sg"><div class="sn">David Ayomidotun</div><div class="sr">Platform Director · LedgerLearn Pro</div></div>'+
-      '<div class="sl"><span>LEDGER\nLEARN\nVERIFIED</span></div>'+
-      '<div class="sg"><div class="sn" style="font-style:normal;font-size:.82rem">'+isd+'</div><div class="sr">Date of Issue</div></div>'+
-      '</div>'+
-      '<div class="ve">Certificate ID: '+(cert.certId||'—')+' · Verify: '+dom+'/verify</div>'+
-      '</div><div class="bb"></div></div>'+
-      '<div class="ac"><button class="d" onclick="window.print()">🖨️ Save as PDF</button><button class="x" onclick="window.close()">Close</button></div>'+
-      '</body></html>';
-    var blob=new Blob([h],{type:'text/html'});
-    var url=URL.createObjectURL(blob);
-    var win=window.open(url,'_blank');
-    if(!win){var a=document.createElement('a');a.href=url;a.download='LedgerLearn_Certificate.html';a.click();}
-    toast('Certificate opened — Print → Save as PDF','success');
-  }
-
+  // ── Share LinkedIn ─────────────────────────────────────────
   function doShare(cert) {
-    if(!cert){ toast('No certificate found.','error'); return; }
-    var dom=window.location.hostname==='localhost'?'ledgerlearn.pro':window.location.hostname;
-    var vurl='https://'+dom+'/verify';
-    var txt=[
-      '\uD83C\uDFC6 Just earned my '+(cert.certTitle||'Xero Certified Practitioner L1')+' from LedgerLearn Pro!',
-      '',
-      '\u2705 Score: '+(cert.score||'')+'%',
-      '\uD83D\uDD0D Certificate ID: '+(cert.certId||''),
-      '\uD83D\uDD17 Verify: '+vurl,
-      '',
-      '#Xero #Accounting #Bookkeeping #CertifiedPractitioner #LedgerLearn'
-    ].join('\n');
-    var liUrl='https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(vurl)+'&summary='+encodeURIComponent(txt);
-    var popup=window.open(liUrl,'li_share','width=600,height=620,scrollbars=yes');
-    if(!popup||popup.closed){
-      var a=document.createElement('a');a.href=liUrl;a.target='_blank';a.rel='noopener noreferrer';
-      document.body.appendChild(a);a.click();a.remove();
+    var title  = cert.certTitle  || 'Xero Certified Practitioner — Level 1';
+    var score  = cert.score ? ' Score: ' + cert.score + '%.' : '';
+    var region = cert.certRegionLabel ? ' ' + cert.certRegionLabel + ' practice.' : '';
+    var certId = cert.certId || '';
+    var dom    = window.location.hostname === 'localhost' ? 'ledgerlearn.pro' : window.location.hostname;
+
+    var text =
+      '🏆 I just earned my ' + title + ' from LedgerLearn Pro!' +
+      score + region + '\n\n' +
+      'LedgerLearn Pro is the go-to platform for bookkeepers certifying their Xero skills ' +
+      '(also covering QuickBooks and Sage). L1 is free to start!\n\n' +
+      '🔗 Verify my certificate: https://' + dom + '/verify?id=' + certId + '\n' +
+      '📚 Start yours: https://' + dom + '\n\n' +
+      '#Xero #CloudAccounting #Bookkeeping #CertifiedPractitioner #LedgerLearn ' +
+      '#ProfessionalDevelopment #Accounting #XeroCertified';
+
+    var url = 'https://www.linkedin.com/sharing/share-offsite/?url=' +
+      encodeURIComponent('https://' + dom + '/verify?id=' + certId) +
+      '&text=' + encodeURIComponent(text);
+
+    window.open(url, '_blank', 'width=600,height=500');
+    toast('Opening LinkedIn…', 'success');
+  }
+
+  // ── Wire up buttons ───────────────────────────────────────
+  function wireButtons(cert) {
+    var dlBtn = document.getElementById('btn-download-cert');
+    var shBtn = document.getElementById('btn-share-linkedin');
+    if (!cert) {
+      if (dlBtn) dlBtn.style.display = 'none';
+      if (shBtn) shBtn.style.display = 'none';
+      return;
     }
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(txt).then(function(){toast('LinkedIn opened + post copied! ✓','success');}).catch(function(){toast('LinkedIn opened! ✓','success');});
-    } else { toast('LinkedIn opened! ✓','success'); }
+    if (dlBtn) {
+      dlBtn.style.display = '';
+      dlBtn.onclick = function() { doDownload(cert); };
+    }
+    if (shBtn) {
+      shBtn.style.display = '';
+      shBtn.onclick = function() { doShare(cert); };
+    }
+  }
+
+  // ── Preview in results card ───────────────────────────────
+  function showPreview(cert) {
+    var previewEl = document.getElementById('cert-preview-container');
+    if (!previewEl) return;
+    var canvas = drawCertificate(cert);
+    canvas.style.cssText = 'max-width:100%;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.15);';
+    previewEl.innerHTML = '';
+    previewEl.appendChild(canvas);
+  }
+
+  // ── Watch for results / init ──────────────────────────────
+  function init() {
+    var cert = getCert();
+    wireButtons(cert);
+    if (cert) showPreview(cert);
+
+    // Re-run when results appear
+    var observer = new MutationObserver(function() {
+      var c = getCert();
+      if (c) { wireButtons(c); showPreview(c); }
+    });
+    var target = document.getElementById('results-card') || document.body;
+    observer.observe(target, { childList: true, subtree: true, attributes: true });
   }
 
   // Public API
-  window.LedgerLearnCert = {
-    download:         function(){ doDownload(getCert()); },
-    downloadWithData: function(c){ doDownload(c||getCert()); },
-    share:            function(){ doShare(getCert()); },
-    shareWithData:    function(c){ doShare(c||getCert()); },
-    print:            function(){ openPrint(getCert()); },
-    getCert:          getCert
+  window.CertEngine = {
+    draw:     drawCertificate,
+    download: doDownload,
+    share:    doShare,
   };
-  window.downloadCert  = function(){ doDownload(getCert()); };
-  window.shareLinkedIn = function(){ doShare(getCert()); };
 
-  // Wire buttons
-  function wireButtons(){
-    document.querySelectorAll('button,a').forEach(function(el){
-      var t=(el.textContent||'').toLowerCase().trim();
-      var oc=(el.getAttribute('onclick')||'').toLowerCase();
-      if((t.includes('download')&&t.includes('cert'))||oc.includes('downloadcert')){
-        el.onclick=function(e){e.preventDefault();doDownload(getCert());};
-      }
-      if(t.includes('linkedin')||oc.includes('sharelinkedin')){
-        el.onclick=function(e){e.preventDefault();doShare(getCert());};
-      }
-    });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
-
-  // Watch results-card for visibility change
-  function watchResults(){
-    var card=document.getElementById('results-card');
-    if(!card) return;
-    new MutationObserver(function(){
-      if(card.style.display!=='none'){
-        setTimeout(function(){ getCert(); wireButtons(); },200);
-      }
-    }).observe(card,{attributes:true,attributeFilter:['style']});
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',function(){ wireButtons(); watchResults(); });
-  } else { wireButtons(); watchResults(); }
-
-  new MutationObserver(function(muts){
-    muts.forEach(function(m){ if(m.addedNodes.length) wireButtons(); });
-  }).observe(document.body,{childList:true,subtree:true});
-
-  console.log('[LedgerLearn] certificate-engine.js loaded ✓ — Canvas API ready');
-
-}());
+})();
