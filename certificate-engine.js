@@ -1,3 +1,4 @@
+// LedgerLearn certificate-engine.js v3.1 — MutationObserver fix
 /**
  * LedgerLearn Pro — Certificate Engine v3.0
  * ==========================================
@@ -398,31 +399,35 @@
 
   // ── Wire up buttons ───────────────────────────────────────
   function wireButtons(cert) {
-    var dlBtn = document.getElementById('btn-download-cert');
-    var shBtn = document.getElementById('btn-share-linkedin');
-    if (!cert) {
-      if (dlBtn) dlBtn.style.display = 'none';
-      if (shBtn) shBtn.style.display = 'none';
-      return;
-    }
-    if (dlBtn) {
-      dlBtn.style.display = '';
-      dlBtn.onclick = function() { doDownload(cert); };
-    }
-    if (shBtn) {
-      shBtn.style.display = '';
-      shBtn.onclick = function() { doShare(cert); };
-    }
+    try {
+      var dlBtn = document.getElementById('btn-download-cert');
+      var shBtn = document.getElementById('btn-share-linkedin');
+      if (!cert) {
+        if (dlBtn) dlBtn.style.display = 'none';
+        if (shBtn) shBtn.style.display = 'none';
+        return;
+      }
+      if (dlBtn) {
+        dlBtn.style.display = '';
+        dlBtn.onclick = function() { doDownload(cert); };
+      }
+      if (shBtn) {
+        shBtn.style.display = '';
+        shBtn.onclick = function() { doShare(cert); };
+      }
+    } catch(e) { console.warn('[CertEngine] wireButtons error:', e); }
   }
 
   // ── Preview in results card ───────────────────────────────
   function showPreview(cert) {
-    var previewEl = document.getElementById('cert-preview-container');
-    if (!previewEl) return;
-    var canvas = drawCertificate(cert);
-    canvas.style.cssText = 'max-width:100%;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.15);';
-    previewEl.innerHTML = '';
-    previewEl.appendChild(canvas);
+    try {
+      var previewEl = document.getElementById('cert-preview-container');
+      if (!previewEl || !cert) return;
+      var canvas = drawCertificate(cert);
+      canvas.style.cssText = 'max-width:100%;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.15);';
+      previewEl.innerHTML = '';
+      previewEl.appendChild(canvas);
+    } catch(e) { console.warn('[CertEngine] preview error:', e); }
   }
 
   // ── Watch for results / init ──────────────────────────────
@@ -432,12 +437,15 @@
     if (cert) showPreview(cert);
 
     // Re-run when results appear
-    var observer = new MutationObserver(function() {
-      var c = getCert();
-      if (c) { wireButtons(c); showPreview(c); }
-    });
-    var target = document.getElementById('results-card') || document.body;
-    observer.observe(target, { childList: true, subtree: true, attributes: true });
+    // Only observe if results-card exists (test page only)
+    var target = document.getElementById('results-card');
+    if (target) {
+      var observer = new MutationObserver(function() {
+        var c = getCert();
+        if (c) { wireButtons(c); showPreview(c); }
+      });
+      observer.observe(target, { childList: true, subtree: true, attributes: true });
+    }
   }
 
   // Public API
@@ -448,8 +456,10 @@
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', function() {
+      try { init(); } catch(e) { console.warn('[CertEngine] init error:', e); }
+    });
   } else {
-    init();
+    try { init(); } catch(e) { console.warn('[CertEngine] init error:', e); }
   }
 })();
