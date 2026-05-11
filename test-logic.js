@@ -1,0 +1,1166 @@
+// ============================================================
+// LedgerLearn Pro — test-logic.js
+// Extracted from test.html to prevent HTML parser interference.
+// BUILD: ac3f46c3
+// This file contains ALL JavaScript for the assessment page.
+// ============================================================
+
+// Auth guard — redirects to /login if not signed in
+document.addEventListener('DOMContentLoaded', async function() {
+  var user = await window.LLAuth.require();
+  if (!user) return; // LLAuth.require() handles redirect
+  // User is authenticated — update nav
+  var nameEl = document.getElementById('nav-user-name');
+  var avatarEl = document.getElementById('nav-avatar');
+  if (nameEl) nameEl.textContent = (user.name || user.email || '').split(' ')[0];
+  if (avatarEl) avatarEl.textContent = (user.name || user.email || '?').charAt(0).toUpperCase();
+});
+
+// Standalone toast — no LL dependency
+// ── VERSION CHECK ────────────────────────────────────────
+(function(){
+  var r = 'UK';
+  try { r = JSON.parse(localStorage.getItem('ll_user')||'{}').region || 'UK'; } catch(e){}
+  console.log('%c[LedgerLearn v3.0] Region-aware build loaded. Your region: ' + r,
+    'background:#D4A843;color:#0B1F3A;font-weight:bold;padding:4px 10px;border-radius:4px;');
+  console.log('[LedgerLearn] To change region: localStorage.setItem("ll_user", JSON.stringify({...JSON.parse(localStorage.getItem("ll_user")||"{}"), region:"NG"}))');
+})();
+
+// ── Security: sanitize strings before DOM insertion ──────
+
+// ── Region configuration ─────────────────────────────────
+const REGIONS = {
+  UK:     { label:'United Kingdom',  flag:'🇬🇧', currency:'GBP (£)',     tax:'VAT',     taxRate:'20%',       taxBody:'HMRC',    filing:'MTD',            payroll:'PAYE',        certSuffix:'UK Practice'            },
+  ZA:     { label:'South Africa',    flag:'🇿🇦', currency:'ZAR (R)',     tax:'VAT',     taxRate:'15%',       taxBody:'SARS',    filing:'eFiling',        payroll:'PAYE',        certSuffix:'South Africa Practice'  },
+  NG:     { label:'Nigeria',         flag:'🇳🇬', currency:'NGN (₦)',     tax:'VAT',     taxRate:'7.5%',      taxBody:'FIRS',    filing:'TaxPro Max',     payroll:'PAYE',        certSuffix:'Nigeria Practice'       },
+  US:     { label:'United States',   flag:'🇺🇸', currency:'USD ($)',     tax:'Sales Tax',taxRate:'varies',   taxBody:'IRS',     filing:'e-File',         payroll:'Payroll Tax', certSuffix:'US Practice'            },
+  AU:     { label:'Australia',       flag:'🇦🇺', currency:'AUD ($)',     tax:'GST',     taxRate:'10%',       taxBody:'ATO',     filing:'STP',            payroll:'PAYG',        certSuffix:'Australia Practice'     },
+  NZ:     { label:'New Zealand',     flag:'🇳🇿', currency:'NZD ($)',     tax:'GST',     taxRate:'15%',       taxBody:'IRD',     filing:'myIR',           payroll:'PAYE',        certSuffix:'New Zealand Practice'   },
+  IE:     { label:'Ireland',         flag:'🇮🇪', currency:'EUR (€)',     tax:'VAT',     taxRate:'23%',       taxBody:'Revenue', filing:'ROS',            payroll:'PAYE',        certSuffix:'Ireland Practice'       },
+  AE:     { label:'UAE',             flag:'🇦🇪', currency:'AED',        tax:'VAT',     taxRate:'5%',        taxBody:'FTA',     filing:'EmaraTax',       payroll:'WPS',         certSuffix:'UAE Practice'           },
+  CA:     { label:'Canada',          flag:'🇨🇦', currency:'CAD ($)',     tax:'GST/HST', taxRate:'5-15%',     taxBody:'CRA',     filing:'NETFILE',        payroll:'CPP/EI',      certSuffix:'Canada Practice'        },
+  GLOBAL: { label:'Global / Other',  flag:'🌍',  currency:'Multi',       tax:'Tax',     taxRate:'varies',    taxBody:'Tax Authority', filing:'Local', payroll:'Payroll',   certSuffix:'International Practice' },
+};
+
+function getRegion() {
+  try { return JSON.parse(localStorage.getItem('ll_user')||'{}').region || 'UK'; } catch(e) { return 'UK'; }
+}
+function saveRegion(code) {
+  try {
+    var u = JSON.parse(localStorage.getItem('ll_user')||'{}');
+    u.region = code;
+    localStorage.setItem('ll_user', JSON.stringify(u));
+  } catch(e) {}
+}
+function getRegionConfig() {
+  return REGIONS[getRegion()] || REGIONS['UK'];
+}
+
+function sanitizeStr(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+function inlineToast(msg, type) {
+  const c = {success:'#1DA98A', error:'#e05555', info:'#D4A843'};
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:'+(c[type]||c.success)+';color:#fff;font-family:DM Sans,sans-serif;font-size:0.875rem;font-weight:600;padding:12px 20px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.25);max-width:320px;';
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity 0.3s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},3500);
+}
+
+const TEST_CONFIG = {
+  l1: { title:'Xero Associate', questions:20, minutes:40, pass:70,  level:'L1 · Xero Associate'  },
+  l2: { title:'Xero Professional', questions:25, minutes:50, pass:70, level:'L2 · Xero Professional' },
+  l3: { title:'Xero Advisor',      questions:30, minutes:60, pass:75, level:'L3 · Xero Advisor'      },
+};
+
+const TOPICS_POOL = ['Invoicing','Bank Reconciliation','Chart of Accounts','Financial Reports','VAT','Contacts','Organisation Setup','Payroll Basics'];
+
+let test = {
+  level:'l1', questions:[], answers:{},
+  current:0, timer:null, secondsLeft:0,
+  started:false, finished:false,
+};
+
+// ── Select level ──────────────────────────────────────────
+function selectLevel(level) {
+  var progress = {};
+  try { progress = JSON.parse(localStorage.getItem('ll_progress')||'{}'); } catch(e) {}
+  var completed = progress.completedLevels || [];
+  var isAdmin   = progress.adminMode === true || sessionStorage.getItem('ll_admin_token');
+  var paidL2    = progress.paid_l2 === true;
+
+  if (level === 'l2' && !completed.includes('l1') && !isAdmin) return;
+  if (level === 'l3' && !(completed.includes('l2') || progress.l2Score != null) && !isAdmin) return;
+
+  // For L2 and L3: show the level dashboard view instead of just changing button
+  if (level === 'l2' || level === 'l3') {
+    showLevelDashboard(level, progress, isAdmin, paidL2);
+    return;
+  }
+
+  // L1: original behaviour — select and show start button
+  test.level = level;
+  document.querySelectorAll('.level-option').forEach(function(el){ el.classList.remove('selected-level'); });
+  document.getElementById('level-'+level).classList.add('selected-level');
+  var cfg = TEST_CONFIG[level];
+  document.getElementById('btn-start-test').textContent = 'Start ' + cfg.level + ' assessment →';
+  // Hide level dashboard if shown
+  var ld = document.getElementById('ll-level-dashboard');
+  if (ld) ld.remove();
+}
+
+// ── Level dashboard overlay (shown when clicking L2/L3) ──
+function showLevelDashboard(level, progress, isAdmin, paidL2) {
+  // Remove existing
+  var existing = document.getElementById('ll-level-dashboard');
+  if (existing) existing.remove();
+
+  var overlay = document.createElement('div');
+  overlay.id = 'll-level-dashboard';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(5,14,28,0.95);display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;';
+
+  var isL2      = level === 'l2';
+  var levelName = isL2 ? 'Xero Professional' : 'Xero Advisor';
+  var levelNum  = isL2 ? 'L2' : 'L3';
+  var completed = progress.completedLevels || [];
+  var passedL2  = completed.includes('l2') || progress.l2Score != null;
+  var passedL3  = completed.includes('l3') || progress.l3Score != null;
+  var isPassed  = isL2 ? passedL2 : passedL3;
+  var isUnlocked = isL2 ? (paidL2 || isAdmin) : (passedL2 || isAdmin);
+
+  // Score display
+  var scoreText = isL2
+    ? (progress.l2Score != null ? progress.l2Score + '%' : '—')
+    : (progress.l3Score != null ? progress.l3Score + '%' : '—');
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#0B1F3A;border:1px solid rgba(212,168,67,0.25);border-radius:18px;padding:2rem;max-width:680px;width:100%;';
+
+  // Header
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;';
+  var titleWrap = document.createElement('div');
+  var eyebrow = document.createElement('div');
+  eyebrow.textContent = levelNum + ' Certification Track';
+  eyebrow.style.cssText = 'font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:#D4A843;font-weight:700;margin-bottom:0.4rem;';
+  var title = document.createElement('h2');
+  title.textContent = levelName;
+  title.style.cssText = 'font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:0.25rem;';
+  var meta = document.createElement('div');
+  meta.textContent = isL2 ? '25 questions · 50 minutes · 70% to pass' : '30 questions · 60 minutes · 75% to pass';
+  meta.style.cssText = 'font-size:0.82rem;color:rgba(255,255,255,0.45);';
+  titleWrap.appendChild(eyebrow); titleWrap.appendChild(title); titleWrap.appendChild(meta);
+  var closeBtn = document.createElement('button');
+  closeBtn.textContent = '✕';
+  closeBtn.style.cssText = 'background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);width:36px;height:36px;border-radius:8px;font-size:1rem;cursor:pointer;flex-shrink:0;';
+  closeBtn.addEventListener('click', function(){ overlay.remove(); });
+  hdr.appendChild(titleWrap); hdr.appendChild(closeBtn);
+
+  // 3-col stats
+  var stats = document.createElement('div');
+  stats.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;';
+
+  function statCard(label, value, color) {
+    var s = document.createElement('div');
+    s.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1rem;text-align:center;';
+    var v = document.createElement('div');
+    v.textContent = value;
+    v.style.cssText = 'font-size:1.5rem;font-weight:800;color:' + color + ';line-height:1;margin-bottom:4px;';
+    var l = document.createElement('div');
+    l.textContent = label;
+    l.style.cssText = 'font-size:0.7rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;';
+    s.appendChild(v); s.appendChild(l);
+    return s;
+  }
+  stats.appendChild(statCard('Status', isPassed ? 'Passed' : isUnlocked ? 'Unlocked' : 'Locked', isPassed ? '#1DA98A' : isUnlocked ? '#D4A843' : 'rgba(255,255,255,0.3)'));
+  stats.appendChild(statCard('Best Score', scoreText, '#D4A843'));
+  stats.appendChild(statCard('Price', isL2 ? (isUnlocked ? 'Paid ✓' : '$49') : 'Free', isL2 && !isUnlocked ? '#D4A843' : '#1DA98A'));
+
+  // 3-tab actions: Learn · Practice · Assessment
+  var tabs = document.createElement('div');
+  tabs.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:1.5rem;';
+
+  function tabCard(icon, heading, desc, href, enabled, btnText) {
+    var card = document.createElement('div');
+    card.style.cssText = 'background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.25rem;display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem;' + (enabled ? '' : 'opacity:0.45;');
+    var ic = document.createElement('div'); ic.textContent = icon; ic.style.fontSize = '1.5rem';
+    var hd = document.createElement('div'); hd.textContent = heading;
+    hd.style.cssText = 'font-size:0.9rem;font-weight:700;color:#fff;';
+    var ds = document.createElement('div'); ds.textContent = desc;
+    ds.style.cssText = 'font-size:0.75rem;color:rgba(255,255,255,0.45);line-height:1.5;flex:1;';
+    var btn = document.createElement('a');
+    btn.textContent = btnText;
+    btn.href = enabled ? href : '#';
+    btn.style.cssText = 'display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;padding:8px 14px;border-radius:7px;text-decoration:none;margin-top:0.25rem;' +
+      (enabled ? 'background:#D4A843;color:#0B1F3A;' : 'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);pointer-events:none;');
+    card.appendChild(ic); card.appendChild(hd); card.appendChild(ds); card.appendChild(btn);
+    return card;
+  }
+
+  var learnHref = isL2 ? '/learn-l2' : '/learn-l3';
+  tabs.appendChild(tabCard('📚', 'Learn', '6 structured lessons covering all ' + levelNum + ' topics with guided walkthroughs', learnHref, isUnlocked, isUnlocked ? 'Go to lessons →' : 'Locked'));
+  tabs.appendChild(tabCard('🖥️', 'Practice', 'AI-powered practice questions and live software simulations', learnHref + '#practice', isUnlocked, isUnlocked ? 'Practice now →' : 'Locked'));
+  // Assessment tab - uses button not link to avoid page navigation
+  var assessTabCard = tabCard('🎯', 'Assessment', 'Timed ' + (isL2?'25':'30') + '-question assessment. Pass to earn your certificate', '#', isUnlocked, isUnlocked ? 'Start assessment →' : 'Locked');
+  if (isUnlocked) {
+    var assessTabBtn = assessTabCard.querySelector('a');
+    if (assessTabBtn) {
+      assessTabBtn.href = '#';
+      assessTabBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        overlay.remove();
+        test.level = level;
+        document.querySelectorAll('.level-option').forEach(function(el){ el.classList.remove('selected-level'); });
+        var el = document.getElementById('level-'+level);
+        if (el) el.classList.add('selected-level');
+        var cfg = TEST_CONFIG[level];
+        var sb = document.getElementById('btn-start-test');
+        if (sb) { sb.textContent = 'Start ' + cfg.level + ' assessment →'; sb.scrollIntoView({behavior:'smooth',block:'center'}); }
+      });
+    }
+  }
+  tabs.appendChild(assessTabCard);
+
+  // CTA based on state
+  var cta = document.createElement('div');
+  cta.style.cssText = 'display:flex;gap:0.75rem;flex-wrap:wrap;';
+
+  if (!isUnlocked && isL2) {
+    // PayPal unlock button
+    var payBtn = document.createElement('button');
+    payBtn.textContent = 'Unlock ' + levelNum + ' for $49 →';
+    payBtn.style.cssText = 'flex:1;padding:14px;background:#D4A843;color:#0B1F3A;border:none;border-radius:9px;font-size:1rem;font-weight:700;cursor:pointer;';
+    payBtn.addEventListener('click', function() { overlay.remove(); showPaywall(level, levelName, '$49'); });
+    cta.appendChild(payBtn);
+  } else if (isUnlocked) {
+    var startBtn = document.createElement('a');
+    startBtn.href = learnHref;
+    startBtn.textContent = isPassed ? 'Review ' + levelNum + ' lessons →' : 'Start ' + levelNum + ' lessons →';
+    startBtn.style.cssText = 'flex:1;padding:14px;background:#D4A843;color:#0B1F3A;border:none;border-radius:9px;font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;';
+    cta.appendChild(startBtn);
+
+    var assessBtn = document.createElement('button');
+    assessBtn.textContent = 'Sit ' + levelNum + ' assessment';
+    assessBtn.style.cssText = 'padding:14px 20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);border-radius:9px;font-size:1rem;font-weight:600;cursor:pointer;';
+    assessBtn.addEventListener('click', function() {
+      overlay.remove();
+      test.level = level;
+      document.querySelectorAll('.level-option').forEach(function(el){ el.classList.remove('selected-level'); });
+      var el = document.getElementById('level-'+level);
+      if (el) el.classList.add('selected-level');
+      // Directly start the assessment — no extra click needed
+      startTest();
+    });
+    cta.appendChild(assessBtn);
+  }
+
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Back';
+  cancelBtn.style.cssText = 'padding:14px 20px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.45);border-radius:9px;font-size:1rem;cursor:pointer;';
+  cancelBtn.addEventListener('click', function(){ overlay.remove(); });
+  cta.appendChild(cancelBtn);
+
+  box.appendChild(hdr); box.appendChild(stats); box.appendChild(tabs); box.appendChild(cta);
+  overlay.appendChild(box);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+// ── Start test ────────────────────────────────────────────
+async function startTest() {
+  // Update region indicator
+  try {
+    var _rconf = getRegionConfig();
+    var _ri = document.getElementById('test-region-indicator');
+    if (_ri) _ri.textContent = (_rconf.flag||'🌍') + ' ' + _rconf.label + ' · ' + _rconf.tax + ' ' + _rconf.taxRate;
+  } catch(e) {}
+  var _saved = {};
+  try { _saved = JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) {}
+  var _name = await captureNameBeforeTest(_saved.name || '');
+  if (!_name) return;
+  try { // Preserve ALL existing ll_user fields (especially region)
+    var _existing = {};
+    try { _existing = JSON.parse(localStorage.getItem('ll_user')||'{}'); } catch(e) {}
+    _existing.name  = _name;
+    _existing.email = _existing.email || '';
+    _existing.ts    = Date.now();
+    // region is preserved - do NOT overwrite it
+    localStorage.setItem('ll_user', JSON.stringify(_existing)); } catch(e) {}
+  const cfg = TEST_CONFIG[test.level];
+  test.questions = [];
+  test.answers   = {};
+  test.current   = 0;
+  test.secondsLeft = cfg.minutes * 60;
+
+  document.getElementById('level-selector').style.display  = 'none';
+  document.getElementById('test-interface').style.display  = 'block';
+  document.getElementById('test-title').textContent        = `${cfg.title} — Certification Test`;
+  document.getElementById('test-timer').textContent        = formatTime(test.secondsLeft);
+
+  // Init answer dots
+  const dots = document.getElementById('answer-dots');
+  dots.innerHTML = Array.from({length: cfg.questions}, (_, i) =>
+    `<div class="answer-dot" id="dot-${i}"></div>`).join('');
+
+  // Start timer
+  test.timer = setInterval(tickTimer, 1000);
+
+  // Pre-load first question immediately from fallback, then fetch AI questions
+  test.questions = Array.from({length: cfg.questions}, (_, i) =>
+    LLAPI.getFallbackQuestion(i));
+
+  renderTestQuestion(0);
+  updateTestProgress();
+
+  // Fetch AI questions in background and replace as they arrive
+  fetchTestQuestions(cfg);
+}
+
+async function fetchTestQuestions(cfg) {
+  const topicCycle = [...TOPICS_POOL, ...TOPICS_POOL, ...TOPICS_POOL];
+
+  for (let i = 0; i < cfg.questions; i++) {
+    if (test.finished) break;
+    const topic = topicCycle[i % topicCycle.length];
+    var _rc = getRegionConfig();
+    var _rcode = getRegion();
+    console.log('[LedgerLearn] Question ' + i + ': fetching with region=' + _rcode + ' (' + _rc.label + '), tax=' + _rc.tax + ' ' + _rc.taxRate + ', taxBody=' + _rc.taxBody);
+    // Direct fetch bypasses ll-api.js cache — always sends correct region
+    var q;
+    try {
+      var _resp = await fetch('/.netlify/functions/ai', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          action: 'scenario',
+          track: 'Xero',
+          module: topic,
+          difficulty: test.level === 'l1' ? 'intermediate' : 'advanced',
+          region: _rcode,
+          regionLabel: _rc.label,
+          tax: _rc.tax,
+          taxRate: _rc.taxRate,
+          taxBody: _rc.taxBody,
+        })
+      });
+      q = await _resp.json();
+    } catch(e) {
+      q = { error: true };
+    }
+
+    if (!q.error && q.question && q.options) {
+      test.questions[i] = q;
+      // Re-render current if we just fetched it
+      if (i === test.current) renderTestQuestion(i);
+    }
+  }
+}
+
+// ── Render test question ──────────────────────────────────
+function renderTestQuestion(index) {
+  const q      = test.questions[index];
+  const cfg    = TEST_CONFIG[test.level];
+  const letters = ['A','B','C','D'];
+
+  document.getElementById('test-q-num').textContent      = `Question ${index + 1} of ${cfg.questions}`;
+  document.getElementById('test-progress-label').textContent = `Question ${index + 1} of ${cfg.questions}`;
+  document.getElementById('dot-'+index)?.classList.add('current');
+
+  if (!q) {
+    document.getElementById('test-q-body').innerHTML = `
+      <div class="test-loading">
+        <div class="test-loading-spinner"></div>
+        <div style="font-size:0.8rem;color:var(--text-muted)">Loading question ${index+1}…</div>
+      </div>`;
+    return;
+  }
+
+  const selectedIndex = test.answers[index];
+
+  const optionsHTML = (q.options||[]).map((opt, i) => `
+    <button class="test-option ${selectedIndex===i?'selected':''}"
+            onclick="selectTestAnswer(${index}, ${i})" id="topt-${index}-${i}">
+      <div class="test-opt-letter">${letters[i]}</div>
+      <div class="test-opt-text">${opt}</div>
+    </button>`).join('');
+
+  document.getElementById('test-q-body').innerHTML = `
+    ${q.context ? `<div class="test-context">${q.context}</div>` : ''}
+    <div class="test-q-text">${q.question}</div>
+    <div class="test-options">${optionsHTML}</div>
+    <div class="test-nav">
+      <button class="btn btn-ghost-dark btn-sm" onclick="prevTestQ()" ${index===0?'disabled':''}>← Previous</button>
+      <div style="display:flex;gap:0.75rem;">
+        ${index < TEST_CONFIG[test.level].questions - 1
+          ? `<button class="btn btn-teal btn-sm" onclick="nextTestQ()">Next →</button>`
+          : `<button class="btn btn-gold btn-sm" onclick="finishTest()">Submit assessment →</button>`
+        }
+      </div>
+    </div>`;
+}
+
+// ── Select answer ─────────────────────────────────────────
+function selectTestAnswer(qIndex, optIndex) {
+  test.answers[qIndex] = optIndex;
+
+  document.querySelectorAll(`[id^="topt-${qIndex}-"]`).forEach((btn, i) => {
+    btn.classList.toggle('selected', i === optIndex);
+  });
+
+  // Update dot
+  const dot = document.getElementById('dot-'+qIndex);
+  if (dot) dot.classList.add('answered');
+
+  updateTestProgress();
+}
+
+function nextTestQ() {
+  if (test.current < TEST_CONFIG[test.level].questions - 1) {
+    document.getElementById('dot-'+test.current)?.classList.remove('current');
+    test.current++;
+    renderTestQuestion(test.current);
+    updateTestProgress();
+  }
+}
+
+function prevTestQ() {
+  if (test.current > 0) {
+    document.getElementById('dot-'+test.current)?.classList.remove('current');
+    test.current--;
+    renderTestQuestion(test.current);
+    updateTestProgress();
+  }
+}
+
+function updateTestProgress() {
+  const cfg      = TEST_CONFIG[test.level];
+  const answered = Object.keys(test.answers).length;
+  const pct      = Math.round(((test.current + 1) / cfg.questions) * 100);
+
+  document.getElementById('test-progress-fill').style.width   = pct + '%';
+  document.getElementById('test-answered-count').textContent  = `${answered} answered`;
+}
+
+// ── Timer ─────────────────────────────────────────────────
+function tickTimer() {
+  test.secondsLeft--;
+  const timerEl = document.getElementById('test-timer');
+  if (timerEl) {
+    timerEl.textContent = formatTime(test.secondsLeft);
+    if (test.secondsLeft <= 300) timerEl.classList.add('warning');
+  }
+  if (test.secondsLeft <= 0) finishTest();
+}
+
+function formatTime(secs) {
+  const m = Math.floor(secs / 60).toString().padStart(2,'0');
+  const s = (secs % 60).toString().padStart(2,'0');
+  return `${m}:${s}`;
+}
+
+// ── Finish test ───────────────────────────────────────────
+async function finishTest() {
+  if (test.finished) return;
+  test.finished = true;
+  clearInterval(test.timer);
+
+  const cfg    = TEST_CONFIG[test.level];
+  let correct  = 0;
+
+  test.questions.forEach((q, i) => {
+    if (test.answers[i] === q.correct_index) correct++;
+  });
+
+  const answered = Object.keys(test.answers).length || cfg.questions;
+  const score    = Math.round((correct / cfg.questions) * 100);
+  const passed   = score >= cfg.pass;
+
+  // Show results
+  document.getElementById('test-interface').style.display = 'none';
+  const resultsCard = document.getElementById('results-card');
+  resultsCard.style.display = 'block';
+
+  document.getElementById('results-icon').textContent         = passed ? '🏆' : '📚';
+  document.getElementById('results-h1').textContent           = passed ? "You're certified!" : 'Keep practising';
+  document.getElementById('results-score').textContent        = score + '%';
+  // Region tag on results
+  try {
+    var _rc3 = (typeof getRegionConfig === 'function') ? getRegionConfig() : {label:'UK',flag:'',tax:'VAT',taxRate:'20%'};
+    var _rtEl = document.getElementById('results-region-tag');
+    if (!_rtEl) {
+      _rtEl = document.createElement('div');
+      _rtEl.id = 'results-region-tag';
+      _rtEl.style.cssText = 'font-size:0.72rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:3px 12px;border-radius:100px;margin:4px auto;display:inline-block;';
+      document.getElementById('results-score').insertAdjacentElement('afterend', _rtEl);
+    }
+    _rtEl.textContent = (_rc3.flag||'') + ' ' + (_rc3.label||'UK') + ' · ' + _rc3.tax + ' ' + _rc3.taxRate;
+  } catch(e2) {}
+  document.getElementById('results-score-label').textContent  = `Pass mark: ${cfg.pass}% · You scored: ${score}%`;
+  document.getElementById('results-badge').textContent        = passed ? '✓ Assessment passed' : '✗ Not passed this time';
+  document.getElementById('results-badge').className          = `results-badge ${passed?'pass':'fail'}`;
+
+  // Save progress — robust user name retrieval
+  const user = (()=>{
+    try {
+      if (window.LL && typeof LL.getUser === "function") return LL.getUser();
+      return JSON.parse(localStorage.getItem('ll_user') || '{}');
+    } catch { return {}; }
+  })();
+  const certId   = 'LLP-XCP1-' + new Date().getFullYear() + '-' + Math.floor(1000+Math.random()*9000);
+  const issueDate = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  // Save progress — fully self-contained, no LL dependency
+  try {
+    const existing  = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+    const completed = existing.completedLevels || [];
+    if (passed && !completed.includes(test.level)) completed.push(test.level);
+    const updated = Object.assign({}, existing, {
+      lastScore: score,
+      completedLevels: completed,
+    });
+    if (passed) {
+      const levelTitles = {
+        l1: 'Xero Certified Practitioner — Level 1',
+        l2: 'Xero Professional Practitioner — Level 2',
+        l3: 'Xero Advisor Practitioner — Level 3',
+      };
+      const levelDescs = {
+        l1: 'Demonstrated competency in Xero navigation, invoicing, bank reconciliation, chart of accounts, and financial reporting.',
+        l2: 'Demonstrated advanced competency in Xero VAT returns, financial reporting, bank rules, and multi-currency transactions.',
+        l3: 'Demonstrated expert-level competency in Xero advisory reporting, client onboarding, practice management, and year-end.',
+      };
+      updated.certificate = {
+        candidateName: user.name || 'Candidate',
+        certTitle:     levelTitles[test.level] || levelTitles.l1,
+        certRegion:    (function(){ try{ return JSON.parse(localStorage.getItem('ll_user')||'{}').region||'UK'; }catch(e){return 'UK';} })(),
+        certRegionLabel: getRegionConfig ? getRegionConfig().label : 'United Kingdom',
+        certRegionSuffix: getRegionConfig ? getRegionConfig().certSuffix : 'UK Practice',
+        certLevel:     (test.level.toUpperCase()) + ' · Xero Cloud Accounting · ' + (getRegionConfig ? getRegionConfig().certSuffix : 'UK Practice') + ' · LedgerLearn Pro',
+        certDesc:      levelDescs[test.level] || levelDescs.l1,
+        certId, issueDate, score,
+      };
+      // Save level-specific score so L3 unlock detection works
+      updated[test.level + 'Score'] = score;
+    }
+    localStorage.setItem('ll_progress', JSON.stringify(updated));
+    if (passed && updated.certificate) { window._certData = updated.certificate; }
+
+    // Save to Supabase via LLAuth.saveProgress
+    try {
+      if (window.LLAuth && typeof LLAuth.saveProgress === 'function') {
+        var _savePayload = {
+          completedLevels:  updated.completedLevels,
+          lastScore:        score,
+          l1Score:          updated.l1Score || (test.level==='l1' && passed ? score : undefined),
+          l2Score:          updated.l2Score || (test.level==='l2' && passed ? score : undefined),
+          l3Score:          updated.l3Score || (test.level==='l3' && passed ? score : undefined),
+        };
+        // Level-specific score key
+        _savePayload[test.level + 'Score'] = score;
+        LLAuth.saveProgress(_savePayload).catch(function(){});
+      }
+    } catch(_e) {}
+
+    // Save certificate to Supabase
+    if (passed && updated.certificate) {
+      try {
+        if (window.LLAuth && typeof LLAuth.getUser === 'function') {
+          var _certUser = LLAuth.getUser();
+          var _certEmail = (_certUser && _certUser.email) ||
+                           (function(){ try{return JSON.parse(localStorage.getItem('ll_user')||'{}').email||'';}catch(e){return '';} })();
+          if (_certEmail) {
+            fetch('/.netlify/functions/supabase-progress', {
+              method:  'POST',
+              headers: {'Content-Type':'application/json'},
+              body:    JSON.stringify({
+                action:  'save-cert',
+                email:   _certEmail,
+                data:    Object.assign({level: test.level}, updated.certificate),
+              })
+            }).catch(function(){});
+          }
+        }
+      } catch(_e2) {}
+    }
+
+  } catch(e) { console.warn('[finishTest] save error:', e); }
+
+  // Get congratulations text from AI
+  let certText = passed
+    ? `Congratulations ${user.name||''}! You passed the Xero Associate certification with ${score}%. Your verifiable certificate is ready to download and share on LinkedIn.`
+    : `You scored ${score}% this time — the pass mark is ${cfg.pass}%. Review the lessons and practice more scenarios, then retake when you're ready.`;
+
+  if (passed) {
+    const aiText = await LLAPI.getCertText({ studentName: user.name, track: cfg.title, score });
+    if (aiText.text && !aiText.error) certText = aiText.text;
+  }
+
+  document.getElementById('results-cert-text').textContent = certText;
+
+  // Action buttons
+  const actionsEl = document.getElementById('results-actions');
+  if (passed) {
+    actionsEl.innerHTML = `
+      <button class="btn btn-gold" onclick="downloadCert()">📄 Download certificate</button>
+      <button class="btn btn-li"   onclick="shareLinkedIn()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        Share on LinkedIn
+      </button>
+      <a href="/dashboard" class="btn btn-ghost">View dashboard</a>`;
+  } else {
+    actionsEl.innerHTML = `
+      <a href="/practice" class="btn btn-teal">Practise more scenarios →</a>
+      <button class="btn btn-ghost" onclick="retakeTest()">Retake assessment</button>`;
+  }
+}
+
+function _getCert() {
+  if (window._certData && window._certData.score) return window._certData;
+  try {
+    var p = JSON.parse(localStorage.getItem('ll_progress')||'{}');
+    if (p.certificate && p.certificate.score) { window._certData=p.certificate; return p.certificate; }
+    if (p.lastScore) {
+      var u = JSON.parse(localStorage.getItem('ll_user')||'{}');
+      window._certData = {
+        candidateName: u.name||'Candidate',
+        certTitle:'Xero Certified Practitioner — Level 1',
+        certLevel:'L1 · Associate · Xero Cloud Accounting · LedgerLearn Pro',
+        certId:p.certId||('LLP-XCP1-'+new Date().getFullYear()+'-'+Math.floor(1000+Math.random()*9000)),
+        issueDate:p.issueDate||new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),
+        score:p.lastScore
+      };
+      return window._certData;
+    }
+  } catch(e) {}
+  return null;
+}
+function _hex(ctx,cx,cy,r){ctx.beginPath();for(var i=0;i<6;i++){var a=Math.PI/180*(90+60*i);if(i===0)ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a));else ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}ctx.closePath();ctx.fill();}
+function _rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+function _buildCanvas(cert){
+  var W=1748,H=1240,cx=W/2,cv=document.createElement('canvas');
+  cv.width=W;cv.height=H;var c=cv.getContext('2d');
+  c.fillStyle='#f8f7f4';c.fillRect(0,0,W,H);c.fillStyle='#fff';c.fillRect(24,24,W-48,H-48);
+  var tg=c.createLinearGradient(0,0,W,0);tg.addColorStop(0,'#0B1F3A');tg.addColorStop(0.45,'#D4A843');tg.addColorStop(1,'#1DA98A');c.fillStyle=tg;c.fillRect(0,0,W,22);
+  var bg=c.createLinearGradient(0,0,W,0);bg.addColorStop(0,'#1DA98A');bg.addColorStop(0.6,'#D4A843');bg.addColorStop(1,'#0B1F3A');c.fillStyle=bg;c.fillRect(0,H-14,W,14);
+  c.fillStyle='#D4A843';c.fillRect(24,24,4,H-48);c.fillStyle='#1DA98A';c.fillRect(32,24,2,H-48);
+  c.save();c.globalAlpha=0.025;c.fillStyle='#0B1F3A';_hex(c,W*0.82,H*0.48,280);c.restore();
+  c.fillStyle='#D4A843';_hex(c,72,H-58,20);c.textAlign='left';c.font='bold 28px system-ui,sans-serif';c.fillStyle='#0B1F3A';
+  var lw=c.measureText('LedgerLearn').width;c.fillText('LedgerLearn',102,H-44);c.fillStyle='#D4A843';c.fillText(' Pro',102+lw,H-44);
+  var it='Certificate ID: '+(cert.certId||'—');c.font='20px system-ui,sans-serif';var iw=c.measureText(it).width+30;
+  c.fillStyle='#e8ecf0';_rr(c,W-iw-50,H-80,iw,36,6);c.fill();c.fillStyle='#6b87a3';c.fillText(it,W-iw-35,H-57);
+  c.textAlign='center';c.font='bold 22px system-ui,sans-serif';c.fillStyle='#6b87a3';c.fillText('THIS CERTIFIES THAT',cx,220);
+  c.font='bold italic 90px Georgia,serif';c.fillStyle='#0B1F3A';c.fillText(cert.candidateName||'Candidate',cx,340);
+  var nw=c.measureText(cert.candidateName||'Candidate').width*0.55;
+  var lg=c.createLinearGradient(cx-nw/2,0,cx+nw/2,0);lg.addColorStop(0,'#D4A843');lg.addColorStop(1,'#1DA98A');
+  c.strokeStyle=lg;c.lineWidth=5;c.beginPath();c.moveTo(cx-nw/2,358);c.lineTo(cx+nw/2,358);c.stroke();
+  c.font='26px system-ui,sans-serif';c.fillStyle='#6b87a3';c.fillText('has successfully completed all requirements for',cx,410);
+  c.font='bold 48px system-ui,sans-serif';c.fillStyle='#0B1F3A';c.fillText(cert.certTitle||'Xero Certified Practitioner — Level 1',cx,490);
+  if(cert.score){var sc='Score: '+cert.score+'%';c.font='bold 22px system-ui,sans-serif';var sw=c.measureText(sc).width+30;c.fillStyle='#e1f7f2';_rr(c,cx-sw/2,508,sw,38,19);c.fill();c.strokeStyle='rgba(29,169,138,0.4)';c.lineWidth=1;_rr(c,cx-sw/2,508,sw,38,19);c.stroke();c.fillStyle='#1DA98A';c.fillText(sc,cx,533);}
+  var lvl=cert.certLevel||'L1 · Associate · Xero Cloud Accounting · LedgerLearn Pro';c.font='bold 20px system-ui,sans-serif';var lv=c.measureText(lvl).width+40;c.fillStyle='#e1f7f2';_rr(c,cx-lv/2,560,lv,36,18);c.fill();c.strokeStyle='rgba(29,169,138,0.3)';c.lineWidth=1;_rr(c,cx-lv/2,560,lv,36,18);c.stroke();c.fillStyle='#1DA98A';c.fillText(lvl,cx,584);
+  c.strokeStyle='#e8ecf0';c.lineWidth=2;c.beginPath();c.moveTo(60,680);c.lineTo(W-60,680);c.stroke();
+  c.font='bold italic 28px Georgia,serif';c.fillStyle='#0B1F3A';c.fillText('David Ayomidotun',200,730);
+  c.font='18px system-ui,sans-serif';c.fillStyle='#6b87a3';c.fillText('Platform Director',200,756);c.fillText('LedgerLearn Pro',200,778);
+  c.strokeStyle='#e8ecf0';c.lineWidth=1.5;c.beginPath();c.moveTo(80,680);c.lineTo(340,680);c.stroke();
+  var isd=cert.issueDate||new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  c.font='bold 26px system-ui,sans-serif';c.fillStyle='#0B1F3A';c.fillText(isd,W-200,730);
+  c.font='18px system-ui,sans-serif';c.fillStyle='#6b87a3';c.fillText('Date of Issue',W-200,756);
+  c.strokeStyle='#e8ecf0';c.lineWidth=1.5;c.beginPath();c.moveTo(W-340,680);c.lineTo(W-80,680);c.stroke();
+  var sx=cx,sy=718,sr=56;c.strokeStyle='#D4A843';c.lineWidth=3;c.beginPath();c.arc(sx,sy,sr,0,Math.PI*2);c.stroke();
+  c.setLineDash([4,6]);c.lineWidth=1.5;c.beginPath();c.arc(sx,sy,sr-10,0,Math.PI*2);c.stroke();c.setLineDash([]);
+  c.fillStyle='#fff';c.beginPath();c.arc(sx,sy,sr-12,0,Math.PI*2);c.fill();
+  c.font='bold 14px system-ui,sans-serif';c.fillStyle='#a07c2a';c.fillText('LEDGERLEARN',sx,sy+4);c.fillText('VERIFIED',sx,sy+22);
+  c.fillStyle='#D4A843';_hex(c,sx,sy-14,9);
+  // Region badge
+  if (cert.certRegionLabel) {
+    var regText = cert.certRegionLabel + ' Practice';
+    c.font='bold 16px system-ui,sans-serif';
+    var rgw=c.measureText(regText).width+24;
+    c.fillStyle='rgba(11,31,58,0.7)';_rr(c,cx-rgw/2,600,rgw,26,13);c.fill();
+    c.strokeStyle='rgba(255,255,255,0.18)';c.lineWidth=1;_rr(c,cx-rgw/2,600,rgw,26,13);c.stroke();
+    c.fillStyle='rgba(255,255,255,0.6)';c.fillText(regText,cx,618);
+  }
+  c.font='18px system-ui,sans-serif';c.fillStyle='#6b87a3';
+  c.fillText('Verify: '+window.location.hostname+'/verify  ·  ID: '+(cert.certId||''),cx,H-32);
+  return cv;
+}
+function downloadCert(){
+  var cert=_getCert();
+  if(!cert){inlineToast('No certificate found. Complete the assessment first.','error');return;}
+  inlineToast('Generating certificate…','info');
+  setTimeout(function(){
+    try{
+      var cv=_buildCanvas(cert);
+      var fn='LedgerLearn_Certificate_'+(cert.candidateName||'Candidate').replace(/\s+/g,'_')+'_'+(cert.certId||'cert')+'.png';
+      cv.toBlob(function(blob){
+        if(!blob){_printFallback(cert);return;}
+        var url=URL.createObjectURL(blob);
+        var a=document.createElement('a');a.href=url;a.download=fn;a.style.display='none';
+        document.body.appendChild(a);a.click();
+        setTimeout(function(){URL.revokeObjectURL(url);a.remove();},1000);
+        inlineToast('Certificate downloaded! ✓','success');
+      },'image/png');
+    }catch(e){console.error('[cert]',e);_printFallback(cert);}
+  },150);
+}
+function _printFallback(cert){
+  var isd=cert.issueDate||new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  var win=window.open('','_blank');
+  if(!win)return;
+  // DOM-based — never use document.write() with HTML strings containing tags
+  var doc = win.document;
+  doc.title = 'LedgerLearn Certificate';
+  var style = doc.createElement('style');
+  style.textContent = 'body{font-family:Georgia,serif;background:#eee;padding:2rem;display:flex;flex-direction:column;align-items:center;gap:1rem}' +
+    '.card{background:#fff;width:100%;max-width:900px;box-shadow:0 10px 40px rgba(0,0,0,.2);padding:3rem;text-align:center}' +
+    '.brand{font-family:Arial,sans-serif;font-weight:700;color:#0B1F3A;margin-bottom:1rem}' +
+    '.label{font-family:Arial,sans-serif;font-size:.65rem;text-transform:uppercase;color:#6b87a3;margin-bottom:.5rem}' +
+    '.name{font-style:italic;font-size:2.5rem;color:#0B1F3A;margin-bottom:.5rem}' +
+    '.title{font-weight:700;font-size:1.1rem;color:#0B1F3A;margin-bottom:.75rem}' +
+    '.score{font-size:1rem;color:#1DA98A;font-weight:700;margin-bottom:.5rem}' +
+    '.region{font-size:.8rem;color:#6b87a3;margin-bottom:1rem}' +
+    '.certid{font-size:.75rem;color:#94a3b8;margin-top:1rem}' +
+    '.verify{font-size:.75rem;color:#94a3b8;margin-bottom:1.5rem}' +
+    '.actions{display:flex;gap:.75rem;justify-content:center}' +
+    '.btn-print{padding:11px 22px;background:#0B1F3A;color:#fff;border:none;border-radius:7px;font-size:.95rem;font-weight:700;cursor:pointer}' +
+    '.btn-close{padding:11px 22px;border:none;border-radius:7px;font-size:.95rem;font-weight:700;cursor:pointer;background:#f0f2f5}';
+  doc.head.appendChild(style);
+  var card = doc.createElement('div'); card.className='card';
+  var brand = doc.createElement('div'); brand.className='brand'; brand.textContent='LedgerLearn Pro';
+  var lbl   = doc.createElement('div'); lbl.className='label';   lbl.textContent='This certifies that';
+  var name  = doc.createElement('div'); name.className='name';   name.textContent=cert.candidateName||'Candidate';
+  var ttl   = doc.createElement('div'); ttl.className='title';   ttl.textContent=cert.certTitle||'Xero Certified Practitioner';
+  var scr   = doc.createElement('div'); scr.className='score';   scr.textContent='Score: '+(cert.score||0)+'%';
+  var reg   = doc.createElement('div'); reg.className='region';  reg.textContent=(cert.certRegionLabel||'')+(cert.certRegionSuffix?' · '+cert.certRegionSuffix:'');
+  var cid   = doc.createElement('div'); cid.className='certid';  cid.textContent='Certificate ID: '+(cert.certId||'');
+  var dom   = window.location.hostname;
+  var ver   = doc.createElement('div'); ver.className='verify';  ver.textContent='Verify at: https://'+dom+'/verify?id='+(cert.certId||'');
+  var acts  = doc.createElement('div'); acts.className='actions';
+  var bPrint= doc.createElement('button'); bPrint.className='btn-print'; bPrint.textContent='Print / Save as PDF';
+  bPrint.onclick=function(){win.print();};
+  var bClose= doc.createElement('button'); bClose.className='btn-close'; bClose.textContent='Close';
+  bClose.onclick=function(){win.close();};
+  acts.appendChild(bPrint); acts.appendChild(bClose);
+  [brand,lbl,name,ttl,scr,reg,cid,ver,acts].forEach(function(el){card.appendChild(el);});
+  doc.body.appendChild(card);
+  inlineToast('Certificate opened — Print → Save as PDF','success');
+}
+
+function shareLinkedIn() {
+  var cert = _getCert();
+  if (!cert) { inlineToast('No certificate found.','error'); return; }
+  var dom  = window.location.hostname;
+  var vurl = 'https://' + dom + '/verify';
+  var txt  = 'Excited to share that I have just earned my ' + cert.certTitle + ' from LedgerLearn Pro! Score: ' + cert.score + '%. Certificate ID: ' + cert.certId + '. Verify: ' + vurl + ' #Xero #CloudAccounting #Bookkeeping #CertifiedPractitioner #LedgerLearn';
+  var liUrl = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(vurl) + '&summary=' + encodeURIComponent(txt);
+  var popup = window.open(liUrl, 'li_share', 'width=600,height=620,scrollbars=yes');
+  if (!popup || popup.closed) {
+    var a = document.createElement('a'); a.href=liUrl; a.target='_blank'; a.rel='noopener noreferrer';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function(){ inlineToast('LinkedIn opened + post copied','success'); }).catch(function(){inlineToast('LinkedIn opened','success');});
+  } else { inlineToast('LinkedIn opened','success'); }
+}
+
+function retakeTest() {
+  test = { level:'l1', questions:[], answers:{}, current:0, timer:null, secondsLeft:0, started:false, finished:false };
+  document.getElementById('results-card').style.display    = 'none';
+  document.getElementById('level-selector').style.display  = 'block';
+}
+
+// ── Check unlocked levels ─────────────────────────────────
+function initLevels() {
+  try {
+    var p = {};
+    try { p = JSON.parse(localStorage.getItem('ll_progress') || '{}'); } catch(e) {}
+    var completed = p.completedLevels || [];
+
+    // Admin mode OR paid_l2 flag = skip paywall entirely
+    var isAdmin   = p.adminMode === true || sessionStorage.getItem('ll_admin_token');
+    var paidL2    = p.paid_l2  === true;
+    var l2Unlocked = isAdmin || paidL2 || p.l2Score != null;
+
+    // Only filter l2 from completed if genuinely not paid/admin
+    if (!l2Unlocked) {
+      completed = completed.filter(function(c){ return c !== 'l2'; });
+    }
+
+    // L2: show paywall OR go direct depending on paid/admin status
+    if (completed.includes('l1') || isAdmin) {
+      var el2 = document.getElementById('level-l2');
+      if (el2) {
+        el2.classList.remove('locked-level');
+        var b2 = el2.querySelector('.level-option-badge');
+        if (b2) b2.textContent = 'L2';
+        // Remove ALL existing listeners by cloning the element
+        var el2new = el2.cloneNode(true);
+        el2.parentNode.replaceChild(el2new, el2);
+        if (l2Unlocked) {
+          // Paid or admin — go straight to assessment
+          el2new.addEventListener('click', function(){ selectLevel('l2'); });
+          el2new.style.borderColor = 'rgba(29,169,138,0.4)';
+        } else {
+          // Not paid — show paywall
+          el2new.addEventListener('click', function(){ showPaywall('l2', 'Xero Professional', '$49'); });
+        }
+      }
+    }
+
+    // L3: free after L2 passed, or admin
+    if (completed.includes('l2') || isAdmin) {
+      var el3 = document.getElementById('level-l3');
+      if (el3) {
+        el3.classList.remove('locked-level');
+        var b3 = el3.querySelector('.level-option-badge');
+        if (b3) b3.textContent = 'L3';
+        var el3new = el3.cloneNode(true);
+        el3.parentNode.replaceChild(el3new, el3);
+        el3new.addEventListener('click', function(){ selectLevel('l3'); });
+        if (isAdmin) el3new.style.borderColor = 'rgba(29,169,138,0.4)';
+      }
+    }
+
+    // Update start button text to reflect selected level
+    var startBtn = document.getElementById('btn-start-test');
+    if (startBtn && isAdmin) {
+      startBtn.textContent = 'Admin: Click a level above to select, then start';
+    }
+
+    // ── Update level banner ──────────────────────────────
+    var t1 = document.getElementById('ll-track-l1');
+    var t2 = document.getElementById('ll-track-l2');
+    var t3 = document.getElementById('ll-track-l3');
+    var bs = document.getElementById('ll-banner-status');
+
+    var passedL1 = completed.includes('l1');
+    var passedL2 = completed.includes('l2') || p.l2Score != null;
+    var passedL3 = completed.includes('l3') || p.l3Score != null;
+    var paidL2   = p.paid_l2 === true;
+
+    if (t1) {
+      t1.style.background = passedL1 ? '#1DA98A' : '#D4A843';
+      t1.style.color = '#fff';
+      t1.textContent = passedL1 ? 'L1 Xero Associate ✓' : 'L1 Xero Associate';
+    }
+    if (t2) {
+      if (passedL2) {
+        t2.style.background = '#1DA98A'; t2.style.color = '#fff';
+        t2.textContent = 'L2 Xero Professional ✓';
+      } else if (passedL1 && (paidL2 || isAdmin)) {
+        t2.style.background = '#D4A843'; t2.style.color = '#0B1F3A';
+        t2.textContent = 'L2 Xero Professional';
+      } else {
+        t2.style.background = 'rgba(255,255,255,0.08)'; t2.style.color = 'rgba(255,255,255,0.4)';
+        t2.textContent = 'L2 Xero Professional';
+      }
+    }
+    if (t3) {
+      if (passedL3) {
+        t3.style.background = '#1DA98A'; t3.style.color = '#fff';
+        t3.textContent = 'L3 Xero Advisor ✓';
+      } else if (passedL2 || isAdmin) {
+        t3.style.background = 'rgba(29,169,138,0.15)'; t3.style.color = '#26c9a5';
+        t3.textContent = 'L3 Xero Advisor — Free after L2';
+      }
+    }
+    if (bs) {
+      var done = [passedL1&&'L1',passedL2&&'L2',passedL3&&'L3'].filter(Boolean);
+      bs.textContent = done.length ? 'Passed: ' + done.join(', ') : '';
+      if (isAdmin) bs.textContent += (bs.textContent?' · ':'') + 'Admin mode';
+    }
+
+    // ── Update Learn nav link to correct level ───────────
+    var learnLink = document.getElementById('nav-learn-link');
+    if (learnLink) {
+      if (passedL2 || (isAdmin && completed.includes('l2'))) {
+        learnLink.href = '/learn-l3';
+        learnLink.title = 'Continue to L3 learning';
+      } else if ((passedL1 && paidL2) || (isAdmin && passedL1)) {
+        learnLink.href = '/learn-l2';
+        learnLink.title = 'Continue to L2 learning';
+      }
+    }
+
+  } catch(e) { console.warn('[initLevels]', e); }
+}
+
+// ── Paywall modal ─────────────────────────────────────────
+function showPaywall(level, title, price) {
+  var ex = document.getElementById('ll-paywall-modal');
+  if (ex) ex.remove();
+  var ov = document.createElement('div');
+  ov.id = 'll-paywall-modal';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(7,18,36,0.88);display:flex;align-items:center;justify-content:center;padding:1rem;';
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#0B1F3A;border:1px solid rgba(212,168,67,0.3);border-radius:18px;padding:2.5rem 2rem;max-width:420px;width:100%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.5);';
+  var icon = document.createElement('div'); icon.textContent = 'Level ' + level.toUpperCase();
+  icon.style.cssText = 'font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:0.5rem;';
+  var desc = document.createElement('div');
+  desc.textContent = 'Unlock ' + title + ' for ' + price + '. One payment, access forever. Passing L2 unlocks L3 free.';
+  desc.style.cssText = 'font-size:0.85rem;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:1.75rem;';
+  var priceBox = document.createElement('div');
+  priceBox.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;';
+  var priceNum = document.createElement('div'); priceNum.textContent = price;
+  priceNum.style.cssText = 'font-size:2.8rem;font-weight:800;color:#D4A843;line-height:1;';
+  var priceSub = document.createElement('div'); priceSub.textContent = 'One-time · Never expires';
+  priceSub.style.cssText = 'font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:4px;';
+  priceBox.appendChild(priceNum); priceBox.appendChild(priceSub);
+  var payBtn = document.createElement('button');
+  payBtn.textContent = 'Pay ' + price + ' & unlock ' + title;
+  payBtn.style.cssText = 'background:#D4A843;color:#0B1F3A;border:none;border-radius:9px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;width:100%;margin-bottom:0.6rem;display:block;';
+  payBtn.addEventListener('click', function(){ processPurchase(level, title, price); });
+  var cancelBtn = document.createElement('button'); cancelBtn.textContent = 'Cancel';
+  cancelBtn.style.cssText = 'background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);border-radius:9px;padding:12px;font-size:0.875rem;cursor:pointer;width:100%;display:block;';
+  cancelBtn.addEventListener('click', function(){ ov.remove(); });
+  box.appendChild(icon); box.appendChild(desc); box.appendChild(priceBox);
+  box.appendChild(payBtn); box.appendChild(cancelBtn);
+  ov.appendChild(box);
+  ov.addEventListener('click', function(e){ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
+}
+
+function processPurchase(level, title, price) {
+  var modal = document.getElementById('ll-paywall-modal');
+  if (modal) modal.remove();
+  var ov = document.createElement('div');
+  ov.id = 'll-paypal-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(5,14,28,0.96);display:flex;align-items:center;justify-content:center;padding:1rem;';
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#0d2044;border:1px solid rgba(212,168,67,0.4);border-radius:16px;padding:2rem 1.75rem;max-width:420px;width:100%;text-align:center;';
+  var hd = document.createElement('div'); hd.textContent = 'Complete your payment';
+  hd.style.cssText = 'font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:0.4rem;';
+  var sub = document.createElement('div');
+  sub.textContent = 'Unlock ' + title + ' — one payment, access forever.';
+  sub.style.cssText = 'font-size:0.82rem;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;';
+  var priceEl = document.createElement('div'); priceEl.textContent = price;
+  priceEl.style.cssText = 'font-size:2.5rem;font-weight:800;color:#D4A843;line-height:1;margin-bottom:1.25rem;';
+  var ppDiv = document.createElement('div');
+  ppDiv.id = 'paypal-button-container-P-3YS87947EY5558941NH5P3FY';
+  ppDiv.style.marginBottom = '1rem';
+  var statusDiv = document.createElement('div');
+  statusDiv.id = 'll-payment-status';
+  statusDiv.style.cssText = 'font-size:0.78rem;color:rgba(255,255,255,0.4);min-height:1.2em;margin-bottom:0.75rem;';
+  var cn = document.createElement('button'); cn.textContent = 'Cancel';
+  cn.style.cssText = 'background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:10px 20px;border-radius:8px;font-size:0.85rem;cursor:pointer;width:100%;';
+  cn.addEventListener('click', function(){ document.getElementById('ll-paypal-overlay').remove(); });
+  box.appendChild(hd); box.appendChild(sub); box.appendChild(priceEl);
+  box.appendChild(ppDiv); box.appendChild(statusDiv); box.appendChild(cn);
+  ov.appendChild(box); document.body.appendChild(ov);
+  var existSdk = document.getElementById('paypal-sdk');
+  if (existSdk) { renderPayPalButton(level); return; }
+  var sdk = document.createElement('script');
+  sdk.id = 'paypal-sdk';
+  sdk.src = 'https://www.paypal.com/sdk/js?client-id=AQJ1g2hdsbHudthKBdv8mNxhNeAm2fnnf96y_SxEDJAZDNeiH7XtVwuFwWMGpRmt9w0AugXV4IK7rbJ3&vault=true&intent=subscription';
+  sdk.setAttribute('data-sdk-integration-source','button-factory');
+  sdk.onload = function(){ renderPayPalButton(level); };
+  sdk.onerror = function(){ var s=document.getElementById('ll-payment-status'); if(s) s.textContent='PayPal failed to load. Contact hello@ledgerlearn.pro'; };
+  document.head.appendChild(sdk);
+}
+
+function renderPayPalButton(level) {
+  if (!window.paypal) { setTimeout(function(){ renderPayPalButton(level); }, 500); return; }
+  try {
+    window.paypal.Buttons({
+      style: { shape:'rect', color:'gold', layout:'vertical', label:'pay' },
+      createSubscription: function(data, actions) {
+        return actions.subscription.create({ plan_id: 'P-3YS87947EY5558941NH5P3FY' });
+      },
+      onApprove: function(data, actions) {
+        var s = document.getElementById('ll-payment-status');
+        if (s) s.textContent = 'Verifying payment...';
+        var email = '';
+        try { email = JSON.parse(localStorage.getItem('ll_user')||'{}').email||''; } catch(e) {}
+        fetch('/.netlify/functions/verify-payment', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ subscriptionId: data.subscriptionID, email: email, level: level })
+        }).then(function(r){ return r.json(); })
+        .then(function(result) {
+          try {
+            var p = JSON.parse(localStorage.getItem('ll_progress')||'{}');
+            var c = p.completedLevels||[];
+            if (!c.includes(level)) c.push(level);
+            p.completedLevels=c; p['paid_'+level]=true; p['sub_'+level]=data.subscriptionID;
+            localStorage.setItem('ll_progress',JSON.stringify(p));
+          } catch(e) {}
+          setTimeout(function(){
+            var ov=document.getElementById('ll-paypal-overlay'); if(ov) ov.remove();
+            initLevels();
+            inlineToast('Payment confirmed! Level unlocked. ✓','success');
+            setTimeout(function(){ selectLevel(level); },1500);
+          },1000);
+        }).catch(function(err){
+          try {
+            var p=JSON.parse(localStorage.getItem('ll_progress')||'{}');
+            var c=p.completedLevels||[]; if(!c.includes(level)) c.push(level);
+            p.completedLevels=c; p['paid_'+level]=true;
+            localStorage.setItem('ll_progress',JSON.stringify(p));
+          } catch(e2) {}
+          var ov=document.getElementById('ll-paypal-overlay'); if(ov) ov.remove();
+          initLevels(); inlineToast('Payment received! Level unlocked. ✓','success');
+        });
+      },
+      onError: function(err) {
+        var s=document.getElementById('ll-payment-status');
+        if(s) s.textContent='Payment error. Contact hello@ledgerlearn.pro';
+      },
+      onCancel: function() {
+        var ov=document.getElementById('ll-paypal-overlay'); if(ov) ov.remove();
+      }
+    }).render('#paypal-button-container-P-3YS87947EY5558941NH5P3FY');
+  } catch(e) { console.error('[PayPal]',e); }
+}
+
+// ── Name gate before assessment ───────────────────────────
+function captureNameBeforeTest(prefill) {
+  return new Promise(function(resolve) {
+    var ex = document.getElementById('ll-name-gate'); if(ex) ex.remove();
+    var savedRegion = getRegion();
+
+    var gate = document.createElement('div');
+    gate.id = 'll-name-gate';
+    gate.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,14,28,0.96);display:flex;align-items:center;justify-content:center;z-index:999999;overflow-y:auto;padding:1rem;';
+
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0d2044;border:1px solid rgba(212,168,67,0.5);border-radius:16px;padding:2rem 1.75rem;max-width:460px;width:100%;';
+
+    // Title
+    var h2 = document.createElement('h2');
+    h2.textContent = 'Before you start';
+    h2.style.cssText = 'color:#fff;font-size:1.25rem;font-weight:800;margin-bottom:0.25rem;';
+    var sub = document.createElement('p');
+    sub.textContent = 'Your name and region personalise your certificate and assessment questions.';
+    sub.style.cssText = 'color:rgba(255,255,255,0.5);font-size:0.82rem;line-height:1.6;margin-bottom:1.5rem;';
+
+    // Name field
+    var nameLabel = document.createElement('div');
+    nameLabel.textContent = 'Full name (appears on certificate)';
+    nameLabel.style.cssText = 'font-size:0.7rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;';
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.value = prefill||''; inp.placeholder = 'First and last name'; inp.autocomplete = 'name';
+    inp.style.cssText = 'display:block;width:100%;padding:12px 14px;margin-bottom:1.25rem;background:rgba(255,255,255,0.08);border:2px solid rgba(212,168,67,0.45);border-radius:8px;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;';
+
+    // Region selector
+    var regLabel = document.createElement('div');
+    regLabel.textContent = 'Your country / region';
+    regLabel.style.cssText = 'font-size:0.7rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;';
+
+    var regNote = document.createElement('div');
+    regNote.textContent = 'Assessment questions and tax terminology will match your region.';
+    regNote.style.cssText = 'font-size:0.72rem;color:rgba(255,255,255,0.3);margin-bottom:8px;line-height:1.5;';
+
+    // Region grid
+    var regGrid = document.createElement('div');
+    regGrid.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:0.5rem;margin-bottom:1.25rem;';
+
+    var regionOrder = ['UK','ZA','NG','US','AU','NZ','IE','AE','CA','GLOBAL'];
+    var selectedRegion = savedRegion || 'UK';
+
+    regionOrder.forEach(function(code) {
+      var r = REGIONS[code];
+      var btn = document.createElement('button');
+      btn.setAttribute('data-region', code);
+      btn.style.cssText = 'padding:9px 12px;border-radius:8px;border:1px solid;font-size:0.78rem;font-weight:500;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;transition:all .15s;' +
+        (code === selectedRegion
+          ? 'background:rgba(212,168,67,0.15);border-color:#D4A843;color:#fff;'
+          : 'background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);');
+      btn.innerHTML = '<span style="font-size:1.1rem">' + r.flag + '</span>' +
+        '<span><div style="font-weight:600;font-size:0.78rem">' + r.label + '</div>' +
+        '<div style="font-size:0.65rem;opacity:0.6">' + r.tax + ' ' + r.taxRate + ' · ' + r.taxBody + '</div></span>';
+      btn.addEventListener('click', function() {
+        selectedRegion = code;
+        regGrid.querySelectorAll('button').forEach(function(b) {
+          var isThis = b.getAttribute('data-region') === code;
+          b.style.background     = isThis ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.04)';
+          b.style.borderColor    = isThis ? '#D4A843' : 'rgba(255,255,255,0.1)';
+          b.style.color          = isThis ? '#fff' : 'rgba(255,255,255,0.6)';
+        });
+      });
+      regGrid.appendChild(btn);
+    });
+
+    var err = document.createElement('div');
+    err.style.cssText = 'color:#ff8080;font-size:0.78rem;min-height:1.2em;margin-bottom:0.5rem;';
+
+    var note = document.createElement('div');
+    note.textContent = 'Name and region cannot be changed once assessment begins.';
+    note.style.cssText = 'color:rgba(255,255,255,0.28);font-size:0.7rem;margin-bottom:1.25rem;';
+
+    var go = document.createElement('button');
+    go.textContent = 'Confirm and start assessment';
+    go.style.cssText = 'display:block;width:100%;padding:13px;background:#D4A843;color:#0B1F3A;border:none;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;margin-bottom:0.5rem;';
+
+    var cn = document.createElement('button');
+    cn.textContent = 'Cancel';
+    cn.style.cssText = 'display:block;width:100%;padding:10px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.45);font-size:0.85rem;cursor:pointer;';
+
+    box.appendChild(h2); box.appendChild(sub);
+    box.appendChild(nameLabel); box.appendChild(inp);
+    box.appendChild(regLabel); box.appendChild(regNote); box.appendChild(regGrid);
+    box.appendChild(err); box.appendChild(note);
+    box.appendChild(go); box.appendChild(cn);
+    gate.appendChild(box); document.body.appendChild(gate);
+    setTimeout(function(){ inp.focus(); if(prefill) inp.select(); }, 80);
+
+    function validate() {
+      var v = inp.value.trim();
+      if (v.length < 2) { err.textContent='Please enter your full name.'; inp.style.borderColor='#e05555'; return null; }
+      if (v.indexOf(' ') < 1) { err.textContent='Please include first and last name.'; inp.style.borderColor='#e05555'; return null; }
+      return v;
+    }
+    go.addEventListener('click', function() {
+      var n = validate(); if (!n) return;
+      saveRegion(selectedRegion);
+      gate.remove(); resolve(n);
+    });
+    cn.addEventListener('click', function() { gate.remove(); resolve(null); });
+    inp.addEventListener('keydown', function(e) { if(e.key==='Enter'){ var n=validate(); if(n){ saveRegion(selectedRegion); gate.remove(); resolve(n); }} });
+    inp.addEventListener('focus', function() { this.style.borderColor='rgba(212,168,67,0.7)'; err.textContent=''; });
+  });
+}
+
+// ── Admin access (server-side auth) ──────────────────────
+async function adminUnlock(passphrase) {
+  if (!passphrase){console.log('Usage: adminUnlock("passphrase")');return;}
+  inlineToast('Verifying...','info');
+  try {
+    var res=await fetch('/.netlify/functions/admin-auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({passphrase:passphrase})});
+    var data=await res.json();
+    if(!data.ok){inlineToast('Invalid passphrase.','error');return;}
+    sessionStorage.setItem('ll_admin_token',data.token);
+    sessionStorage.setItem('ll_admin_expires',data.expires);
+    try{
+      var p=JSON.parse(localStorage.getItem('ll_progress')||'{}');
+      p.completedLevels=['l1','l2','l3'];p.paid_l2=true;p.paid_l3=true;p.lastScore=90;p.adminMode=true;
+      localStorage.setItem('ll_progress',JSON.stringify(p));
+      var u=JSON.parse(localStorage.getItem('ll_user')||'{}');
+      if(!u.name){u.name='Admin Test';localStorage.setItem('ll_user',JSON.stringify(u));}
+    }catch(e){}
+    initLevels();
+    inlineToast('Admin access granted ✓','success');
+    console.log('[LedgerLearn] Admin active. Expires:',data.expires);
+  }catch(e){inlineToast('Admin auth error','error');console.error(e);}
+}
+function adminReset(){
+  sessionStorage.removeItem('ll_admin_token');
+  sessionStorage.removeItem('ll_admin_expires');
+  try{
+    // Full reset: remove ALL admin-injected data
+    // Preserve only real user data (name, email, region)
+    localStorage.removeItem('ll_progress');
+    inlineToast('Admin reset. All test data cleared.','info');
+  }catch(e){}
+  setTimeout(function(){ window.location.reload(); }, 1000);
+}
+window.adminUnlock=adminUnlock;
+window.adminReset=adminReset;
+
+
+initLevels();
