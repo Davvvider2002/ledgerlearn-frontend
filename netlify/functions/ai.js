@@ -133,6 +133,21 @@ exports.handler = async function (event) {
     switch (action) {
 
       // ── LESSON — zero API cost, static content ──────────────
+      case 'chat': {
+        const sysPrompt  = body.system  || 'You are LedgerLearn Assistant, a helpful Xero and bookkeeping expert.';
+        const msgs       = Array.isArray(body.messages) ? body.messages.slice(-10) : [];
+        if (!msgs.length) return json(400, { error: 'messages required' });
+        const chatRes = await fetch('https://api.anthropic.com/v1/messages', {
+          method:  'POST',
+          headers: { 'Content-Type':'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version':'2023-06-01' },
+          body:    JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400, system:sysPrompt, messages:msgs }),
+        });
+        const cd = await chatRes.json();
+        const chatText = cd.content?.[0]?.text || '';
+        if (!chatText) return json(500, { error:'No response' });
+        return json(200, { ok:true, text:chatText });
+      }
+
       case 'lesson': {
         const { lessonTitle } = body;
 
