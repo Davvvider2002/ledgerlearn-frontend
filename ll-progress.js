@@ -19,7 +19,8 @@
 (function() {
   'use strict';
 
-  const API    = '/.netlify/functions/progress';
+  const API         = '/.netlify/functions/progress';          // Legacy Blobs (kept as fallback)
+  const SUPA_API    = '/.netlify/functions/supabase-progress'; // New Supabase
   const DOMAIN = 'ledgerlearn.pro';
 
   // ── Internal state ────────────────────────────────────────
@@ -128,11 +129,20 @@
   async function syncFromServer(email) {
     if (!email) return readLocal();
     try {
-      const res  = await fetch(API, {
+      // Try Supabase first
+      let res = await fetch(SUPA_API, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ action: 'load', email }),
       });
+      // Fallback to Blobs if Supabase fails
+      if (!res.ok) {
+        res = await fetch(API, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ action: 'load', email }),
+        });
+      }
       if (!res.ok) return readLocal();
       const json = await res.json();
       if (!json.ok || !json.found || !json.data) return readLocal();
@@ -162,11 +172,18 @@
       _syncQueue    = null;
       _syncing      = false;
       try {
-        await fetch(API, {
+        // Write to Supabase (primary)
+        await fetch(SUPA_API, {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({ action: 'merge', email, data: payload }),
         });
+        // Write to Blobs (fallback — silent fail OK)
+        fetch(API, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ action: 'merge', email, data: payload }),
+        }).catch(() => {});
       } catch(e) { /* Silent fail — localStorage copy is the backup */ }
     }, 800);
   }

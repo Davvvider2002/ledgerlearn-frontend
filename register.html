@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#0B1F3A;min-height:100vh;display:flex;flex-direction:column;}
+nav{height:56px;background:rgba(11,31,58,0.98);border-bottom:2px solid #D4A843;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:20px;height:20px;background:#D4A843;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:#fff;}
+.brand span{color:#D4A843;}
+.nav-link{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.875rem;}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;
+  background:radial-gradient(ellipse at 30% 60%,rgba(29,169,138,0.08) 0%,transparent 55%),
+             radial-gradient(ellipse at 70% 20%,rgba(212,168,67,0.06) 0%,transparent 50%);}
+.card{background:#0d2044;border:1px solid rgba(212,168,67,0.25);border-radius:18px;padding:2.5rem 2rem;max-width:440px;width:100%;}
+.card-eyebrow{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:#D4A843;font-weight:700;margin-bottom:0.5rem;text-align:center;}
+h1{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:#fff;text-align:center;margin-bottom:0.4rem;}
+.card-sub{font-size:0.82rem;color:rgba(255,255,255,0.45);text-align:center;margin-bottom:2rem;line-height:1.6;}
+.field{margin-bottom:1rem;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;}
+label{display:block;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.5);margin-bottom:5px;}
+input,select{width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.88rem;font-family:inherit;outline:none;transition:border-color .15s;}
+input:focus,select:focus{border-color:#D4A843;}
+input::placeholder{color:rgba(255,255,255,0.25);}
+select option{background:#0d2044;color:#fff;}
+.password-hint{font-size:0.7rem;color:rgba(255,255,255,0.3);margin-top:4px;}
+.btn-primary{width:100%;padding:14px;background:#D4A843;color:#0B1F3A;border:none;border-radius:9px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;margin-top:0.25rem;}
+.btn-primary:hover{background:#f0c860;transform:translateY(-1px);}
+.btn-primary:disabled{background:#a0a0a0;transform:none;cursor:not-allowed;}
+.divider{display:flex;align-items:center;gap:0.75rem;margin:1.25rem 0;color:rgba(255,255,255,0.2);font-size:0.75rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.1);}
+.link-row{text-align:center;font-size:0.82rem;color:rgba(255,255,255,0.45);}
+.link-row a{color:#D4A843;text-decoration:none;font-weight:600;}
+.link-row a:hover{text-decoration:underline;}
+.global-err{background:rgba(226,75,74,0.12);border:1px solid rgba(226,75,74,0.3);border-radius:8px;padding:10px 14px;color:#ff8080;font-size:0.82rem;margin-bottom:1rem;display:none;}
+.benefits{background:rgba(29,169,138,0.06);border:1px solid rgba(29,169,138,0.15);border-radius:10px;padding:1rem;margin-bottom:1.5rem;}
+.benefit{display:flex;align-items:center;gap:8px;font-size:0.78rem;color:rgba(255,255,255,0.6);margin-bottom:6px;}
+.benefit:last-child{margin-bottom:0;}
+.benefit-icon{color:#1DA98A;font-size:0.9rem;flex-shrink:0;}
+</style>
+<script src="/ll-auth.js"></script>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <a href="/login" class="nav-link">Already have an account? Sign in →</a>
+</nav>
+<main>
+  <div class="card">
+    <div class="card-eyebrow">Get started free</div>
+    <h1>Create your account</h1>
+    <p class="card-sub">L1 Xero Associate certification is completely free. No credit card needed.</p>
+
+    <div class="benefits">
+      <div class="benefit"><span class="benefit-icon">✓</span> L1 Xero certification — free forever</div>
+      <div class="benefit"><span class="benefit-icon">✓</span> Progress saved across all devices</div>
+      <div class="benefit"><span class="benefit-icon">✓</span> Verifiable digital certificate</div>
+      <div class="benefit"><span class="benefit-icon">✓</span> Region-specific content (NG, ZA, UK, and more)</div>
+    </div>
+
+    <div class="global-err" id="global-err"></div>
+
+    <div class="field">
+      <label>Full name</label>
+      <input type="text" id="name" placeholder="David Ayomidotun" autocomplete="name"/>
+    </div>
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <div class="field-row">
+      <div>
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Min. 8 characters" autocomplete="new-password"/>
+      </div>
+      <div>
+        <label>Confirm password</label>
+        <input type="password" id="password2" placeholder="Repeat password" autocomplete="new-password"/>
+      </div>
+    </div>
+    <div class="password-hint" style="margin-top:-0.5rem;margin-bottom:1rem;">At least 8 characters with a mix of letters and numbers.</div>
+
+    <div class="field">
+      <label>Your region</label>
+      <select id="region">
+        <option value="UK">🇬🇧 United Kingdom</option>
+        <option value="NG" selected>🇳🇬 Nigeria</option>
+        <option value="ZA">🇿🇦 South Africa</option>
+        <option value="GH">🇬🇭 Ghana</option>
+        <option value="KE">🇰🇪 Kenya</option>
+        <option value="US">🇺🇸 United States</option>
+        <option value="AU">🇦🇺 Australia</option>
+        <option value="NZ">🇳🇿 New Zealand</option>
+        <option value="IE">🇮🇪 Ireland</option>
+        <option value="AE">🇦🇪 UAE</option>
+        <option value="CA">🇨🇦 Canada</option>
+        <option value="GLOBAL">🌍 Global / Other</option>
+      </select>
+    </div>
+
+    <button class="btn-primary" id="btn-register" onclick="doRegister()">Create free account →</button>
+
+    <div class="divider">already registered?</div>
+    <div class="link-row"><a href="/login">Sign in to your account →</a></div>
+  </div>
+</main>
+
+<script>
+// Detect region from browser locale
+(function() {
+  var regionMap = {
+    'en-NG':'NG','en-ZA':'ZA','en-GH':'GH','en-KE':'KE',
+    'en-US':'US','en-AU':'AU','en-NZ':'NZ','en-IE':'IE',
+    'en-AE':'AE','en-CA':'CA','en-GB':'UK'
+  };
+  var lang = navigator.language || 'en-GB';
+  var detected = regionMap[lang] || 'UK';
+  var sel = document.getElementById('region');
+  if (sel) sel.value = detected;
+})();
+
+// Redirect if already logged in
+(function() {
+  if (window.LLAuth && window.LLAuth.isLoggedIn()) {
+    window.location.replace('/dashboard');
+  }
+})();
+
+async function doRegister() {
+  var name     = document.getElementById('name').value.trim();
+  var email    = document.getElementById('email').value.trim();
+  var password = document.getElementById('password').value;
+  var password2= document.getElementById('password2').value;
+  var region   = document.getElementById('region').value;
+  var btn      = document.getElementById('btn-register');
+
+  hideErr();
+
+  if (!name)                           { showErr('Please enter your full name.'); return; }
+  if (!email || !email.includes('@'))  { showErr('Please enter a valid email address.'); return; }
+  if (password.length < 8)            { showErr('Password must be at least 8 characters.'); return; }
+  if (password !== password2)         { showErr('Passwords do not match.'); return; }
+
+  btn.disabled    = true;
+  btn.textContent = 'Creating account...';
+
+  var result = await window.LLAuth.register(name, email, password, region);
+
+  if (result.ok) {
+    // Set region in ll_user
+    try {
+      var u = JSON.parse(localStorage.getItem('ll_user') || '{}');
+      u.region = region;
+      localStorage.setItem('ll_user', JSON.stringify(u));
+    } catch(e) {}
+    var params = new URLSearchParams(window.location.search);
+    window.location.replace(params.get('next') || '/learn');
+  } else {
+    var msg = result.error || 'Registration failed. Please try again.';
+    // User-friendly error messages
+    if (msg.includes('already registered') || msg.includes('already exists')) {
+      msg = 'An account with this email already exists. <a href="/login" style="color:#D4A843">Sign in instead →</a>';
+    }
+    showErr(msg);
+    btn.disabled    = false;
+    btn.textContent = 'Create free account →';
+  }
+}
+
+function showErr(msg) {
+  var el = document.getElementById('global-err');
+  el.innerHTML    = msg;
+  el.style.display = 'block';
+}
+function hideErr() {
+  document.getElementById('global-err').style.display = 'none';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doRegister();
+});
+</script>
+</body>
+</html>

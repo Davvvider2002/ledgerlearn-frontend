@@ -246,6 +246,20 @@ LL.updateLearnLink = function(id) {
 LL.route('learn-l3');
 document.addEventListener('DOMContentLoaded',function(){LL.updateLearnLink('nav-learn-link');});
 </script>
+<script src="/ll-auth.js"></script>
+
+<script>
+// Auth guard — redirects to /login if not signed in
+document.addEventListener('DOMContentLoaded', async function() {
+  var user = await window.LLAuth.require();
+  if (!user) return; // LLAuth.require() handles redirect
+  // User is authenticated — update nav
+  var nameEl = document.getElementById('nav-user-name');
+  var avatarEl = document.getElementById('nav-avatar');
+  if (nameEl) nameEl.textContent = (user.name || user.email || '').split(' ')[0];
+  if (avatarEl) avatarEl.textContent = (user.name || user.email || '?').charAt(0).toUpperCase();
+});
+</script>
 </head>
 <body>
 <nav>

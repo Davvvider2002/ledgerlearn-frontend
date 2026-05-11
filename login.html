@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#0B1F3A;min-height:100vh;display:flex;flex-direction:column;}
+nav{height:56px;background:rgba(11,31,58,0.98);border-bottom:2px solid #D4A843;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:20px;height:20px;background:#D4A843;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:#fff;}
+.brand span{color:#D4A843;}
+.nav-link{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.875rem;}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;
+  background:radial-gradient(ellipse at 30% 60%,rgba(29,169,138,0.08) 0%,transparent 55%),
+             radial-gradient(ellipse at 70% 20%,rgba(212,168,67,0.06) 0%,transparent 50%);}
+.card{background:#0d2044;border:1px solid rgba(212,168,67,0.25);border-radius:18px;padding:2.5rem 2rem;max-width:420px;width:100%;}
+.card-eyebrow{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:#D4A843;font-weight:700;margin-bottom:0.5rem;text-align:center;}
+h1{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:#fff;text-align:center;margin-bottom:0.4rem;}
+.card-sub{font-size:0.82rem;color:rgba(255,255,255,0.45);text-align:center;margin-bottom:2rem;line-height:1.6;}
+.field{margin-bottom:1rem;}
+label{display:block;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.5);margin-bottom:5px;}
+input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.92rem;font-family:inherit;outline:none;transition:border-color .15s;}
+input:focus{border-color:#D4A843;}
+input::placeholder{color:rgba(255,255,255,0.25);}
+.err{color:#ff8080;font-size:0.75rem;margin-top:4px;min-height:1em;}
+.btn-primary{width:100%;padding:14px;background:#D4A843;color:#0B1F3A;border:none;border-radius:9px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;margin-top:0.25rem;}
+.btn-primary:hover{background:#f0c860;transform:translateY(-1px);}
+.btn-primary:disabled{background:#a0a0a0;transform:none;cursor:not-allowed;}
+.divider{display:flex;align-items:center;gap:0.75rem;margin:1.25rem 0;color:rgba(255,255,255,0.2);font-size:0.75rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.1);}
+.link-row{text-align:center;font-size:0.82rem;color:rgba(255,255,255,0.45);}
+.link-row a{color:#D4A843;text-decoration:none;font-weight:600;}
+.link-row a:hover{text-decoration:underline;}
+.global-err{background:rgba(226,75,74,0.12);border:1px solid rgba(226,75,74,0.3);border-radius:8px;padding:10px 14px;color:#ff8080;font-size:0.82rem;margin-bottom:1rem;display:none;}
+</style>
+<script src="/ll-auth.js"></script>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <a href="/register" class="nav-link">Create account →</a>
+</nav>
+<main>
+  <div class="card">
+    <div class="card-eyebrow">Welcome back</div>
+    <h1>Sign in</h1>
+    <p class="card-sub">Continue your Xero certification journey.</p>
+
+    <div class="global-err" id="global-err"></div>
+
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Your password" autocomplete="current-password"/>
+    </div>
+
+    <button class="btn-primary" id="btn-login" onclick="doLogin()">Sign in →</button>
+
+    <div class="divider">or</div>
+    <div class="link-row">
+      Don't have an account? <a href="/register">Create one free →</a>
+    </div>
+  </div>
+</main>
+
+<script>
+// If already logged in, redirect
+(function() {
+  if (window.LLAuth && window.LLAuth.isLoggedIn()) {
+    var params = new URLSearchParams(window.location.search);
+    window.location.replace(params.get('next') || '/dashboard');
+  }
+})();
+
+async function doLogin() {
+  var email    = document.getElementById('email').value.trim();
+  var password = document.getElementById('password').value;
+  var errEl    = document.getElementById('global-err');
+  var btn      = document.getElementById('btn-login');
+
+  errEl.style.display = 'none';
+
+  if (!email || !email.includes('@')) { showErr('Please enter a valid email address.'); return; }
+  if (!password)                       { showErr('Please enter your password.'); return; }
+
+  btn.disabled    = true;
+  btn.textContent = 'Signing in...';
+
+  var result = await window.LLAuth.login(email, password);
+
+  if (result.ok) {
+    var params = new URLSearchParams(window.location.search);
+    window.location.replace(params.get('next') || '/dashboard');
+  } else {
+    showErr(result.error || 'Sign in failed. Please check your email and password.');
+    btn.disabled    = false;
+    btn.textContent = 'Sign in →';
+  }
+}
+
+function showErr(msg) {
+  var el = document.getElementById('global-err');
+  el.textContent   = msg;
+  el.style.display = 'block';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>

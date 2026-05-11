@@ -89,6 +89,20 @@ nav{height:56px;background:rgba(11,31,58,0.98);border-bottom:2px solid #D4A843;d
 .level-tab.active{background:rgba(212,168,67,0.15);border-color:#D4A843;color:#D4A843;}
 .level-tab:disabled{opacity:0.3;cursor:not-allowed;pointer-events:none;}
 </style>
+<script src="/ll-auth.js"></script>
+
+<script>
+// Auth guard — redirects to /login if not signed in
+document.addEventListener('DOMContentLoaded', async function() {
+  var user = await window.LLAuth.require();
+  if (!user) return; // LLAuth.require() handles redirect
+  // User is authenticated — update nav
+  var nameEl = document.getElementById('nav-user-name');
+  var avatarEl = document.getElementById('nav-avatar');
+  if (nameEl) nameEl.textContent = (user.name || user.email || '').split(' ')[0];
+  if (avatarEl) avatarEl.textContent = (user.name || user.email || '?').charAt(0).toUpperCase();
+});
+</script>
 </head>
 <body>
 
