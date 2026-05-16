@@ -134,18 +134,51 @@ exports.handler = async function (event) {
 
       // ── LESSON — zero API cost, static content ──────────────
       case 'chat': {
-        const sysPrompt  = body.system  || 'You are LedgerLearn Assistant, a helpful Xero and bookkeeping expert.';
-        const msgs       = Array.isArray(body.messages) ? body.messages.slice(-10) : [];
+        const sysPrompt = body.system || 'You are LedgerLearn Assistant, a helpful Xero and bookkeeping expert.';
+        const msgs      = Array.isArray(body.messages) ? body.messages.slice(-10) : [];
         if (!msgs.length) return json(400, { error: 'messages required' });
+
+        // Guard: ANTHROPIC_API_KEY must be set in Netlify environment variables
+        if (!process.env.ANTHROPIC_API_KEY) {
+          console.error('[LedgerLearn/chat] ANTHROPIC_API_KEY is not set in Netlify environment variables');
+          return json(500, { error: 'AI service not configured. Please contact hello@ledgerlearn.pro' });
+        }
+
         const chatRes = await fetch('https://api.anthropic.com/v1/messages', {
           method:  'POST',
-          headers: { 'Content-Type':'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version':'2023-06-01' },
-          body:    JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:400, system:sysPrompt, messages:msgs }),
+          headers: {
+            'Content-Type':      'application/json',
+            'x-api-key':         process.env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+          },
+          body: JSON.stringify({
+            model:      'claude-haiku-4-5-20251001',
+            max_tokens: 400,
+            system:     sysPrompt,
+            messages:   msgs,
+          }),
         });
-        const cd = await chatRes.json();
+
+        // Check HTTP status BEFORE parsing JSON
+        if (!chatRes.ok) {
+          const errText = await chatRes.text();
+          console.error('[LedgerLearn/chat] Anthropic API error', chatRes.status, errText);
+          if (chatRes.status === 401) {
+            return json(500, { error: 'AI service authentication failed — check ANTHROPIC_API_KEY in Netlify env vars' });
+          }
+          if (chatRes.status === 404) {
+            return json(500, { error: 'AI model not found — check model string in ai.js' });
+          }
+          return json(500, { error: 'AI service error: ' + chatRes.status });
+        }
+
+        const cd       = await chatRes.json();
         const chatText = cd.content?.[0]?.text || '';
-        if (!chatText) return json(500, { error:'No response' });
-        return json(200, { ok:true, text:chatText });
+        if (!chatText) {
+          console.error('[LedgerLearn/chat] Empty response from Anthropic:', JSON.stringify(cd));
+          return json(500, { error: 'No response from AI — please try again' });
+        }
+        return json(200, { ok: true, text: chatText });
       }
 
       case 'lesson': {
