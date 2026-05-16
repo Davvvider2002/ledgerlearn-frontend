@@ -3,13 +3,12 @@
  * =================================================
  * File: netlify/functions/verify-payment.js
  *
- * Server-side payment verification.
- * Called after PayPal onApprove with subscriptionID.
- * Verifies with PayPal API that the subscription is active.
- * Stores verified payment in Netlify Blobs keyed by email.
+ * Server-side ONE-TIME payment verification via PayPal Orders API.
+ * L2 ($49) is a one-time charge — NOT a subscription.
+ * Called after PayPal onApprove with orderId.
  *
  * POST /.netlify/functions/verify-payment
- * Body: { subscriptionId, email, level }
+ * Body: { orderId, email, level }
  * Returns: { ok: true, verified: true, level }
  */
 
@@ -25,9 +24,7 @@ const CORS = {
 };
 
 const VALID_LEVELS = ['l2', 'l3'];
-const PAYPAL_PLAN_IDS = {
-  l2: 'P-3YS87947EY5558941NH5P3FY',
-};
+const EXPECTED_AMOUNTS = { l2: 49.00, l3: 0 };
 
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') {
@@ -42,10 +39,10 @@ exports.handler = async function(event) {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
-  const { subscriptionId, email, level } = body;
+  const { orderId, email, level } = body;
 
-  if (!subscriptionId || !email || !level) {
-    return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'subscriptionId, email and level required' }) };
+  if (!orderId || !email || !level) {
+    return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'orderId, email and level required' }) };
   }
 
   if (!VALID_LEVELS.includes(level)) {
@@ -64,7 +61,7 @@ exports.handler = async function(event) {
     console.error('[verify-payment] PayPal credentials not set');
     // Graceful degradation: trust the client if PayPal creds not configured
     // Remove this in production once creds are set
-    return await storeAndReturn(email, level, subscriptionId, 'unverified');
+    return await storeAndReturn(email, level, orderId || 'unverified', 'unverified');
   }
 
   try {
@@ -85,39 +82,46 @@ exports.handler = async function(event) {
     const authData    = await authResponse.json();
     const accessToken = authData.access_token;
 
-    // Verify subscription
-    const subResponse = await fetch(`https://api-m.paypal.com/v1/billing/subscriptions/${subscriptionId}`, {
+    // Verify one-time ORDER (not subscription — L2 is a one-time $49 charge)
+    const ordResponse = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${orderId}`, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
 
-    if (!subResponse.ok) {
-      return { statusCode: 400, headers: CORS, body: JSON.stringify({ ok: false, error: 'Subscription not found' }) };
+    if (!ordResponse.ok) {
+      return { statusCode: 400, headers: CORS, body: JSON.stringify({ ok: false, error: 'Order not found' }) };
     }
 
-    const subData = await subResponse.json();
+    const ordData = await ordResponse.json();
 
-    // Check subscription is active and matches expected plan
-    const isActive    = subData.status === 'ACTIVE';
-    const planMatches = PAYPAL_PLAN_IDS[level] ? subData.plan_id === PAYPAL_PLAN_IDS[level] : true;
-
-    if (!isActive) {
-      return { statusCode: 400, headers: CORS, body: JSON.stringify({ ok: false, error: 'Subscription not active' }) };
+    // Order must be COMPLETED (captured) — APPROVED means not yet captured
+    const isComplete = ordData.status === 'COMPLETED';
+    if (!isComplete) {
+      return { statusCode: 400, headers: CORS, body: JSON.stringify({ ok: false, error: 'Order not completed' }) };
     }
 
-    if (!planMatches) {
-      return { statusCode: 400, headers: CORS, body: JSON.stringify({ ok: false, error: 'Subscription plan mismatch' }) };
+    // Verify the amount matches what we expect (prevent price tampering)
+    const expected = EXPECTED_AMOUNTS[level];
+    if (expected && expected > 0) {
+      const paid = parseFloat(
+        ordData.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || '0'
+      );
+      if (Math.abs(paid - expected) > 0.01) {
+        return { statusCode: 400, headers: CORS, body: JSON.stringify({
+          ok: false, error: `Amount mismatch: expected $${expected}, got $${paid}`
+        })};
+      }
     }
 
-    return await storeAndReturn(email, level, subscriptionId, 'paypal-verified');
+    return await storeAndReturn(email, level, orderId, 'paypal-order-verified');
 
   } catch(err) {
     console.error('[verify-payment]', err.message);
     // Graceful degradation
-    return await storeAndReturn(email, level, subscriptionId, 'unverified-error');
+    return await storeAndReturn(email, level, orderId || 'error', 'unverified-error');
   }
 };
 
-async function storeAndReturn(email, level, subscriptionId, verificationMethod) {
+async function storeAndReturn(email, level, orderId, verificationMethod) {
   try {
     if (!getStore) throw new Error('blobs unavailable');
     const store = getStore('ledgerlearn-payments');
@@ -126,7 +130,7 @@ async function storeAndReturn(email, level, subscriptionId, verificationMethod) 
     await store.setJSON(key, {
       email,
       level,
-      subscriptionId,
+      orderId,
       verificationMethod,
       verifiedAt: new Date().toISOString(),
       paid: true,

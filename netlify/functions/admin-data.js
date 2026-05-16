@@ -149,6 +149,84 @@ exports.handler = async function(event) {
         return json(200, { ok: true });
       }
 
+      case 'job-board-stats': {
+        const stats = await supaFetch('/rest/v1/admin_jobboard_stats?select=*&limit=1');
+        const s = (Array.isArray(stats) && stats.length > 0) ? stats[0] : {};
+        return json(200, {
+          ok: true,
+          activeJobs:        parseInt(s.active_jobs)        || 0,
+          activeRecruiters:  parseInt(s.active_recruiters)  || 0,
+          trialRecruiters:   parseInt(s.trial_recruiters)   || 0,
+          expiredRecruiters: parseInt(s.expired_recruiters) || 0,
+          appsToday:         parseInt(s.apps_today)         || 0,
+          totalApplications: parseInt(s.total_applications) || 0,
+          jobBoardRevenue:   parseFloat(s.job_board_revenue) || 0,
+        });
+      }
+
+      case 'jobs': {
+        const data = await supaFetch(
+          '/rest/v1/admin_jobs_summary?select=*&order=created_at.desc&limit=200'
+        );
+        return json(200, { ok: true, data: Array.isArray(data) ? data : [] });
+      }
+
+      case 'recruiters': {
+        const data = await supaFetch(
+          '/rest/v1/admin_recruiters_summary?select=*&order=created_at.desc&limit=200'
+        );
+        return json(200, { ok: true, data: Array.isArray(data) ? data : [] });
+      }
+
+      case 'job-applications': {
+        const data = await supaFetch(
+          '/rest/v1/admin_applications_summary?select=*&order=applied_at.desc&limit=200'
+        );
+        return json(200, { ok: true, data: Array.isArray(data) ? data : [] });
+      }
+
+      case 'moderate-job': {
+        const { id, action: modAction } = body;
+        if (!id || !modAction) return json(400, { error: 'id and action required' });
+        const statusMap = { publish:'active', pause:'paused', close:'closed', flag:'flagged' };
+        const newStatus = statusMap[modAction];
+        if (!newStatus) return json(400, { error: 'Invalid modAction' });
+        await fetch(SUPA_URL + '/rest/v1/job_postings?id=eq.' + id, {
+          method: 'PATCH',
+          headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer '+SUPA_KEY, 'Content-Type':'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        return json(200, { ok: true, newStatus });
+      }
+
+      case 'suspend-recruiter': {
+        const { id } = body;
+        if (!id) return json(400, { error: 'id required' });
+        await fetch(SUPA_URL + '/rest/v1/recruiters?id=eq.' + id, {
+          method: 'PATCH',
+          headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer '+SUPA_KEY, 'Content-Type':'application/json' },
+          body: JSON.stringify({ status: 'suspended' })
+        });
+        // Pause all their jobs
+        await fetch(SUPA_URL + '/rest/v1/job_postings?recruiter_id=eq.' + id + '&status=eq.active', {
+          method: 'PATCH',
+          headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer '+SUPA_KEY, 'Content-Type':'application/json' },
+          body: JSON.stringify({ status: 'paused' })
+        });
+        return json(200, { ok: true });
+      }
+
+      case 'verify-recruiter': {
+        const { id } = body;
+        if (!id) return json(400, { error: 'id required' });
+        await fetch(SUPA_URL + '/rest/v1/recruiters?id=eq.' + id, {
+          method: 'PATCH',
+          headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer '+SUPA_KEY, 'Content-Type':'application/json' },
+          body: JSON.stringify({ verified: true })
+        });
+        return json(200, { ok: true });
+      }
+
       default:
         return json(400, { error: 'Unknown action: ' + action });
     }
