@@ -280,6 +280,12 @@
 
   // ── Init on DOM ready ─────────────────────────────────────
   function init() {
+    // Respect page-level suppress flag
+    // Set window.LL_NO_CHATBOT = true before this script to disable
+    if (window.LL_NO_CHATBOT === true) {
+      console.log('[LedgerLearn] Chatbot suppressed on this page ✓');
+      return;
+    }
     injectStyles();
     buildWidget();
     console.log('[LedgerLearn] Chatbot loaded ✓');

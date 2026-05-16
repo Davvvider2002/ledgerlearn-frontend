@@ -371,9 +371,12 @@ function adminLogin() {
     sessionStorage.setItem('ll_admin_expires', data.expires);
     document.getElementById('login-overlay').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
-    loadDashboard();
-    loadUsers();
-    loadCerts();
+    // Auto-fetch Supabase config, then load all data
+    getSupaConfig().then(function() {
+      loadDashboard();
+      loadUsers();
+      loadCerts();
+    });
     loadPayments();
     loadAffiliates();
     loadPartners();
@@ -470,16 +473,52 @@ var SUPA_KEY = '';
 // Fetch Supabase config from meta tags (injected server-side) or prompt
 async function getSupaConfig() {
   if (SUPA_URL && SUPA_KEY) return;
-  // Try window config (set via Netlify env injection)
-  if (window.SUPABASE_URL)     SUPA_URL = window.SUPABASE_URL;
-  if (window.SUPABASE_ANON_KEY) SUPA_KEY = window.SUPABASE_ANON_KEY;
-  if (!SUPA_URL || !SUPA_KEY) {
-    // Fallback: read from localStorage (admin sets this once)
-    try {
-      var cfg = JSON.parse(localStorage.getItem('ll_supa_config')||'{}');
-      SUPA_URL = cfg.url || '';
-      SUPA_KEY = cfg.key || '';
-    } catch(e){}
+
+  // 1. Try cached localStorage value first (fast)
+  try {
+    var cached = JSON.parse(localStorage.getItem('ll_supa_config')||'{}');
+    if (cached.url && cached.key) {
+      SUPA_URL = cached.url;
+      SUPA_KEY = cached.key;
+      return;
+    }
+  } catch(e) {}
+
+  // 2. Auto-fetch from server using admin token (no manual entry needed)
+  var token = sessionStorage.getItem('ll_admin_token') || ADMIN_TOKEN || '';
+  if (!token) return;
+
+  try {
+    var res = await fetch('/.netlify/functions/admin-config', {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': 'Bearer ' + token,
+      },
+    });
+    var data = await res.json();
+    if (data.ok && data.url && data.key) {
+      SUPA_URL = data.url;
+      SUPA_KEY = data.key;
+      // Cache so next call is instant
+      localStorage.setItem('ll_supa_config', JSON.stringify({url: SUPA_URL, key: SUPA_KEY}));
+      // Update Settings UI if visible
+      var uEl = document.getElementById('supa-url-input');
+      var kEl = document.getElementById('supa-key-input');
+      var sEl = document.getElementById('supa-status');
+      if (uEl) uEl.value = SUPA_URL;
+      if (kEl) kEl.value = '(loaded from server)';
+      if (sEl) { sEl.textContent = '✓ Auto-connected'; sEl.style.color = '#1DA98A'; }
+    } else if (data.error) {
+      console.warn('[Admin] Supabase config error:', data.error);
+      var sEl = document.getElementById('supa-status');
+      if (sEl) {
+        sEl.textContent = '⚠ ' + data.error;
+        sEl.style.color = '#E74C3C';
+      }
+    }
+  } catch(e) {
+    console.warn('[Admin] Could not fetch Supabase config:', e.message);
   }
 }
 

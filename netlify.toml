@@ -181,6 +181,11 @@
     Pragma = "no-cache"
 
 [[redirects]]
+  from = "/api/admin-config"
+  to   = "/.netlify/functions/admin-config"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 404
