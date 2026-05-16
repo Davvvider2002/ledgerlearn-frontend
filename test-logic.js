@@ -943,7 +943,7 @@ function processPurchase(level, title, price) {
   var priceEl = document.createElement('div'); priceEl.textContent = price;
   priceEl.style.cssText = 'font-size:2.5rem;font-weight:800;color:#D4A843;line-height:1;margin-bottom:1.25rem;';
   var ppDiv = document.createElement('div');
-  ppDiv.id = 'paypal-button-container-P-3YS87947EY5558941NH5P3FY';
+  ppDiv.id = 'paypal-button-container-l2';
   ppDiv.style.marginBottom = '1rem';
   var statusDiv = document.createElement('div');
   statusDiv.id = 'll-payment-status';
@@ -958,7 +958,7 @@ function processPurchase(level, title, price) {
   if (existSdk) { renderPayPalButton(level); return; }
   var sdk = document.createElement('script');
   sdk.id = 'paypal-sdk';
-  sdk.src = 'https://www.paypal.com/sdk/js?client-id=AQJ1g2hdsbHudthKBdv8mNxhNeAm2fnnf96y_SxEDJAZDNeiH7XtVwuFwWMGpRmt9w0AugXV4IK7rbJ3&vault=true&intent=subscription';
+  sdk.src = 'https://www.paypal.com/sdk/js?client-id=AQJ1g2hdsbHudthKBdv8mNxhNeAm2fnnf96y_SxEDJAZDNeiH7XtVwuFwWMGpRmt9w0AugXV4IK7rbJ3&intent=capture&currency=USD';
   sdk.setAttribute('data-sdk-integration-source','button-factory');
   sdk.onload = function(){ renderPayPalButton(level); };
   sdk.onerror = function(){ var s=document.getElementById('ll-payment-status'); if(s) s.textContent='PayPal failed to load. Contact hello@ledgerlearn.pro'; };
@@ -970,41 +970,49 @@ function renderPayPalButton(level) {
   try {
     window.paypal.Buttons({
       style: { shape:'rect', color:'gold', layout:'vertical', label:'pay' },
-      createSubscription: function(data, actions) {
-        return actions.subscription.create({ plan_id: 'P-3YS87947EY5558941NH5P3FY' });
+      // ONE-TIME payment — not a subscription. L2 is $49, charged once, never recurring.
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            amount: { value: '49.00', currency_code: 'USD' },
+            description: 'LedgerLearn Pro — L2 Xero Professional (one-time)'
+          }]
+        });
       },
       onApprove: function(data, actions) {
-        var s = document.getElementById('ll-payment-status');
-        if (s) s.textContent = 'Verifying payment...';
-        var email = '';
-        try { email = JSON.parse(localStorage.getItem('ll_user')||'{}').email||''; } catch(e) {}
-        fetch('/.netlify/functions/verify-payment', {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ subscriptionId: data.subscriptionID, email: email, level: level })
-        }).then(function(r){ return r.json(); })
-        .then(function(result) {
-          try {
-            var p = JSON.parse(localStorage.getItem('ll_progress')||'{}');
-            var c = p.completedLevels||[];
-            if (!c.includes(level)) c.push(level);
-            p.completedLevels=c; p['paid_'+level]=true; p['sub_'+level]=data.subscriptionID;
-            localStorage.setItem('ll_progress',JSON.stringify(p));
-          } catch(e) {}
-          setTimeout(function(){
+        return actions.order.capture().then(function(details) {
+          var s = document.getElementById('ll-payment-status');
+          if (s) s.textContent = 'Verifying payment...';
+          var email = '';
+          try { email = JSON.parse(localStorage.getItem('ll_user')||'{}').email||''; } catch(e) {}
+          fetch('/.netlify/functions/verify-payment', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ orderId: data.orderID, email: email, level: level })
+          }).then(function(r){ return r.json(); })
+          .then(function(result) {
+            try {
+              var p = JSON.parse(localStorage.getItem('ll_progress')||'{}');
+              var c = p.completedLevels||[];
+              if (!c.includes(level)) c.push(level);
+              p.completedLevels=c; p['paid_'+level]=true; p['order_'+level]=data.orderID;
+              localStorage.setItem('ll_progress',JSON.stringify(p));
+            } catch(e) {}
+            setTimeout(function(){
+              var ov=document.getElementById('ll-paypal-overlay'); if(ov) ov.remove();
+              initLevels();
+              inlineToast('Payment confirmed! Level unlocked. ✓','success');
+              setTimeout(function(){ selectLevel(level); },1500);
+            },1000);
+          }).catch(function(err){
+            try {
+              var p=JSON.parse(localStorage.getItem('ll_progress')||'{}');
+              var c=p.completedLevels||[]; if(!c.includes(level)) c.push(level);
+              p.completedLevels=c; p['paid_'+level]=true;
+              localStorage.setItem('ll_progress',JSON.stringify(p));
+            } catch(e2) {}
             var ov=document.getElementById('ll-paypal-overlay'); if(ov) ov.remove();
-            initLevels();
-            inlineToast('Payment confirmed! Level unlocked. ✓','success');
-            setTimeout(function(){ selectLevel(level); },1500);
-          },1000);
-        }).catch(function(err){
-          try {
-            var p=JSON.parse(localStorage.getItem('ll_progress')||'{}');
-            var c=p.completedLevels||[]; if(!c.includes(level)) c.push(level);
-            p.completedLevels=c; p['paid_'+level]=true;
-            localStorage.setItem('ll_progress',JSON.stringify(p));
-          } catch(e2) {}
-          var ov=document.getElementById('ll-paypal-overlay'); if(ov) ov.remove();
-          initLevels(); inlineToast('Payment received! Level unlocked. ✓','success');
+            initLevels(); inlineToast('Payment received! Level unlocked. ✓','success');
+          });
         });
       },
       onError: function(err) {
@@ -1014,7 +1022,7 @@ function renderPayPalButton(level) {
       onCancel: function() {
         var ov=document.getElementById('ll-paypal-overlay'); if(ov) ov.remove();
       }
-    }).render('#paypal-button-container-P-3YS87947EY5558941NH5P3FY');
+    }).render('#paypal-button-container-l2');
   } catch(e) { console.error('[PayPal]',e); }
 }
 

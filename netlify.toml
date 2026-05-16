@@ -191,6 +191,46 @@
   status = 200
 
 [[redirects]]
+  from   = "/jobs"
+  to     = "/jobs.html"
+  status = 200
+
+[[redirects]]
+  from   = "/jobs-post"
+  to     = "/job-post.html"
+  status = 200
+
+[[redirects]]
+  from   = "/recruiter-register"
+  to     = "/recruiter-register.html"
+  status = 200
+
+[[redirects]]
+  from   = "/recruiter-dashboard"
+  to     = "/recruiter-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from   = "/jobs-apply"
+  to     = "/job-apply.html"
+  status = 200
+
+[[redirects]]
+  from   = "/applicant-profile"
+  to     = "/applicant-profile.html"
+  status = 200
+
+[[redirects]]
+  from   = "/jobs-pricing"
+  to     = "/jobs-pricing.html"
+  status = 200
+
+[[redirects]]
+  from   = "/api/jobboard-paygate"
+  to     = "/.netlify/functions/jobboard-paygate"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 404

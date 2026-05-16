@@ -127,6 +127,11 @@ tr:hover td{background:#fafbfc;}
       <button class="sb-item" onclick="nav('partners')"><span class="icon">🏫</span> Partners</button>
       <div class="sb-section">Platform</div>
       <button class="sb-item" onclick="nav('certs')"><span class="icon">🏆</span> Certificates</button>
+      <div class="sb-section">Job Board</div>
+      <button class="sb-item" onclick="nav('jb-overview')"><span class="icon">📊</span> JB Overview</button>
+      <button class="sb-item" onclick="nav('jb-jobs')"><span class="icon">💼</span> Job Listings</button>
+      <button class="sb-item" onclick="nav('jb-recruiters')"><span class="icon">🏢</span> Recruiters</button>
+      <button class="sb-item" onclick="nav('jb-applications')"><span class="icon">📨</span> Applications</button>
       <button class="sb-item" onclick="nav('settings')"><span class="icon">⚙️</span> Settings</button>
     </div>
     <div class="sb-footer">
@@ -150,6 +155,30 @@ tr:hover td{background:#fafbfc;}
         <div class="stat-card"><div class="stat-val" id="stat-revenue">—</div><div class="stat-lbl">Total Revenue</div></div>
         <div class="stat-card"><div class="stat-val" id="stat-affiliates">—</div><div class="stat-lbl">Active Affiliates</div></div>
       </div>
+      <!-- Job Board stats row -->
+      <div class="stat-row" style="margin-bottom:1rem;" id="jb-stat-row">
+        <div class="stat-card" style="border-top:3px solid #D4A843;">
+          <div class="stat-val" id="stat-jb-jobs">—</div>
+          <div class="stat-lbl">Active Jobs</div>
+          <div style="font-size:0.72rem;color:#1DA98A;margin-top:4px;" id="stat-jb-jobs-chg"></div>
+        </div>
+        <div class="stat-card" style="border-top:3px solid #1DA98A;">
+          <div class="stat-val" id="stat-jb-recs">—</div>
+          <div class="stat-lbl">Recruiters</div>
+          <div style="font-size:0.72rem;color:#D4A843;margin-top:4px;" id="stat-jb-recs-chg"></div>
+        </div>
+        <div class="stat-card" style="border-top:3px solid #8b5cf6;">
+          <div class="stat-val" id="stat-jb-apps">—</div>
+          <div class="stat-lbl">Applications today</div>
+          <div style="font-size:0.72rem;color:#1DA98A;margin-top:4px;" id="stat-jb-apps-chg"></div>
+        </div>
+        <div class="stat-card" style="border-top:3px solid #0B1F3A;">
+          <div class="stat-val" id="stat-jb-rev">—</div>
+          <div class="stat-lbl">JB Revenue</div>
+          <div style="font-size:0.72rem;color:#D4A843;margin-top:4px;" id="stat-jb-rev-chg"></div>
+        </div>
+      </div>
+
       <!-- Two column grid: Recent users + Revenue -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div class="table-card">
@@ -446,6 +475,10 @@ function nav(page) {
   if (page === 'affiliates') loadAffiliates();
   if (page === 'partners')   loadPartners();
   if (page === 'upgrades')   loadUpgrades();
+  if (page === 'jb-overview')      loadJBOverview();
+  if (page === 'jb-jobs')          loadJBJobs();
+  if (page === 'jb-recruiters')    loadJBRecruiters();
+  if (page === 'jb-applications')  loadJBApplications();
 }
 
 // ── Load data from Netlify Blobs via progress function ─
@@ -574,6 +607,25 @@ async function loadDashboard() {
       }
     }
   } catch(e) { console.warn('[Dashboard] activity feed error:', e); }
+
+  // ── Job Board stats ───────────────────────────────────────
+  try {
+    var jbResult = await adminFetch('job-board-stats');
+    if (jbResult) {
+      var jEl = document.getElementById('stat-jb-jobs');
+      var rEl2 = document.getElementById('stat-jb-recs');
+      var aEl2 = document.getElementById('stat-jb-apps');
+      var vEl  = document.getElementById('stat-jb-rev');
+      var jcEl = document.getElementById('stat-jb-jobs-chg');
+      var rcEl = document.getElementById('stat-jb-recs-chg');
+      if (jEl)  jEl.textContent  = jbResult.activeJobs       || 0;
+      if (rEl2) rEl2.textContent = jbResult.activeRecruiters || 0;
+      if (aEl2) aEl2.textContent = jbResult.appsToday        || 0;
+      if (vEl)  vEl.textContent  = '$' + Math.round(jbResult.jobBoardRevenue || 0);
+      if (jcEl) jcEl.textContent = (jbResult.totalApplications||0) + ' total applications';
+      if (rcEl) rcEl.textContent = (jbResult.trialRecruiters||0) + ' on trial';
+    }
+  } catch(e) { console.warn('[Dashboard] JB stats error:', e); }
 }
 
 // ── Users ─────────────────────────────────────────────
@@ -1041,6 +1093,114 @@ function filterCerts(){ var q=document.getElementById('cert-search').value.toLow
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
-<script src="/ll-chatbot.js"></script>
+<script src="/ll-chatbot.js">
+// ── Job Board Admin ────────────────────────────────────────
+async function loadJBOverview() {
+  var r = await adminFetch('job-board-stats');
+  if (!r) return;
+  function sv(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+  sv('stat-jb-jobs',r.activeJobs||0); sv('stat-jb-recs',r.activeRecruiters||0);
+  sv('stat-jb-apps',r.appsToday||0);  sv('stat-jb-rev','$'+(r.jobBoardRevenue||0).toFixed(0));
+  sv('jb-ov-active',r.activeJobs||0); sv('jb-ov-recs',r.activeRecruiters||0);
+  sv('jb-ov-trial',r.trialRecruiters||0); sv('jb-ov-expired',r.expiredRecruiters||0);
+  sv('jb-ov-apps-today',r.appsToday||0); sv('jb-ov-rev','$'+(r.jobBoardRevenue||0).toFixed(0));
+}
+async function loadJBJobs() {
+  var result = await adminFetch('jobs');
+  var el = document.getElementById('jb-jobs-table');
+  var ce = document.getElementById('jb-jobs-count');
+  if (!result || !Array.isArray(result.data)) { if(el) el.innerHTML='<div class="empty-state"><div class="empty-icon">&#128188;</div><div class="empty-text">No jobs yet.</div></div>'; return; }
+  if(ce) ce.textContent = result.data.length + ' total';
+  function sc(s){var m={active:'#e1f7f2:#0F6E56',draft:'#fef9e7:#92400e',paused:'#fde8e8:#9b1c1c',closed:'#f1f5f9:#6b7280',flagged:'#fde8e8:#7f1d1d'};return (m[s]||'#f1f5f9:#6b7280').split(':');}
+  if(el) el.innerHTML='<table><thead><tr><th>Title</th><th>Company</th><th>Country</th><th>Cert</th><th>Status</th><th>Views</th><th>Apps</th><th>Deadline</th><th>Actions</th></tr></thead><tbody>'+
+    result.data.map(function(j){var c=sc(j.status);return '<tr>'+
+      '<td><strong>'+esc(j.title||'')+'</strong></td><td>'+esc(j.company_name||'')+'</td><td>'+esc(j.country||'')+'</td>'+
+      '<td><span style="font-size:0.72rem;font-weight:700;color:#D4A843;">'+(j.cert_level_required||'any').toUpperCase()+'</span></td>'+
+      '<td><span style="background:'+c[0]+';color:'+c[1]+';padding:2px 8px;border-radius:4px;font-size:0.72rem;">'+esc(j.status||'')+'</span></td>'+
+      '<td>'+(j.view_count||0)+'</td><td style="font-weight:700;color:#1DA98A;">'+(j.application_count||0)+'</td>'+
+      '<td style="font-size:0.75rem;color:#6b87a3;">'+esc(j.deadline||'—')+'</td>'+
+      '<td><button onclick="moderateJob('+JSON.stringify(j.id)+','+JSON.stringify('pause')+')" style="padding:3px 8px;background:#fef9e7;color:#92400e;border:none;border-radius:4px;font-size:0.7rem;cursor:pointer;">Pause</button> '+
+          '<button onclick="moderateJob('+JSON.stringify(j.id)+','+JSON.stringify('flag')+')" style="padding:3px 8px;background:#fde8e8;color:#9b1c1c;border:none;border-radius:4px;font-size:0.7rem;cursor:pointer;">Flag</button></td>'+
+    '</tr>';}).join('')+'</tbody></table>';
+}
+async function loadJBRecruiters() {
+  var result = await adminFetch('recruiters');
+  var el = document.getElementById('jb-recruiters-table');
+  var ce = document.getElementById('jb-recs-count');
+  if (!result || !Array.isArray(result.data)) { if(el) el.innerHTML='<div class="empty-state"><div class="empty-icon">&#127962;</div><div class="empty-text">No recruiters yet.</div></div>'; return; }
+  if(ce) ce.textContent = result.data.length + ' total';
+  function pc(p){var m={trial:'#fef9e7:#92400e',monthly:'#e1f7f2:#0F6E56',per_post:'#e0f0ff:#1e4a7d',expired:'#fde8e8:#9b1c1c'};return (m[p]||'#f1f5f9:#6b7280').split(':');}
+  if(el) el.innerHTML='<table><thead><tr><th>Company</th><th>Email</th><th>Country</th><th>Plan</th><th>Status</th><th>Posts</th><th>Trial End</th><th>Revenue</th><th>Actions</th></tr></thead><tbody>'+
+    result.data.map(function(r){var c=pc(r.plan);var sc=r.status==='active'?['#e1f7f2','#0F6E56']:['#fde8e8','#9b1c1c'];return '<tr>'+
+      '<td><strong>'+esc(r.company_name||'')+'</strong>'+(r.verified?'<span style="font-size:0.68rem;color:#1DA98A;margin-left:4px;">&#10003;</span>':'')+'</td>'+
+      '<td style="font-size:0.75rem;color:#6b87a3;">'+esc(r.email||'')+'</td><td>'+esc(r.country||'')+'</td>'+
+      '<td><span style="background:'+c[0]+';color:'+c[1]+';padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:700;">'+esc(r.plan||'')+'</span></td>'+
+      '<td><span style="background:'+sc[0]+';color:'+sc[1]+';padding:2px 8px;border-radius:4px;font-size:0.72rem;">'+esc(r.status||'')+'</span></td>'+
+      '<td>'+(r.total_posts||0)+'</td><td style="font-size:0.75rem;color:#6b87a3;">'+esc((r.trial_end||'—').substring(0,10))+'</td>'+
+      '<td style="font-weight:700;color:#1DA98A;">$'+parseFloat(r.lifetime_revenue||0).toFixed(0)+'</td>'+
+      '<td><button onclick="verifyRecruiter('+JSON.stringify(r.id)+')" style="padding:3px 8px;background:#e1f7f2;color:#0F6E56;border:none;border-radius:4px;font-size:0.7rem;cursor:pointer;">Verify</button> '+
+          '<button onclick="suspendRecruiter('+JSON.stringify(r.id)+')" style="padding:3px 8px;background:#fde8e8;color:#9b1c1c;border:none;border-radius:4px;font-size:0.7rem;cursor:pointer;">Suspend</button></td>'+
+    '</tr>';}).join('')+'</tbody></table>';
+}
+async function loadJBApplications() {
+  var result = await adminFetch('job-applications');
+  var el = document.getElementById('jb-applications-table');
+  var ce = document.getElementById('jb-apps-count');
+  if (!result || !Array.isArray(result.data)) { if(el) el.innerHTML='<div class="empty-state"><div class="empty-icon">&#128232;</div><div class="empty-text">No applications yet.</div></div>'; return; }
+  if(ce) ce.textContent = result.data.length + ' total';
+  function sc(s){var m={applied:'#e0f0ff:#1e4a7d',shortlisted:'#e1f7f2:#0F6E56',rejected:'#fde8e8:#9b1c1c',offered:'#faeeda:#633806'};return (m[s]||'#f1f5f9:#6b7280').split(':');}
+  if(el) el.innerHTML='<table><thead><tr><th>Applicant</th><th>Job</th><th>Company</th><th>Status</th><th>Applied</th><th>Seen</th></tr></thead><tbody>'+
+    result.data.map(function(a){var c=sc(a.status);return '<tr>'+
+      '<td><strong>'+esc(a.applicant_name||'')+'</strong><div style="font-size:0.72rem;color:#6b87a3;">'+esc(a.applicant_email||'')+'</div></td>'+
+      '<td>'+esc(a.job_title||'')+'</td><td>'+esc(a.company_name||'')+'</td>'+
+      '<td><span style="background:'+c[0]+';color:'+c[1]+';padding:2px 8px;border-radius:4px;font-size:0.72rem;">'+esc(a.status||'')+'</span></td>'+
+      '<td style="font-size:0.75rem;color:#6b87a3;">'+esc((a.applied_at||'—').substring(0,10))+'</td>'+
+      '<td>'+(a.viewed_by_recruiter?'<span style="color:#1DA98A;font-weight:700;">&#10003;</span>':'<span style="color:#aaa;">—</span>')+'</td>'+
+    '</tr>';}).join('')+'</tbody></table>';
+}
+async function moderateJob(id,action){await adminFetch('moderate-job',{id:id,action:action});loadJBJobs();inlineToast('Job '+action+'d','info');}
+async function suspendRecruiter(id){if(!confirm('Suspend recruiter and pause all their jobs?'))return;await adminFetch('suspend-recruiter',{id:id});loadJBRecruiters();inlineToast('Recruiter suspended','info');}
+async function verifyRecruiter(id){await adminFetch('verify-recruiter',{id:id});loadJBRecruiters();inlineToast('Recruiter verified','success');}
+</script>
+
+    <!-- JB OVERVIEW -->
+    <div class="page-view" id="view-jb-overview">
+      <div class="page-hdr">
+        <div><div class="page-title">Job Board Overview</div><div class="page-sub">Real-time metrics</div></div>
+        <button class="btn-sm btn-ghost-sm" onclick="loadJBOverview()">&#8635; Refresh</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-val" id="jb-ov-active">—</div><div class="stat-lbl">Active Listings</div></div>
+        <div class="stat-card"><div class="stat-val" id="jb-ov-recs">—</div><div class="stat-lbl">Active Recruiters</div></div>
+        <div class="stat-card"><div class="stat-val" id="jb-ov-trial">—</div><div class="stat-lbl">On Free Trial</div></div>
+        <div class="stat-card"><div class="stat-val" id="jb-ov-expired">—</div><div class="stat-lbl">Expired Trials</div></div>
+        <div class="stat-card"><div class="stat-val" id="jb-ov-apps-today">—</div><div class="stat-lbl">Apps Today</div></div>
+        <div class="stat-card"><div class="stat-val" id="jb-ov-rev">—</div><div class="stat-lbl">JB Revenue</div></div>
+      </div>
+    </div>
+    <!-- JB JOBS -->
+    <div class="page-view" id="view-jb-jobs">
+      <div class="page-hdr"><div class="page-title">Job Listings</div></div>
+      <div class="table-card">
+        <div class="table-hdr"><div class="table-title">All postings</div><span id="jb-jobs-count" style="background:#e1f7f2;color:#0F6E56;padding:2px 8px;border-radius:100px;font-size:0.7rem;font-weight:700;">—</span></div>
+        <div id="jb-jobs-table"></div>
+      </div>
+    </div>
+    <!-- JB RECRUITERS -->
+    <div class="page-view" id="view-jb-recruiters">
+      <div class="page-hdr"><div class="page-title">Recruiters</div></div>
+      <div class="table-card">
+        <div class="table-hdr"><div class="table-title">Recruiter accounts</div><span id="jb-recs-count" style="background:#e1f7f2;color:#0F6E56;padding:2px 8px;border-radius:100px;font-size:0.7rem;font-weight:700;">—</span></div>
+        <div id="jb-recruiters-table"></div>
+      </div>
+    </div>
+    <!-- JB APPLICATIONS -->
+    <div class="page-view" id="view-jb-applications">
+      <div class="page-hdr"><div class="page-title">Applications</div></div>
+      <div class="table-card">
+        <div class="table-hdr"><div class="table-title">All applications</div><span id="jb-apps-count" style="background:#e1f7f2;color:#0F6E56;padding:2px 8px;border-radius:100px;font-size:0.7rem;font-weight:700;">—</span></div>
+        <div id="jb-applications-table"></div>
+      </div>
+    </div>
 </body>
 </html>
