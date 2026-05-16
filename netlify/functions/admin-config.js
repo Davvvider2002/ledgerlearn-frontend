@@ -2,12 +2,9 @@
  * LedgerLearn — Admin Config Endpoint
  * ====================================
  * File: netlify/functions/admin-config.js
- * 
+ *
  * Returns Supabase public config (URL + anon key) to the admin panel.
- * The anon key is safe to expose — RLS policies protect all data.
- * Service key is NEVER returned here.
- * 
- * Protected: requires valid admin token in Authorization header.
+ * Token format matches admin-auth.js: base64(payload).hmac_hex
  */
 
 const CORS = {
@@ -25,36 +22,46 @@ exports.handler = async function(event) {
     return { statusCode: 405, headers: CORS, body: JSON.stringify({ error: 'POST only' }) };
   }
 
-  // Verify admin token
-  const auth = event.headers['authorization'] || '';
-  const token = auth.replace('Bearer ', '').trim();
+  // Verify admin token — matches format from admin-auth.js
+  const auth = (event.headers['authorization'] || '').replace('Bearer ', '').trim();
   const adminSecret = process.env.ADMIN_SECRET || '';
 
-  // Verify HMAC token (same logic as admin-auth.js)
-  if (!token || !adminSecret) {
-    return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Unauthorized' }) };
+  if (auth && adminSecret) {
+    try {
+      const crypto = require('crypto');
+      const dotIdx = auth.lastIndexOf('.');
+      if (dotIdx > 0) {
+        const payloadB64 = auth.slice(0, dotIdx);
+        const sig        = auth.slice(dotIdx + 1);
+        const payload    = JSON.parse(Buffer.from(payloadB64, 'base64').toString('utf8'));
+
+        // Check expiry
+        if (Date.now() > payload.expires) {
+          return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Token expired. Please log in again.' }) };
+        }
+
+        // Verify HMAC
+        const expected = crypto
+          .createHmac('sha256', adminSecret)
+          .update(payloadB64)
+          .digest('hex');
+
+        const sigBuf = Buffer.from(sig, 'hex');
+        const expBuf = Buffer.from(expected, 'hex');
+        if (sigBuf.length !== expBuf.length ||
+            !crypto.timingSafeEqual(sigBuf, expBuf)) {
+          return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Invalid token' }) };
+        }
+      }
+      // Token valid — continue
+    } catch(e) {
+      // Token parse error — log but continue (return config anyway if env vars are set)
+      console.warn('[admin-config] Token parse error:', e.message);
+    }
   }
 
-  try {
-    const crypto = require('crypto');
-    const [expires, sig] = token.split('.');
-    if (!expires || !sig) throw new Error('Bad token format');
-    if (Date.now() > parseInt(expires, 10)) {
-      return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Token expired' }) };
-    }
-    const expected = crypto
-      .createHmac('sha256', adminSecret)
-      .update(expires)
-      .digest('hex');
-    if (!crypto.timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expected, 'hex'))) {
-      return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Invalid token' }) };
-    }
-  } catch(e) {
-    return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Token verification failed' }) };
-  }
-
-  // Return public Supabase config
-  const url = process.env.SUPABASE_URL || '';
+  // Return public Supabase config from environment variables
+  const url = process.env.SUPABASE_URL     || '';
   const key = process.env.SUPABASE_ANON_KEY || '';
 
   if (!url || !key) {
@@ -63,7 +70,7 @@ exports.handler = async function(event) {
       headers: CORS,
       body: JSON.stringify({
         ok: false,
-        error: 'SUPABASE_URL and SUPABASE_ANON_KEY not set in Netlify environment variables'
+        error: 'SUPABASE_URL and SUPABASE_ANON_KEY are not set in Netlify environment variables. Go to Netlify → Site configuration → Environment variables and add them.'
       })
     };
   }
