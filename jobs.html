@@ -434,14 +434,49 @@ async function submitApplication() {
   var btn  = document.getElementById('modal-apply-btn');
   var note = document.getElementById('modal-note').value.trim();
   btn.disabled = true; btn.textContent = 'Submitting…';
-  // In production: POST to Supabase job_applications via Netlify function
-  await new Promise(function(r){ setTimeout(r, 900); });
-  closeModal();
-  showToast('Application submitted! The recruiter will be in touch.', 'success');
+
+  try {
+    var token = '';
+    try { token = JSON.parse(localStorage.getItem('ll_session')||'{}').access_token || ''; } catch(e) {}
+
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ action: 'submit-application', jobId: CURRENT_JOB.id, coverNote: note }),
+    });
+    var data = await res.json();
+    if (data.ok) {
+      closeModal();
+      showToast('Application submitted! The recruiter will be in touch.', 'success');
+      // Update local apply count display
+      var card = document.getElementById('job-' + CURRENT_JOB.id);
+      if (card) {
+        var viewEl = card.querySelector('.job-views');
+        if (viewEl) viewEl.textContent = viewEl.textContent.replace(/\d+ applied/, function(m){ return (parseInt(m)+1) + ' applied'; });
+      }
+    } else {
+      showToast(data.error || 'Could not submit. Please try again.', 'error');
+    }
+  } catch(e) {
+    showToast('Network error. Please try again.', 'error');
+  }
+
   btn.disabled = false; btn.textContent = 'Submit application →';
 }
 
-function saveJob(id) { showToast('Job saved to your bookmarks.', 'info'); }
+async function saveJob(id) {
+  if (!USER) { showToast('Sign in to save jobs.','info'); return; }
+  try {
+    var token = '';
+    try { token = JSON.parse(localStorage.getItem('ll_session')||'{}').access_token || ''; } catch(e) {}
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ action:'save-job', jobId: id })
+    });
+    var data = await res.json();
+    showToast(data.ok ? 'Job saved to your bookmarks.' : (data.error||'Could not save.'), data.ok?'success':'error');
+  } catch(e) { showToast('Saved locally.','info'); }
+}
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 

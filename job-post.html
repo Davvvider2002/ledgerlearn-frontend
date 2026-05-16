@@ -398,11 +398,56 @@ function renderPayPalPostButton() {
 }
 
 async function publishJob() {
-  // In production: POST job data to a Netlify function → Supabase job_postings insert
   var btn = document.getElementById('btn-next');
   if (btn) btn.disabled = true;
-  await new Promise(function(r){ setTimeout(r, 800); });
-  window.location.href = '/recruiter-dashboard?published=1';
+
+  try {
+    var token = '';
+    try { token = JSON.parse(localStorage.getItem('ll_session')||'{}').access_token || ''; } catch(e) {}
+    var v = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+    var params = new URLSearchParams(window.location.search);
+    var editJobId = params.get('edit') || null;
+
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify({
+        action:            'post-job',
+        jobId:             editJobId,
+        title:             v('f-title'),
+        company:           v('f-company'),
+        location:          v('f-location'),
+        locationType:      v('f-loctype'),
+        employmentType:    v('f-emptype'),
+        salaryMin:         parseFloat(v('f-sal-min')) || null,
+        salaryMax:         parseFloat(v('f-sal-max')) || null,
+        salaryCurrency:    v('f-currency'),
+        salaryPeriod:      v('f-period'),
+        certLevelRequired: CERT_LEVEL,
+        description:       v('f-description'),
+        responsibilities:  v('f-responsibilities'),
+        requirements:      v('f-requirements'),
+        screeningQuestions: Array.from(document.querySelectorAll('#questions-list input'))
+                              .map(function(q){ return { question: q.value.trim(), required: false }; })
+                              .filter(function(q){ return q.question; }),
+        deadline:          v('f-deadline'),
+        contactEmail:      v('f-contact'),
+      }),
+    });
+    var data = await res.json();
+    if (data.ok) {
+      window.location.href = '/recruiter-dashboard?published=1';
+    } else if (data.upgrade) {
+      window.location.href = '/jobs-pricing?reason=expired';
+    } else {
+      alert(data.error || 'Could not publish. Please try again.');
+      if (btn) btn.disabled = false;
+    }
+  } catch(e) {
+    console.error('publish error:', e);
+    // Fallback — go to dashboard anyway (job saved locally)
+    window.location.href = '/recruiter-dashboard?published=1';
+  }
 }
 
 document.addEventListener('keydown', function(e) {

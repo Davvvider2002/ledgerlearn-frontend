@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Applications — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--off:#f8f7f4;--border:rgba(11,31,58,0.12);--muted:#6b87a3;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--off);min-height:100vh;display:flex;flex-direction:column;}
+nav{height:56px;background:var(--navy);border-bottom:2px solid var(--gold);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:18px;height:18px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;color:#fff;}
+.brand span{color:var(--gold);}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.nav-link{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.82rem;}
+.shell{flex:1;max-width:1100px;margin:0 auto;width:100%;padding:2rem 1.5rem;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+.page-eyebrow{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--teal);font-weight:700;margin-bottom:4px;}
+.page-title{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--navy);}
+.page-sub{font-size:0.82rem;color:var(--muted);margin-top:3px;}
+.btn-sm{padding:8px 16px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;text-decoration:none;display:inline-block;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-outline{background:#fff;border:1px solid var(--border);color:var(--muted);}
+.btn-outline:hover{border-color:var(--navy);color:var(--navy);}
+
+/* Tabs */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.25rem;}
+.tab{padding:9px 18px;font-size:0.82rem;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:inherit;}
+.tab.active{color:var(--navy);border-bottom-color:var(--gold);}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+
+/* Cards (applicant view) */
+.app-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:0.875rem;display:flex;align-items:flex-start;gap:1rem;transition:all .2s;}
+.app-card:hover{border-color:var(--gold);}
+.app-card-left{flex:1;}
+.app-job-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:2px;}
+.app-company{font-size:0.8rem;color:var(--muted);margin-bottom:8px;}
+.app-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:8px;}
+.tag{font-size:0.68rem;font-weight:600;padding:3px 9px;border-radius:100px;}
+.tag-loc{background:rgba(11,31,58,0.06);color:#3d5a7a;}
+.tag-cert{background:rgba(29,169,138,0.1);color:#0F6E56;}
+.tag-date{background:#f1f5f9;color:var(--muted);}
+.app-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;}
+.status-pill{font-size:0.75rem;font-weight:700;padding:4px 12px;border-radius:100px;}
+.status-applied    {background:#e0f0ff;color:#1e4a7d;}
+.status-shortlisted{background:#e1f7f2;color:#0F6E56;}
+.status-interview  {background:rgba(212,168,67,0.15);color:#7a5c00;}
+.status-offered    {background:#1DA98A;color:#fff;}
+.status-rejected   {background:#fde8e8;color:#9b1c1c;}
+.status-withdrawn  {background:#f1f5f9;color:var(--muted);}
+.app-date{font-size:0.72rem;color:var(--muted);}
+.withdraw-btn{font-size:0.7rem;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;}
+.withdraw-btn:hover{color:#e05555;}
+
+/* Table (recruiter view) */
+.table-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.table-hdr{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:0.5rem;}
+.table-title{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;color:var(--navy);}
+.search-row{display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;}
+.search-row input,.search-row select{padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-size:0.78rem;font-family:inherit;outline:none;}
+.search-row input:focus,.search-row select:focus{border-color:var(--gold);}
+table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+th{padding:9px 12px;text-align:left;font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--off);}
+td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafbfc;}
+.badge{display:inline-block;font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:100px;}
+.badge-teal{background:#e1f7f2;color:#0F6E56;}
+.badge-gold{background:rgba(212,168,67,0.15);color:#7a5c00;}
+.badge-blue{background:#e0f0ff;color:#1e4a7d;}
+.badge-red{background:#fde8e8;color:#9b1c1c;}
+.badge-grey{background:#f1f5f9;color:var(--muted);}
+.action-row{display:flex;gap:4px;}
+.act-btn{padding:4px 9px;border-radius:5px;border:1px solid var(--border);font-size:0.7rem;cursor:pointer;font-family:inherit;color:var(--muted);background:#fff;}
+.act-btn:hover{border-color:var(--navy);color:var(--navy);}
+.act-btn.green:hover{border-color:var(--teal);color:var(--teal);}
+.act-btn.red:hover{border-color:#e05555;color:#e05555;}
+
+/* Detail panel */
+.detail-overlay{position:fixed;inset:0;background:rgba(5,14,28,0.7);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem;}
+.detail-overlay.open{display:flex;}
+.detail-panel{background:#fff;border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.detail-header{background:var(--navy);padding:1.25rem 1.5rem;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.detail-avatar{width:42px;height:42px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--navy);flex-shrink:0;}
+.detail-name{font-size:1rem;font-weight:700;color:#fff;}
+.detail-sub{font-size:0.78rem;color:rgba(255,255,255,0.5);margin-top:2px;}
+.detail-close{background:none;border:none;color:rgba(255,255,255,0.5);font-size:1.2rem;cursor:pointer;}
+.detail-body{padding:1.5rem;}
+.detail-cert-box{background:#e1f7f2;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:1rem;}
+.detail-cert-text{font-size:0.82rem;color:#0F6E56;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;}
+.detail-field-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px;}
+.detail-field-val{font-size:0.88rem;color:var(--navy);font-weight:500;}
+.detail-actions{display:flex;gap:0.5rem;padding-top:1rem;border-top:1px solid var(--border);}
+.det-btn{flex:1;padding:11px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;}
+.det-btn-green{background:var(--teal);color:#fff;}
+.det-btn-red{background:#fde8e8;color:#9b1c1c;}
+.det-btn-grey{background:#f1f5f9;color:var(--muted);}
+
+.empty{padding:3rem;text-align:center;color:var(--muted);}
+.empty-icon{font-size:2rem;margin-bottom:0.75rem;}
+</style>
+<script src="/ll-auth.js"></script>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <div class="nav-right">
+    <a href="/jobs" class="nav-link">Browse jobs</a>
+    <span class="nav-link" id="nav-back-link" style="cursor:pointer;"></span>
+  </div>
+</nav>
+
+<div class="shell">
+  <div class="page-hdr">
+    <div>
+      <div class="page-eyebrow" id="page-eyebrow">Applications</div>
+      <div class="page-title" id="page-title">Loading…</div>
+      <div class="page-sub" id="page-sub"></div>
+    </div>
+    <div id="page-actions"></div>
+  </div>
+
+  <!-- Applicant view: my applications -->
+  <div id="applicant-view" style="display:none;">
+    <div class="tabs">
+      <button class="tab active" onclick="filterStatus('all',this)">All</button>
+      <button class="tab" onclick="filterStatus('applied',this)">Applied</button>
+      <button class="tab" onclick="filterStatus('shortlisted',this)">Shortlisted</button>
+      <button class="tab" onclick="filterStatus('interview',this)">Interview</button>
+      <button class="tab" onclick="filterStatus('offered',this)">Offered</button>
+    </div>
+    <div id="applicant-apps-list">
+      <div class="empty"><div class="empty-icon">📨</div>Loading your applications…</div>
+    </div>
+  </div>
+
+  <!-- Recruiter view: inbox -->
+  <div id="recruiter-view" style="display:none;">
+    <div class="table-card">
+      <div class="table-hdr">
+        <div class="table-title">Applications inbox</div>
+        <div class="search-row">
+          <input id="search-apps" placeholder="Search name or job…" oninput="filterApps()" style="width:180px;">
+          <select id="filter-status" onchange="filterApps()">
+            <option value="">All statuses</option>
+            <option value="applied">Applied</option>
+            <option value="shortlisted">Shortlisted</option>
+            <option value="interview">Interview</option>
+            <option value="offered">Offered</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+      <div id="recruiter-apps-table">
+        <div class="empty"><div class="empty-icon">📨</div>Loading applications…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Candidate detail panel -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-panel">
+    <div class="detail-header">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="detail-avatar" id="det-av">?</div>
+        <div>
+          <div class="detail-name" id="det-name">—</div>
+          <div class="detail-sub" id="det-sub">—</div>
+        </div>
+      </div>
+      <button class="detail-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-cert-box" id="det-cert">
+        <span style="font-size:1rem;">✓</span>
+        <span class="detail-cert-text" id="det-cert-text">LedgerLearn certificate verified</span>
+      </div>
+      <div class="detail-grid">
+        <div><div class="detail-field-label">Location</div><div class="detail-field-val" id="det-loc">—</div></div>
+        <div><div class="detail-field-label">Applied</div><div class="detail-field-val" id="det-date">—</div></div>
+        <div><div class="detail-field-label">Job applied for</div><div class="detail-field-val" id="det-job">—</div></div>
+        <div><div class="detail-field-label">Current status</div><div class="detail-field-val" id="det-status">—</div></div>
+      </div>
+      <div id="det-cover" style="margin-bottom:1rem;display:none;">
+        <div class="detail-field-label">Cover note</div>
+        <div style="font-size:0.85rem;color:#4a6070;line-height:1.6;padding:10px;background:var(--off);border-radius:8px;margin-top:4px;" id="det-cover-text"></div>
+      </div>
+      <div class="detail-actions">
+        <button class="det-btn det-btn-green" onclick="updateStatus('shortlisted')">✓ Shortlist</button>
+        <button class="det-btn" style="background:#e0f0ff;color:#1e4a7d;" onclick="updateStatus('interview')">📅 Interview</button>
+        <button class="det-btn" style="background:#faeeda;color:#633806;" onclick="updateStatus('offered')">🏆 Offer</button>
+        <button class="det-btn det-btn-red" onclick="updateStatus('rejected')">✕ Reject</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var USER     = null;
+var USER_ID  = '';
+var IS_RECRUITER = false;
+var ALL_APPS = [];
+var CURRENT_STATUS_FILTER = 'all';
+var CURRENT_APP_ID = '';
+
+(async function init() {
+  USER = await window.LLAuth.require();
+  if (!USER) return;
+  USER_ID = USER.id || USER.sub || '';
+
+  var stored = {};
+  try { stored = JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) {}
+  IS_RECRUITER = stored.role === 'recruiter';
+
+  if (IS_RECRUITER) {
+    showRecruiterView();
+    loadRecruiterApps();
+    document.getElementById('nav-back-link').textContent = '← Dashboard';
+    document.getElementById('nav-back-link').onclick = function(){ window.location.href = '/recruiter-dashboard'; };
+    document.getElementById('page-actions').innerHTML = '<a href="/jobs-post" class="btn-sm btn-gold">+ Post a job</a>';
+  } else {
+    showApplicantView();
+    loadMyApps();
+    document.getElementById('nav-back-link').textContent = '← Browse jobs';
+    document.getElementById('nav-back-link').onclick = function(){ window.location.href = '/jobs'; };
+    document.getElementById('page-actions').innerHTML = '<a href="/jobs" class="btn-sm btn-outline">Browse more jobs →</a>';
+  }
+})();
+
+function showApplicantView() {
+  document.getElementById('applicant-view').style.display = 'block';
+  document.getElementById('page-eyebrow').textContent = 'My applications';
+  document.getElementById('page-title').textContent   = 'Your job applications';
+  document.getElementById('page-sub').textContent     = 'Track the status of every role you applied for.';
+}
+
+function showRecruiterView() {
+  document.getElementById('recruiter-view').style.display = 'block';
+  document.getElementById('page-eyebrow').textContent = 'Recruiter inbox';
+  document.getElementById('page-title').textContent   = 'Applications received';
+  document.getElementById('page-sub').textContent     = 'Review and manage candidates who applied to your roles.';
+}
+
+// ── Applicant: my applications ─────────────────────────────
+async function loadMyApps() {
+  try {
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json',
+                 'Authorization': 'Bearer ' + getToken() },
+      body:    JSON.stringify({ action: 'get-my-applications' }),
+    });
+    var data = await res.json();
+    ALL_APPS = data.data || [];
+    renderApplicantApps();
+  } catch(e) {
+    document.getElementById('applicant-apps-list').innerHTML =
+      '<div class="empty"><div class="empty-icon">⚠️</div>Could not load applications. <a href="/jobs" style="color:var(--teal);">Browse jobs →</a></div>';
+  }
+}
+
+function renderApplicantApps() {
+  var filtered = CURRENT_STATUS_FILTER === 'all'
+    ? ALL_APPS
+    : ALL_APPS.filter(function(a){ return a.status === CURRENT_STATUS_FILTER; });
+
+  var wrap = document.getElementById('applicant-apps-list');
+  if (!filtered.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">📨</div>' +
+      (ALL_APPS.length ? 'No ' + CURRENT_STATUS_FILTER + ' applications.' : 'You haven\'t applied for any jobs yet.') +
+      '<br><a href="/jobs" style="color:var(--gold);font-weight:700;">Browse open roles →</a></div>';
+    return;
+  }
+
+  var flags = {NG:'🇳🇬',ZA:'🇿🇦',UK:'🇬🇧',AE:'🇦🇪',AU:'🇦🇺'};
+
+  wrap.innerHTML = filtered.map(function(app) {
+    var job    = app.job_postings || {};
+    var date   = (app.applied_at || '').split('T')[0];
+    var status = app.status || 'applied';
+    var statusClass = 'status-' + status;
+
+    return '<div class="app-card">' +
+      '<div class="app-card-left">' +
+        '<div class="app-job-title">' + esc(job.title || 'Role') + '</div>' +
+        '<div class="app-company">' + esc(job.company || '—') + '</div>' +
+        '<div class="app-tags">' +
+          '<span class="tag tag-loc">' + esc(job.location || '—') + '</span>' +
+          '<span class="tag tag-cert">Applied ' + esc(date) + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="app-card-right">' +
+        '<span class="status-pill ' + statusClass + '">' + status.charAt(0).toUpperCase()+status.slice(1) + '</span>' +
+        (status === 'applied' ? '<button class="withdraw-btn" onclick="withdrawApp(\''+app.id+'\')">Withdraw</button>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function filterStatus(status, btn) {
+  CURRENT_STATUS_FILTER = status;
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderApplicantApps();
+}
+
+async function withdrawApp(appId) {
+  if (!confirm('Withdraw this application? This cannot be undone.')) return;
+  try {
+    await fetch('/.netlify/functions/job-board-api', {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},
+      body: JSON.stringify({ action:'update-application-status', applicationId:appId, status:'withdrawn' })
+    });
+    showToast('Application withdrawn.','info');
+    loadMyApps();
+  } catch(e) { showToast('Error. Try again.','error'); }
+}
+
+// ── Recruiter: inbox ───────────────────────────────────────
+async function loadRecruiterApps() {
+  try {
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},
+      body: JSON.stringify({ action:'get-applications' }),
+    });
+    var data = await res.json();
+    ALL_APPS = data.data || [];
+    renderRecruiterTable(ALL_APPS);
+  } catch(e) {
+    document.getElementById('recruiter-apps-table').innerHTML =
+      '<div class="empty"><div class="empty-icon">⚠️</div>Could not load applications.</div>';
+  }
+}
+
+function renderRecruiterTable(apps) {
+  var wrap = document.getElementById('recruiter-apps-table');
+  if (!apps.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">📨</div>No applications yet.<br><a href="/jobs-post" style="color:var(--gold);font-weight:700;">Post your first role →</a></div>';
+    return;
+  }
+
+  var flags = {NG:'🇳🇬',ZA:'🇿🇦',UK:'🇬🇧',AE:'🇦🇪',AU:'🇦🇺',GH:'🇬🇭'};
+  function statusBadge(s) {
+    var cls={applied:'badge-blue',shortlisted:'badge-teal',interview:'badge-gold',offered:'badge-teal',rejected:'badge-red',withdrawn:'badge-grey'};
+    return '<span class="badge '+(cls[s]||'badge-grey')+'">'+s+'</span>';
+  }
+
+  wrap.innerHTML = '<table><thead><tr><th>Candidate</th><th>Job</th><th>Cert</th><th>Region</th><th>Applied</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+    apps.map(function(a) {
+      var certs  = a.applicant_certs || [];
+      var certBadge = certs.length
+        ? '<span class="badge badge-teal">' + esc(certs[0].level.toUpperCase()) + ' ✓ ' + certs[0].score + '%</span>'
+        : '<span class="badge badge-grey">No cert</span>';
+      return '<tr>' +
+        '<td><strong>' + esc(a.applicant_name||'—') + '</strong><div style="font-size:0.72rem;color:var(--muted);">' + esc(a.applicant_email||'') + '</div></td>' +
+        '<td style="font-size:0.8rem;">' + esc(a.job_title||'—') + '</td>' +
+        '<td>' + certBadge + '</td>' +
+        '<td>' + (flags[a.applicant_region]||'🌍') + ' ' + esc(a.applicant_region||'—') + '</td>' +
+        '<td style="font-size:0.75rem;color:var(--muted);">' + esc((a.applied_at||'').split('T')[0]) + '</td>' +
+        '<td>' + statusBadge(a.status||'applied') + '</td>' +
+        '<td><div class="action-row">' +
+          '<button class="act-btn" onclick="openDetail('+JSON.stringify(a)+')">View</button>' +
+          '<button class="act-btn green" onclick="quickStatus(\''+a.id+'\',\'shortlisted\')">Shortlist</button>' +
+          '<button class="act-btn red" onclick="quickStatus(\''+a.id+'\',\'rejected\')">Reject</button>' +
+        '</div></td>' +
+      '</tr>';
+    }).join('') +
+  '</tbody></table>';
+}
+
+function filterApps() {
+  var q      = document.getElementById('search-apps').value.toLowerCase();
+  var status = document.getElementById('filter-status').value;
+  var filtered = ALL_APPS.filter(function(a) {
+    var nameMatch   = !q || (a.applicant_name||'').toLowerCase().includes(q) || (a.job_title||'').toLowerCase().includes(q);
+    var statusMatch = !status || a.status === status;
+    return nameMatch && statusMatch;
+  });
+  renderRecruiterTable(filtered);
+}
+
+function openDetail(app) {
+  CURRENT_APP_ID = app.id;
+  var certs  = app.applicant_certs || [];
+  var initials = ((app.applicant_name||'?')[0] + (app.applicant_name||'? ').split(' ')[1]?.[0]||'').toUpperCase();
+  document.getElementById('det-av').textContent         = initials;
+  document.getElementById('det-name').textContent       = app.applicant_name || '—';
+  document.getElementById('det-sub').textContent        = app.applicant_email || '—';
+  document.getElementById('det-loc').textContent        = app.applicant_region || '—';
+  document.getElementById('det-date').textContent       = (app.applied_at||'').split('T')[0];
+  document.getElementById('det-job').textContent        = app.job_title || '—';
+  document.getElementById('det-status').textContent     = app.status || 'applied';
+
+  var certText = certs.length
+    ? certs.map(function(c){ return c.level.toUpperCase() + ' ✓ ' + c.score + '% · ID: ' + c.cert_id; }).join(' | ')
+    : 'No LedgerLearn certificate';
+  document.getElementById('det-cert-text').textContent = certText;
+
+  document.getElementById('detail-overlay').classList.add('open');
+}
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  CURRENT_APP_ID = '';
+}
+
+async function updateStatus(status) {
+  if (!CURRENT_APP_ID) return;
+  await quickStatus(CURRENT_APP_ID, status);
+  closeDetail();
+}
+
+async function quickStatus(appId, status) {
+  try {
+    await fetch('/.netlify/functions/job-board-api', {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},
+      body: JSON.stringify({ action:'update-application-status', applicationId:appId, status })
+    });
+    showToast('Status updated to "' + status + '"', 'success');
+    var app = ALL_APPS.find(function(a){ return a.id===appId; });
+    if (app) app.status = status;
+    renderRecruiterTable(ALL_APPS);
+  } catch(e) { showToast('Error updating status.','error'); }
+}
+
+function getToken() {
+  try {
+    var sess = JSON.parse(localStorage.getItem('ll_session')||'{}');
+    return sess.access_token || '';
+  } catch(e) { return ''; }
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+var _toast;
+function showToast(msg, type) {
+  if (_toast) _toast.remove();
+  _toast = document.createElement('div');
+  _toast.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:99999;background:' +
+    (type==='success'?'#1DA98A':type==='error'?'#e05555':'#0B1F3A') +
+    ';color:#fff;padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;max-width:340px;';
+  _toast.textContent = msg;
+  document.body.appendChild(_toast);
+  setTimeout(function(){ if(_toast) _toast.remove(); }, 3500);
+}
+</script>
+</body>
+</html>

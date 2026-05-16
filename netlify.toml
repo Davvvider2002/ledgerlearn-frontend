@@ -231,6 +231,19 @@
   status = 200
 
 [[redirects]]
+  from   = "/jobs-applications"
+  to     = "/jobs-applications.html"
+  status = 200
+
+[[redirects]]
+  from   = "/api/job-board-api"
+  to     = "/.netlify/functions/job-board-api"
+  status = 200
+
+
+[functions.expire-trials]
+  schedule = "0 8 * * *"
+[[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 404

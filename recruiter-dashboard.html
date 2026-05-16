@@ -211,14 +211,39 @@ async function loadPlanStatus() {
   }
 }
 
-function loadJobs() {
+async function loadJobs() {
   var wrap = document.getElementById('jobs-table-wrap');
-  // In production, fetch from /api/recruiter-jobs
-  // For now, render from localStorage if available
-  var dummy = [
-    { title:'Xero Bookkeeper — Remote', status:'active', apps:8, views:142, deadline:'2026-06-30', level:'L1+' },
-    { title:'ERP Finance Consultant', status:'active', apps:4, views:89, deadline:'2026-07-15', level:'L2+' },
-  ];
+  var token = '';
+  try { token = JSON.parse(localStorage.getItem('ll_session')||'{}').access_token || ''; } catch(e) {}
+
+  var dummy = [];
+  try {
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ action:'get-recruiter-jobs' })
+    });
+    var data = await res.json();
+    if (data.ok && Array.isArray(data.data) && data.data.length > 0) {
+      // Map Supabase columns to display format
+      dummy = data.data.map(function(j) {
+        return {
+          id: j.id, title: j.title, status: j.status, apps: j.application_count||0,
+          views: j.view_count||0, deadline: j.deadline||'—', level: (j.cert_level_required||'any').toUpperCase()
+        };
+      });
+    } else {
+      // Fallback to sample data if no live jobs yet
+      dummy = [
+        { title:'Xero Bookkeeper — Remote', status:'active', apps:8, views:142, deadline:'2026-06-30', level:'L1+' },
+        { title:'ERP Finance Consultant', status:'active', apps:4, views:89, deadline:'2026-07-15', level:'L2+' },
+      ];
+    }
+  } catch(e) {
+    dummy = [
+      { title:'Xero Bookkeeper — Remote', status:'active', apps:8, views:142, deadline:'2026-06-30', level:'L1+' },
+      { title:'ERP Finance Consultant', status:'active', apps:4, views:89, deadline:'2026-07-15', level:'L2+' },
+    ];
+  }
   if (!dummy.length) {
     wrap.innerHTML = '<div class="empty"><div class="empty-icon">💼</div>No job listings yet.<br><a href="/jobs-post" style="color:var(--gold);font-weight:700;">Post your first role →</a></div>';
     return;

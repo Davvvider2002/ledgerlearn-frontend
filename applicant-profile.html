@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Career Profile — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--off:#f8f7f4;--border:rgba(11,31,58,0.12);--muted:#6b87a3;--mid:#0d2044;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--off);min-height:100vh;display:flex;flex-direction:column;}
+
+/* Nav */
+nav{height:56px;background:var(--navy);border-bottom:2px solid var(--gold);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:18px;height:18px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;color:#fff;}
+.brand span{color:var(--gold);}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.nav-user{font-size:0.82rem;color:rgba(255,255,255,0.5);}
+.nav-links-row{display:flex;gap:0.5rem;}
+.nav-link{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.8rem;padding:5px 10px;border-radius:6px;}
+.nav-link:hover{background:rgba(255,255,255,0.08);color:#fff;}
+.nav-link.active{color:var(--gold);}
+
+/* Shell */
+.shell{flex:1;display:flex;max-width:1060px;margin:0 auto;width:100%;padding:2rem 1.5rem;gap:1.75rem;}
+@media(max-width:768px){.shell{flex-direction:column;padding:1rem;}}
+
+/* Sidebar */
+.sidebar{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:1rem;}
+@media(max-width:768px){.sidebar{width:100%;}}
+.profile-card{background:var(--navy);border-radius:14px;padding:1.25rem;text-align:center;}
+.profile-avatar{width:56px;height:56px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--navy);margin:0 auto 0.75rem;}
+.profile-name{font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:2px;}
+.profile-loc{font-size:0.75rem;color:rgba(255,255,255,0.45);}
+.strength-wrap{margin-top:0.875rem;}
+.strength-label{display:flex;justify-content:space-between;font-size:0.7rem;color:rgba(255,255,255,0.45);margin-bottom:5px;}
+.strength-bar{height:6px;background:rgba(255,255,255,0.1);border-radius:100px;overflow:hidden;}
+.strength-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:100px;transition:width .5s ease;}
+
+/* Step nav */
+.step-nav{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.step-nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;}
+.step-nav-item:last-child{border-bottom:none;}
+.step-nav-item:hover{background:var(--off);}
+.step-nav-item.active{background:rgba(212,168,67,0.06);}
+.step-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;border:2px solid var(--border);color:var(--muted);}
+.step-dot.done{background:var(--teal);border-color:var(--teal);color:#fff;}
+.step-dot.active{background:var(--gold);border-color:var(--gold);color:var(--navy);}
+.step-label-text{font-size:0.8rem;color:var(--muted);}
+.step-nav-item.active .step-label-text{color:var(--navy);font-weight:600;}
+.step-nav-item.done .step-label-text{color:var(--teal);}
+
+/* Cert sidebar badge */
+.cert-sidebar{background:var(--off);border:1px solid var(--border);border-radius:14px;padding:1rem;}
+.cert-sidebar-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:0.75rem;}
+.cert-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+.cert-item:last-child{border-bottom:none;}
+.cert-badge{font-size:0.68rem;font-weight:700;background:var(--teal);color:#fff;padding:2px 7px;border-radius:100px;}
+.cert-name{font-size:0.78rem;color:var(--navy);flex:1;}
+.cert-score{font-size:0.72rem;font-weight:700;color:var(--teal);}
+.cert-verified{font-size:0.7rem;color:var(--teal);}
+
+/* Main content */
+.main{flex:1;min-width:0;}
+.page-view{display:none;}
+.page-view.active{display:block;}
+.form-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.75rem;margin-bottom:1rem;}
+.form-card-eyebrow{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--teal);font-weight:700;margin-bottom:4px;}
+.form-card-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.form-card-sub{font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;}
+
+/* Form fields */
+.fg{display:grid;gap:0.875rem;}
+.fg-2{grid-template-columns:1fr 1fr;}
+.fg-3{grid-template-columns:1fr 1fr 1fr;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field.span2{grid-column:span 2;}
+.field.span3{grid-column:span 3;}
+.field label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);}
+.field label .req{color:#e05555;}
+.field input,.field select,.field textarea{padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--navy);background:var(--off);outline:none;transition:border-color .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);}
+.field textarea{resize:none;height:90px;}
+.field-hint{font-size:0.7rem;color:var(--muted);}
+
+/* Entry cards (education / experience / certs) */
+.entry-card{border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:0.75rem;background:var(--off);}
+.entry-header{display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;}
+.entry-title{font-size:0.9rem;font-weight:700;color:var(--navy);}
+.entry-sub{font-size:0.78rem;color:var(--muted);margin-top:2px;}
+.entry-dates{font-size:0.75rem;color:var(--muted);}
+.entry-desc{font-size:0.8rem;color:#4a6070;line-height:1.5;margin-top:6px;}
+.entry-actions{display:flex;gap:4px;flex-shrink:0;}
+.icon-btn{background:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:0.72rem;cursor:pointer;color:var(--muted);font-family:inherit;}
+.icon-btn:hover{border-color:var(--navy);color:var(--navy);}
+.icon-btn.danger:hover{border-color:#e05555;color:#e05555;}
+
+/* Add form (inline) */
+.add-form{border:1.5px dashed var(--border);border-radius:10px;padding:1rem;margin-bottom:0.75rem;display:none;}
+.add-form.open{display:block;}
+.btn-add{width:100%;padding:9px;background:none;border:1.5px dashed var(--border);border-radius:8px;font-size:0.82rem;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;}
+.btn-add:hover{border-color:var(--gold);color:var(--navy);}
+
+/* Skills grid */
+.skills-wrap{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.75rem;}
+.skill-pill{padding:5px 12px;border-radius:100px;border:1.5px solid var(--border);font-size:0.78rem;cursor:pointer;background:#fff;color:var(--muted);font-family:inherit;transition:all .15s;}
+.skill-pill:hover{border-color:var(--gold);}
+.skill-pill.on{background:rgba(29,169,138,0.08);border-color:var(--teal);color:#0F6E56;font-weight:600;}
+.skills-section-title{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin:1rem 0 0.5rem;}
+
+/* Upload zone */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:2rem;text-align:center;cursor:pointer;transition:all .15s;}
+.upload-zone:hover{border-color:var(--gold);}
+.upload-zone.has-file{border-color:var(--teal);background:rgba(29,169,138,0.04);}
+.upload-icon{font-size:1.75rem;margin-bottom:0.5rem;color:var(--muted);}
+.upload-title{font-size:0.9rem;font-weight:600;color:var(--navy);margin-bottom:3px;}
+.upload-sub{font-size:0.78rem;color:var(--muted);}
+.uploaded-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#e1f7f2;border-radius:8px;margin-top:0.75rem;}
+.uploaded-icon{font-size:1.2rem;}
+.uploaded-name{font-size:0.85rem;font-weight:600;color:#0F6E56;flex:1;}
+.uploaded-size{font-size:0.72rem;color:#1DA98A;}
+.uploaded-remove{background:none;border:none;color:#0F6E56;cursor:pointer;font-size:0.8rem;}
+
+/* Preview card */
+.preview-card{background:var(--navy);border-radius:14px;overflow:hidden;}
+.preview-header{background:var(--mid);padding:1.25rem;display:flex;align-items:center;gap:1rem;}
+.preview-av{width:44px;height:44px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--navy);flex-shrink:0;}
+.preview-name{font-size:0.95rem;font-weight:700;color:#fff;}
+.preview-role{font-size:0.78rem;color:rgba(255,255,255,0.45);margin-top:2px;}
+.preview-pills{display:flex;gap:0.35rem;margin-top:6px;flex-wrap:wrap;}
+.preview-pill{font-size:0.68rem;background:rgba(212,168,67,0.2);color:var(--gold);padding:2px 8px;border-radius:100px;}
+.preview-strength{margin-left:auto;text-align:center;}
+.preview-strength-val{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--gold);}
+.preview-strength-lbl{font-size:0.65rem;color:rgba(255,255,255,0.35);}
+.preview-body{padding:1.25rem;}
+.preview-sec{margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.08);}
+.preview-sec:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.preview-sec-title{font-size:0.65rem;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,0.3);margin-bottom:8px;}
+.preview-item{font-size:0.82rem;color:rgba(255,255,255,0.8);margin-bottom:2px;}
+.preview-item-sub{font-size:0.75rem;color:rgba(255,255,255,0.4);}
+.preview-tags{display:flex;flex-wrap:wrap;gap:0.35rem;}
+.preview-tag{font-size:0.7rem;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);}
+
+/* Form footer */
+.form-footer{display:flex;justify-content:space-between;align-items:center;padding-top:1.25rem;border-top:1px solid var(--border);margin-top:0.5rem;}
+.footer-info{font-size:0.75rem;color:var(--muted);}
+.btn-row{display:flex;gap:0.5rem;}
+.btn-back-sm{padding:9px 18px;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;background:#fff;color:var(--muted);}
+.btn-back-sm:hover{border-color:var(--navy);color:var(--navy);}
+.btn-next-sm{padding:10px 22px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-next-sm:hover{background:#f0c860;}
+.btn-publish{padding:11px 24px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-publish:hover{background:#26c9a5;}
+
+/* Toast */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;max-width:340px;color:#fff;transition:opacity .3s;}
+</style>
+<script src="/ll-auth.js"></script>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <div class="nav-right">
+    <div class="nav-links-row">
+      <a href="/learn" class="nav-link">Learn</a>
+      <a href="/test" class="nav-link">Assess</a>
+      <a href="/jobs" class="nav-link">Jobs</a>
+      <a href="/dashboard" class="nav-link">Dashboard</a>
+    </div>
+    <span class="nav-user" id="nav-user">Loading…</span>
+  </div>
+</nav>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="profile-card">
+      <div class="profile-avatar" id="sb-avatar">?</div>
+      <div class="profile-name" id="sb-name">Your Name</div>
+      <div class="profile-loc" id="sb-loc">Location · Region</div>
+      <div class="strength-wrap">
+        <div class="strength-label"><span>Profile strength</span><span id="sb-pct">0%</span></div>
+        <div class="strength-bar"><div class="strength-fill" id="sb-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="step-nav" id="step-nav">
+      <div class="step-nav-item active" onclick="goTo(1)">
+        <div class="step-dot active" id="dot-1">1</div>
+        <span class="step-label-text">Personal info</span>
+      </div>
+      <div class="step-nav-item" onclick="goTo(2)">
+        <div class="step-dot" id="dot-2">2</div>
+        <span class="step-label-text">Education</span>
+      </div>
+      <div class="step-nav-item" onclick="goTo(3)">
+        <div class="step-dot" id="dot-3">3</div>
+        <span class="step-label-text">Work experience</span>
+      </div>
+      <div class="step-nav-item" onclick="goTo(4)">
+        <div class="step-dot" id="dot-4">4</div>
+        <span class="step-label-text">Certifications</span>
+      </div>
+      <div class="step-nav-item" onclick="goTo(5)">
+        <div class="step-dot" id="dot-5">5</div>
+        <span class="step-label-text">Skills &amp; systems</span>
+      </div>
+      <div class="step-nav-item" onclick="goTo(6)">
+        <div class="step-dot" id="dot-6">6</div>
+        <span class="step-label-text">Resume &amp; preview</span>
+      </div>
+    </div>
+
+    <div class="cert-sidebar" id="cert-sidebar" style="display:none;">
+      <div class="cert-sidebar-title">✓ LedgerLearn certs</div>
+      <div id="cert-sidebar-list"></div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Step 1: Personal info -->
+    <div class="page-view active" id="page-1">
+      <div class="form-card">
+        <div class="form-card-eyebrow">Step 1 of 6</div>
+        <div class="form-card-title">Personal information</div>
+        <div class="form-card-sub">Auto-populated from your LedgerLearn account. Recruiters see this when you apply.</div>
+        <div class="fg fg-2">
+          <div class="field"><label>First name <span class="req">*</span></label><input id="p-fname" placeholder="First name"></div>
+          <div class="field"><label>Last name <span class="req">*</span></label><input id="p-lname" placeholder="Last name"></div>
+          <div class="field"><label>Email <span class="req">*</span></label><input id="p-email" type="email" placeholder="you@example.com"></div>
+          <div class="field"><label>Phone</label><input id="p-phone" type="tel" placeholder="+234 801 234 5678"></div>
+          <div class="field"><label>City / location <span class="req">*</span></label><input id="p-city" placeholder="Lagos, Nigeria"></div>
+          <div class="field"><label>Country</label>
+            <select id="p-country">
+              <option value="NG">🇳🇬 Nigeria</option>
+              <option value="ZA">🇿🇦 South Africa</option>
+              <option value="UK">🇬🇧 United Kingdom</option>
+              <option value="GH">🇬🇭 Ghana</option>
+              <option value="KE">🇰🇪 Kenya</option>
+              <option value="US">🇺🇸 United States</option>
+              <option value="AU">🇦🇺 Australia</option>
+              <option value="AE">🇦🇪 UAE</option>
+              <option value="CA">🇨🇦 Canada</option>
+              <option value="GLOBAL">🌍 Global / Other</option>
+            </select>
+          </div>
+          <div class="field"><label>LinkedIn profile</label><input id="p-linkedin" placeholder="linkedin.com/in/yourname"></div>
+          <div class="field"><label>Personal website</label><input id="p-website" placeholder="yourwebsite.com (optional)"></div>
+          <div class="field span2"><label>Professional summary <span class="req">*</span></label>
+            <textarea id="p-summary" placeholder="Experienced Xero-certified bookkeeper with X years managing accounts for SMEs…"></textarea>
+            <div class="field-hint">This is the first thing recruiters read. 2–4 sentences, focus on your speciality and region.</div>
+          </div>
+          <div class="field"><label>Years of experience</label>
+            <select id="p-exp">
+              <option value="0-1">Less than 1 year</option>
+              <option value="1-2">1–2 years</option>
+              <option value="3-5">3–5 years</option>
+              <option value="6-10" selected>6–10 years</option>
+              <option value="10+">10+ years</option>
+            </select>
+          </div>
+          <div class="field"><label>Availability</label>
+            <select id="p-avail">
+              <option value="immediate">Available immediately</option>
+              <option value="2-weeks">2 weeks notice</option>
+              <option value="1-month">1 month notice</option>
+              <option value="passive">Passive — open to offers</option>
+            </select>
+          </div>
+          <div class="field"><label>Preferred work type</label>
+            <select id="p-worktype">
+              <option value="full-time">Full-time</option>
+              <option value="part-time">Part-time</option>
+              <option value="remote">Remote / Freelance</option>
+              <option value="any">Any</option>
+            </select>
+          </div>
+          <div class="field"><label>Salary expectation (monthly)</label><input id="p-salary" placeholder="e.g. ₦200,000 – ₦280,000"></div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <div class="footer-info">💾 Auto-saved as you type</div>
+        <div class="btn-row"><button class="btn-next-sm" onclick="goTo(2)">Continue →</button></div>
+      </div>
+    </div>
+
+    <!-- Step 2: Education -->
+    <div class="page-view" id="page-2">
+      <div class="form-card">
+        <div class="form-card-eyebrow">Step 2 of 6</div>
+        <div class="form-card-title">Education &amp; qualifications</div>
+        <div class="form-card-sub">Add degrees, diplomas, and professional qualifications.</div>
+        <div id="edu-list">
+          <div class="entry-card">
+            <div class="entry-header">
+              <div>
+                <div class="entry-title">BSc Accounting</div>
+                <div class="entry-sub">University of Lagos · Nigeria</div>
+                <div class="entry-dates">2010 – 2014 · Upper Second Class</div>
+              </div>
+              <div class="entry-actions">
+                <button class="icon-btn danger" onclick="this.closest('.entry-card').remove();updateStrength()">Remove</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="add-form" id="edu-form">
+          <div class="fg fg-2">
+            <div class="field span2"><label>Qualification / degree <span class="req">*</span></label><input id="edu-qual" placeholder="e.g. BSc Accounting, AAT Level 4, ACCA Part 1"></div>
+            <div class="field"><label>Institution <span class="req">*</span></label><input id="edu-inst" placeholder="University / College name"></div>
+            <div class="field"><label>Country</label><input id="edu-country" placeholder="Nigeria"></div>
+            <div class="field"><label>Year completed</label><input id="edu-year" type="number" placeholder="2022" min="1990" max="2030"></div>
+            <div class="field"><label>Grade / result</label><input id="edu-grade" placeholder="e.g. Upper Second, Merit, Pass"></div>
+            <div class="field span2" style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
+              <button class="btn-back-sm" onclick="toggleForm('edu-form',false)">Cancel</button>
+              <button class="btn-next-sm" onclick="saveEdu()">Add qualification</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn-add" onclick="toggleForm('edu-form',true)">+ Add qualification</button>
+      </div>
+      <div class="form-footer">
+        <div class="footer-info" id="edu-count">1 qualification added</div>
+        <div class="btn-row">
+          <button class="btn-back-sm" onclick="goTo(1)">← Back</button>
+          <button class="btn-next-sm" onclick="goTo(3)">Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Work experience -->
+    <div class="page-view" id="page-3">
+      <div class="form-card">
+        <div class="form-card-eyebrow">Step 3 of 6</div>
+        <div class="form-card-title">Work experience</div>
+        <div class="form-card-sub">Add your employment history — most recent first.</div>
+        <div id="exp-list">
+          <div class="entry-card">
+            <div class="entry-header">
+              <div>
+                <div class="entry-title">Senior Bookkeeper</div>
+                <div class="entry-sub">Virtual Bookkeepers Global · Remote · Nigeria</div>
+                <div class="entry-dates">Jan 2024 – Present · Full-time</div>
+              </div>
+              <div class="entry-actions">
+                <button class="icon-btn danger" onclick="this.closest('.entry-card').remove();updateStrength()">Remove</button>
+              </div>
+            </div>
+            <div class="entry-desc">Managing month-end close, VAT returns under FIRS, and Xero bookkeeping for 8 SME clients.</div>
+          </div>
+        </div>
+        <div class="add-form" id="exp-form">
+          <div class="fg fg-2">
+            <div class="field"><label>Job title <span class="req">*</span></label><input id="exp-title" placeholder="e.g. Xero Bookkeeper"></div>
+            <div class="field"><label>Company <span class="req">*</span></label><input id="exp-company" placeholder="e.g. KPMG Nigeria"></div>
+            <div class="field"><label>Location</label><input id="exp-loc" placeholder="Lagos, Nigeria or Remote"></div>
+            <div class="field"><label>Type</label>
+              <select id="exp-type"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Freelance</option></select>
+            </div>
+            <div class="field"><label>Start date</label><input id="exp-start" type="month"></div>
+            <div class="field"><label>End date</label><input id="exp-end" type="month" placeholder="Leave blank if current role"></div>
+            <div class="field span2">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:0.82rem;color:var(--muted);">
+                <input type="checkbox" id="exp-current" style="width:auto;"> I currently work here
+              </label>
+            </div>
+            <div class="field span2"><label>Key responsibilities</label><textarea id="exp-desc" placeholder="Describe your main duties and achievements…"></textarea></div>
+            <div class="field span2" style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
+              <button class="btn-back-sm" onclick="toggleForm('exp-form',false)">Cancel</button>
+              <button class="btn-next-sm" onclick="saveExp()">Add experience</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn-add" onclick="toggleForm('exp-form',true)">+ Add work experience</button>
+      </div>
+      <div class="form-footer">
+        <div class="footer-info" id="exp-count">1 position added</div>
+        <div class="btn-row">
+          <button class="btn-back-sm" onclick="goTo(2)">← Back</button>
+          <button class="btn-next-sm" onclick="goTo(4)">Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Certifications -->
+    <div class="page-view" id="page-4">
+      <div class="form-card">
+        <div class="form-card-eyebrow">Step 4 of 6</div>
+        <div class="form-card-title">Certifications</div>
+        <div class="form-card-sub">LedgerLearn certificates are auto-verified. Add external qualifications below.</div>
+
+        <!-- Auto-populated LL certs -->
+        <div style="background:rgba(29,169,138,0.06);border:1px solid rgba(29,169,138,0.2);border-radius:10px;padding:1rem;margin-bottom:1.25rem;">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--teal);margin-bottom:0.75rem;">✓ LedgerLearn certificates — auto-verified</div>
+          <div id="ll-certs-list">
+            <div style="font-size:0.8rem;color:var(--muted);">Loading your certificates…</div>
+          </div>
+        </div>
+
+        <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:0.75rem;">External certifications</div>
+        <div id="ext-cert-list"></div>
+        <div class="add-form" id="extcert-form">
+          <div class="fg fg-2">
+            <div class="field"><label>Certification name <span class="req">*</span></label><input id="ec-name" placeholder="e.g. ACCA Part 1, Google Data Analyst"></div>
+            <div class="field"><label>Issuing body <span class="req">*</span></label><input id="ec-issuer" placeholder="e.g. ACCA, ICAN, Google, Microsoft"></div>
+            <div class="field"><label>Year issued</label><input id="ec-year" type="number" placeholder="2024" min="1990" max="2030"></div>
+            <div class="field"><label>Credential / Certificate ID</label><input id="ec-id" placeholder="Optional — for verification"></div>
+            <div class="field span2" style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
+              <button class="btn-back-sm" onclick="toggleForm('extcert-form',false)">Cancel</button>
+              <button class="btn-next-sm" onclick="saveExtCert()">Add certification</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn-add" onclick="toggleForm('extcert-form',true)">+ Add external certification</button>
+      </div>
+      <div class="form-footer">
+        <div class="footer-info" id="cert-count">Loading…</div>
+        <div class="btn-row">
+          <button class="btn-back-sm" onclick="goTo(3)">← Back</button>
+          <button class="btn-next-sm" onclick="goTo(5)">Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: Skills -->
+    <div class="page-view" id="page-5">
+      <div class="form-card">
+        <div class="form-card-eyebrow">Step 5 of 6</div>
+        <div class="form-card-title">Skills &amp; accounting systems</div>
+        <div class="form-card-sub">Select everything that applies — this is what recruiters filter by.</div>
+
+        <div class="skills-section-title">Accounting systems</div>
+        <div class="skills-wrap" id="skills-systems">
+          <button class="skill-pill on" onclick="toggleSkill(this)">Xero</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">QuickBooks</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Sage</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">FreshBooks</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Wave</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Zoho Books</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">SAP Business One</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Microsoft Dynamics</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Oracle NetSuite</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Odoo</button>
+        </div>
+
+        <div class="skills-section-title">Core bookkeeping skills</div>
+        <div class="skills-wrap" id="skills-core">
+          <button class="skill-pill on" onclick="toggleSkill(this)">Bank reconciliation</button>
+          <button class="skill-pill on" onclick="toggleSkill(this)">VAT returns</button>
+          <button class="skill-pill on" onclick="toggleSkill(this)">Payroll</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Management accounts</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Financial reporting</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Accounts payable</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Accounts receivable</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Cash flow forecasting</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Budgeting</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Audit support</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">FIRS compliance</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">SARS compliance</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">MTD (HMRC)</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">ERP implementation</button>
+        </div>
+
+        <div class="skills-section-title">Xero add-ons &amp; integrations</div>
+        <div class="skills-wrap" id="skills-addons">
+          <button class="skill-pill on" onclick="toggleSkill(this)">Xero Bank Rules</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Dext / Receipt Bank</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Hubdoc</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Stripe integration</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Shopify integration</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">PayPal integration</button>
+          <button class="skill-pill" onclick="toggleSkill(this)">Inventory management</button>
+        </div>
+      </div>
+      <div class="form-footer">
+        <div class="footer-info" id="skills-count">4 skills selected</div>
+        <div class="btn-row">
+          <button class="btn-back-sm" onclick="goTo(4)">← Back</button>
+          <button class="btn-next-sm" onclick="goTo(6)">Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6: Resume & preview -->
+    <div class="page-view" id="page-6">
+      <div class="form-card">
+        <div class="form-card-eyebrow">Step 6 of 6</div>
+        <div class="form-card-title">Resume &amp; profile preview</div>
+        <div class="form-card-sub">Upload your CV or build one from your profile. Then see exactly how recruiters see you.</div>
+
+        <!-- Mode toggle -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.25rem;">
+          <button class="mode-btn active" id="mode-upload" onclick="setMode('upload')"
+            style="padding:1rem;border-radius:10px;border:1.5px solid var(--gold);background:rgba(212,168,67,0.06);cursor:pointer;font-family:inherit;text-align:center;">
+            <div style="font-size:1.5rem;margin-bottom:4px;">📤</div>
+            <div style="font-size:0.88rem;font-weight:700;color:var(--navy);">Upload my resume</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">PDF or Word · AI scans and enriches</div>
+          </button>
+          <button class="mode-btn" id="mode-build" onclick="setMode('build')"
+            style="padding:1rem;border-radius:10px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;text-align:center;">
+            <div style="font-size:1.5rem;margin-bottom:4px;">✨</div>
+            <div style="font-size:0.88rem;font-weight:700;color:var(--navy);">Build from profile</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">AI generates PDF from your answers</div>
+          </button>
+        </div>
+
+        <!-- Upload section -->
+        <div id="upload-section">
+          <input type="file" id="resume-file" accept=".pdf,.doc,.docx" style="display:none;" onchange="handleFileSelect(this)">
+          <div class="upload-zone" id="upload-zone" onclick="document.getElementById('resume-file').click()">
+            <div class="upload-icon">📄</div>
+            <div class="upload-title">Click to upload your resume</div>
+            <div class="upload-sub">PDF or Word (.docx) · Max 5MB</div>
+          </div>
+          <div id="uploaded-file-row" style="display:none;">
+            <div class="uploaded-row">
+              <div class="uploaded-icon">📄</div>
+              <div>
+                <div class="uploaded-name" id="uploaded-name">—</div>
+                <div class="uploaded-size" id="uploaded-size">— · Uploaded</div>
+              </div>
+              <button class="uploaded-remove" onclick="removeFile()">Remove ✕</button>
+            </div>
+            <div style="background:#E1F5EE;border-radius:8px;padding:10px 14px;margin-top:0.75rem;font-size:0.8rem;color:#0F6E56;">
+              ✓ Resume uploaded · AI will extract skills and experience to enrich your profile
+            </div>
+          </div>
+        </div>
+
+        <!-- Build section -->
+        <div id="build-section" style="display:none;">
+          <div style="border:1px solid var(--border);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:12px;background:var(--off);">
+            <div style="font-size:1.5rem;">✨</div>
+            <div style="flex:1;">
+              <div style="font-size:0.88rem;font-weight:700;color:var(--navy);">AI-generated resume ready</div>
+              <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">Built from your profile · ATS-optimised · LedgerLearn certs included</div>
+            </div>
+            <button class="btn-next-sm" onclick="showToast('Resume PDF downloading…','success')">⬇ Download PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile preview -->
+      <div class="form-card">
+        <div class="form-card-title" style="margin-bottom:1rem;">How recruiters see your profile</div>
+        <div class="preview-card">
+          <div class="preview-header">
+            <div class="preview-av" id="prev-av">?</div>
+            <div style="flex:1;">
+              <div class="preview-name" id="prev-name">Your Name</div>
+              <div class="preview-role" id="prev-role">Location · Availability</div>
+              <div class="preview-pills" id="prev-pills"></div>
+            </div>
+            <div class="preview-strength">
+              <div class="preview-strength-val" id="prev-pct">0%</div>
+              <div class="preview-strength-lbl">Profile score</div>
+            </div>
+          </div>
+          <div class="preview-body">
+            <div class="preview-sec">
+              <div class="preview-sec-title">Summary</div>
+              <div class="preview-item" id="prev-summary" style="font-size:0.8rem;color:rgba(255,255,255,0.6);line-height:1.6;">Complete step 1 to populate your summary.</div>
+            </div>
+            <div class="preview-sec">
+              <div class="preview-sec-title">Experience</div>
+              <div id="prev-exp">
+                <div class="preview-item">Senior Bookkeeper — Virtual Bookkeepers Global</div>
+                <div class="preview-item-sub">Jan 2024–Present · Remote · Nigeria</div>
+              </div>
+            </div>
+            <div class="preview-sec">
+              <div class="preview-sec-title">Qualifications</div>
+              <div id="prev-edu">
+                <div class="preview-item">BSc Accounting · University of Lagos · 2014</div>
+              </div>
+            </div>
+            <div class="preview-sec">
+              <div class="preview-sec-title">Systems &amp; skills</div>
+              <div class="preview-tags" id="prev-skills">
+                <span class="preview-tag">Xero</span>
+                <span class="preview-tag">Bank reconciliation</span>
+                <span class="preview-tag">VAT returns</span>
+                <span class="preview-tag">Payroll</span>
+                <span class="preview-tag">Xero Bank Rules</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <div class="footer-info">👁 Visible to recruiters when you apply for a role</div>
+        <div class="btn-row">
+          <button class="btn-back-sm" onclick="goTo(5)">← Back</button>
+          <button class="btn-publish" onclick="publishProfile()">✓ Save &amp; publish profile</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .main -->
+</div><!-- end .shell -->
+
+<script>
+var STEP = 1;
+var USER = null;
+var PROGRESS = {};
+var CERTS = [];
+
+// ── Init ──────────────────────────────────────────────────────
+(async function init() {
+  USER = await window.LLAuth.require();
+  if (!USER) return;
+
+  document.getElementById('nav-user').textContent = USER.name || USER.email || 'Account';
+
+  try { PROGRESS = JSON.parse(localStorage.getItem('ll_progress') || '{}'); } catch(e) {}
+
+  // Auto-populate personal info
+  var u = {};
+  try { u = JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) {}
+  var nameParts = (USER.name || u.name || '').trim().split(' ');
+  var fname = nameParts[0] || '';
+  var lname = nameParts.slice(1).join(' ') || '';
+
+  var f = function(id, val) { var el = document.getElementById(id); if (el && val) el.value = val; };
+  f('p-fname',   fname);
+  f('p-lname',   lname);
+  f('p-email',   USER.email || u.email || '');
+  f('p-country', u.region || 'NG');
+
+  // Sidebar
+  var initials = ((fname[0]||'?') + (lname[0]||'')).toUpperCase();
+  document.getElementById('sb-avatar').textContent = initials;
+  document.getElementById('sb-name').textContent   = USER.name || fname + ' ' + lname;
+  document.getElementById('sb-loc').textContent    = u.region || 'Region not set';
+  document.getElementById('prev-av').textContent   = initials;
+
+  // Load and display certificates
+  loadCertificates();
+  updateStrength();
+  updateSkillCount();
+})();
+
+function loadCertificates() {
+  var completed = PROGRESS.completedLevels || [];
+  var levelLabels = { l1:'L1 Xero Associate', l2:'L2 Xero Professional', l3:'L3 Xero Advisor' };
+  var scores = { l1: PROGRESS.l1Score, l2: PROGRESS.l2Score, l3: PROGRESS.l3Score };
+
+  var html = '';
+  var sideHtml = '';
+  var count = 0;
+
+  ['l1','l2','l3'].forEach(function(level) {
+    if (completed.includes(level)) {
+      var score = scores[level] || 0;
+      var certId = PROGRESS.certId || ('LL-2026-' + level.toUpperCase() + '001');
+      count++;
+      html += '<div class="entry-card" style="background:#fff;">' +
+        '<div class="entry-header">' +
+          '<div>' +
+            '<div class="entry-title" style="color:var(--teal);">✓ ' + levelLabels[level] + '</div>' +
+            '<div class="entry-sub">LedgerLearn Pro · Score: ' + score + '%</div>' +
+            '<div class="entry-dates">Cert ID: ' + certId + ' · Verified</div>' +
+          '</div>' +
+          '<span style="background:var(--teal);color:#fff;font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:100px;">' + level.toUpperCase() + '</span>' +
+        '</div>' +
+      '</div>';
+
+      sideHtml += '<div class="cert-item">' +
+        '<span class="cert-badge">' + level.toUpperCase() + '</span>' +
+        '<span class="cert-name">' + levelLabels[level] + '</span>' +
+        '<span class="cert-score">' + score + '%</span>' +
+      '</div>';
+    }
+  });
+
+  if (!html) {
+    html = '<div style="font-size:0.82rem;color:var(--muted);text-align:center;padding:0.75rem 0;">' +
+      'No certificates yet. <a href="/test" style="color:var(--teal);font-weight:600;">Take your L1 assessment free →</a></div>';
+  }
+
+  document.getElementById('ll-certs-list').innerHTML = html;
+  document.getElementById('cert-count').textContent = count + ' LedgerLearn cert' + (count !== 1 ? 's' : '') + ' + external';
+
+  if (sideHtml) {
+    document.getElementById('cert-sidebar').style.display = 'block';
+    document.getElementById('cert-sidebar-list').innerHTML = sideHtml;
+  }
+
+  // Update preview pills
+  var pillsEl = document.getElementById('prev-pills');
+  if (pillsEl && count > 0) {
+    var pillHtml = completed.map(function(l) {
+      return '<span class="preview-pill">' + l.toUpperCase() + ' ✓ ' + (scores[l]||0) + '%</span>';
+    }).join('');
+    pillsEl.innerHTML = pillHtml;
+  }
+}
+
+// ── Navigation ────────────────────────────────────────────────
+function goTo(step) {
+  STEP = step;
+  for (var i = 1; i <= 6; i++) {
+    var page = document.getElementById('page-' + i);
+    var dot  = document.getElementById('dot-' + i);
+    var navItem = dot ? dot.closest('.step-nav-item') : null;
+
+    if (page) page.classList.toggle('active', i === step);
+    if (dot) {
+      dot.className = 'step-dot' + (i < step ? ' done' : i === step ? ' active' : '');
+      dot.textContent = i < step ? '✓' : i;
+    }
+    if (navItem) {
+      navItem.className = 'step-nav-item' + (i < step ? ' done' : i === step ? ' active' : '');
+    }
+  }
+  updateStrength();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Strength calculation ──────────────────────────────────────
+function updateStrength() {
+  var score = 0;
+  var fname = (document.getElementById('p-fname') || {}).value || '';
+  var summary = (document.getElementById('p-summary') || {}).value || '';
+  if (fname)                score += 15;
+  if (summary.length > 80) score += 15;
+  var eduItems = document.querySelectorAll('#edu-list .entry-card');
+  var expItems = document.querySelectorAll('#exp-list .entry-card');
+  var extCerts = document.querySelectorAll('#ext-cert-list .entry-card');
+  var skills   = document.querySelectorAll('.skill-pill.on');
+  var certs    = (PROGRESS.completedLevels || []).length;
+  if (eduItems.length > 0)   score += 10;
+  if (expItems.length > 0)   score += 20;
+  if (certs > 0)             score += 15;
+  if (extCerts.length > 0)   score += 5;
+  if (skills.length >= 5)    score += 10;
+  if (skills.length >= 10)   score += 5;
+  var file = document.getElementById('uploaded-name');
+  if (file && file.textContent !== '—') score += 5;
+
+  score = Math.min(score, 100);
+  document.getElementById('sb-pct').textContent = score + '%';
+  document.getElementById('sb-bar').style.width = score + '%';
+  document.getElementById('prev-pct').textContent = score + '%';
+
+  // Update preview fields live
+  var pname = ((document.getElementById('p-fname')||{}).value||'') + ' ' + ((document.getElementById('p-lname')||{}).value||'');
+  var pcity  = (document.getElementById('p-city')||{}).value || '';
+  var pavail = (document.getElementById('p-avail')||{}).value || '';
+  var psum   = (document.getElementById('p-summary')||{}).value || '';
+  if (pname.trim()) { document.getElementById('prev-name').textContent = pname.trim(); document.getElementById('sb-name').textContent = pname.trim(); document.getElementById('sb-avatar').textContent = ((pname.trim()[0]||'?') + (pname.trim().split(' ')[1]?.[0]||'')).toUpperCase(); document.getElementById('prev-av').textContent = document.getElementById('sb-avatar').textContent; }
+  if (pcity || pavail)  document.getElementById('prev-role').textContent  = [pcity, pavail].filter(Boolean).join(' · ');
+  if (psum)             document.getElementById('prev-summary').textContent = psum;
+
+  // Skills preview
+  var onSkills = Array.from(document.querySelectorAll('.skill-pill.on')).map(function(p){ return p.textContent.trim(); }).slice(0,8);
+  if (onSkills.length) {
+    document.getElementById('prev-skills').innerHTML = onSkills.map(function(s){
+      return '<span class="preview-tag">' + esc(s) + '</span>';
+    }).join('');
+  }
+}
+
+// ── Skill toggles ─────────────────────────────────────────────
+function toggleSkill(btn) {
+  btn.classList.toggle('on');
+  updateSkillCount();
+  updateStrength();
+}
+function updateSkillCount() {
+  var count = document.querySelectorAll('.skill-pill.on').length;
+  var el = document.getElementById('skills-count');
+  if (el) el.textContent = count + ' skill' + (count !== 1 ? 's' : '') + ' selected';
+}
+
+// ── Add form toggles ──────────────────────────────────────────
+function toggleForm(id, open) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('open', open);
+}
+
+// ── Save education ─────────────────────────────────────────────
+function saveEdu() {
+  var qual = (document.getElementById('edu-qual') || {}).value.trim();
+  var inst = (document.getElementById('edu-inst') || {}).value.trim();
+  var year = (document.getElementById('edu-year') || {}).value.trim();
+  var grade= (document.getElementById('edu-grade') || {}).value.trim();
+  var country = (document.getElementById('edu-country') || {}).value.trim();
+  if (!qual || !inst) { showToast('Please fill in the qualification and institution.','error'); return; }
+  var card = document.createElement('div');
+  card.className = 'entry-card';
+  card.innerHTML = '<div class="entry-header"><div>' +
+    '<div class="entry-title">' + esc(qual) + '</div>' +
+    '<div class="entry-sub">' + esc(inst) + (country ? ' · ' + esc(country) : '') + '</div>' +
+    '<div class="entry-dates">' + (year ? esc(year) : '') + (grade ? ' · ' + esc(grade) : '') + '</div>' +
+    '</div><div class="entry-actions"><button class="icon-btn danger" onclick="this.closest(\'.entry-card\').remove();updateStrength()">Remove</button></div></div>';
+  document.getElementById('edu-list').appendChild(card);
+  var count = document.querySelectorAll('#edu-list .entry-card').length;
+  document.getElementById('edu-count').textContent = count + ' qualification' + (count !== 1 ? 's' : '') + ' added';
+  toggleForm('edu-form', false);
+  ['edu-qual','edu-inst','edu-year','edu-grade','edu-country'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  updateStrength();
+}
+
+// ── Save experience ────────────────────────────────────────────
+function saveExp() {
+  var title   = (document.getElementById('exp-title')  || {}).value.trim();
+  var company = (document.getElementById('exp-company') || {}).value.trim();
+  var loc     = (document.getElementById('exp-loc')    || {}).value.trim();
+  var type    = (document.getElementById('exp-type')   || {}).value;
+  var start   = (document.getElementById('exp-start')  || {}).value;
+  var end     = (document.getElementById('exp-end')    || {}).value;
+  var current = (document.getElementById('exp-current') || {}).checked;
+  var desc    = (document.getElementById('exp-desc')   || {}).value.trim();
+  if (!title || !company) { showToast('Please enter job title and company.','error'); return; }
+  var dates = start + (current ? ' – Present' : end ? ' – ' + end : '');
+  var card = document.createElement('div');
+  card.className = 'entry-card';
+  card.innerHTML = '<div class="entry-header"><div>' +
+    '<div class="entry-title">' + esc(title) + '</div>' +
+    '<div class="entry-sub">' + esc(company) + (loc ? ' · ' + esc(loc) : '') + '</div>' +
+    '<div class="entry-dates">' + esc(dates) + ' · ' + esc(type) + '</div>' +
+    '</div><div class="entry-actions"><button class="icon-btn danger" onclick="this.closest(\'.entry-card\').remove();updateStrength()">Remove</button></div></div>' +
+    (desc ? '<div class="entry-desc">' + esc(desc) + '</div>' : '');
+  document.getElementById('exp-list').appendChild(card);
+  var count = document.querySelectorAll('#exp-list .entry-card').length;
+  document.getElementById('exp-count').textContent = count + ' position' + (count !== 1 ? 's' : '') + ' added';
+  toggleForm('exp-form', false);
+  ['exp-title','exp-company','exp-loc','exp-start','exp-end','exp-desc'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  updateStrength();
+}
+
+// ── Save external cert ─────────────────────────────────────────
+function saveExtCert() {
+  var name   = (document.getElementById('ec-name')   || {}).value.trim();
+  var issuer = (document.getElementById('ec-issuer') || {}).value.trim();
+  var year   = (document.getElementById('ec-year')   || {}).value.trim();
+  var cid    = (document.getElementById('ec-id')     || {}).value.trim();
+  if (!name || !issuer) { showToast('Please enter cert name and issuer.','error'); return; }
+  var card = document.createElement('div');
+  card.className = 'entry-card';
+  card.innerHTML = '<div class="entry-header"><div>' +
+    '<div class="entry-title">' + esc(name) + '</div>' +
+    '<div class="entry-sub">' + esc(issuer) + (year ? ' · ' + esc(year) : '') + '</div>' +
+    (cid ? '<div class="entry-dates">ID: ' + esc(cid) + '</div>' : '') +
+    '</div><div class="entry-actions"><button class="icon-btn danger" onclick="this.closest(\'.entry-card\').remove()">Remove</button></div></div>';
+  document.getElementById('ext-cert-list').appendChild(card);
+  toggleForm('extcert-form', false);
+  ['ec-name','ec-issuer','ec-year','ec-id'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+}
+
+// ── Resume upload ──────────────────────────────────────────────
+function handleFileSelect(input) {
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  var size = (file.size / 1024).toFixed(0) + ' KB';
+  document.getElementById('uploaded-name').textContent = file.name;
+  document.getElementById('uploaded-size').textContent = size + ' · Uploaded';
+  document.getElementById('uploaded-file-row').style.display = 'block';
+  document.getElementById('upload-zone').classList.add('has-file');
+  showToast('Resume uploaded. AI will extract your skills automatically.','success');
+  updateStrength();
+}
+function removeFile() {
+  document.getElementById('resume-file').value = '';
+  document.getElementById('uploaded-name').textContent = '—';
+  document.getElementById('uploaded-file-row').style.display = 'none';
+  document.getElementById('upload-zone').classList.remove('has-file');
+  updateStrength();
+}
+function setMode(mode) {
+  document.getElementById('upload-section').style.display = mode === 'upload' ? 'block' : 'none';
+  document.getElementById('build-section').style.display  = mode === 'build'  ? 'block' : 'none';
+  var upBtn = document.getElementById('mode-upload');
+  var blBtn = document.getElementById('mode-build');
+  if (upBtn) { upBtn.style.borderColor = mode==='upload'?'var(--gold)':'var(--border)'; upBtn.style.background = mode==='upload'?'rgba(212,168,67,0.06)':'#fff'; }
+  if (blBtn) { blBtn.style.borderColor = mode==='build' ?'var(--gold)':'var(--border)'; blBtn.style.background = mode==='build' ?'rgba(212,168,67,0.06)':'#fff'; }
+}
+
+// ── Publish ────────────────────────────────────────────────────
+async function publishProfile() {
+  // Save to localStorage
+  var profileData = {
+    firstName:  (document.getElementById('p-fname')   || {}).value,
+    lastName:   (document.getElementById('p-lname')   || {}).value,
+    email:      (document.getElementById('p-email')   || {}).value,
+    phone:      (document.getElementById('p-phone')   || {}).value,
+    city:       (document.getElementById('p-city')    || {}).value,
+    country:    (document.getElementById('p-country') || {}).value,
+    summary:    (document.getElementById('p-summary') || {}).value,
+    experience: (document.getElementById('p-exp')     || {}).value,
+    availability:(document.getElementById('p-avail')  || {}).value,
+    workType:   (document.getElementById('p-worktype')|| {}).value,
+    salary:     (document.getElementById('p-salary')  || {}).value,
+    skills:     Array.from(document.querySelectorAll('.skill-pill.on')).map(function(p){return p.textContent.trim();}),
+    profileVisible: true,
+    updatedAt:  new Date().toISOString(),
+  };
+  try { localStorage.setItem('ll_applicant_profile', JSON.stringify(profileData)); } catch(e) {}
+  // In production: POST to /.netlify/functions/supabase-progress or similar
+  showToast('Profile saved and published! Recruiters can now see your profile when you apply.', 'success');
+  setTimeout(function(){ window.location.href = '/jobs'; }, 2000);
+}
+
+// ── Utilities ──────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+var _toast;
+function showToast(msg, type) {
+  if (_toast) _toast.remove();
+  _toast = document.createElement('div');
+  _toast.className = 'toast';
+  _toast.style.background = type==='success'?'#1DA98A':type==='error'?'#e05555':'#0B1F3A';
+  _toast.textContent = msg;
+  document.body.appendChild(_toast);
+  setTimeout(function(){ if (_toast) _toast.style.opacity='0'; setTimeout(function(){ if(_toast) _toast.remove(); },300); }, 3500);
+}
+</script>
+</body>
+</html>
