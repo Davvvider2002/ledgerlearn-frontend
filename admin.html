@@ -150,9 +150,28 @@ tr:hover td{background:#fafbfc;}
         <div class="stat-card"><div class="stat-val" id="stat-revenue">—</div><div class="stat-lbl">Total Revenue</div></div>
         <div class="stat-card"><div class="stat-val" id="stat-affiliates">—</div><div class="stat-lbl">Active Affiliates</div></div>
       </div>
+      <!-- Two column grid: Recent users + Revenue -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div class="table-card">
+          <div class="table-hdr">
+            <div class="table-title">Recent Registrations</div>
+            <span id="reg-badge" style="background:#e1f7f2;color:#0F6E56;padding:2px 8px;border-radius:100px;font-size:0.7rem;font-weight:700;">—</span>
+          </div>
+          <div id="recent-users-table"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Loading...</div></div></div>
+        </div>
+        <div class="table-card">
+          <div class="table-hdr"><div class="table-title">Revenue (Last 6 months)</div></div>
+          <div id="rev-chart" style="padding:1rem;"><div class="empty-state" style="padding:1rem;"><div class="empty-icon">📈</div><div class="empty-text">Loading...</div></div></div>
+        </div>
+      </div>
+
+      <!-- Activity feed -->
       <div class="table-card">
-        <div class="table-hdr"><div class="table-title">Recent registrations</div></div>
-        <div id="recent-users-table"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Loading...</div></div></div>
+        <div class="table-hdr">
+          <div class="table-title">Live Activity Feed</div>
+          <span style="background:#e1f7f2;color:#0F6E56;padding:2px 8px;border-radius:100px;font-size:0.7rem;font-weight:700;">● Live</span>
+        </div>
+        <ul id="activity-feed" style="list-style:none;"><li class="empty-state"><div class="empty-icon">⚡</div><div class="empty-text">Loading activity...</div></li></ul>
       </div>
     </div>
 
@@ -440,15 +459,121 @@ function apiPost(path, body) {
 // ── Dashboard ─────────────────────────────────────────
 async function loadDashboard() {
   var result = await adminFetch('dashboard');
-  if (!result) return;
+  if (!result) {
+    // Show error state
+    ['stat-users','stat-certs','stat-revenue','stat-affiliates'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.textContent = 'Error';
+    });
+    return;
+  }
+
+  // ── Stat cards ────────────────────────────────────────────
   var uEl = document.getElementById('stat-users');
   var cEl = document.getElementById('stat-certs');
   var rEl = document.getElementById('stat-revenue');
   var aEl = document.getElementById('stat-affiliates');
   if (uEl) uEl.textContent = result.userCount    || 0;
   if (cEl) cEl.textContent = result.certCount    || 0;
-  if (rEl) rEl.textContent = '$' + (result.revenue || 0).toFixed(0);
+  if (rEl) rEl.textContent = '$' + ((result.revenue || 0)).toFixed(0);
   if (aEl) aEl.textContent = (result.pendPartners || 0) + ' pending';
+
+  // ── Recent registrations ──────────────────────────────────
+  try {
+    var recentResult = await adminFetch('users');
+    var recentEl = document.getElementById('recent-users-table');
+    var regBadge = document.getElementById('reg-badge');
+    if (recentEl && recentResult && Array.isArray(recentResult.data)) {
+      var users = recentResult.data.slice(0, 5);
+      if (regBadge) regBadge.textContent = recentResult.data.length + ' total';
+      if (users.length === 0) {
+        recentEl.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">No users yet.</div></div>';
+      } else {
+        var flagMap = {UK:'🇬🇧',NG:'🇳🇬',ZA:'🇿🇦',AU:'🇦🇺',US:'🇺🇸',NZ:'🇳🇿',IE:'🇮🇪',AE:'🇦🇪',CA:'🇨🇦',GH:'🇬🇭',KE:'🇰🇪'};
+        recentEl.innerHTML = '<ul style="list-style:none;">' +
+          users.map(function(u) {
+            var flag = flagMap[u.region] || '🌍';
+            var date = (u.registered_at||u.registered||'').split('T')[0];
+            return '<li style="display:flex;align-items:center;gap:10px;padding:10px 1rem;border-bottom:1px solid #f1f5f9;">' +
+              '<div style="width:32px;height:32px;border-radius:50%;background:#0B1F3A;display:flex;align-items:center;justify-content:center;color:#D4A843;font-size:0.8rem;font-weight:700;flex-shrink:0;">' +
+                esc((u.full_name||u.name||'?').charAt(0).toUpperCase()) +
+              '</div>' +
+              '<div style="flex:1;">' +
+                '<div style="font-size:0.82rem;font-weight:600;color:#0B1F3A;">' + esc(u.full_name||u.name||'—') + '</div>' +
+                '<div style="font-size:0.7rem;color:#6b87a3;">' + esc(u.email||'—') + ' · ' + flag + ' ' + esc(u.region||'—') + '</div>' +
+              '</div>' +
+              '<div style="font-size:0.68rem;color:#94a3b8;">' + esc(date) + '</div>' +
+            '</li>';
+          }).join('') +
+        '</ul>';
+      }
+    }
+  } catch(e) { console.warn('[Dashboard] recent users error:', e); }
+
+  // ── Revenue chart ─────────────────────────────────────────
+  try {
+    var revResult = await adminFetch('revenue');
+    var chartEl = document.getElementById('rev-chart');
+    if (chartEl && revResult && Array.isArray(revResult.data)) {
+      var revData = revResult.data.slice(0, 6);
+      if (revData.length === 0) {
+        // Show placeholder months
+        revData = [
+          {month:'May 2026',revenue_usd:0,payments:0},
+          {month:'Apr 2026',revenue_usd:0,payments:0},
+        ];
+      }
+      var maxRev = Math.max.apply(null, revData.map(function(r){return parseFloat(r.revenue_usd)||0;}));
+      if (maxRev === 0) maxRev = 100; // prevent division by zero
+      chartEl.innerHTML = revData.map(function(r) {
+        var amt   = parseFloat(r.revenue_usd) || 0;
+        var pct   = Math.round((amt / maxRev) * 100);
+        var month = (r.month||'').toString().split('-')[1] || (r.month||'').substring(0,3);
+        return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
+          '<div style="font-size:0.7rem;color:#6b87a3;width:32px;text-align:right;flex-shrink:0;">' + esc(month) + '</div>' +
+          '<div style="flex:1;background:#f1f5f9;border-radius:100px;height:10px;overflow:hidden;">' +
+            '<div style="width:' + (pct||2) + '%;height:100%;background:linear-gradient(90deg,#1DA98A,#D4A843);border-radius:100px;transition:width 0.8s ease;"></div>' +
+          '</div>' +
+          '<div style="font-size:0.72rem;font-weight:700;color:#0B1F3A;width:44px;">' +
+            (amt > 0 ? '$' + amt.toFixed(0) : '—') +
+          '</div>' +
+          '<div style="font-size:0.68rem;color:#6b87a3;width:28px;">' + (parseInt(r.payments)||0) + ' pay</div>' +
+        '</div>';
+      }).join('');
+    } else if (chartEl) {
+      chartEl.innerHTML = '<div class="empty-state" style="padding:1rem;"><div class="empty-icon">📊</div><div class="empty-text">No revenue data yet.</div></div>';
+    }
+  } catch(e) { console.warn('[Dashboard] revenue error:', e); }
+
+  // ── Activity feed — built from cert + payment data ─────────
+  try {
+    var feedEl = document.getElementById('activity-feed');
+    if (feedEl) {
+      var certsR = await adminFetch('certs');
+      var paysR  = await adminFetch('payments');
+      var events = [];
+      if (certsR && Array.isArray(certsR.data)) {
+        certsR.data.slice(0,5).forEach(function(c) {
+          events.push({ icon:'🏆', color:'#D4A843', text:'<strong>' + esc(c.candidate_name||'—') + '</strong> earned ' + esc(c.cert_title||'L1 Certificate') + ' — Score: <strong>' + (c.score||0) + '%</strong>', time: (c.issue_date||(c.created_at||'').split('T')[0]) });
+        });
+      }
+      if (paysR && Array.isArray(paysR.data)) {
+        paysR.data.slice(0,3).forEach(function(p) {
+          events.push({ icon:'💳', color:'#1DA98A', text:'Payment confirmed — <strong>' + esc(p.email||'—') + '</strong> unlocked L' + (p.level||'2').replace('l','') + ' ($' + (parseFloat(p.amount_usd)||49).toFixed(0) + ')', time: (p.created_at||'').split('T')[0] });
+        });
+      }
+      if (events.length === 0) {
+        feedEl.innerHTML = '<li class="empty-state"><div class="empty-icon">⚡</div><div class="empty-text">Activity will appear here as users engage with the platform.</div></li>';
+      } else {
+        feedEl.innerHTML = events.map(function(ev) {
+          return '<li style="display:flex;gap:10px;padding:10px 1rem;border-bottom:1px solid #f1f5f9;align-items:flex-start;">' +
+            '<div style="width:22px;height:22px;border-radius:50%;background:rgba(212,168,67,0.12);display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;margin-top:1px;">' + ev.icon + '</div>' +
+            '<div style="flex:1;"><div style="font-size:0.8rem;color:#334155;line-height:1.5;">' + ev.text + '</div><div style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">' + esc(ev.time) + '</div></div>' +
+          '</li>';
+        }).join('');
+      }
+    }
+  } catch(e) { console.warn('[Dashboard] activity feed error:', e); }
 }
 
 // ── Users ─────────────────────────────────────────────
@@ -565,7 +690,10 @@ async function saveSupaConfig() {
 }
 
 async function loadRevenue() {
-  var data = await fetchSupabase('/rest/v1/admin_revenue_summary?select=*&order=month.desc&limit=12');
+  var res2 = await adminFetch('revenue');
+  var data = (res2 && Array.isArray(res2.data)) ? res2.data : null;
+  // legacy var kept for compatibility
+  data = data;
   var statsEl = document.getElementById('revenue-stats');
   if (!statsEl || !data || !Array.isArray(data)) return;
   var total = data.reduce(function(s,r){return s+(parseFloat(r.revenue_usd)||0);},0);
@@ -577,7 +705,9 @@ async function loadRevenue() {
 }
 
 async function loadCertificates() {
-  var data = await fetchSupabase('/rest/v1/certificates?select=*&order=created_at.desc&limit=50');
+  var res3 = await adminFetch('certs');
+  var data = (res3 && Array.isArray(res3.data)) ? res3.data : null;
+  data = data;
   var el = document.getElementById('certs-table');
   if (!el) return;
   if (!data || !Array.isArray(data) || data.length === 0) {
@@ -678,8 +808,9 @@ function renderUpgradesTable(){
 }
 (async function loadUpgrades() {
   try {
-    var data = await fetchSupabase('/rest/v1/manual_upgrades?select=*&order=created_at.desc&limit=100');
-    if (Array.isArray(data)) {
+    var result = await adminFetch('upgrades');
+    var data = (result && Array.isArray(result.data)) ? result.data : null;
+    if (data !== null) {
       UPGRADE_LOG = data.map(function(u) {
         return {
           email:      u.email||'—',
@@ -729,8 +860,9 @@ var AFFILIATES = [];
 function getLocalAffiliates(){ try{ return JSON.parse(localStorage.getItem('ll_admin_affiliates')||'[]'); }catch(e){ return []; } }
 async function loadAffiliates() {
   try {
-    var data = await fetchSupabase('/rest/v1/affiliates?select=*&order=created_at.desc');
-    if (Array.isArray(data)) {
+    var result = await adminFetch('affiliates');
+    var data = (result && Array.isArray(result.data)) ? result.data : null;
+    if (data !== null) {
       AFFILIATES = data.map(function(a) {
         return {
           name:       a.name||'—',
@@ -791,9 +923,10 @@ function removeAffiliate(i){ if(!confirm('Remove affiliate?')) return; AFFILIATE
 var PARTNERS = [];
 async function loadPartners() {
   try {
-    // Load from Supabase first
-    var data = await fetchSupabase('/rest/v1/partners?select=*&order=created_at.desc');
-    if (Array.isArray(data) && data.length >= 0) {
+    // Use adminFetch (SERVICE KEY — bypasses RLS, guaranteed to return real data)
+    var result = await adminFetch('partners');
+    var data = (result && Array.isArray(result.data)) ? result.data : null;
+    if (data !== null) {
       PARTNERS = data.map(function(p) {
         return {
           institution: p.institution||'—',
@@ -848,14 +981,14 @@ function openPartnerModal(){ /* TODO: open modal */ alert('Use the /partners pag
 async function approvePartner(i) {
   if (!PARTNERS[i]) return;
   PARTNERS[i].status = 'approved';
-  if (PARTNERS[i].id) await fetchSupabase('/rest/v1/partners?id=eq.'+PARTNERS[i].id,'PATCH',{status:'approved'});
+  if (PARTNERS[i].id) await adminFetch('approve-partner', {id: PARTNERS[i].id});
   localStorage.setItem('ll_admin_partners',JSON.stringify(PARTNERS));
   loadPartners(); inlineToast('Partner approved ✓','success');
 }
 async function rejectPartner(i) {
   if (!PARTNERS[i]) return;
   PARTNERS[i].status = 'rejected';
-  if (PARTNERS[i].id) await fetchSupabase('/rest/v1/partners?id=eq.'+PARTNERS[i].id,'PATCH',{status:'rejected'});
+  if (PARTNERS[i].id) await adminFetch('reject-partner', {id: PARTNERS[i].id});
   localStorage.setItem('ll_admin_partners',JSON.stringify(PARTNERS));
   loadPartners(); inlineToast('Partner rejected','info');
 }
