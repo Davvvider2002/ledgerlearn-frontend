@@ -367,6 +367,7 @@ function adminLogin() {
       return;
     }
     ADMIN_TOKEN = data.token;
+    _adminToken = data.token;
     sessionStorage.setItem('ll_admin_token', data.token);
     sessionStorage.setItem('ll_admin_expires', data.expires);
     document.getElementById('login-overlay').style.display = 'none';
@@ -438,30 +439,16 @@ function apiPost(path, body) {
 
 // ── Dashboard ─────────────────────────────────────────
 async function loadDashboard() {
-  try {
-    var profiles = await fetchSupabase('/rest/v1/profiles?select=id');
-    var certs    = await fetchSupabase('/rest/v1/certificates?select=id,score');
-    var pays     = await fetchSupabase('/rest/v1/payments?select=amount_usd');
-    var pending  = await fetchSupabase('/rest/v1/partners?select=id&status=eq.pending');
-
-    var userCount = Array.isArray(profiles) ? profiles.length : getLocalUsers().length;
-    var certCount = Array.isArray(certs)    ? certs.length    : 0;
-    var revenue   = Array.isArray(pays)     ? pays.reduce(function(s,p){return s+(parseFloat(p.amount_usd)||49);},0) : 0;
-    var pendCount = Array.isArray(pending)  ? pending.length  : 0;
-
-    var uEl = document.getElementById('stat-users');
-    var cEl = document.getElementById('stat-certs');
-    var rEl = document.getElementById('stat-revenue');
-    var aEl = document.getElementById('stat-affiliates'); // correct ID in HTML
-    if (uEl) uEl.textContent = userCount;
-    if (cEl) cEl.textContent = certCount;
-    if (rEl) rEl.textContent = '$' + revenue.toFixed(0);
-    if (aEl) aEl.textContent = pendCount + ' pending';
-  } catch(e) {
-    var allUsers = getLocalUsers();
-    var uEl = document.getElementById('stat-users');
-    if (uEl) uEl.textContent = allUsers.length;
-  }
+  var result = await adminFetch('dashboard');
+  if (!result) return;
+  var uEl = document.getElementById('stat-users');
+  var cEl = document.getElementById('stat-certs');
+  var rEl = document.getElementById('stat-revenue');
+  var aEl = document.getElementById('stat-affiliates');
+  if (uEl) uEl.textContent = result.userCount    || 0;
+  if (cEl) cEl.textContent = result.certCount    || 0;
+  if (rEl) rEl.textContent = '$' + (result.revenue || 0).toFixed(0);
+  if (aEl) aEl.textContent = (result.pendPartners || 0) + ' pending';
 }
 
 // ── Users ─────────────────────────────────────────────
@@ -469,8 +456,24 @@ var ALL_USERS = [];
 // ── Supabase admin queries ──────────────────────────────
 var SUPA_URL = '';
 var SUPA_KEY = '';
+  var _adminToken = '';
 
-// Fetch Supabase config from meta tags (injected server-side) or prompt
+  // ── Single server-side admin API call ─────────────────────
+  async function adminFetch(action, extra) {
+    var token = _adminToken || sessionStorage.getItem('ll_admin_token') || '';
+    try {
+      var res = await fetch('/.netlify/functions/admin-data', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body:    JSON.stringify(Object.assign({ action: action }, extra || {})),
+      });
+      var data = await res.json();
+      if (!data.ok) { console.warn('[Admin]', action, data.error); return null; }
+      return data;
+    } catch(e) { console.warn('[Admin] adminFetch failed:', action, e.message); return null; }
+  }
+
+  // Fetch Supabase config from meta tags (injected server-side) or prompt
 async function getSupaConfig() {
   if (SUPA_URL && SUPA_KEY) return;
 
@@ -602,33 +605,23 @@ function saveLocalUsers(users) {
   localStorage.setItem('ll_admin_users', JSON.stringify(users));
 }
 async function loadUsers() {
-  try {
-    // Try Supabase admin view first
-    var supa = await fetchSupabase('/rest/v1/admin_user_summary?select=*&order=registered_at.desc');
-    if (supa && Array.isArray(supa) && supa.length >= 0) {
-      ALL_USERS = supa.map(function(r) {
-        return {
-          id:              r.id,
-          name:            r.full_name || '—',
-          email:           r.email || '—',
-          region:          r.region || 'UK',
-          registered:      r.registered_at ? r.registered_at.split('T')[0] : '—',
-          completedLevels: r.completed_levels || [],
-          l1Score:         r.l1_score,
-          l2Score:         r.l2_score,
-          l3Score:         r.l3_score,
-          paid_l2:         r.paid_l2 || false,
-          certCount:       r.cert_count || 0,
-        };
-      });
-      // Cache locally
-      try { localStorage.setItem('ll_admin_users', JSON.stringify(ALL_USERS)); } catch(e){}
-    } else {
-      ALL_USERS = getLocalUsers();
-    }
-  } catch(e) {
-    ALL_USERS = getLocalUsers();
-  }
+  var result = await adminFetch('users');
+  if (!result || !Array.isArray(result.data)) { ALL_USERS = getLocalUsers(); renderUsersTable(ALL_USERS); return; }
+  ALL_USERS = result.data.map(function(r) {
+    return {
+      id:              r.id,
+      name:            r.full_name || '—',
+      email:           r.email     || '—',
+      region:          r.region    || 'UK',
+      registered:      (r.registered_at||'').split('T')[0],
+      completedLevels: r.completed_levels || [],
+      l1Score:         r.l1_score,
+      l2Score:         r.l2_score,
+      paid_l2:         r.paid_l2 || false,
+      certCount:       r.cert_count || 0,
+    };
+  });
+  try { localStorage.setItem('ll_admin_users', JSON.stringify(ALL_USERS)); } catch(e){}
   renderUsersTable(ALL_USERS);
 }
 function renderUsersTable(users) {
@@ -712,28 +705,23 @@ function renderUpgradesTable(){
 // ── Payments ──────────────────────────────────────────
 async function loadPayments() {
   var tbody = document.getElementById('payments-table');
-  if (!tbody) return;
-  try {
-    var data = await fetchSupabase('/rest/v1/payments?select=*&order=created_at.desc&limit=100');
-    if (!Array.isArray(data) || data.length === 0) {
-      tbody.innerHTML = '<table><thead><tr><th>Email</th><th>Level</th><th>Subscription ID</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>' +
-        '<tbody><tr><td colspan="6" style="text-align:center;color:#6b87a3;padding:2rem;font-size:0.82rem;">No payments recorded yet.</td></tr></tbody></table>';
-      return;
-    }
-    tbody.innerHTML = '<table><thead><tr><th>Email</th><th>Level</th><th>Subscription ID</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>' +
-      data.map(function(p) {
-        return '<tr>' +
-          '<td>' + esc(p.email||'—') + '</td>' +
-          '<td><span style="background:#e1f7f2;color:#0F6E56;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:700;">' + esc((p.level||'').toUpperCase()) + '</span></td>' +
-          '<td style="font-size:0.75rem;color:#6b87a3;">' + esc(p.subscription_id||'—') + '</td>' +
-          '<td style="font-weight:700;color:#0F6E56;">$' + (parseFloat(p.amount_usd)||49).toFixed(2) + '</td>' +
-          '<td><span style="background:' + (p.status==='confirmed'?'#e1f7f2':'#fef9e7') + ';color:' + (p.status==='confirmed'?'#0F6E56':'#92400e') + ';padding:2px 8px;border-radius:4px;font-size:0.75rem;">' + esc(p.status||'—') + '</span></td>' +
-          '<td style="font-size:0.78rem;color:#6b87a3;">' + esc((p.created_at||'').split('T')[0]) + '</td>' +
-        '</tr>';
-      }).join('') + '</tbody></table>';
-  } catch(e) {
-    tbody.innerHTML = '<p style="color:#E74C3C;padding:1rem;">Error loading payments: ' + esc(e.message) + '</p>';
+  var result = await adminFetch('payments');
+  if (!result || !Array.isArray(result.data) || result.data.length === 0) {
+    if (tbody) tbody.innerHTML = '<p style="color:#6b87a3;padding:1.5rem;text-align:center;">No payments recorded yet.</p>';
+    return;
   }
+  var rows = result.data.map(function(p) {
+    var sc = p.status==='confirmed';
+    return '<tr>' +
+      '<td>' + esc(p.email||'—') + '</td>' +
+      '<td><span style="background:#e1f7f2;color:#0F6E56;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:700;">' + esc((p.level||'').toUpperCase()) + '</span></td>' +
+      '<td style="font-size:0.75rem;color:#6b87a3;">' + esc(p.subscription_id||'—') + '</td>' +
+      '<td style="font-weight:700;color:#0F6E56;">$' + (parseFloat(p.amount_usd)||49).toFixed(2) + '</td>' +
+      '<td><span style="background:' + (sc?'#e1f7f2':'#fef9e7') + ';color:' + (sc?'#0F6E56':'#92400e') + ';padding:2px 8px;border-radius:4px;font-size:0.75rem;">' + esc(p.status||'—') + '</span></td>' +
+      '<td style="font-size:0.78rem;color:#6b87a3;">' + esc((p.created_at||'').split('T')[0]) + '</td>' +
+    '</tr>';
+  }).join('');
+  if (tbody) tbody.innerHTML = '<table><thead><tr><th>Email</th><th>Level</th><th>Sub ID</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
 // ── Affiliates ────────────────────────────────────────
@@ -875,28 +863,21 @@ async function rejectPartner(i) {
 // ── Certificates ──────────────────────────────────────
 var ALL_CERTS = [];
 async function loadCerts() {
-  try {
-    var data = await fetchSupabase('/rest/v1/certificates?select=*&order=created_at.desc&limit=200');
-    if (Array.isArray(data)) {
-      ALL_CERTS = data.map(function(c) {
-        return {
-          certId:       c.cert_id||'—',
-          userName:     c.candidate_name||'—',
-          userEmail:    c.email||'—',
-          certTitle:    c.cert_title||'—',
-          certRegion:   c.cert_region_label||c.cert_region||'—',
-          score:        c.score||0,
-          level:        c.level||'l1',
-          issueDate:    (c.issue_date||(c.created_at||'').split('T')[0]),
-          verified:     c.verified !== false,
-        };
-      });
-    } else {
-      ALL_CERTS = [];
-    }
-  } catch(e) {
-    ALL_CERTS = [];
-  }
+  var result = await adminFetch('certs');
+  if (!result || !Array.isArray(result.data)) { ALL_CERTS = []; renderCertsTable(ALL_CERTS); return; }
+  ALL_CERTS = result.data.map(function(c) {
+    return {
+      certId:    c.cert_id         || '—',
+      userName:  c.candidate_name  || '—',
+      userEmail: c.email           || '—',
+      certTitle: c.cert_title      || '—',
+      certRegion:c.cert_region_label||c.cert_region||'—',
+      score:     c.score           || 0,
+      level:     c.level           || 'l1',
+      issueDate: c.issue_date      || (c.created_at||'').split('T')[0],
+      verified:  c.verified !== false,
+    };
+  });
   renderCertsTable(ALL_CERTS);
 }
 function renderCertsTable(certs) {
