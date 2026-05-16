@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recruiter Dashboard — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--off:#f8f7f4;--border:rgba(11,31,58,0.12);--muted:#6b87a3;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--off);min-height:100vh;display:flex;flex-direction:column;}
+nav{height:56px;background:var(--navy);border-bottom:2px solid var(--gold);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:18px;height:18px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;color:#fff;}
+.brand span{color:var(--gold);}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.nav-company{font-size:0.8rem;color:rgba(255,255,255,0.5);}
+.btn-nav{background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:7px 16px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;}
+.btn-nav:hover{background:#f0c860;}
+.btn-nav-ghost{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);border:none;border-radius:7px;padding:7px 14px;font-size:0.8rem;cursor:pointer;font-family:inherit;text-decoration:none;}
+.shell{flex:1;display:flex;flex-direction:column;max-width:1100px;margin:0 auto;width:100%;padding:2rem 1.5rem;}
+
+/* Trial banner */
+.trial-banner{background:#0d2044;border:1px solid rgba(212,168,67,0.3);border-radius:12px;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.75rem;}
+.trial-banner.expired{border-color:rgba(226,75,74,0.4);background:rgba(226,75,74,0.06);}
+.trial-text{font-size:0.85rem;color:#fff;}
+.trial-text strong{color:var(--gold);}
+.trial-text.expired strong{color:#ff8080;}
+.trial-days{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--gold);line-height:1;margin-right:0.75rem;}
+.trial-left{display:flex;align-items:center;}
+
+/* Stats */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;border-top:3px solid var(--gold);}
+.stat-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--navy);line-height:1;}
+.stat-lbl{font-size:0.72rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.06em;}
+.stat-sub{font-size:0.75rem;color:var(--teal);margin-top:6px;}
+
+/* Table card */
+.table-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.25rem;}
+.table-hdr{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border);}
+.table-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);}
+.btn-sm{padding:7px 16px;border-radius:7px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;text-decoration:none;display:inline-block;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{background:#f0c860;}
+.btn-outline{background:#fff;border:1px solid var(--border);color:var(--muted);}
+.btn-outline:hover{border-color:var(--navy);color:var(--navy);}
+table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+thead tr{background:var(--off);}
+th{padding:10px 14px;text-align:left;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);}
+td{padding:11px 14px;border-bottom:1px solid var(--border);color:#334155;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafbfc;}
+.badge{display:inline-block;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:100px;}
+.badge-green{background:#e1f7f2;color:#0F6E56;}
+.badge-gold{background:rgba(212,168,67,0.15);color:#7a5c00;}
+.badge-grey{background:#f1f5f9;color:var(--muted);}
+.badge-red{background:#fde8e8;color:#9b1c1c;}
+.empty{padding:3rem;text-align:center;color:var(--muted);font-size:0.88rem;}
+.empty-icon{font-size:2rem;margin-bottom:0.75rem;}
+.act-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:0.72rem;cursor:pointer;font-family:inherit;color:var(--muted);}
+.act-btn:hover{border-color:var(--navy);color:var(--navy);}
+.act-btn.danger:hover{border-color:#e05555;color:#e05555;}
+</style>
+<script src="/ll-auth.js"></script>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <div class="nav-right">
+    <span class="nav-company" id="nav-company">Loading…</span>
+    <a href="/jobs-post" class="btn-nav">+ Post a job</a>
+    <button class="btn-nav-ghost" onclick="doLogout()">Sign out</button>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <!-- Trial / plan banner -->
+  <div class="trial-banner" id="trial-banner">
+    <div class="trial-left">
+      <div class="trial-days" id="trial-days">—</div>
+      <div class="trial-text" id="trial-text">Loading plan status…</div>
+    </div>
+    <div id="trial-actions"></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-val" id="stat-active-jobs">—</div>
+      <div class="stat-lbl">Active listings</div>
+      <div class="stat-sub" id="stat-total-jobs"></div>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--teal);">
+      <div class="stat-val" id="stat-total-apps">—</div>
+      <div class="stat-lbl">Total applications</div>
+      <div class="stat-sub" id="stat-new-apps"></div>
+    </div>
+    <div class="stat-card" style="border-top-color:#8b5cf6;">
+      <div class="stat-val" id="stat-total-views">—</div>
+      <div class="stat-lbl">Total job views</div>
+      <div class="stat-sub">across all listings</div>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--navy);">
+      <div class="stat-val" id="stat-shortlisted">—</div>
+      <div class="stat-lbl">Shortlisted</div>
+      <div class="stat-sub">candidates</div>
+    </div>
+  </div>
+
+  <!-- Active jobs -->
+  <div class="table-card">
+    <div class="table-hdr">
+      <div class="table-title">Your job listings</div>
+      <a href="/jobs-post" class="btn-sm btn-gold">+ Post new role</a>
+    </div>
+    <div id="jobs-table-wrap">
+      <div class="empty"><div class="empty-icon">📋</div>Loading your listings…</div>
+    </div>
+  </div>
+
+  <!-- Recent applications -->
+  <div class="table-card">
+    <div class="table-hdr">
+      <div class="table-title">Recent applications</div>
+      <a href="/jobs-applications" class="btn-sm btn-outline">View all →</a>
+    </div>
+    <div id="apps-table-wrap">
+      <div class="empty"><div class="empty-icon">📨</div>Loading applications…</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var USER_ID = '';
+var RECRUITER_PLAN = 'trial';
+
+(async function init() {
+  var user = await window.LLAuth.require();
+  if (!user) return;
+
+  var stored = {};
+  try { stored = JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) {}
+
+  // Redirect learners away
+  if (stored.role && stored.role !== 'recruiter') {
+    window.location.replace('/dashboard');
+    return;
+  }
+
+  USER_ID = user.id || user.sub || '';
+  var company = stored.company || user.name || 'Your company';
+  document.getElementById('nav-company').textContent = company;
+
+  // Welcome message
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('welcome') === '1') {
+    showToast('Welcome! Your 30-day free trial is now active. Post your first role below.', 'success');
+  }
+
+  // Check access / plan status
+  await loadPlanStatus();
+
+  // Load data
+  loadJobs();
+  loadApplications();
+})();
+
+async function loadPlanStatus() {
+  if (!USER_ID) return;
+  try {
+    var res = await fetch('/.netlify/functions/jobboard-paygate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'check-access', userId: USER_ID })
+    });
+    var data = await res.json();
+    var banner = document.getElementById('trial-banner');
+    var daysEl = document.getElementById('trial-days');
+    var textEl = document.getElementById('trial-text');
+    var actEl  = document.getElementById('trial-actions');
+
+    RECRUITER_PLAN = data.plan || 'trial';
+
+    if (data.plan === 'trial' && data.allowed) {
+      var days = data.trial_days_left || 0;
+      daysEl.textContent = days + (days === 1 ? ' day' : ' days');
+      textEl.innerHTML = '<strong>Free trial active</strong> — post unlimited roles for the next ' + days + ' day' + (days === 1 ? '' : 's') + '.';
+      actEl.innerHTML = '<a href="/jobs-pricing" class="btn-sm btn-gold">Upgrade plan →</a>';
+    } else if (data.plan === 'monthly' && data.allowed) {
+      daysEl.textContent = '∞';
+      textEl.innerHTML = '<strong>Monthly plan active</strong> — unlimited job postings.';
+      actEl.innerHTML = '';
+    } else if (data.plan === 'per_post' && data.allowed) {
+      daysEl.textContent = '$39';
+      textEl.innerHTML = '<strong>Pay per post</strong> — each listing costs $39 for 30 days.';
+      actEl.innerHTML = '<a href="/jobs-pricing" class="btn-sm btn-gold">Switch to monthly →</a>';
+    } else {
+      banner.classList.add('expired');
+      daysEl.style.color = '#ff8080';
+      daysEl.textContent = '0';
+      textEl.innerHTML = '<strong style="color:#ff8080">Trial expired</strong> — upgrade to continue posting roles. Your applications are preserved.';
+      actEl.innerHTML = '<a href="/jobs-pricing" class="btn-sm btn-gold">Upgrade now →</a>';
+    }
+  } catch(e) {
+    console.warn('plan status error:', e);
+  }
+}
+
+function loadJobs() {
+  var wrap = document.getElementById('jobs-table-wrap');
+  // In production, fetch from /api/recruiter-jobs
+  // For now, render from localStorage if available
+  var dummy = [
+    { title:'Xero Bookkeeper — Remote', status:'active', apps:8, views:142, deadline:'2026-06-30', level:'L1+' },
+    { title:'ERP Finance Consultant', status:'active', apps:4, views:89, deadline:'2026-07-15', level:'L2+' },
+  ];
+  if (!dummy.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">💼</div>No job listings yet.<br><a href="/jobs-post" style="color:var(--gold);font-weight:700;">Post your first role →</a></div>';
+    return;
+  }
+  document.getElementById('stat-active-jobs').textContent = dummy.filter(function(j){return j.status==='active';}).length;
+  document.getElementById('stat-total-jobs').textContent = dummy.length + ' total';
+  document.getElementById('stat-total-views').textContent = dummy.reduce(function(s,j){return s+j.views;},0);
+  document.getElementById('stat-total-apps').textContent = dummy.reduce(function(s,j){return s+j.apps;},0);
+  document.getElementById('stat-new-apps').textContent = '3 new today';
+  document.getElementById('stat-shortlisted').textContent = '2';
+
+  var levelBadge = function(l) {
+    return '<span class="badge badge-green">' + esc(l) + '</span>';
+  };
+  var statusBadge = function(s) {
+    var cls = s==='active'?'badge-green':s==='paused'?'badge-gold':'badge-grey';
+    return '<span class="badge ' + cls + '">' + s + '</span>';
+  };
+
+  wrap.innerHTML = '<table><thead><tr><th>Role</th><th>Status</th><th>Level</th><th>Applications</th><th>Views</th><th>Deadline</th><th>Actions</th></tr></thead><tbody>' +
+    dummy.map(function(j, i) {
+      return '<tr>' +
+        '<td><strong>' + esc(j.title) + '</strong></td>' +
+        '<td>' + statusBadge(j.status) + '</td>' +
+        '<td>' + levelBadge(j.level) + '</td>' +
+        '<td style="font-weight:700;color:var(--teal);">' + j.apps + '</td>' +
+        '<td>' + j.views + '</td>' +
+        '<td style="font-size:0.78rem;color:var(--muted);">' + esc(j.deadline) + '</td>' +
+        '<td style="display:flex;gap:4px;">' +
+          '<button class="act-btn" onclick="editJob(' + i + ')">Edit</button>' +
+          '<button class="act-btn" onclick="viewApps(' + i + ')">Applications</button>' +
+          '<button class="act-btn danger" onclick="pauseJob(' + i + ')">Pause</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('') +
+  '</tbody></table>';
+}
+
+function loadApplications() {
+  var wrap = document.getElementById('apps-table-wrap');
+  var certs = ['L2 ✓ 90%', 'L1 ✓ 85%', 'L1 ✓ 78%', 'L2 ✓ 82%'];
+  var dummy = [
+    { name:'David Ayomidotun',  email:'david@ledgerlearn.pro', job:'Xero Bookkeeper', cert:'L2 ✓ 90%', region:'NG', status:'shortlisted', time:'2h ago' },
+    { name:'Sipho Ndlovu',      email:'sipho.n@outlook.com',  job:'Xero Bookkeeper', cert:'L1 ✓ 85%', region:'ZA', status:'applied',     time:'5h ago' },
+    { name:'Priya Sharma',      email:'priya.s@gmail.com',    job:'ERP Consultant',  cert:'L1 ✓ 92%', region:'UK', status:'applied',     time:'1d ago' },
+  ];
+
+  if (!dummy.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">📨</div>No applications yet.</div>';
+    return;
+  }
+
+  var statusBadge = function(s) {
+    var cls = s==='shortlisted'?'badge-green':s==='applied'?'badge-gold':s==='rejected'?'badge-red':'badge-grey';
+    return '<span class="badge ' + cls + '">' + s + '</span>';
+  };
+  var flags = {NG:'🇳🇬',ZA:'🇿🇦',UK:'🇬🇧',AE:'🇦🇪',AU:'🇦🇺',GH:'🇬🇭'};
+
+  wrap.innerHTML = '<table><thead><tr><th>Candidate</th><th>Job applied for</th><th>LedgerLearn cert</th><th>Region</th><th>Status</th><th>Received</th><th>Action</th></tr></thead><tbody>' +
+    dummy.map(function(a, i) {
+      return '<tr>' +
+        '<td><strong>' + esc(a.name) + '</strong><div style="font-size:0.72rem;color:var(--muted);">' + esc(a.email) + '</div></td>' +
+        '<td style="font-size:0.8rem;">' + esc(a.job) + '</td>' +
+        '<td><span class="badge badge-green">' + esc(a.cert) + '</span></td>' +
+        '<td>' + (flags[a.region]||'🌍') + ' ' + esc(a.region) + '</td>' +
+        '<td>' + statusBadge(a.status) + '</td>' +
+        '<td style="font-size:0.75rem;color:var(--muted);">' + esc(a.time) + '</td>' +
+        '<td><button class="act-btn" onclick="viewCandidate(' + i + ')">View profile</button></td>' +
+      '</tr>';
+    }).join('') +
+  '</tbody></table>';
+}
+
+function editJob(i)       { window.location.href = '/jobs-post?edit=' + i; }
+function viewApps(i)      { window.location.href = '/jobs-applications?job=' + i; }
+function pauseJob(i)      { showToast('Job paused. Users can no longer see or apply.','info'); }
+function viewCandidate(i) { window.location.href = '/jobs-applications'; }
+
+function doLogout() {
+  if (window.LLAuth) window.LLAuth.logout();
+  else { localStorage.clear(); window.location.href = '/login'; }
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+var _toast;
+function showToast(msg, type) {
+  if (_toast) _toast.remove();
+  _toast = document.createElement('div');
+  _toast.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:' +
+    (type==='success'?'#1DA98A':type==='error'?'#e05555':'#0B1F3A') +
+    ';color:#fff;padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+  _toast.textContent = msg;
+  document.body.appendChild(_toast);
+  setTimeout(function(){ if (_toast) _toast.remove(); }, 4000);
+}
+</script>
+</body>
+</html>

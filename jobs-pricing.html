@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Board Pricing — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--off:#f8f7f4;--border:rgba(11,31,58,0.12);--muted:#6b87a3;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--navy);min-height:100vh;display:flex;flex-direction:column;}
+nav{height:56px;background:rgba(11,31,58,0.98);border-bottom:2px solid var(--gold);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:18px;height:18px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;color:#fff;}
+.brand span{color:var(--gold);}
+.nav-link{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.82rem;}
+main{flex:1;padding:4rem 2rem;background:radial-gradient(ellipse at 30% 30%,rgba(29,169,138,0.08) 0%,transparent 60%),radial-gradient(ellipse at 70% 70%,rgba(212,168,67,0.06) 0%,transparent 50%);}
+.inner{max-width:900px;margin:0 auto;}
+.eyebrow{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--teal);font-weight:700;text-align:center;margin-bottom:0.75rem;}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:800;color:#fff;text-align:center;margin-bottom:0.75rem;}
+h1 span{color:var(--gold);}
+.sub{font-size:1rem;color:rgba(255,255,255,0.5);text-align:center;max-width:480px;margin:0 auto 3rem;line-height:1.7;}
+
+/* Pricing grid */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:2.5rem;}
+@media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+.price-card{background:#0d2044;border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:2rem 1.75rem;position:relative;display:flex;flex-direction:column;}
+.price-card.featured{border:2px solid var(--gold);}
+.popular-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--navy);font-size:0.7rem;font-weight:700;padding:4px 14px;border-radius:100px;white-space:nowrap;letter-spacing:0.06em;}
+.plan-badge{display:inline-block;font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:100px;margin-bottom:0.875rem;}
+.badge-free{background:rgba(29,169,138,0.15);color:var(--teal);}
+.badge-post{background:rgba(212,168,67,0.15);color:var(--gold);}
+.badge-unlimited{background:rgba(11,31,58,0.4);color:rgba(255,255,255,0.7);}
+.plan-name{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:0.5rem;}
+.plan-amount{font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:800;line-height:1;margin-bottom:2px;}
+.plan-period{font-size:0.78rem;color:rgba(255,255,255,0.35);margin-bottom:1.5rem;}
+.plan-features{list-style:none;flex:1;margin-bottom:1.5rem;}
+.plan-features li{display:flex;align-items:flex-start;gap:8px;font-size:0.82rem;color:rgba(255,255,255,0.6);margin-bottom:10px;line-height:1.4;}
+.plan-features li.yes{color:rgba(255,255,255,0.75);}
+.feat-icon{flex-shrink:0;margin-top:1px;font-size:0.8rem;}
+.feat-icon.yes{color:var(--teal);}
+.feat-icon.no{color:rgba(255,255,255,0.2);}
+.btn-plan{width:100%;padding:13px;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;transition:all .15s;}
+.btn-plan-gold{background:var(--gold);color:var(--navy);}
+.btn-plan-gold:hover{background:#f0c860;}
+.btn-plan-outline{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);}
+.btn-plan-outline:hover{background:rgba(255,255,255,0.1);}
+
+/* PayPal overlay */
+.paywall-overlay{position:fixed;inset:0;background:rgba(5,14,28,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.paywall-box{background:#0d2044;border:1px solid rgba(212,168,67,0.35);border-radius:18px;padding:2rem 1.75rem;max-width:420px;width:100%;}
+.paywall-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:0.4rem;}
+.paywall-sub{font-size:0.82rem;color:rgba(255,255,255,0.45);line-height:1.6;margin-bottom:1.25rem;}
+.paywall-amount{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--gold);line-height:1;margin-bottom:0.25rem;}
+.paywall-period{font-size:0.75rem;color:rgba(255,255,255,0.3);margin-bottom:1.25rem;}
+.btn-cancel-pay{width:100%;margin-top:0.5rem;padding:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);border-radius:9px;font-size:0.88rem;cursor:pointer;font-family:inherit;}
+
+/* FAQ */
+.faq-strip{border-top:1px solid rgba(255,255,255,0.08);padding-top:2rem;margin-top:1rem;}
+.faq-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;text-align:center;margin-bottom:1.5rem;}
+.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+@media(max-width:600px){.faq-grid{grid-template-columns:1fr;}}
+.faq-item{background:rgba(255,255,255,0.03);border-radius:10px;padding:1.1rem;}
+.faq-q{font-size:0.85rem;font-weight:700;color:#fff;margin-bottom:0.4rem;}
+.faq-a{font-size:0.8rem;color:rgba(255,255,255,0.45);line-height:1.6;}
+
+/* Bottom CTA */
+.bottom-cta{text-align:center;margin-top:2.5rem;padding:2rem;background:rgba(29,169,138,0.06);border-radius:14px;border:1px solid rgba(29,169,138,0.15);}
+.bottom-cta p{font-size:0.85rem;color:rgba(255,255,255,0.5);margin-bottom:0.75rem;}
+.bottom-cta a{color:var(--teal);text-decoration:none;font-weight:700;}
+</style>
+<script src="/ll-auth.js"></script>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <a href="/recruiter-dashboard" class="nav-link">← Back to dashboard</a>
+</nav>
+<main>
+<div class="inner">
+  <div class="eyebrow">Recruiter pricing</div>
+  <h1>Simple, transparent <span>pricing</span></h1>
+  <p class="sub">Post to LedgerLearn's certified talent pool. Every applicant has a verified assessment score — you know their level before the first call.</p>
+
+  <div class="pricing-grid">
+    <!-- Free trial -->
+    <div class="price-card">
+      <span class="plan-badge badge-free">FREE TRIAL</span>
+      <div class="plan-name">Starter</div>
+      <div class="plan-amount" style="color:var(--teal);">$0</div>
+      <div class="plan-period">First 30 days · No card required</div>
+      <ul class="plan-features">
+        <li class="yes"><span class="feat-icon yes">✓</span>Unlimited job postings during trial</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Unlimited applications received</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Cert verification on every applicant</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Full applicant inbox</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Candidate profile + resume download</li>
+        <li><span class="feat-icon no">✕</span>Priority listing placement</li>
+        <li><span class="feat-icon no">✕</span>Analytics dashboard</li>
+      </ul>
+      <a href="/recruiter-register" class="btn-plan btn-plan-outline">Start free trial →</a>
+    </div>
+
+    <!-- Per post — featured -->
+    <div class="price-card featured">
+      <div class="popular-badge">MOST POPULAR</div>
+      <span class="plan-badge badge-post">PER POST</span>
+      <div class="plan-name">Per listing</div>
+      <div class="plan-amount" style="color:var(--gold);">$39</div>
+      <div class="plan-period">Per job post · 30-day listing · One-time charge</div>
+      <ul class="plan-features">
+        <li class="yes"><span class="feat-icon yes">✓</span>1 job posting, live for 30 days</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Unlimited applications</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Cert verification on all applicants</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Priority listing placement</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Candidate ranking by cert score</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>CSV export of applicants</li>
+        <li><span class="feat-icon no">✕</span>Unlimited postings</li>
+      </ul>
+      <button class="btn-plan btn-plan-gold" onclick="openPaywall('per_post')">Pay $39 — post now →</button>
+    </div>
+
+    <!-- Monthly -->
+    <div class="price-card">
+      <span class="plan-badge badge-unlimited">BEST VALUE</span>
+      <div class="plan-name">Monthly unlimited</div>
+      <div class="plan-amount" style="color:#fff;">$149</div>
+      <div class="plan-period">Per month · Cancel any time · Auto-renews</div>
+      <ul class="plan-features">
+        <li class="yes"><span class="feat-icon yes">✓</span>Unlimited job postings</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Unlimited applications</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Cert verification on all applicants</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Priority listing placement</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Analytics dashboard</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>CSV export + API access</li>
+        <li class="yes"><span class="feat-icon yes">✓</span>Dedicated account support</li>
+      </ul>
+      <button class="btn-plan btn-plan-gold" onclick="openPaywall('monthly')">Subscribe — $149/mo →</button>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-strip">
+    <div class="faq-title">Common questions</div>
+    <div class="faq-grid">
+      <div class="faq-item"><div class="faq-q">Do I need a card for the free trial?</div><div class="faq-a">No. Your 30-day trial starts the moment you register — no card, no commitment. You'll be prompted to upgrade when the trial ends.</div></div>
+      <div class="faq-item"><div class="faq-q">What happens after my trial expires?</div><div class="faq-a">Your account stays open and your applications are preserved. Your active listings are paused until you upgrade. Candidates cannot apply to paused listings.</div></div>
+      <div class="faq-item"><div class="faq-q">What is the $39 per-post charge?</div><div class="faq-a">A one-time charge per job listing. Not a subscription — you are charged once and the listing stays live for 30 days. Pay again to renew or post a new role.</div></div>
+      <div class="faq-item"><div class="faq-q">Can I verify applicant certificates?</div><div class="faq-a">Yes. Every applicant's LedgerLearn certificate ID links to our public verification page at ledgerlearn.pro/verify — you can confirm it instantly.</div></div>
+      <div class="faq-item"><div class="faq-q">How does the monthly plan work?</div><div class="faq-a">Pay $149 via PayPal subscription. Unlimited postings for the billing period. Cancel any time — your listings stay live until the period ends.</div></div>
+      <div class="faq-item"><div class="faq-q">What regions do candidates come from?</div><div class="faq-a">Nigeria, South Africa, UK, UAE, Australia, Ghana, Kenya and more. You can filter your listing to a specific region or accept global applicants.</div></div>
+    </div>
+  </div>
+
+  <div class="bottom-cta">
+    <p>Questions about pricing or bulk hiring? <a href="mailto:hello@ledgerlearn.pro">Email hello@ledgerlearn.pro</a> for a custom arrangement.</p>
+    <p style="margin-top:0.5rem;font-size:0.78rem;"><a href="/jobs">Browse the public jobs board →</a></p>
+  </div>
+</div>
+</main>
+
+<!-- PayPal overlay -->
+<div class="paywall-overlay" id="paywall" style="display:none;">
+  <div class="paywall-box">
+    <div class="paywall-title" id="pw-title">Complete payment</div>
+    <p class="paywall-sub" id="pw-sub">You'll be charged once. Your listing goes live immediately.</p>
+    <div class="paywall-amount" id="pw-amount">$39</div>
+    <div class="paywall-period" id="pw-period">One-time · 30-day listing</div>
+    <div id="paypal-container"></div>
+    <button class="btn-cancel-pay" onclick="closePaywall()">Cancel</button>
+  </div>
+</div>
+
+<script>
+var PLAN_TYPE = '';
+var USER = null;
+var USER_ID = '';
+
+(async function() {
+  try {
+    var sess = JSON.parse(localStorage.getItem('ll_session') || '{}');
+    if (sess && sess.user) { USER = sess.user; USER_ID = USER.id || USER.sub || ''; }
+  } catch(e) {}
+})();
+
+function openPaywall(planType) {
+  if (!USER_ID) { window.location.href = '/recruiter-register'; return; }
+  PLAN_TYPE = planType;
+  var isMonthly = planType === 'monthly';
+  document.getElementById('pw-title').textContent  = isMonthly ? 'Subscribe — $149/month' : 'Pay per post — $39';
+  document.getElementById('pw-sub').textContent    = isMonthly ? 'Monthly subscription. Cancel any time.' : 'One-time charge. Your listing is live for 30 days.';
+  document.getElementById('pw-amount').textContent = isMonthly ? '$149' : '$39';
+  document.getElementById('pw-period').textContent = isMonthly ? 'Per month · Auto-renews · Cancel any time' : 'One-time · 30-day listing · Not recurring';
+  document.getElementById('paywall').style.display = 'flex';
+  document.getElementById('paypal-container').innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.82rem;text-align:center;padding:1rem 0;">Loading PayPal…</div>';
+  loadPayPal(planType);
+}
+function closePaywall() {
+  document.getElementById('paywall').style.display = 'none';
+  PLAN_TYPE = '';
+}
+
+function loadPayPal(planType) {
+  var existing = document.getElementById('pp-sdk-pricing');
+  if (existing && window.paypal) { renderButtons(planType); return; }
+  if (existing) existing.remove();
+  var intent = planType === 'monthly' ? 'subscription' : 'capture';
+  var vault  = planType === 'monthly' ? '&vault=true' : '';
+  var s = document.createElement('script');
+  s.id  = 'pp-sdk-pricing';
+  s.src = 'https://www.paypal.com/sdk/js?client-id=AQJ1g2hdsbHudthKBdv8mNxhNeAm2fnnf96y_SxEDJAZDNeiH7XtVwuFwWMGpRmt9w0AugXV4IK7rbJ3&intent=' + intent + vault + '&currency=USD';
+  s.onload = function() { renderButtons(planType); };
+  document.head.appendChild(s);
+}
+
+function renderButtons(planType) {
+  if (!window.paypal) { setTimeout(function(){ renderButtons(planType); }, 400); return; }
+  var wrap = document.getElementById('paypal-container');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  var isMonthly = planType === 'monthly';
+
+  var opts = {
+    style: { shape:'rect', color:'gold', layout:'vertical', label:'pay' },
+    onError:  function(err) { console.error(err); wrap.innerHTML = '<div style="color:#ff8080;font-size:0.82rem;padding:1rem 0;">Payment error. Contact hello@ledgerlearn.pro</div>'; },
+    onCancel: function() { closePaywall(); }
+  };
+
+  if (isMonthly) {
+    // Subscription — requires PayPal Plan ID
+    var monthlyPlanId = 'REPLACE_WITH_PAYPAL_PLAN_RECRUITER_MONTHLY';
+    opts.createSubscription = function(data, actions) {
+      return actions.subscription.create({ plan_id: monthlyPlanId });
+    };
+    opts.onApprove = async function(data, actions) {
+      wrap.innerHTML = '<div style="color:var(--teal);font-size:0.85rem;padding:1rem 0;">Activating subscription…</div>';
+      var email = USER ? USER.email : '';
+      try {
+        var res = await fetch('/.netlify/functions/jobboard-paygate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action:'verify-recruiter-payment', userId: USER_ID, email, planType:'monthly', paypalSubId: data.subscriptionID })
+        });
+        var result = await res.json();
+        if (result.ok) { closePaywall(); window.location.href = '/recruiter-dashboard?upgraded=monthly'; }
+        else { wrap.innerHTML = '<div style="color:#ff8080;font-size:0.82rem;">Verification failed. Contact hello@ledgerlearn.pro</div>'; }
+      } catch(e) { closePaywall(); window.location.href = '/recruiter-dashboard?upgraded=monthly'; }
+    };
+  } else {
+    // Per post — one-time order
+    opts.createOrder = function(data, actions) {
+      return actions.order.create({
+        purchase_units: [{ amount: { value: '39.00', currency_code: 'USD' }, description: 'LedgerLearn Job Post — 30 days' }]
+      });
+    };
+    opts.onApprove = function(data, actions) {
+      return actions.order.capture().then(async function(details) {
+        wrap.innerHTML = '<div style="color:var(--teal);font-size:0.85rem;padding:1rem 0;">Verifying payment…</div>';
+        var email = USER ? USER.email : '';
+        try {
+          var res = await fetch('/.netlify/functions/jobboard-paygate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action:'verify-recruiter-payment', userId: USER_ID, email, planType:'per_post', paypalOrderId: data.orderID })
+          });
+          var result = await res.json();
+          if (result.ok) { closePaywall(); window.location.href = '/recruiter-dashboard?upgraded=per_post'; }
+          else { wrap.innerHTML = '<div style="color:#ff8080;font-size:0.82rem;">Verification failed. Contact hello@ledgerlearn.pro</div>'; }
+        } catch(e) { closePaywall(); window.location.href = '/recruiter-dashboard?upgraded=per_post'; }
+      });
+    };
+  }
+
+  try { window.paypal.Buttons(opts).render('#paypal-container'); }
+  catch(e) { console.error(e); }
+}
+
+document.getElementById('paywall').addEventListener('click', function(e) {
+  if (e.target === this) closePaywall();
+});
+</script>
+</body>
+</html>

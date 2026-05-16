@@ -1513,6 +1513,32 @@
     .journey-track { grid-template-columns:1fr; }
   }
 
+
+  /* ── Jobs Board section ─────────────────────────────────── */
+  .jobs-section { background: var(--off-white); padding: 5rem 1.5rem; }
+  .jobs-inner   { max-width: 1100px; margin: 0 auto; }
+  .jobs-header  { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+  .jobs-grid    { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin-bottom: 1.75rem; }
+  .job-card     { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; transition: all .2s; display: flex; flex-direction: column; gap: 0.75rem; }
+  .job-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(11,31,58,0.08); }
+  .job-card-top   { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+  .job-co-logo    { width: 36px; height: 36px; border-radius: 8px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--gold); flex-shrink: 0; }
+  .job-co-name    { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px; }
+  .job-title      { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; color: var(--navy); }
+  .job-tags       { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .job-tag        { font-size: 0.68rem; font-weight: 600; padding: 3px 9px; border-radius: 100px; }
+  .tag-loc   { background: rgba(11,31,58,0.06); color: var(--text-mid); }
+  .tag-level { background: rgba(29,169,138,0.1); color: #0F6E56; }
+  .tag-sal   { background: rgba(212,168,67,0.12); color: #7a5c00; }
+  .job-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+  .job-views  { font-size: 0.72rem; color: var(--text-muted); }
+  .btn-apply  { background: var(--gold); color: var(--navy); border: none; border-radius: 7px; padding: 8px 16px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; text-decoration: none; transition: background .15s; }
+  .btn-apply:hover { background: var(--gold-light); }
+  .jobs-cta-bar { background: var(--navy); border-radius: 14px; padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+  .jobs-cta-text h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .jobs-cta-text p  { font-size: 0.82rem; color: rgba(255,255,255,0.5); }
+  .btn-post-job { background: var(--gold); color: var(--navy); border: none; border-radius: 9px; padding: 12px 24px; font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit; text-decoration: none; white-space: nowrap; }
+  .btn-post-job:hover { background: var(--gold-light); }
 </style>
 </head>
 <body>
@@ -1527,6 +1553,7 @@
     <li><a href="/learn">Courses</a></li>
     <li><a href="/test">Certifications</a></li>
     <li><a href="/partners">Partners</a></li>
+    <li><a href="/jobs">Jobs</a></li>
     <li><a href="/faq">FAQ</a></li>
     <li><a href="#tracks">Pricing</a></li>
     <li><a href="/placement" class="nav-cta">Find my starting point</a></li>
@@ -1976,13 +2003,99 @@
 </section>
 
 
+
+<section class="jobs-section" id="jobs-section">
+  <div class="jobs-inner">
+    <div class="jobs-header">
+      <div>
+        <div class="section-label">Certified jobs board</div>
+        <div class="section-title" style="font-size:clamp(1.5rem,2.5vw,2rem);margin-bottom:0.5rem;">
+          Land your first <span class="gold">certified role</span>
+        </div>
+        <p style="font-size:0.9rem;color:var(--text-muted);max-width:480px;line-height:1.6;">
+          Accounting and bookkeeping roles matched to your LedgerLearn certification. Apply in one click — your verified profile and certificate go with you.
+        </p>
+      </div>
+      <a href="/jobs" class="btn-apply" style="padding:10px 22px;font-size:0.88rem;">View all jobs →</a>
+    </div>
+
+    <div class="jobs-grid" id="home-jobs-grid">
+      <!-- Live jobs loaded by JS. Static fallback shown until load. -->
+      <div class="job-card">
+        <div class="job-card-top">
+          <div>
+            <div class="job-co-name">KPMG Nigeria</div>
+            <div class="job-title">Xero Bookkeeper — Remote</div>
+          </div>
+          <div class="job-co-logo">KPM</div>
+        </div>
+        <div class="job-tags">
+          <span class="job-tag tag-loc">Lagos / Remote</span>
+          <span class="job-tag tag-level">L1+ required</span>
+          <span class="job-tag tag-sal">₦180k–240k</span>
+        </div>
+        <div class="job-card-footer">
+          <span class="job-views">142 views · 8 applied</span>
+          <a href="/jobs" class="btn-apply">Apply →</a>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-card-top">
+          <div>
+            <div class="job-co-name">PwC South Africa</div>
+            <div class="job-title">Cloud Accounting Specialist</div>
+          </div>
+          <div class="job-co-logo">PWC</div>
+        </div>
+        <div class="job-tags">
+          <span class="job-tag tag-loc">Cape Town</span>
+          <span class="job-tag tag-level">L2+ required</span>
+          <span class="job-tag tag-sal">R35k–50k</span>
+        </div>
+        <div class="job-card-footer">
+          <span class="job-views">89 views · 4 applied</span>
+          <a href="/jobs" class="btn-apply">Apply →</a>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-card-top">
+          <div>
+            <div class="job-co-name">Deloitte UK</div>
+            <div class="job-title">Management Accountant (Xero)</div>
+          </div>
+          <div class="job-co-logo">DEL</div>
+        </div>
+        <div class="job-tags">
+          <span class="job-tag tag-loc">London / Hybrid</span>
+          <span class="job-tag tag-level">L3 preferred</span>
+          <span class="job-tag tag-sal">£42k–55k</span>
+        </div>
+        <div class="job-card-footer">
+          <span class="job-views">315 views · 21 applied</span>
+          <a href="/jobs" class="btn-apply">Apply →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="jobs-cta-bar">
+      <div class="jobs-cta-text">
+        <h3>Hiring certified bookkeepers?</h3>
+        <p>Post to LedgerLearn's verified talent pool — free for 30 days. No card needed.</p>
+      </div>
+      <a href="/recruiter-register" class="btn-post-job">Post a role free →</a>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="footer-inner">
     <div class="footer-logo">Ledger<span>Learn</span> Pro</div>
     <ul class="footer-links">
       <li><a href="/learn">Courses</a></li>
       <li><a href="/test">Certifications</a></li>
-      <li><a href="/verify">Verify a certificate</a></li>
+      <li><a href="/jobs">Jobs board</a></li>
+      <li><a href="/recruiter-register">Post a job</a></li>
+      <li><a href="/verify">Verify certificate</a></li>
       <li><a href="/dashboard">Dashboard</a></li>
       <li><a href="mailto:hello@ledgerlearn.pro">Contact</a></li>
     </ul>

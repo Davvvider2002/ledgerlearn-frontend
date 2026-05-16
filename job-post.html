@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post a Job — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--off:#f8f7f4;--border:rgba(11,31,58,0.12);--muted:#6b87a3;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--off);min-height:100vh;display:flex;flex-direction:column;}
+nav{height:56px;background:var(--navy);border-bottom:2px solid var(--gold);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:18px;height:18px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;color:#fff;}
+.brand span{color:var(--gold);}
+.nav-right{font-size:0.8rem;color:rgba(255,255,255,0.5);}
+main{flex:1;max-width:780px;margin:0 auto;width:100%;padding:2rem 1.5rem;}
+.page-eyebrow{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--teal);font-weight:700;margin-bottom:0.4rem;}
+.page-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--navy);margin-bottom:2rem;}
+
+/* Steps bar */
+.steps-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-bottom:2rem;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.step{padding:10px 4px;text-align:center;font-size:0.7rem;border-right:1px solid var(--border);background:#fff;color:var(--muted);}
+.step:last-child{border-right:none;}
+.step.done{background:rgba(29,169,138,0.07);color:var(--teal);font-weight:600;}
+.step.active{background:rgba(212,168,67,0.1);color:#7a5c00;font-weight:700;border-bottom:2px solid var(--gold);}
+.step-num{font-weight:800;font-size:0.8rem;display:block;margin-bottom:2px;}
+
+/* Form card */
+.form-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:2rem;margin-bottom:1.25rem;}
+.form-card-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem;}
+.fg{display:grid;gap:1rem;}
+.fg-2{grid-template-columns:1fr 1fr;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field.span2{grid-column:span 2;}
+.field label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);}
+.field input,.field select,.field textarea{padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--navy);background:var(--off);outline:none;transition:border-color .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);}
+.field textarea{resize:none;height:120px;}
+.field-hint{font-size:0.7rem;color:var(--muted);}
+
+/* Cert pills */
+.cert-pills{display:flex;gap:0.75rem;flex-wrap:wrap;}
+.cert-pill{padding:8px 18px;border-radius:100px;border:1.5px solid var(--border);font-size:0.82rem;cursor:pointer;background:#fff;color:var(--muted);font-family:inherit;transition:all .15s;}
+.cert-pill.selected{background:rgba(29,169,138,0.08);border-color:var(--teal);color:#0F6E56;font-weight:700;}
+.cert-pill:hover{border-color:var(--teal);}
+
+/* Screening questions */
+.question-row{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);}
+.question-row:last-child{border-bottom:none;}
+.question-num{font-size:0.72rem;font-weight:700;color:var(--muted);width:20px;flex-shrink:0;margin-top:12px;}
+.btn-add-q{background:none;border:1.5px dashed var(--border);border-radius:8px;padding:10px;font-size:0.82rem;color:var(--muted);cursor:pointer;font-family:inherit;width:100%;margin-top:0.75rem;}
+.btn-add-q:hover{border-color:var(--gold);color:var(--navy);}
+.remove-q{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:8px;flex-shrink:0;margin-top:4px;}
+.remove-q:hover{color:#e05555;}
+
+/* Review section */
+.review-block{background:var(--off);border-radius:10px;padding:1.25rem;margin-bottom:1rem;}
+.review-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:6px;}
+.review-val{font-size:0.9rem;color:var(--navy);}
+.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
+
+/* Pay section */
+.pay-card{background:#0d2044;border:1px solid rgba(212,168,67,0.3);border-radius:14px;padding:1.5rem;}
+.pay-card-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#fff;margin-bottom:0.5rem;}
+.pay-card-sub{font-size:0.82rem;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;line-height:1.6;}
+.trial-ok{background:rgba(29,169,138,0.12);border:1px solid rgba(29,169,138,0.25);border-radius:8px;padding:12px 16px;font-size:0.85rem;color:var(--teal);margin-bottom:1.25rem;display:flex;align-items:center;gap:10px;}
+#paypal-btn-wrap{margin-bottom:0.75rem;}
+
+/* Footer */
+.form-footer{display:flex;justify-content:space-between;align-items:center;margin-top:1.25rem;}
+.btn-back{padding:11px 22px;border-radius:8px;border:1.5px solid var(--border);font-size:0.88rem;font-weight:600;cursor:pointer;font-family:inherit;background:#fff;color:var(--muted);}
+.btn-back:hover{border-color:var(--navy);color:var(--navy);}
+.btn-next{padding:12px 28px;background:var(--gold);color:var(--navy);border:none;border-radius:9px;font-size:0.92rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;}
+.btn-next:hover{background:#f0c860;}
+.btn-next:disabled{background:#ccc;cursor:not-allowed;}
+.auto-save{font-size:0.75rem;color:var(--muted);}
+</style>
+<script src="/ll-auth.js"></script>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <span class="nav-right">Post a job · <a href="/recruiter-dashboard" style="color:rgba(255,255,255,0.5);text-decoration:none;">← Back to dashboard</a></span>
+</nav>
+<main>
+  <div class="page-eyebrow">Job posting</div>
+  <div class="page-title">Post a new role</div>
+
+  <!-- Steps bar -->
+  <div class="steps-bar" id="steps-bar">
+    <div class="step active" id="s1"><span class="step-num">1</span>Role details</div>
+    <div class="step" id="s2"><span class="step-num">2</span>Requirements</div>
+    <div class="step" id="s3"><span class="step-num">3</span>Description</div>
+    <div class="step" id="s4"><span class="step-num">4</span>Screening</div>
+    <div class="step" id="s5"><span class="step-num">5</span>Review &amp; publish</div>
+  </div>
+
+  <!-- Step 1: Role details -->
+  <div class="form-card" id="step-1">
+    <div class="form-card-title">Role details</div>
+    <div class="fg fg-2">
+      <div class="field span2"><label>Job title *</label><input id="f-title" placeholder="e.g. Xero Bookkeeper — Remote"></div>
+      <div class="field"><label>Company name *</label><input id="f-company" placeholder="e.g. KPMG Nigeria"></div>
+      <div class="field"><label>Location *</label><input id="f-location" placeholder="Lagos, Nigeria or Remote"></div>
+      <div class="field"><label>Location type</label>
+        <select id="f-loctype"><option value="onsite">On-site</option><option value="remote">Remote</option><option value="hybrid">Hybrid</option></select>
+      </div>
+      <div class="field"><label>Employment type</label>
+        <select id="f-emptype"><option value="full-time">Full-time</option><option value="part-time">Part-time</option><option value="contract">Contract</option><option value="freelance">Freelance</option></select>
+      </div>
+      <div class="field"><label>Salary (min)</label><input id="f-sal-min" placeholder="e.g. 180000 or 35000"></div>
+      <div class="field"><label>Salary (max)</label><input id="f-sal-max" placeholder="e.g. 240000 or 50000"></div>
+      <div class="field"><label>Currency</label>
+        <select id="f-currency"><option value="₦">₦ Nigerian Naira</option><option value="R">R South African Rand</option><option value="£">£ British Pound</option><option value="$">$ US Dollar</option><option value="A$">A$ Australian Dollar</option><option value="AED">AED Dirham</option><option value="€">€ Euro</option></select>
+      </div>
+      <div class="field"><label>Per</label>
+        <select id="f-period"><option value="monthly">Month</option><option value="annual">Year</option><option value="hourly">Hour</option><option value="daily">Day</option></select>
+      </div>
+      <div class="field"><label>Application deadline</label><input type="date" id="f-deadline"></div>
+      <div class="field"><label>Contact email *</label><input type="email" id="f-contact" placeholder="recruiter@company.com"></div>
+    </div>
+  </div>
+
+  <!-- Step 2: Requirements -->
+  <div class="form-card" id="step-2" style="display:none;">
+    <div class="form-card-title">Certification requirement</div>
+    <div class="fg">
+      <div class="field"><label>Required LedgerLearn certification level</label>
+        <div class="cert-pills" id="cert-pills">
+          <button class="cert-pill selected" data-level="any">Any level welcome</button>
+          <button class="cert-pill" data-level="l1">L1 Associate minimum</button>
+          <button class="cert-pill" data-level="l2">L2 Professional minimum</button>
+          <button class="cert-pill" data-level="l3">L3 Advisor required</button>
+        </div>
+        <div class="field-hint" style="margin-top:8px;">Applicants below your required level will see the role but cannot apply — they'll see an upgrade prompt instead.</div>
+      </div>
+      <div class="field"><label>Key requirements</label><textarea id="f-requirements" placeholder="e.g. 2+ years Xero experience, UK VAT knowledge, strong attention to detail…"></textarea></div>
+      <div class="field"><label>Years of experience required</label>
+        <select id="f-exp"><option value="">No requirement</option><option>1+ years</option><option>2+ years</option><option>3+ years</option><option>5+ years</option></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Description -->
+  <div class="form-card" id="step-3" style="display:none;">
+    <div class="form-card-title">Job description</div>
+    <div class="fg">
+      <div class="field"><label>Full job description *</label><textarea id="f-description" style="height:200px;" placeholder="Describe the role, day-to-day responsibilities, working environment, and what success looks like…"></textarea></div>
+      <div class="field"><label>Key responsibilities</label><textarea id="f-responsibilities" placeholder="List the main duties, e.g.&#10;• Manage bank reconciliation in Xero&#10;• Prepare monthly VAT returns&#10;• Produce management accounts"></textarea></div>
+    </div>
+  </div>
+
+  <!-- Step 4: Screening questions -->
+  <div class="form-card" id="step-4" style="display:none;">
+    <div class="form-card-title">Screening questions <span style="font-size:0.75rem;color:var(--muted);font-weight:400;">(optional — max 5)</span></div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">Applicants answer these when they apply. Their answers appear in your inbox alongside their profile.</p>
+    <div id="questions-list">
+      <div class="question-row">
+        <span class="question-num">Q1</span>
+        <input style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:inherit;" placeholder="e.g. How many years have you used Xero professionally?">
+        <button class="remove-q" onclick="removeQ(this)">✕</button>
+      </div>
+    </div>
+    <button class="btn-add-q" onclick="addQuestion()" id="btn-add-q">+ Add screening question (up to 5)</button>
+  </div>
+
+  <!-- Step 5: Review & publish -->
+  <div id="step-5" style="display:none;">
+    <div class="form-card">
+      <div class="form-card-title">Review before publishing</div>
+      <div class="review-grid">
+        <div class="review-block"><div class="review-label">Job title</div><div class="review-val" id="r-title">—</div></div>
+        <div class="review-block"><div class="review-label">Company</div><div class="review-val" id="r-company">—</div></div>
+        <div class="review-block"><div class="review-label">Location</div><div class="review-val" id="r-location">—</div></div>
+        <div class="review-block"><div class="review-label">Type</div><div class="review-val" id="r-type">—</div></div>
+        <div class="review-block"><div class="review-label">Salary</div><div class="review-val" id="r-salary">—</div></div>
+        <div class="review-block"><div class="review-label">Cert required</div><div class="review-val" id="r-cert">—</div></div>
+        <div class="review-block"><div class="review-label">Deadline</div><div class="review-val" id="r-deadline">—</div></div>
+        <div class="review-block"><div class="review-label">Contact</div><div class="review-val" id="r-contact">—</div></div>
+      </div>
+    </div>
+
+    <!-- Paygate / publish -->
+    <div class="pay-card" id="pay-section">
+      <div class="pay-card-title">Publish your listing</div>
+      <div class="pay-card-sub" id="pay-sub">Checking your plan status…</div>
+      <div id="pay-content">
+        <div style="text-align:center;color:rgba(255,255,255,0.4);padding:2rem 0;">Checking access…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-footer">
+    <button class="btn-back" id="btn-back" onclick="prevStep()" style="visibility:hidden;">← Back</button>
+    <span class="auto-save" id="step-indicator">Step 1 of 5</span>
+    <button class="btn-next" id="btn-next" onclick="nextStep()">Continue →</button>
+  </div>
+</main>
+
+<script>
+var STEP = 1;
+var TOTAL = 5;
+var PLAN  = null;
+var USER  = null;
+var USER_ID = '';
+
+var CERT_LEVEL = 'any';
+var CERT_LABELS = {any:'Any level welcome',l1:'L1 Associate minimum',l2:'L2 Professional minimum',l3:'L3 Advisor required'};
+
+(async function init() {
+  USER = await window.LLAuth.require();
+  if (!USER) return;
+  USER_ID = USER.id || '';
+  var stored = {};
+  try { stored = JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) {}
+  if (stored.role !== 'recruiter') { window.location.replace('/recruiter-register'); return; }
+
+  // Cert pills
+  document.getElementById('cert-pills').addEventListener('click', function(e) {
+    if (!e.target.classList.contains('cert-pill')) return;
+    document.querySelectorAll('.cert-pill').forEach(function(p){ p.classList.remove('selected'); });
+    e.target.classList.add('selected');
+    CERT_LEVEL = e.target.getAttribute('data-level');
+  });
+
+  // Set default deadline to 30 days from now
+  var d = new Date(); d.setDate(d.getDate()+30);
+  document.getElementById('f-deadline').value = d.toISOString().split('T')[0];
+})();
+
+function nextStep() {
+  if (!validateStep()) return;
+  if (STEP < TOTAL) {
+    STEP++;
+    renderStep();
+    if (STEP === TOTAL) buildReview();
+  }
+}
+function prevStep() {
+  if (STEP > 1) { STEP--; renderStep(); }
+}
+
+function renderStep() {
+  for (var i = 1; i <= TOTAL; i++) {
+    var el = document.getElementById('step-' + i);
+    if (el) el.style.display = i === STEP ? 'block' : 'none';
+    var s = document.getElementById('s' + i);
+    if (s) {
+      s.className = 'step' + (i < STEP ? ' done' : i === STEP ? ' active' : '');
+    }
+  }
+  document.getElementById('btn-back').style.visibility = STEP > 1 ? 'visible' : 'hidden';
+  document.getElementById('btn-next').style.display = STEP < TOTAL ? 'inline-block' : 'none';
+  document.getElementById('step-indicator').textContent = 'Step ' + STEP + ' of ' + TOTAL;
+}
+
+function validateStep() {
+  if (STEP === 1) {
+    var title   = document.getElementById('f-title').value.trim();
+    var company = document.getElementById('f-company').value.trim();
+    var loc     = document.getElementById('f-location').value.trim();
+    var contact = document.getElementById('f-contact').value.trim();
+    if (!title)   { alert('Please enter a job title.'); return false; }
+    if (!company) { alert('Please enter your company name.'); return false; }
+    if (!loc)     { alert('Please enter the job location.'); return false; }
+    if (!contact || !contact.includes('@')) { alert('Please enter a valid contact email.'); return false; }
+  }
+  if (STEP === 3) {
+    var desc = document.getElementById('f-description').value.trim();
+    if (desc.length < 100) { alert('Please write a more detailed job description (at least 100 characters).'); return false; }
+  }
+  return true;
+}
+
+function addQuestion() {
+  var list = document.getElementById('questions-list');
+  var count = list.querySelectorAll('.question-row').length;
+  if (count >= 5) { alert('Maximum 5 screening questions.'); return; }
+  var row = document.createElement('div');
+  row.className = 'question-row';
+  row.innerHTML = '<span class="question-num">Q' + (count+1) + '</span>' +
+    '<input style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:inherit;" placeholder="Type your screening question here…">' +
+    '<button class="remove-q" onclick="removeQ(this)">✕</button>';
+  list.appendChild(row);
+  if (list.querySelectorAll('.question-row').length >= 5) {
+    document.getElementById('btn-add-q').style.display = 'none';
+  }
+}
+function removeQ(btn) {
+  btn.closest('.question-row').remove();
+  document.getElementById('btn-add-q').style.display = 'block';
+  var rows = document.querySelectorAll('.question-row');
+  rows.forEach(function(r, i){ r.querySelector('.question-num').textContent = 'Q'+(i+1); });
+}
+
+function buildReview() {
+  var v = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  document.getElementById('r-title').textContent    = v('f-title');
+  document.getElementById('r-company').textContent  = v('f-company');
+  document.getElementById('r-location').textContent = v('f-location') + ' · ' + v('f-loctype');
+  document.getElementById('r-type').textContent     = v('f-emptype');
+  var currency = v('f-currency'); var period = v('f-period');
+  var salMin = v('f-sal-min'); var salMax = v('f-sal-max');
+  document.getElementById('r-salary').textContent   = salMin && salMax ? currency + salMin + '–' + currency + salMax + '/' + period : 'Not specified';
+  document.getElementById('r-cert').textContent     = CERT_LABELS[CERT_LEVEL] || 'Any level';
+  document.getElementById('r-deadline').textContent = v('f-deadline') || 'Not set';
+  document.getElementById('r-contact').textContent  = v('f-contact');
+  checkPlanStatus();
+}
+
+async function checkPlanStatus() {
+  if (!USER_ID) return;
+  var payContent = document.getElementById('pay-content');
+  var paySub     = document.getElementById('pay-sub');
+  try {
+    var res  = await fetch('/.netlify/functions/jobboard-paygate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'check-access', userId: USER_ID })
+    });
+    PLAN = await res.json();
+
+    if (PLAN.allowed && (PLAN.plan === 'trial' || PLAN.plan === 'monthly')) {
+      var daysLeft = PLAN.trial_days_left ? ' · ' + PLAN.trial_days_left + ' days left' : '';
+      paySub.textContent = 'Your ' + PLAN.plan + ' plan is active' + daysLeft + '. Publishing is free.';
+      payContent.innerHTML =
+        '<div class="trial-ok">✓ &nbsp;<span>Your listing will go live immediately — included in your plan.</span></div>' +
+        '<button onclick="publishJob()" style="width:100%;padding:14px;background:#D4A843;color:#0B1F3A;border:none;border-radius:9px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;">Publish job listing →</button>';
+
+    } else if (PLAN.allowed && PLAN.plan === 'per_post') {
+      paySub.textContent = 'Pay $39 to publish this listing for 30 days.';
+      payContent.innerHTML =
+        '<div style="font-size:2rem;font-weight:800;color:#D4A843;font-family:\'Syne\',sans-serif;margin-bottom:0.5rem;">$39</div>' +
+        '<div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;">One-time · 30-day listing · Unlimited applications</div>' +
+        '<div id="paypal-btn-wrap"></div>' +
+        '<div style="font-size:0.75rem;color:rgba(255,255,255,0.3);margin-top:0.75rem;">Or <a href="/jobs-pricing" style="color:#D4A843;text-decoration:none;">switch to monthly ($149)</a> for unlimited posts.</div>';
+      loadPayPal();
+
+    } else {
+      // Expired
+      paySub.textContent = 'Your trial has expired. Upgrade to publish this role.';
+      payContent.innerHTML =
+        '<div style="font-size:0.85rem;color:rgba(255,255,255,0.6);margin-bottom:1rem;line-height:1.6;">Choose a plan to publish your role. Your draft is saved.</div>' +
+        '<a href="/jobs-pricing" style="display:block;text-align:center;background:#D4A843;color:#0B1F3A;border-radius:9px;padding:14px;font-size:1rem;font-weight:700;text-decoration:none;">View pricing →</a>';
+    }
+  } catch(e) {
+    payContent.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.85rem;">Could not check plan status. <button onclick="checkPlanStatus()" style="color:#D4A843;background:none;border:none;cursor:pointer;font-family:inherit;">Retry</button></div>';
+  }
+}
+
+function loadPayPal() {
+  var existing = document.getElementById('paypal-sdk-post');
+  if (existing) { renderPayPalPostButton(); return; }
+  var s = document.createElement('script');
+  s.id  = 'paypal-sdk-post';
+  s.src = 'https://www.paypal.com/sdk/js?client-id=AQJ1g2hdsbHudthKBdv8mNxhNeAm2fnnf96y_SxEDJAZDNeiH7XtVwuFwWMGpRmt9w0AugXV4IK7rbJ3&intent=capture&currency=USD';
+  s.onload = renderPayPalPostButton;
+  document.head.appendChild(s);
+}
+
+function renderPayPalPostButton() {
+  if (!window.paypal) { setTimeout(renderPayPalPostButton, 500); return; }
+  var wrap = document.getElementById('paypal-btn-wrap');
+  if (!wrap) return;
+  window.paypal.Buttons({
+    style: { shape:'rect', color:'gold', layout:'vertical', label:'pay' },
+    createOrder: function(data, actions) {
+      return actions.order.create({
+        purchase_units: [{ amount: { value: '39.00', currency_code: 'USD' }, description: 'LedgerLearn Job Post — 30 days' }]
+      });
+    },
+    onApprove: function(data, actions) {
+      return actions.order.capture().then(async function(details) {
+        wrap.innerHTML = '<div style="color:var(--teal);font-size:0.9rem;padding:1rem 0;">Verifying payment…</div>';
+        var email = USER ? USER.email : '';
+        try {
+          var res = await fetch('/.netlify/functions/jobboard-paygate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'verify-recruiter-payment',
+              userId: USER_ID, email: email,
+              planType: 'per_post', paypalOrderId: data.orderID
+            })
+          });
+          var result = await res.json();
+          if (result.ok) { publishJob(); }
+          else { wrap.innerHTML = '<div style="color:#ff8080;">Payment verification failed. Contact hello@ledgerlearn.pro</div>'; }
+        } catch(e) { publishJob(); }
+      });
+    },
+    onError: function(err) { console.error(err); },
+    onCancel: function() {}
+  }).render('#paypal-btn-wrap');
+}
+
+async function publishJob() {
+  // In production: POST job data to a Netlify function → Supabase job_postings insert
+  var btn = document.getElementById('btn-next');
+  if (btn) btn.disabled = true;
+  await new Promise(function(r){ setTimeout(r, 800); });
+  window.location.href = '/recruiter-dashboard?published=1';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+    e.preventDefault();
+    if (STEP < TOTAL) nextStep();
+  }
+});
+</script>
+</body>
+</html>
