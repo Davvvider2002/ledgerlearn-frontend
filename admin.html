@@ -21,7 +21,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f2f5;}
 /* ── Main layout ────────────────────────────────────── */
 #app{display:none;position:fixed;top:0;left:0;right:0;bottom:0;flex-direction:row;}
 /* Sidebar */
-.sidebar{width:220px;background:#0B1F3A;display:flex;flex-direction:column;flex-shrink:0;height:100%;overflow-y:auto;}
+.sidebar{width:220px;background:#0B1F3A;display:flex;flex-direction:column;flex-shrink:0;height:100%;overflow-y:auto;position:relative;z-index:10;}
 .sb-brand{padding:1.25rem 1.25rem 0.75rem;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.08);}
 .sb-hex{width:22px;height:22px;background:#D4A843;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);flex-shrink:0;}
 .sb-title{font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:800;color:#fff;}
@@ -42,10 +42,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f2f5;}
 .page-view.active{display:block;}
 /* Header */
 .page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;}
-.page-title{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#1e3a5f;letter-spacing:-0.02em;}
+.page-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:#1e3a5f;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 160px);}
 .page-sub{font-size:0.82rem;color:#6b87a3;margin-top:2px;}
 /* Stats row */
-.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.875rem;margin-bottom:1.5rem;}
 .stat-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem;}
 .stat-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#1e3a5f;line-height:1;}
 .stat-lbl{font-size:0.72rem;color:#6b87a3;margin-top:4px;text-transform:uppercase;letter-spacing:0.06em;}
@@ -63,7 +63,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f2f5;}
 .btn-ghost-sm{background:transparent;border:1px solid #e2e8f0;color:#6b87a3;}
 .btn-ghost-sm:hover{border-color:#D4A843;color:#D4A843;}
 .btn-danger-sm{background:transparent;border:1px solid #fde8e8;color:#E24B4A;}
-table{width:100%;border-collapse:collapse;min-width:600px;}
+table{width:100%;border-collapse:collapse;min-width:500px;}
 .table-card > div[id]{overflow-x:auto;}
 .table-scroll{overflow-x:auto;width:100%;}
 th{text-align:left;padding:10px 1.25rem;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:#6b87a3;font-weight:700;border-bottom:1px solid #e2e8f0;background:#f8fafc;}
@@ -421,7 +421,7 @@ function adminLogin() {
     sessionStorage.setItem('ll_admin_token', data.token);
     sessionStorage.setItem('ll_admin_expires', data.expires);
     document.getElementById('login-overlay').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
+    document.getElementById('app').style.cssText = 'display:flex;flex-direction:row;';
     // Auto-fetch Supabase config, then load all data
     getSupaConfig().then(function() {
       loadDashboard();
@@ -442,7 +442,7 @@ function adminLogout() {
   sessionStorage.removeItem('ll_admin_token');
   sessionStorage.removeItem('ll_admin_expires');
   document.getElementById('login-overlay').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
+  document.getElementById('app').style.cssText = 'display:none;';
   document.getElementById('admin-pass').value = '';
 }
 
@@ -453,7 +453,7 @@ function adminLogout() {
   if (token && expires && new Date(expires) > new Date()) {
     ADMIN_TOKEN = token;
     document.getElementById('login-overlay').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
+    document.getElementById('app').style.cssText = 'display:flex;flex-direction:row;';
     loadDashboard(); loadUsers(); loadCerts(); loadPayments(); loadAffiliates(); loadPartners();
   }
 })();
