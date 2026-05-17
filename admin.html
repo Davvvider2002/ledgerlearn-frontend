@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f2f5;min-height:100vh;display:flex;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f2f5;min-height:100vh;display:flex;flex-direction:column;}
 /* ── Login overlay ───────────────────────────────────── */
 #login-overlay{position:fixed;inset:0;background:#0B1F3A;display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;}
 .login-box{background:#0d2044;border:1px solid rgba(212,168,67,0.4);border-radius:16px;padding:2.5rem 2rem;max-width:380px;width:100%;text-align:center;}
@@ -19,7 +19,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f2f5;min-height:10
 .login-btn{width:100%;padding:13px;background:#D4A843;color:#0B1F3A;border:none;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;}
 .login-err{color:#ff8080;font-size:0.78rem;min-height:1em;margin-bottom:0.5rem;}
 /* ── Main layout ────────────────────────────────────── */
-#app{display:none;width:100%;min-height:100vh;flex-direction:row;}
+#app{display:none;flex:1;width:100%;min-height:100vh;flex-direction:row;align-items:stretch;}
 /* Sidebar */
 .sidebar{width:220px;background:#0B1F3A;display:flex;flex-direction:column;flex-shrink:0;min-height:100vh;}
 .sb-brand{padding:1.25rem 1.25rem 0.75rem;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.08);}
