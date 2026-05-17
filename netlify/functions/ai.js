@@ -28,6 +28,11 @@ const CORS = {
   'Content-Type': 'application/json',
 };
 
+// ── Response helper ─────────────────────────────────────────
+function json(statusCode, body) {
+  return { statusCode, headers: CORS, body: JSON.stringify(body) };
+}
+
 // ── Question pool cache ────────────────────────────────────
 // Shared across all requests to this function instance
 const POOL_VERSION = 'v3-region-2026';  // Change to bust all cached questions
@@ -311,6 +316,10 @@ exports.handler = async function (event) {
         return { statusCode: 200, headers: CORS, body: JSON.stringify({ text }) };
       }
 
+      case 'ping': {
+        const hasKey = !!process.env.ANTHROPIC_API_KEY;
+        return json(200, { ok:hasKey, status: hasKey ? 'API key SET' : 'ANTHROPIC_API_KEY MISSING — add in Netlify env vars', keyPreview: hasKey ? process.env.ANTHROPIC_API_KEY.slice(0,8)+'...' : 'NOT SET', model:'claude-haiku-4-5-20251001' });
+      }
       default:
         return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: `Unknown action: ${action}` }) };
     }
