@@ -235,7 +235,21 @@
           }),
         });
         var data = await res.json();
-        var reply = (data && data.text) ? data.text : (data && data.error) ? 'Sorry, I hit an error. Please try again.' : 'Sorry, I didn\'t understand that.';
+        var reply;
+        if (data && data.text) {
+          reply = data.text;
+        } else if (data && data.error) {
+          // Show specific error so admin can diagnose
+          if (data.error.indexOf('ANTHROPIC_API_KEY') >= 0) {
+            reply = '⚠️ The AI service is not yet configured. Please contact hello@ledgerlearn.pro to activate the assistant.';
+          } else if (data.error.indexOf('authentication failed') >= 0) {
+            reply = '⚠️ AI service authentication error. The API key needs to be checked in Netlify settings.';
+          } else {
+            reply = '⚠️ ' + data.error;
+          }
+        } else {
+          reply = 'Sorry, I didn\'t get a response. Please try again in a moment.';
+        }
 
         // Replace typing with real reply
         if (typingEl && typingEl.parentNode) {

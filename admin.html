@@ -37,7 +37,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f2f5;min-height:10
 .sb-logout{font-size:0.75rem;color:rgba(255,255,255,0.4);cursor:pointer;background:none;border:none;font-family:inherit;padding:0;}
 .sb-logout:hover{color:#ff8080;}
 /* Main */
-.main{flex:1;overflow-y:auto;padding:2rem;}
+.main{flex:1;min-width:0;overflow-y:auto;padding:2rem;}
 .page-view{display:none;}
 .page-view.active{display:block;}
 /* Header */
@@ -63,7 +63,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#f0f2f5;min-height:10
 .btn-ghost-sm{background:transparent;border:1px solid #e2e8f0;color:#6b87a3;}
 .btn-ghost-sm:hover{border-color:#D4A843;color:#D4A843;}
 .btn-danger-sm{background:transparent;border:1px solid #fde8e8;color:#E24B4A;}
-table{width:100%;border-collapse:collapse;}
+table{width:100%;border-collapse:collapse;min-width:600px;}
+.table-card > div[id]{overflow-x:auto;}
+.table-scroll{overflow-x:auto;width:100%;}
 th{text-align:left;padding:10px 1.25rem;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:#6b87a3;font-weight:700;border-bottom:1px solid #e2e8f0;background:#f8fafc;}
 td{padding:11px 1.25rem;font-size:0.82rem;color:#374151;border-bottom:1px solid #f0f2f5;vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
@@ -1183,7 +1185,7 @@ async function verifyRecruiter(id){await adminFetch('verify-recruiter',{id:id});
       <div class="page-hdr"><div class="page-title">Job Listings</div></div>
       <div class="table-card">
         <div class="table-hdr"><div class="table-title">All postings</div><span id="jb-jobs-count" style="background:#e1f7f2;color:#0F6E56;padding:2px 8px;border-radius:100px;font-size:0.7rem;font-weight:700;">—</span></div>
-        <div id="jb-jobs-table"></div>
+        <div style="overflow-x:auto;" id="jb-jobs-table"></div>
       </div>
     </div>
     <!-- JB RECRUITERS -->
@@ -1191,7 +1193,7 @@ async function verifyRecruiter(id){await adminFetch('verify-recruiter',{id:id});
       <div class="page-hdr"><div class="page-title">Recruiters</div></div>
       <div class="table-card">
         <div class="table-hdr"><div class="table-title">Recruiter accounts</div><span id="jb-recs-count" style="background:#e1f7f2;color:#0F6E56;padding:2px 8px;border-radius:100px;font-size:0.7rem;font-weight:700;">—</span></div>
-        <div id="jb-recruiters-table"></div>
+        <div style="overflow-x:auto;" id="jb-recruiters-table"></div>
       </div>
     </div>
     <!-- JB APPLICATIONS -->
@@ -1199,7 +1201,7 @@ async function verifyRecruiter(id){await adminFetch('verify-recruiter',{id:id});
       <div class="page-hdr"><div class="page-title">Applications</div></div>
       <div class="table-card">
         <div class="table-hdr"><div class="table-title">All applications</div><span id="jb-apps-count" style="background:#e1f7f2;color:#0F6E56;padding:2px 8px;border-radius:100px;font-size:0.7rem;font-weight:700;">—</span></div>
-        <div id="jb-applications-table"></div>
+        <div style="overflow-x:auto;" id="jb-applications-table"></div>
       </div>
     </div>
 </body>
