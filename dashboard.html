@@ -1662,7 +1662,47 @@ async function init() {
   initLevelDashboards();
 }
 </script>
-<script src="/ll-chatbot.js"></script>
+<script src="/ll-chatbot.js">
+  // ── Retry pending cert save (fires if cert save failed during assessment) ──
+  (async function retryPendingCertSave() {
+    try {
+      var pending = localStorage.getItem('ll_pending_cert_save');
+      if (!pending) return;
+      var certPayload = JSON.parse(pending);
+      if (!certPayload || !certPayload.certId) return;
+
+      // Try to get email
+      var email = '';
+      try {
+        if (window.LLAuth && typeof LLAuth.getUser === 'function') {
+          var u = LLAuth.getUser();
+          email = (u && u.email) || '';
+        }
+      } catch(e) {}
+      if (!email) {
+        try { email = JSON.parse(localStorage.getItem('ll_session')||'{}').user?.email || ''; } catch(e) {}
+      }
+      if (!email) {
+        try { email = JSON.parse(localStorage.getItem('ll_user')||'{}').email || ''; } catch(e) {}
+      }
+      if (!email) return; // still no email — wait for next load
+
+      var res = await fetch('/.netlify/functions/supabase-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'save-cert', email: email, data: certPayload }),
+      });
+      var data = await res.json();
+      if (data.ok) {
+        console.log('[Dashboard] Pending cert save succeeded:', certPayload.certId);
+        localStorage.removeItem('ll_pending_cert_save');
+      }
+    } catch(e) {
+      console.warn('[Dashboard] Cert retry failed:', e.message);
+    }
+  })();
+
+</script>
 </body>
 </html
 function downloadCertFromOb() {

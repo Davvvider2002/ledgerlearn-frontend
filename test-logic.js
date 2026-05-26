@@ -75,13 +75,81 @@ function inlineToast(msg, type) {
   setTimeout(()=>{t.style.transition='opacity 0.3s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},3500);
 }
 
-const TEST_CONFIG = {
-  l1: { title:'Xero Associate', questions:20, minutes:40, pass:70,  level:'L1 · Xero Associate'  },
-  l2: { title:'Xero Professional', questions:25, minutes:50, pass:70, level:'L2 · Xero Professional' },
-  l3: { title:'Xero Advisor',      questions:30, minutes:60, pass:75, level:'L3 · Xero Advisor'      },
+// ── Track configs ─────────────────────────────────────────────
+const TRACK_CONFIGS = {
+  Xero: {
+    l1: { title:'Xero Associate',      questions:20, minutes:40, pass:70, level:'L1 · Xero Associate'         },
+    l2: { title:'Xero Professional',   questions:25, minutes:50, pass:70, level:'L2 · Xero Professional'      },
+    l3: { title:'Xero Advisor',        questions:30, minutes:60, pass:75, level:'L3 · Xero Advisor'           },
+    certTitles: {
+      l1: 'Xero Certified Practitioner — Level 1',
+      l2: 'Xero Professional Practitioner — Level 2',
+      l3: 'Xero Advisor Practitioner — Level 3',
+    },
+  },
+  QuickBooks: {
+    l1: { title:'QuickBooks Associate',    questions:20, minutes:40, pass:70, level:'L1 · QuickBooks Associate'    },
+    l2: { title:'QuickBooks Professional', questions:25, minutes:50, pass:70, level:'L2 · QuickBooks Professional' },
+    l3: { title:'QuickBooks Advisor',      questions:30, minutes:60, pass:75, level:'L3 · QuickBooks Advisor'      },
+    certTitles: {
+      l1: 'QuickBooks Certified Practitioner — Level 1',
+      l2: 'QuickBooks Professional Practitioner — Level 2',
+      l3: 'QuickBooks Advisor Practitioner — Level 3',
+    },
+  },
 };
 
-const TOPICS_POOL = ['Invoicing','Bank Reconciliation','Chart of Accounts','Financial Reports','VAT','Contacts','Organisation Setup','Payroll Basics'];
+// ACTIVE_TRACK: set by the page before loading test-logic.js
+// e.g. <script>var ACTIVE_TRACK = 'QuickBooks';</script>
+// Defaults to 'Xero' so all existing Xero pages need zero changes
+var ACTIVE_TRACK = (typeof ACTIVE_TRACK !== 'undefined') ? ACTIVE_TRACK : 'Xero';
+
+// TEST_CONFIG resolves to the active track — backward compatible
+const TEST_CONFIG = (function() {
+  var t = (typeof ACTIVE_TRACK !== 'undefined') ? ACTIVE_TRACK : 'Xero';
+  return TRACK_CONFIGS[t] || TRACK_CONFIGS['Xero'];
+})();
+
+// ── Track-aware localStorage helpers ──────────────────────
+// XERO uses 'll_progress'; QB uses 'll_progress_qb'
+// These helpers make ALL progress reads/writes track-aware.
+function _progressKey() {
+  return (typeof ACTIVE_TRACK !== 'undefined' && ACTIVE_TRACK === 'QuickBooks')
+    ? 'll_progress_qb' : 'll_progress';
+}
+function getProgress() {
+  try { return JSON.parse(localStorage.getItem(_progressKey()) || '{}'); } catch(e) { return {}; }
+}
+function saveProgress(obj) {
+  try { localStorage.setItem(_progressKey(), JSON.stringify(obj)); } catch(e) {}
+}
+
+// ── Track-aware topics pool ──────────────────────────────────
+// QB topics use QuickBooks terminology throughout
+const TOPICS_BY_TRACK = {
+  Xero: {
+    l1: ['Invoicing','Bank Reconciliation','Chart of Accounts','Financial Reports','VAT','Contacts','Organisation Setup','Payroll Basics'],
+    l2: ['VAT Returns','Bank Rules','Payroll Processing','Management Reports','Accounts Payable','Accounts Receivable','Expense Claims','Budgets'],
+    l3: ['Management Accounts','Cash Flow Forecasting','Fixed Assets','Multi-Currency','Consolidated Reports','Year-End Journals','Practice Management','Advisory Reports'],
+  },
+  QuickBooks: {
+    l1: ['Invoicing','Bank Reconciliation','Chart of Accounts','Financial Reports','Sales Tax Basics','Customers & Vendors','Company Setup','Expenses & Receipts'],
+    l2: ['Sales Tax Returns','Bank Rules','Payroll Processing','Class Tracking','Accounts Payable','Accounts Receivable','Projects & Job Costing','Recurring Transactions'],
+    l3: ['Budgets & Forecasts','Cash Flow Analysis','Multi-Currency','Custom Reports','Audit Log & Permissions','Advanced Payroll','Integrations','Advisory Reporting'],
+  },
+};
+
+// TOPICS_POOL is resolved at test start — updated by getTopicsPool()
+let TOPICS_POOL = TOPICS_BY_TRACK['Xero']['l1'];
+
+function getTopicsPool() {
+  var track  = (typeof ACTIVE_TRACK !== 'undefined') ? ACTIVE_TRACK : 'Xero';
+  var level  = (typeof test !== 'undefined' && test.level) ? test.level : 'l1';
+  var pool   = (TOPICS_BY_TRACK[track] || TOPICS_BY_TRACK['Xero'])[level]
+               || TOPICS_BY_TRACK['Xero']['l1'];
+  TOPICS_POOL = pool;
+  return pool;
+}
 
 let test = {
   level:'l1', questions:[], answers:{},
@@ -325,7 +393,7 @@ async function startTest() {
 }
 
 async function fetchTestQuestions(cfg) {
-  const topicCycle = [...TOPICS_POOL, ...TOPICS_POOL, ...TOPICS_POOL];
+  const topicCycle = (function(){ var p = getTopicsPool(); return [...p, ...p, ...p]; })();
 
   for (let i = 0; i < cfg.questions; i++) {
     if (test.finished) break;
@@ -341,7 +409,7 @@ async function fetchTestQuestions(cfg) {
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({
           action: 'scenario',
-          track: 'Xero',
+          track: (typeof ACTIVE_TRACK !== 'undefined') ? ACTIVE_TRACK : 'Xero',
           module: topic,
           difficulty: test.level === 'l1' ? 'intermediate' : 'advanced',
           region: _rcode,
@@ -514,7 +582,10 @@ async function finishTest() {
       return JSON.parse(localStorage.getItem('ll_user') || '{}');
     } catch { return {}; }
   })();
-  const certId   = 'LLP-XCP1-' + new Date().getFullYear() + '-' + Math.floor(1000+Math.random()*9000);
+  // Cert ID encodes track + level: LLP-XCP1 = Xero L1, XCP2 = Xero L2, QCP1 = QB L1 etc.
+  var _trackCode = (typeof ACTIVE_TRACK !== 'undefined' && ACTIVE_TRACK === 'QuickBooks') ? 'QCP' : 'XCP';
+  var _levelCode = test.level === 'l1' ? '1' : test.level === 'l2' ? '2' : '3';
+  const certId   = 'LLP-' + _trackCode + _levelCode + '-' + new Date().getFullYear() + '-' + Math.floor(1000+Math.random()*9000);
   const issueDate = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
 
   // Save progress — fully self-contained, no LL dependency
@@ -527,11 +598,10 @@ async function finishTest() {
       completedLevels: completed,
     });
     if (passed) {
-      const levelTitles = {
-        l1: 'Xero Certified Practitioner — Level 1',
-        l2: 'Xero Professional Practitioner — Level 2',
-        l3: 'Xero Advisor Practitioner — Level 3',
-      };
+      const levelTitles = (function() {
+        var t = (typeof ACTIVE_TRACK !== 'undefined') ? ACTIVE_TRACK : 'Xero';
+        return (TRACK_CONFIGS[t] || TRACK_CONFIGS['Xero']).certTitles;
+      })();
       const levelDescs = {
         l1: 'Demonstrated competency in Xero navigation, invoicing, bank reconciliation, chart of accounts, and financial reporting.',
         l2: 'Demonstrated advanced competency in Xero VAT returns, financial reporting, bank rules, and multi-currency transactions.',
@@ -570,25 +640,67 @@ async function finishTest() {
     } catch(_e) {}
 
     // Save certificate to Supabase
+    // Uses every available source to find the email — never silently skips
     if (passed && updated.certificate) {
       try {
-        if (window.LLAuth && typeof LLAuth.getUser === 'function') {
-          var _certUser = LLAuth.getUser();
-          var _certEmail = (_certUser && _certUser.email) ||
-                           (function(){ try{return JSON.parse(localStorage.getItem('ll_user')||'{}').email||'';}catch(e){return '';} })();
-          if (_certEmail) {
-            fetch('/.netlify/functions/supabase-progress', {
-              method:  'POST',
-              headers: {'Content-Type':'application/json'},
-              body:    JSON.stringify({
-                action:  'save-cert',
-                email:   _certEmail,
-                data:    Object.assign({level: test.level}, updated.certificate),
-              })
-            }).catch(function(){});
+        // Priority: LLAuth.getUser() → ll_session → ll_user → ll_user_email
+        var _certEmail = '';
+        try {
+          if (window.LLAuth && typeof LLAuth.getUser === 'function') {
+            var _certUser = LLAuth.getUser();
+            _certEmail = (_certUser && _certUser.email) || '';
           }
+        } catch(e) {}
+        if (!_certEmail) {
+          try { _certEmail = JSON.parse(localStorage.getItem('ll_session')||'{}').user?.email || ''; } catch(e) {}
         }
-      } catch(_e2) {}
+        if (!_certEmail) {
+          try { _certEmail = JSON.parse(localStorage.getItem('ll_user')||'{}').email || ''; } catch(e) {}
+        }
+        if (!_certEmail) {
+          try { _certEmail = localStorage.getItem('ll_user_email') || ''; } catch(e) {}
+        }
+
+        var _certPayload = Object.assign({ level: test.level }, updated.certificate);
+
+        if (_certEmail) {
+          fetch('/.netlify/functions/supabase-progress', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+              action: 'save-cert',
+              email:  _certEmail,
+              data:   _certPayload,
+            })
+          })
+          .then(function(r){ return r.json(); })
+          .then(function(res){
+            if (res.ok) {
+              console.log('[LedgerLearn] Certificate saved to database:', updated.certificate.certId);
+            } else {
+              console.warn('[LedgerLearn] Cert save failed:', res.error);
+              // Store for retry on next dashboard load
+              try {
+                var _pending = JSON.parse(localStorage.getItem('ll_pending_cert_save')||'null');
+                if (!_pending) localStorage.setItem('ll_pending_cert_save', JSON.stringify(_certPayload));
+              } catch(e) {}
+            }
+          })
+          .catch(function(err){
+            console.warn('[LedgerLearn] Cert save network error:', err.message);
+            // Store for retry
+            try {
+              localStorage.setItem('ll_pending_cert_save', JSON.stringify(_certPayload));
+            } catch(e) {}
+          });
+        } else {
+          // No email found — store cert locally for retry when user logs in
+          console.warn('[LedgerLearn] No email found — cert stored locally for retry');
+          try { localStorage.setItem('ll_pending_cert_save', JSON.stringify(_certPayload)); } catch(e) {}
+        }
+      } catch(_e2) {
+        console.warn('[LedgerLearn] Cert save block error:', _e2.message);
+      }
     }
 
   } catch(e) { console.warn('[finishTest] save error:', e); }
@@ -633,7 +745,7 @@ function _getCert() {
         candidateName: u.name||'Candidate',
         certTitle:'Xero Certified Practitioner — Level 1',
         certLevel:'L1 · Associate · Xero Cloud Accounting · LedgerLearn Pro',
-        certId:p.certId||('LLP-XCP1-'+new Date().getFullYear()+'-'+Math.floor(1000+Math.random()*9000)),
+        certId:p.certId||(function(){var _tc=(typeof ACTIVE_TRACK!=='undefined'&&ACTIVE_TRACK==='QuickBooks')?'QCP':'XCP';var _lc=p.level==='l2'?'2':p.level==='l3'?'3':'1';return 'LLP-'+_tc+_lc+'-'+new Date().getFullYear()+'-'+Math.floor(1000+Math.random()*9000);}()),
         issueDate:p.issueDate||new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),
         score:p.lastScore
       };
