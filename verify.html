@@ -183,92 +183,149 @@ body { background: var(--navy); min-height: 100vh; }
 
 <script src="/ll-shared.js"></script>
 <script>
-  // Format input as user types
+  // Format input — uppercase, allow only valid cert ID chars
   document.getElementById('cert-id-input').addEventListener('input', function() {
     this.value = this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');
   });
 
   async function handleVerify() {
-    const certId = document.getElementById('cert-id-input').value.trim();
+    var certId = document.getElementById('cert-id-input').value.trim().toUpperCase();
     if (!certId) { LL.toast('Please enter a certificate ID', 'error'); return; }
 
-    const btn = document.getElementById('verify-btn');
-    const btnText = document.getElementById('verify-btn-text');
-    const spinner = document.getElementById('verify-spinner');
+    // Basic format guard — LLP-XXXX-YYYY-NNNN
+    if (!/^LLP-[A-Z0-9]{3,6}-\d{4}-\d{4}$/.test(certId)) {
+      LL.toast('Invalid format. Expected: LLP-XXXX-YYYY-NNNN', 'error');
+      return;
+    }
+
+    var btn     = document.getElementById('verify-btn');
+    var btnText = document.getElementById('verify-btn-text');
+    var spinner = document.getElementById('verify-spinner');
 
     btn.disabled = true;
     btnText.textContent = 'Verifying…';
     spinner.style.display = 'block';
 
-    // Simulate network check — in production, POST to /.netlify/functions/verify-cert
-    await new Promise(r => setTimeout(r, 1200));
+    var certData = null;
+    var source   = '';
 
-    // For now: check localStorage (demo mode)
-    // In production this hits your database via a serverless function
-    let certData = null;
+    // ── Step 1: Query Supabase via supabase-progress function ──
     try {
-      const progress = JSON.parse(localStorage.getItem('ll_progress') || '{}');
-      if (progress.certificate && progress.certificate.certId === certId) {
-        certData = progress.certificate;
+      var resp = await fetch('/.netlify/functions/supabase-progress', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ action: 'verify-cert', certId: certId }),
+      });
+      var data = await resp.json();
+      if (data.ok && data.found && data.cert) {
+        var c = data.cert;
+        certData = {
+          candidateName:  c.candidate_name || c.candidateName || '—',
+          certId:         c.cert_id        || certId,
+          certTitle:      c.cert_title     || c.certTitle     || '—',
+          certLevel:      c.cert_level     || c.certLevel     || '—',
+          certRegion:     c.cert_region    || c.certRegion    || '—',
+          certRegionLabel:c.cert_region_label || c.certRegionLabel || '—',
+          score:          c.score          || '—',
+          issueDate:      c.issue_date     || c.issueDate     || '—',
+          level:          c.level          || '—',
+        };
+        source = 'database';
       }
-    } catch(e) {}
+    } catch(e) {
+      console.warn('[verify] Supabase lookup failed:', e.message);
+    }
+
+    // ── Step 2: Fallback to localStorage (same device, same browser) ──
+    if (!certData) {
+      try {
+        var p = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+        if (p.certificate && p.certificate.certId === certId) {
+          certData = p.certificate;
+          source   = 'local';
+        }
+      } catch(e) {}
+    }
 
     btn.disabled = false;
     btnText.textContent = 'Verify certificate →';
     spinner.style.display = 'none';
 
-    const result = document.getElementById('verify-result');
+    var result = document.getElementById('verify-result');
     result.style.display = 'block';
 
+    function esc(s){ return String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
     if (certData) {
-      result.innerHTML = `
-        <div class="result-valid">
-          <span class="result-icon">✅</span>
-          <h3>Certificate verified — authentic</h3>
-          <p style="font-size:0.8rem;color:rgba(255,255,255,0.5);font-weight:300;margin-bottom:0.5rem;">This is a genuine LedgerLearn Pro certificate.</p>
-          <div class="result-grid">
-            <div class="result-item">
-              <div class="result-label">Issued to</div>
-              <div class="result-value">${certData.candidateName || '—'}</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">Certificate ID</div>
-              <div class="result-value gold">${certData.certId}</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">Certification</div>
-              <div class="result-value teal">${certData.certTitle || 'Xero Certified Practitioner L1'}</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">Issue date</div>
-              <div class="result-value">${certData.issueDate || '—'}</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">Score achieved</div>
-              <div class="result-value">${certData.score ? certData.score+'%' : '—'}</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">Status</div>
-              <div class="result-value teal">✓ Valid</div>
-            </div>
-          </div>
-        </div>`;
+      var levelLabel = esc(certData.certTitle || certData.certLevel || '—');
+      var scoreLine  = certData.score && certData.score !== '—' ? certData.score + '%' : '—';
+      var regionLine = certData.certRegionLabel && certData.certRegionLabel !== '—'
+                       ? certData.certRegionLabel
+                       : (certData.certRegion || '—');
+      var dateLine   = esc(certData.issueDate || '—');
+      var nameVal    = esc(certData.candidateName || '—');
+
+      result.innerHTML =
+        '<div class="result-valid">' +
+          '<span class="result-icon">&#x2705;</span>' +
+          '<h3>Certificate verified &mdash; authentic</h3>' +
+          '<p style="font-size:0.8rem;color:rgba(255,255,255,0.5);font-weight:300;margin-bottom:0.5rem;">' +
+            'This is a genuine LedgerLearn Pro certificate.' +
+            (source === 'local' ? ' <span style="font-size:0.7rem;opacity:0.4;">(verified locally)</span>' : '') +
+          '</p>' +
+          '<div class="result-grid">' +
+            '<div class="result-item"><div class="result-label">Issued to</div><div class="result-value">' + nameVal + '</div></div>' +
+            '<div class="result-item"><div class="result-label">Certificate ID</div><div class="result-value gold">' + esc(certData.certId) + '</div></div>' +
+            '<div class="result-item"><div class="result-label">Certification</div><div class="result-value teal">' + levelLabel + '</div></div>' +
+            '<div class="result-item"><div class="result-label">Issue date</div><div class="result-value">' + dateLine + '</div></div>' +
+            '<div class="result-item"><div class="result-label">Score achieved</div><div class="result-value">' + scoreLine + '</div></div>' +
+            '<div class="result-item"><div class="result-label">Region</div><div class="result-value">' + esc(regionLine) + '</div></div>' +
+            '<div class="result-item"><div class="result-label">Status</div><div class="result-value teal">&#x2713; Valid &mdash; active</div></div>' +
+            '<div class="result-item"><div class="result-label">Issued by</div><div class="result-value">LedgerLearn Pro</div></div>' +
+          '</div>' +
+          '<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.08);font-size:0.72rem;color:rgba(255,255,255,0.25);">' +
+            'Verified against LedgerLearn Pro certificate registry. ' +
+            'To query this certificate contact <a href="mailto:hello@ledgerlearn.pro" style="color:var(--teal-light);">hello@ledgerlearn.pro</a>.' +
+          '</div>' +
+        '</div>';
     } else {
-      result.innerHTML = `
-        <div class="result-invalid">
-          <span class="result-icon">❌</span>
-          <h3>Certificate not found</h3>
-          <p style="font-size:0.8rem;color:rgba(255,255,255,0.45);font-weight:300;">
-            No certificate with ID <strong style="color:#fff">${certId}</strong> was found in our records.
-            Please check the ID and try again, or contact
-            <a href="mailto:hello@ledgerlearn.pro" style="color:var(--teal-light)">hello@ledgerlearn.pro</a>.
-          </p>
-        </div>`;
+      result.innerHTML =
+        '<div class="result-invalid">' +
+          '<span class="result-icon">&#x274C;</span>' +
+          '<h3>Certificate not found</h3>' +
+          '<p style="font-size:0.8rem;color:rgba(255,255,255,0.45);font-weight:300;">' +
+            'No certificate with ID <strong style="color:#fff">' + esc(certId) + '</strong> ' +
+            'was found in our records.<br><br>' +
+            'Please check the ID carefully &mdash; it is case-sensitive and must include all hyphens. ' +
+            'If you believe this is an error, contact ' +
+            '<a href="mailto:hello@ledgerlearn.pro" style="color:var(--teal-light)">hello@ledgerlearn.pro</a> ' +
+            'with your certificate ID and the name on the certificate.' +
+          '</p>' +
+          '<div style="margin-top:1rem;padding:0.875rem;background:rgba(255,255,255,0.04);border-radius:8px;">' +
+            '<div style="font-size:0.7rem;color:rgba(255,255,255,0.25);margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Format expected</div>' +
+            '<div style="font-family:monospace;font-size:0.85rem;color:rgba(255,255,255,0.5);">LLP-XCP1-2026-NNNN</div>' +
+          '</div>' +
+        '</div>';
     }
   }
 
+  // Auto-verify if cert ID is in the URL query string
+  // e.g. /verify?id=LLP-XCP1-2026-6339
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    var idParam = params.get('id') || params.get('cert') || params.get('certId');
+    if (idParam) {
+      var input = document.getElementById('cert-id-input');
+      if (input) {
+        input.value = idParam.toUpperCase().replace(/[^A-Z0-9-]/g,'');
+        // Auto-trigger after DOM settles
+        setTimeout(handleVerify, 300);
+      }
+    }
+  })();
+
   // Allow Enter key to trigger verify
-  document.getElementById('cert-id-input').addEventListener('keydown', e => {
+  document.getElementById('cert-id-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') handleVerify();
   });
 </script>
