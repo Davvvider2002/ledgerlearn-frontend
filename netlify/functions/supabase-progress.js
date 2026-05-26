@@ -119,10 +119,12 @@ exports.handler = async function(event) {
   try { body = JSON.parse(event.body || '{}'); } catch(e) {}
 
   const { action, email, data } = body;
-  if (!email) {
+
+  // verify-cert is a public lookup — no email needed
+  if (!email && action !== 'verify-cert') {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'email required' }) };
   }
-  const cleanEmail = email.toLowerCase().trim();
+  const cleanEmail = email ? email.toLowerCase().trim() : '';
 
   // ── LOAD ──────────────────────────────────────────────────
   if (action === 'load') {
