@@ -227,6 +227,46 @@ exports.handler = async function(event) {
         return json(200, { ok: true });
       }
 
+      // ── MANUAL CERT INSERT (admin recovery tool) ───────────
+      case 'insert-cert': {
+        // Allows admin to manually insert a cert that missed Supabase save
+        const { certId, candidateName, certTitle, certLevel, certRegion,
+                certRegionLabel, certRegionSuffix, score, level, issueDate, email } = body;
+        if (!certId || !email) return json(400, { error: 'certId and email required' });
+
+        // Check if cert already exists
+        const existing = await supa(
+          `/rest/v1/certificates?cert_id=eq.${encodeURIComponent(certId)}&limit=1`, 'GET'
+        );
+        if (Array.isArray(existing) && existing.length > 0) {
+          return json(200, { ok: true, alreadyExists: true, cert: existing[0] });
+        }
+
+        // Get user_id from profiles
+        const prof = await supa(
+          `/rest/v1/profiles?email=eq.${encodeURIComponent(email)}&select=id`, 'GET'
+        );
+        const userId = Array.isArray(prof) && prof.length > 0 ? prof[0].id : null;
+
+        const row = {
+          user_id:            userId,
+          email:              email,
+          cert_id:            certId,
+          candidate_name:     candidateName    || 'Candidate',
+          cert_title:         certTitle        || '',
+          cert_level:         certLevel        || '',
+          cert_region:        certRegion       || 'UK',
+          cert_region_label:  certRegionLabel  || 'United Kingdom',
+          cert_region_suffix: certRegionSuffix || '',
+          score:              score            || 0,
+          level:              level            || 'l1',
+          issue_date:         issueDate        || new Date().toISOString().split('T')[0],
+        };
+
+        const result = await supa('/rest/v1/certificates', 'POST', row);
+        return json(200, { ok: true, inserted: true, cert: Array.isArray(result) ? result[0] : result });
+      }
+
       default:
         return json(400, { error: 'Unknown action: ' + action });
     }
