@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Marketplace — LedgerLearn Pro</title>
+<meta name="description" content="Templates, AI workflows, ERP kits, and firm growth packs for accountants and bookkeepers. Download and deploy immediately.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ll-shared.css">
+<style>
+:root{
+  --navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--teal-p:#e1f7f2;
+  --purple:#7c3aed;--purple-p:rgba(124,58,237,0.08);--purple-b:rgba(124,58,237,0.2);
+  --orange:#ea580c;--orange-p:rgba(234,88,12,0.08);--orange-b:rgba(234,88,12,0.2);
+  --off:#f8f7f4;--white:#fff;--text:#1e3a5f;--muted:#6b87a3;--border:#e2e8f0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);}
+
+/* NAV */
+.nav{background:var(--navy);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(212,168,67,0.2);}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.nav-hex{width:18px;height:18px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.nav-brand{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:#fff;}
+.nav-brand em{color:var(--gold);font-style:normal;}
+.nav-links{display:flex;align-items:center;gap:1.5rem;}
+.nav-link{font-size:.8rem;color:rgba(255,255,255,.55);text-decoration:none;font-weight:500;transition:color .12s;}
+.nav-link:hover{color:#fff;}
+.nav-link.active{color:var(--gold);}
+.nav-link.purple{color:#c4b5fd;}
+.nav-cta{background:var(--gold);color:var(--navy);padding:6px 16px;border-radius:6px;font-size:.8rem;font-weight:700;text-decoration:none;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--navy),#1a2f4a);padding:3rem 2rem 2.5rem;border-bottom:1px solid rgba(255,255,255,.06);}
+.hero-inner{max-width:1100px;margin:0 auto;}
+.hero-eyebrow{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:#c4b5fd;font-weight:700;margin-bottom:.5rem;}
+.hero-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-.02em;margin-bottom:.75rem;}
+.hero-sub{font-size:.9rem;color:rgba(255,255,255,.5);max-width:480px;line-height:1.6;margin-bottom:1.5rem;}
+.hero-pills{display:flex;gap:.5rem;flex-wrap:wrap;}
+.hero-pill{font-size:.7rem;font-weight:600;padding:4px 12px;border-radius:100px;}
+.pill-ai{background:rgba(124,58,237,.2);color:#c4b5fd;}
+.pill-book{background:rgba(29,169,138,.15);color:#26c9a5;}
+.pill-erp{background:rgba(234,88,12,.15);color:#fb923c;}
+.pill-firm{background:rgba(212,168,67,.15);color:var(--gold);}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:2rem;}
+
+/* FILTERS */
+.filter-bar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:2rem;padding:1rem 1.25rem;background:var(--white);border:1px solid var(--border);border-radius:12px;}
+.filter-label{font-size:.72rem;color:var(--muted);font-weight:600;white-space:nowrap;}
+.filter-chip{padding:5px 14px;border-radius:100px;font-size:.75rem;font-weight:600;border:1.5px solid var(--border);background:transparent;cursor:pointer;transition:all .12s;font-family:inherit;}
+.filter-chip.on,.filter-chip:hover{border-color:var(--gold);color:var(--gold);}
+.filter-chip.cat-ai.on{border-color:var(--purple);color:var(--purple);background:var(--purple-p);}
+.filter-chip.cat-book.on{border-color:var(--teal);color:var(--teal);background:var(--teal-p);}
+.filter-chip.cat-erp.on{border-color:var(--orange);color:var(--orange);background:var(--orange-p);}
+.filter-chip.cat-firm.on{border-color:var(--gold);color:#92400e;background:rgba(212,168,67,.08);}
+.filter-search{margin-left:auto;padding:7px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:.8rem;font-family:inherit;outline:none;width:180px;transition:border-color .12s;}
+.filter-search:focus{border-color:var(--gold);}
+
+/* PRODUCT GRID */
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.25rem;margin-bottom:2rem;}
+.prod-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow .2s,transform .2s;}
+.prod-card:hover{box-shadow:0 8px 30px rgba(11,31,58,.1);transform:translateY(-2px);}
+.prod-card.ai{border-top:3px solid var(--purple);}
+.prod-card.bookkeeping{border-top:3px solid var(--teal);}
+.prod-card.erp{border-top:3px solid var(--orange);}
+.prod-card.firm{border-top:3px solid var(--gold);}
+.prod-icon-wrap{padding:1.1rem 1.25rem .5rem;display:flex;align-items:center;justify-content:space-between;}
+.prod-icon{font-size:1.6rem;}
+.prod-badges{display:flex;gap:.4rem;flex-wrap:wrap;}
+.prod-badge{font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:100px;text-transform:uppercase;letter-spacing:.05em;}
+.badge-ai{background:var(--purple-p);color:var(--purple);}
+.badge-book{background:var(--teal-p);color:var(--teal);}
+.badge-erp{background:var(--orange-p);color:var(--orange);}
+.badge-firm{background:rgba(212,168,67,.12);color:#92400e;}
+.badge-featured{background:var(--navy);color:#fff;}
+.badge-free{background:var(--teal-p);color:var(--teal);border:1px solid rgba(29,169,138,.3);}
+.prod-body{padding:.25rem 1.25rem 1.25rem;}
+.prod-name{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--text);margin-bottom:.4rem;line-height:1.2;}
+.prod-desc{font-size:.78rem;color:var(--muted);line-height:1.55;margin-bottom:.875rem;}
+.prod-footer{display:flex;align-items:center;justify-content:space-between;}
+.prod-price{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--text);}
+.prod-price-free{color:var(--teal);}
+.btn-buy{padding:8px 18px;border:none;border-radius:7px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .13s;}
+.btn-ai{background:var(--purple);color:#fff;}
+.btn-ai:hover{background:#6d28d9;}
+.btn-book{background:var(--teal);color:#fff;}
+.btn-book:hover{background:#26c9a5;}
+.btn-erp{background:var(--orange);color:#fff;}
+.btn-erp:hover{background:#c2410c;}
+.btn-firm{background:var(--gold);color:var(--navy);}
+.btn-firm:hover{background:#f0c860;}
+.btn-free{background:var(--teal-p);color:var(--teal);border:1px solid rgba(29,169,138,.3);}
+
+/* L2 UNLOCK STRIP */
+.unlock-strip{background:rgba(29,169,138,.07);border:1px solid rgba(29,169,138,.2);border-radius:10px;padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:2rem;}
+.unlock-strip-text{font-size:.82rem;color:var(--text);line-height:1.5;}
+.unlock-strip-text strong{color:var(--teal);}
+.unlock-link{font-size:.78rem;font-weight:700;color:var(--teal);text-decoration:none;white-space:nowrap;}
+
+/* ACADEMY UPSELL */
+.academy-upsell{background:linear-gradient(135deg,rgba(124,58,237,.1),rgba(11,31,58,.4));border:1px solid var(--purple-b);border-radius:14px;padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;margin-bottom:3rem;}
+.au-left{}
+.au-eyebrow{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:#c4b5fd;font-weight:700;margin-bottom:.35rem;}
+.au-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:.35rem;}
+.au-sub{font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.5;}
+.au-right{text-align:center;flex-shrink:0;}
+.au-price{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#c4b5fd;line-height:1;}
+.au-period{font-size:.72rem;color:rgba(255,255,255,.4);}
+.au-btn{display:block;margin-top:.75rem;padding:9px 22px;background:var(--purple);color:#fff;border:none;border-radius:7px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;white-space:nowrap;}
+
+/* CHECKOUT MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:500;padding:1rem;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--white);border-radius:16px;padding:2rem;max-width:440px;width:100%;}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;}
+.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);}
+.modal-product{background:var(--off);border-radius:10px;padding:1rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.875rem;}
+.modal-product-icon{font-size:1.4rem;}
+.modal-product-name{font-size:.88rem;font-weight:700;color:var(--text);}
+.modal-product-price{font-size:.78rem;color:var(--muted);}
+.form-field{margin-bottom:.875rem;}
+.form-field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px;}
+.form-field input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.875rem;font-family:inherit;outline:none;transition:border-color .12s;}
+.form-field input:focus{border-color:var(--gold);}
+.coupon-row{display:flex;gap:.5rem;}
+.coupon-row input{flex:1;}
+.btn-coupon{padding:10px 14px;background:var(--off);border:1.5px solid var(--border);border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text);transition:all .12s;white-space:nowrap;}
+.btn-coupon:hover{border-color:var(--gold);color:var(--gold);}
+.price-breakdown{background:var(--off);border-radius:8px;padding:.875rem 1rem;margin-bottom:1.25rem;font-size:.8rem;}
+.pb-row{display:flex;justify-content:space-between;margin-bottom:.3rem;color:var(--muted);}
+.pb-row.total{font-weight:700;color:var(--text);padding-top:.4rem;border-top:1px solid var(--border);margin-top:.4rem;}
+.pb-discount{color:var(--teal);}
+.btn-paypal{width:100%;padding:13px;background:#ffc439;color:#003087;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;}
+.modal-status{margin-top:.75rem;font-size:.78rem;text-align:center;color:var(--muted);}
+.modal-status.error{color:#e24b4a;}
+.modal-status.success{color:var(--teal);}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:4rem 1rem;color:var(--muted);}
+.empty-icon{font-size:2.5rem;margin-bottom:1rem;}
+.coming-soon{text-align:center;padding:3rem;color:var(--muted);background:var(--white);border:1px solid var(--border);border-radius:14px;}
+.coming-soon h3{font-family:'Syne',sans-serif;color:var(--text);margin-bottom:.5rem;}
+
+/* FOOTER */
+footer{background:var(--navy);color:rgba(255,255,255,.4);padding:2rem;text-align:center;font-size:.75rem;}
+footer a{color:rgba(255,255,255,.4);text-decoration:none;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="/">
+    <div class="nav-hex"></div>
+    <div class="nav-brand">Ledger<em>Learn</em> Pro</div>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="/learn">Courses</a>
+    <a class="nav-link" href="/test">Certify</a>
+    <a class="nav-link active" href="/marketplace">Marketplace</a>
+    <a class="nav-link" href="/jobs">Jobs</a>
+    <a class="nav-link purple" href="/academy">Academy</a>
+    <a class="nav-cta" href="/test">Start free &rarr;</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Digital products</div>
+    <h1 class="hero-title">Tools that make you<br>a better accountant.</h1>
+    <p class="hero-sub">Templates, AI workflows, ERP kits, and firm growth packs. Download and deploy immediately.</p>
+    <div class="hero-pills">
+      <span class="hero-pill pill-ai">&#x1F916; AI Toolkits</span>
+      <span class="hero-pill pill-book">&#x1F4CB; Bookkeeping Kits</span>
+      <span class="hero-pill pill-erp">&#x2699;&#xFE0F; ERP Kits</span>
+      <span class="hero-pill pill-firm">&#x1F4C8; Firm Growth</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- L2 UNLOCK STRIP -->
+  <div class="unlock-strip" id="l2-unlock-strip" style="display:none;">
+    <div class="unlock-strip-text">
+      <strong>&#x1F3C6; You're Xero L2 Certified</strong> &mdash; claim your free Xero Starter Pack below.
+    </div>
+    <a class="unlock-link" href="#" onclick="claimL2Free(event)">Claim free kit &rarr;</a>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-chip on" data-cat="" onclick="setFilter('',this)">All products</button>
+    <button class="filter-chip cat-ai" data-cat="ai" onclick="setFilter('ai',this)">&#x1F916; AI Toolkits</button>
+    <button class="filter-chip cat-book" data-cat="bookkeeping" onclick="setFilter('bookkeeping',this)">&#x1F4CB; Bookkeeping</button>
+    <button class="filter-chip cat-erp" data-cat="erp" onclick="setFilter('erp',this)">&#x2699;&#xFE0F; ERP Kits</button>
+    <button class="filter-chip cat-firm" data-cat="firm" onclick="setFilter('firm',this)">&#x1F4C8; Firm Growth</button>
+    <input class="filter-search" placeholder="Search products&hellip;" oninput="searchProducts(this.value)"/>
+  </div>
+
+  <!-- PRODUCTS -->
+  <div class="products-grid" id="products-grid">
+    <div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading products&hellip;</div>
+  </div>
+
+  <!-- ACADEMY UPSELL -->
+  <div class="academy-upsell">
+    <div class="au-left">
+      <div class="au-eyebrow">ERP.SaaS Academy</div>
+      <div class="au-title">Get every product free as a member.</div>
+      <div class="au-sub">Academy members get access to the full content library &mdash; every marketplace product, template, and guide &mdash; included at no extra cost.</div>
+    </div>
+    <div class="au-right">
+      <div class="au-price">$29</div>
+      <div class="au-period">/month &middot; cancel anytime</div>
+      <a class="au-btn" href="/academy">Join Academy &rarr;</a>
+    </div>
+  </div>
+
+</main>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-bg" id="modal-checkout">
+  <div class="modal">
+    <div class="modal-title">
+      Complete your purchase
+      <button class="modal-close" onclick="closeCheckout()">&#x2715;</button>
+    </div>
+    <div class="modal-product" id="modal-product-preview">
+      <div class="modal-product-icon" id="mp-icon">&#x1F4E6;</div>
+      <div>
+        <div class="modal-product-name" id="mp-name">Loading&hellip;</div>
+        <div class="modal-product-price" id="mp-price"></div>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Your email</label>
+      <input type="email" id="checkout-email" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <div class="form-field">
+      <label>Coupon code (optional)</label>
+      <div class="coupon-row">
+        <input type="text" id="checkout-coupon" placeholder="LAUNCH20" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()"/>
+        <button class="btn-coupon" onclick="applyCoupon()">Apply</button>
+      </div>
+      <div id="coupon-status" style="font-size:.72rem;margin-top:4px;color:var(--muted);"></div>
+    </div>
+    <div class="price-breakdown" id="price-breakdown">
+      <div class="pb-row"><span>Product price</span><span id="pb-original">&#x2014;</span></div>
+      <div class="pb-row pb-discount" id="pb-discount-row" style="display:none;"><span>Discount</span><span id="pb-discount-amt"></span></div>
+      <div class="pb-row total"><span>Total</span><span id="pb-total">&#x2014;</span></div>
+    </div>
+    <button class="btn-paypal" onclick="initiateCheckout()" id="paypal-btn">
+      <span>&#x1F4B3;</span> Pay with PayPal
+    </button>
+    <div class="modal-status" id="checkout-status"></div>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2026 LedgerLearn Pro &middot; Independent assessment platform, not affiliated with Xero, Intuit or Sage.</p>
+  <p style="margin-top:.35rem;"><a href="/verify">Verify a certificate</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="/faq">FAQ</a></p>
+</footer>
+
+<script>
+var ALL_PRODUCTS = [];
+var ACTIVE_FILTER = '';
+var ACTIVE_SEARCH = '';
+var CHECKOUT_PRODUCT = null;
+var COUPON_DATA = null;
+
+var CAT_ICONS  = { ai:'&#x1F916;', bookkeeping:'&#x1F4CB;', erp:'&#x2699;&#xFE0F;', firm:'&#x1F4C8;' };
+var CAT_LABELS = { ai:'AI Toolkit', bookkeeping:'Bookkeeping Kit', erp:'ERP Kit', firm:'Firm Growth' };
+var CAT_BTN    = { ai:'btn-ai', bookkeeping:'btn-book', erp:'btn-erp', firm:'btn-firm' };
+
+// ── Load products on page load ─────────────────────────────
+window.addEventListener('DOMContentLoaded', function() {
+  loadProducts();
+  checkL2Status();
+});
+
+async function loadProducts() {
+  try {
+    var res = await fetch('/.netlify/functions/marketplace-api', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'get-products' }),
+    });
+    var data = await res.json();
+    if (data.comingSoon) { renderComingSoon(); return; }
+    ALL_PRODUCTS = Array.isArray(data.data) ? data.data : [];
+    renderProducts();
+  } catch(e) {
+    document.getElementById('products-grid').innerHTML =
+      '<div class="empty-state"><div class="empty-icon">&#x26A0;&#xFE0F;</div>Unable to load products. Please try again.</div>';
+  }
+}
+
+async function checkL2Status() {
+  try {
+    var userEmail = getUserEmail();
+    if (!userEmail) return;
+    var res = await fetch('/.netlify/functions/marketplace-api', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'check-access', email:userEmail, productId:'l2_check' }),
+    });
+    // Actually check if user has L2 cert via supabase-progress
+    var progRes = await fetch('/.netlify/functions/supabase-progress', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'load', email:userEmail }),
+    });
+    var prog = await progRes.json();
+    if (prog.ok && prog.data && prog.data.l2Score && parseInt(prog.data.l2Score) >= 70) {
+      var strip = document.getElementById('l2-unlock-strip');
+      if (strip) strip.style.display = 'flex';
+    }
+  } catch(e) {}
+}
+
+function getUserEmail() {
+  try {
+    var u = JSON.parse(localStorage.getItem('ll_user')||'{}');
+    return u.email || localStorage.getItem('ll_user_email') || '';
+  } catch(e) { return ''; }
+}
+
+function setFilter(cat, btn) {
+  ACTIVE_FILTER = cat;
+  document.querySelectorAll('.filter-chip').forEach(function(c){ c.classList.remove('on'); });
+  if (btn) btn.classList.add('on');
+  renderProducts();
+}
+
+function searchProducts(val) {
+  ACTIVE_SEARCH = (val||'').toLowerCase();
+  renderProducts();
+}
+
+function renderComingSoon() {
+  document.getElementById('products-grid').innerHTML =
+    '<div class="coming-soon" style="grid-column:1/-1;">'
+    + '<h3>&#x1F6D2; Marketplace coming soon</h3>'
+    + '<p>Our product catalogue is being prepared. Join the Academy waitlist to be first to know.</p>'
+    + '<a href="/academy" style="display:inline-block;margin-top:1rem;padding:9px 20px;background:var(--purple);color:#fff;border-radius:7px;text-decoration:none;font-weight:700;font-size:.82rem;">Learn about Academy &rarr;</a>'
+    + '</div>';
+}
+
+function renderProducts() {
+  var filtered = ALL_PRODUCTS.filter(function(p) {
+    var matchCat = !ACTIVE_FILTER || p.category === ACTIVE_FILTER;
+    var matchSearch = !ACTIVE_SEARCH || (p.name||'').toLowerCase().includes(ACTIVE_SEARCH) || (p.description||'').toLowerCase().includes(ACTIVE_SEARCH);
+    return matchCat && matchSearch;
+  });
+  var grid = document.getElementById('products-grid');
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">&#x1F50D;</div>No products match your filter.</div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(function(p) {
+    var icon = CAT_ICONS[p.category]||'&#x1F4E6;';
+    var label = CAT_LABELS[p.category]||p.category;
+    var badgeCls = 'badge-'+p.category;
+    if (!badgeCls.match(/ai|book|erp|firm/)) badgeCls = 'badge-book';
+    var isFree = p.unlock_rule === 'l2_free';
+    var btnCls = CAT_BTN[p.category]||'btn-firm';
+    var btnText = isFree ? 'Claim free (L2 cert)' : 'Buy now';
+    return '<div class="prod-card '+p.category+'" data-id="'+esc(p.id)+'">'
+      + '<div class="prod-icon-wrap"><div class="prod-icon">'+icon+'</div>'
+      + '<div class="prod-badges"><span class="prod-badge '+badgeCls+'">'+esc(label)+'</span>'
+      + (isFree ? '<span class="prod-badge badge-free">L2 free</span>' : '')
+      + '</div></div>'
+      + '<div class="prod-body">'
+      + '<div class="prod-name">'+esc(p.name)+'</div>'
+      + '<div class="prod-desc">'+esc(p.description||'')+'</div>'
+      + '<div class="prod-footer">'
+      + '<div class="prod-price '+(isFree?'prod-price-free':'')+'">$'+parseFloat(p.price).toFixed(0)+'</div>'
+      + '<button class="btn-buy '+btnCls+'" onclick="openCheckout(\''+esc(p.id)+'\')">'+btnText+'</button>'
+      + '</div></div></div>';
+  }).join('');
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function openCheckout(productId) {
+  var p = ALL_PRODUCTS.find(function(x){ return x.id === productId; });
+  if (!p) return;
+  CHECKOUT_PRODUCT = p;
+  COUPON_DATA = null;
+  document.getElementById('mp-icon').innerHTML = CAT_ICONS[p.category]||'&#x1F4E6;';
+  document.getElementById('mp-name').textContent = p.name;
+  document.getElementById('mp-price').textContent = '$'+parseFloat(p.price).toFixed(2)+' USD';
+  document.getElementById('checkout-email').value = getUserEmail();
+  document.getElementById('checkout-coupon').value = '';
+  document.getElementById('coupon-status').textContent = '';
+  document.getElementById('pb-original').textContent = '$'+parseFloat(p.price).toFixed(2);
+  document.getElementById('pb-discount-row').style.display = 'none';
+  document.getElementById('pb-total').textContent = '$'+parseFloat(p.price).toFixed(2);
+  document.getElementById('checkout-status').textContent = '';
+  document.getElementById('checkout-status').className = 'modal-status';
+  document.getElementById('modal-checkout').classList.add('open');
+}
+
+function closeCheckout() {
+  document.getElementById('modal-checkout').classList.remove('open');
+  CHECKOUT_PRODUCT = null; COUPON_DATA = null;
+}
+
+async function applyCoupon() {
+  if (!CHECKOUT_PRODUCT) return;
+  var code = document.getElementById('checkout-coupon').value.trim().toUpperCase();
+  var statusEl = document.getElementById('coupon-status');
+  if (!code) { statusEl.textContent = 'Enter a coupon code first.'; return; }
+  statusEl.textContent = 'Checking...'; statusEl.style.color = 'var(--muted)';
+  try {
+    var res = await fetch('/.netlify/functions/marketplace-api', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'validate-coupon', productId:CHECKOUT_PRODUCT.id, couponCode:code }),
+    });
+    var data = await res.json();
+    if (!data.ok) { statusEl.textContent = data.error||'Invalid coupon.'; statusEl.style.color='#e24b4a'; COUPON_DATA=null; return; }
+    COUPON_DATA = data;
+    statusEl.textContent = '&#x2713; Coupon applied &mdash; $'+parseFloat(data.discountAmount).toFixed(2)+' off';
+    statusEl.style.color = 'var(--teal)';
+    var orig = parseFloat(CHECKOUT_PRODUCT.price);
+    var disc = parseFloat(data.discountAmount);
+    var final = Math.max(0, orig - disc);
+    document.getElementById('pb-discount-row').style.display = 'flex';
+    document.getElementById('pb-discount-amt').textContent = '-$'+disc.toFixed(2);
+    document.getElementById('pb-total').textContent = '$'+final.toFixed(2);
+  } catch(e) { statusEl.textContent = 'Error checking coupon.'; statusEl.style.color='#e24b4a'; }
+}
+
+async function initiateCheckout() {
+  if (!CHECKOUT_PRODUCT) return;
+  var email = document.getElementById('checkout-email').value.trim();
+  if (!email || !email.includes('@')) {
+    document.getElementById('checkout-status').textContent = 'Please enter a valid email address.';
+    document.getElementById('checkout-status').className = 'modal-status error';
+    return;
+  }
+  var btn = document.getElementById('paypal-btn');
+  var statusEl = document.getElementById('checkout-status');
+  btn.disabled = true;
+  statusEl.textContent = 'Creating your order...';
+  statusEl.className = 'modal-status';
+  try {
+    var res = await fetch('/.netlify/functions/marketplace-api', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action:'initiate-checkout', email,
+        productId: CHECKOUT_PRODUCT.id,
+        couponCode: COUPON_DATA ? document.getElementById('checkout-coupon').value.trim().toUpperCase() : '',
+      }),
+    });
+    var data = await res.json();
+    if (!data.ok) { statusEl.textContent = data.error||'Order failed.'; statusEl.className='modal-status error'; btn.disabled=false; return; }
+    // Store pending order
+    sessionStorage.setItem('ll_pending_order', JSON.stringify({ email, productId:CHECKOUT_PRODUCT.id, paypalOrderId:data.paypalOrderId }));
+    // Redirect to PayPal
+    if (data.approveUrl) {
+      statusEl.textContent = 'Redirecting to PayPal...';
+      window.location.href = data.approveUrl;
+    } else {
+      statusEl.textContent = 'PayPal checkout window opened.';
+      btn.disabled = false;
+    }
+  } catch(e) { statusEl.textContent = 'Network error. Please try again.'; statusEl.className='modal-status error'; btn.disabled=false; }
+}
+
+async function claimL2Free(e) {
+  e.preventDefault();
+  var email = getUserEmail();
+  if (!email) { alert('Please sign in to claim your free kit.'); return; }
+  // Find the L2-free product
+  var freeProduct = ALL_PRODUCTS.find(function(p){ return p.unlock_rule === 'l2_free'; });
+  if (!freeProduct) return;
+  try {
+    var res = await fetch('/.netlify/functions/marketplace-api', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'claim-l2-free', email, productId:freeProduct.id }),
+    });
+    var data = await res.json();
+    if (data.ok) {
+      alert('&#x2713; Your free ' + freeProduct.name + ' is on its way! Check your email for the download link.');
+      document.getElementById('l2-unlock-strip').style.display = 'none';
+    } else {
+      alert(data.error || 'Unable to claim free product.');
+    }
+  } catch(e) { alert('Network error. Please try again.'); }
+}
+
+// Handle PayPal return (after redirect back)
+(function checkPayPalReturn() {
+  var params = new URLSearchParams(window.location.search);
+  var ppToken = params.get('token');  // PayPal order ID in return URL
+  if (!ppToken) return;
+  var pending = sessionStorage.getItem('ll_pending_order');
+  if (!pending) return;
+  var order = JSON.parse(pending);
+  if (!order.paypalOrderId) return;
+  sessionStorage.removeItem('ll_pending_order');
+  // Confirm the order
+  confirmOrder(order.email, order.paypalOrderId, order.productId);
+})();
+
+async function confirmOrder(email, paypalOrderId, productId) {
+  try {
+    var res = await fetch('/.netlify/functions/marketplace-api', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'confirm-order', email, orderId:paypalOrderId, productId }),
+    });
+    var data = await res.json();
+    if (data.ok) {
+      // Show success notice at top of page
+      var notice = document.createElement('div');
+      notice.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#1DA98A;color:#fff;padding:12px 24px;border-radius:10px;font-size:.88rem;font-weight:700;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.2);';
+      notice.innerHTML = '&#x2713; Payment confirmed! Download link sent to ' + esc(email);
+      document.body.appendChild(notice);
+      setTimeout(function(){ notice.remove(); }, 6000);
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
