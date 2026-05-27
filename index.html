@@ -14,6 +14,8 @@
   --white:#ffffff;--off-white:#f8f7f4;
   --text-dark:#0B1F3A;--text-mid:#3d5a7a;--text-muted:#6b87a3;
   --border:rgba(11,31,58,0.12);
+  --purple:#7c3aed;--purple-pale:rgba(124,58,237,0.08);--purple-border:rgba(124,58,237,0.2);
+  --orange:#ea580c;--orange-pale:rgba(234,88,12,0.08);--orange-border:rgba(234,88,12,0.2);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--text-dark);overflow-x:hidden;}
@@ -250,6 +252,78 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
 .footer-links a{color:rgba(255,255,255,0.4);text-decoration:none;font-size:0.82rem;transition:color .15s;}
 .footer-links a:hover{color:rgba(255,255,255,0.8);}
 .footer-disclaimer{font-size:0.72rem;color:rgba(255,255,255,0.2);max-width:360px;line-height:1.5;text-align:right;}
+
+/* ── Ecosystem pills ──────────────────────────────────── */
+.hero-ecosystem-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);font-weight:700;margin-bottom:.6rem;}
+.hero-ecosystem-pills{display:flex;gap:.5rem;flex-wrap:wrap;}
+.eco-pill{font-size:.72rem;font-weight:600;padding:5px 13px;border-radius:100px;border:1px solid transparent;}
+.eco-cert{background:rgba(29,169,138,.15);color:var(--teal-light);border-color:rgba(29,169,138,.25);}
+.eco-market{background:rgba(212,168,67,.12);color:var(--gold);border-color:rgba(212,168,67,.25);}
+.eco-jobs{background:rgba(11,31,58,.4);color:rgba(255,255,255,.6);border-color:rgba(255,255,255,.1);}
+.eco-academy{background:rgba(124,58,237,.2);color:#c4b5fd;border-color:rgba(124,58,237,.3);}
+
+/* ── Marketplace section ─────────────────────────────── */
+.marketplace-section{background:var(--off-white);padding:5rem 2rem;}
+.marketplace-inner{max-width:1100px;margin:0 auto;}
+.marketplace-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem;gap:1rem;flex-wrap:wrap;}
+.marketplace-eyebrow{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--purple);font-weight:700;margin-bottom:.4rem;display:flex;align-items:center;gap:.5rem;}
+.marketplace-eyebrow::before{content:'';display:block;width:20px;height:1.5px;background:var(--purple);}
+.marketplace-h2{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,3vw,2.1rem);font-weight:800;color:var(--text-dark);line-height:1.15;letter-spacing:-.02em;}
+.marketplace-sub{font-size:.9rem;color:var(--text-muted);line-height:1.6;max-width:500px;margin-top:.5rem;}
+.marketplace-browse{font-size:.85rem;font-weight:700;color:var(--purple);text-decoration:none;white-space:nowrap;padding:9px 20px;border:1.5px solid var(--purple-border);border-radius:8px;transition:all .15s;}
+.marketplace-browse:hover{background:var(--purple);color:#fff;}
+.marketplace-products{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.25rem;margin-bottom:1.5rem;}
+.mkt-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow .2s,transform .2s;}
+.mkt-card:hover{box-shadow:0 8px 28px rgba(11,31,58,.1);transform:translateY(-2px);}
+.mkt-card-top{padding:1.1rem 1.25rem .5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.mkt-icon{font-size:1.5rem;}
+.mkt-badge{font-size:.58rem;font-weight:700;padding:2px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:.05em;}
+.mkt-badge-ai{background:var(--purple-pale);color:var(--purple);}
+.mkt-badge-book{background:var(--teal-pale);color:var(--teal);}
+.mkt-badge-erp{background:var(--orange-pale);color:var(--orange);}
+.mkt-badge-firm{background:rgba(212,168,67,.1);color:#92400e;}
+.mkt-badge-free{background:var(--teal-pale);color:var(--teal);border:1px solid rgba(29,169,138,.25);}
+.mkt-card-body{padding:.75rem 1.25rem 1.25rem;}
+.mkt-card-name{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;color:var(--text-dark);margin-bottom:.35rem;line-height:1.2;}
+.mkt-card-desc{font-size:.77rem;color:var(--text-muted);line-height:1.55;margin-bottom:.875rem;}
+.mkt-card-footer{display:flex;align-items:center;justify-content:space-between;}
+.mkt-price{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--text-dark);}
+.mkt-btn{padding:7px 16px;border:none;border-radius:7px;font-size:.75rem;font-weight:700;cursor:pointer;text-decoration:none;font-family:inherit;transition:all .13s;}
+.mkt-btn-ai{background:var(--purple);color:#fff;}
+.mkt-btn-ai:hover{background:#6d28d9;}
+.mkt-btn-book{background:var(--teal);color:#fff;}
+.mkt-btn-book:hover{background:var(--teal-light);}
+.mkt-btn-erp{background:var(--orange);color:#fff;}
+.mkt-btn-erp:hover{background:#c2410c;}
+.mkt-btn-firm{background:var(--gold);color:var(--navy);}
+.mkt-btn-firm:hover{background:var(--gold-light);}
+.mkt-l2-strip{display:flex;align-items:center;justify-content:space-between;gap:1rem;background:rgba(29,169,138,.07);border:1px solid rgba(29,169,138,.2);border-radius:10px;padding:.875rem 1.25rem;margin-top:1.5rem;flex-wrap:wrap;}
+.mkt-l2-text{font-size:.83rem;color:var(--text-dark);line-height:1.5;}
+.mkt-l2-text strong{color:var(--teal);}
+.mkt-l2-link{font-size:.8rem;font-weight:700;color:var(--teal);text-decoration:none;white-space:nowrap;}
+.mkt-l2-link:hover{text-decoration:underline;}
+
+/* ── Academy teaser section ─────────────────────────── */
+.academy-section{background:var(--navy);padding:5rem 2rem;}
+.academy-inner{max-width:1100px;margin:0 auto;}
+.academy-eyebrow{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:#c4b5fd;font-weight:700;margin-bottom:.4rem;display:flex;align-items:center;gap:.5rem;}
+.academy-eyebrow::before{content:'';display:block;width:20px;height:1.5px;background:#7c3aed;}
+.academy-h2{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:#fff;line-height:1.15;letter-spacing:-.02em;margin-bottom:.75rem;}
+.academy-sub{font-size:.9rem;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:2rem;max-width:520px;}
+.academy-strip{background:linear-gradient(135deg,rgba(124,58,237,.18),rgba(11,31,58,.7));border:1px solid rgba(124,58,237,.25);border-radius:14px;padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+.academy-strip-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:#c4b5fd;font-weight:700;margin-bottom:.35rem;}
+.academy-strip-title{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:#fff;margin-bottom:.25rem;}
+.academy-strip-sub{font-size:.78rem;color:rgba(255,255,255,.4);line-height:1.5;}
+.academy-strip-price{text-align:center;flex-shrink:0;}
+.academy-strip-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#c4b5fd;line-height:1;}
+.academy-strip-period{font-size:.7rem;color:rgba(255,255,255,.35);margin-top:2px;}
+.academy-strip-btn{display:block;margin-top:.75rem;padding:9px 22px;background:var(--purple);color:#fff;border-radius:7px;text-decoration:none;font-size:.82rem;font-weight:700;white-space:nowrap;transition:background .13s;}
+.academy-strip-btn:hover{background:#6d28d9;}
+.academy-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;}
+.academy-feat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.1rem 1.25rem;}
+.academy-feat-icon{font-size:1.3rem;margin-bottom:.5rem;}
+.academy-feat-title{font-size:.85rem;font-weight:700;color:#fff;margin-bottom:.3rem;}
+.academy-feat-text{font-size:.75rem;color:rgba(255,255,255,.4);line-height:1.55;}
 </style>
 </head>
 <body>
@@ -262,11 +336,11 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
   <ul class="nav-links">
     <li><a href="/learn">Courses</a></li>
     <li><a href="/test">Certifications</a></li>
+    <li><a href="/marketplace" class="nav-link-market">Marketplace <span class="nav-new-pill">NEW</span></a></li>
     <li><a href="/jobs">Jobs</a></li>
-    <li><a href="/partners">Partners</a></li>
-    <li><a href="/faq">FAQ</a></li>
+    <li><a href="/academy" class="nav-link-academy">Academy</a></li>
     <li><a href="#tracks">Pricing</a></li>
-    <li><a href="/placement" class="nav-cta">Find my starting point &rarr;</a></li>
+    <li><a href="/test" class="nav-cta">Start free &rarr;</a></li>
   </ul>
 </nav>
 
@@ -283,10 +357,12 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
         <a href="#how" class="btn-secondary">See how it works</a>
       </div>
       <div class="hero-trust">
-        <div class="hero-trust-checks">
-          <span class="hero-trust-check">No credit card</span>
-          <span class="hero-trust-check">L1 always free</span>
-          <span class="hero-trust-check">Certificate in minutes</span>
+        <div class="hero-ecosystem-label">One platform. Four pathways.</div>
+        <div class="hero-ecosystem-pills">
+          <span class="eco-pill eco-cert">&#x1F3C6; Certifications</span>
+          <span class="eco-pill eco-market">&#x1F6D2; Marketplace</span>
+          <span class="eco-pill eco-jobs">&#x1F4BC; Jobs Board</span>
+          <span class="eco-pill eco-academy">&#x1F393; ERP Academy</span>
         </div>
       </div>
       <div class="hero-independence">
@@ -327,13 +403,15 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
 
 <div class="proof-bar">
   <div class="proof-bar-inner">
-    <div class="proof-stat"><div class="proof-num">2,400+</div><div class="proof-label">Live Xero &amp; QuickBooks vacancies tracked daily</div></div>
+    <div class="proof-stat"><div class="proof-num">2,400+</div><div class="proof-label">Live vacancies daily</div></div>
     <div class="proof-divider"></div>
-    <div class="proof-stat"><div class="proof-num">73%</div><div class="proof-label">Of employers prefer certified candidates when shortlisting</div></div>
+    <div class="proof-stat"><div class="proof-num">73%</div><div class="proof-label">Employers prefer certified</div></div>
     <div class="proof-divider"></div>
-    <div class="proof-stat"><div class="proof-num">130k+</div><div class="proof-label">Bookkeepers and accountants in our community</div></div>
+    <div class="proof-stat"><div class="proof-num">130k+</div><div class="proof-label">Community members</div></div>
     <div class="proof-divider"></div>
-    <div class="proof-stat"><div class="proof-num">$49</div><div class="proof-label">One-time fee per level. No subscription. Ever.</div></div>
+    <div class="proof-stat"><div class="proof-num">$49</div><div class="proof-label">One-time L2 fee</div></div>
+    <div class="proof-divider"></div>
+    <div class="proof-stat"><div class="proof-num">NG &middot; ZA &middot; UK &middot; AU</div><div class="proof-label">Regions served</div></div>
   </div>
 </div>
 
@@ -430,6 +508,103 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
     </div>
   </div>
 </section>
+
+
+<!-- ── MARKETPLACE PREVIEW ────────────────────────────── -->
+<section class="marketplace-section">
+  <div class="marketplace-inner">
+    <div class="marketplace-header">
+      <div>
+        <div class="marketplace-eyebrow">Marketplace &mdash; digital products</div>
+        <h2 class="marketplace-h2">Tools that make you<br>a better accountant.</h2>
+        <p class="marketplace-sub">Templates, AI workflows, ERP kits, and firm growth packs. Download and deploy immediately.</p>
+      </div>
+      <a href="/marketplace" class="marketplace-browse">Browse full marketplace &rarr;</a>
+    </div>
+
+    <div class="marketplace-products">
+
+      <!-- AI Toolkit -->
+      <div class="mkt-card">
+        <div class="mkt-card-top">
+          <span class="mkt-icon">&#x1F916;</span>
+          <span class="mkt-badge mkt-badge-ai">AI Toolkit</span>
+        </div>
+        <div class="mkt-card-body">
+          <div class="mkt-card-name">AI Accountant Toolkit v1</div>
+          <div class="mkt-card-desc">50+ ChatGPT prompts, automation workflows, and AI integration guides purpose-built for modern accountants.</div>
+          <div class="mkt-card-footer">
+            <div class="mkt-price">$79</div>
+            <a href="/marketplace" class="mkt-btn mkt-btn-ai">View &rarr;</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Xero Starter Pack -->
+      <div class="mkt-card">
+        <div class="mkt-card-top">
+          <span class="mkt-icon">&#x1F4CB;</span>
+          <div style="display:flex;gap:.35rem;">
+            <span class="mkt-badge mkt-badge-book">Bookkeeping</span>
+            <span class="mkt-badge mkt-badge-free">L2 free</span>
+          </div>
+        </div>
+        <div class="mkt-card-body">
+          <div class="mkt-card-name">Xero Starter Pack</div>
+          <div class="mkt-card-desc">20 templates, SOPs, client onboarding checklist, and Xero setup guide for new bookkeeping practices.</div>
+          <div class="mkt-card-footer">
+            <div class="mkt-price">$39</div>
+            <a href="/marketplace" class="mkt-btn mkt-btn-book">View &rarr;</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ERP Kit -->
+      <div class="mkt-card">
+        <div class="mkt-card-top">
+          <span class="mkt-icon">&#x2699;&#xFE0F;</span>
+          <span class="mkt-badge mkt-badge-erp">ERP Kit</span>
+        </div>
+        <div class="mkt-card-body">
+          <div class="mkt-card-name">SME ERP Implementation Pack</div>
+          <div class="mkt-card-desc">Requirements docs, UAT scripts, go-live checklist, and post-implementation review template.</div>
+          <div class="mkt-card-footer">
+            <div class="mkt-price">$199</div>
+            <a href="/marketplace" class="mkt-btn mkt-btn-erp">View &rarr;</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Firm Growth -->
+      <div class="mkt-card">
+        <div class="mkt-card-top">
+          <span class="mkt-icon">&#x1F4C8;</span>
+          <span class="mkt-badge mkt-badge-firm">Firm Growth</span>
+        </div>
+        <div class="mkt-card-body">
+          <div class="mkt-card-name">Client Proposal Bundle</div>
+          <div class="mkt-card-desc">Proposal templates, pricing calculator, service agreement, and client retention checklist.</div>
+          <div class="mkt-card-footer">
+            <div class="mkt-price">$89</div>
+            <a href="/marketplace" class="mkt-btn mkt-btn-firm">View &rarr;</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- L2 cert unlock strip -->
+    <div class="mkt-l2-strip">
+      <div class="mkt-l2-text">
+        <strong>&#x1F3C6; Xero L2 Certified?</strong>
+        Get the Xero Starter Pack free &mdash; exclusive to L2 graduates. No extra steps required.
+      </div>
+      <a href="/marketplace" class="mkt-l2-link">Claim your free kit &rarr;</a>
+    </div>
+
+  </div>
+</section>
+
 
 <section class="journey-section" id="journey">
   <div class="section-inner">
@@ -631,6 +806,54 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
   </div>
 </section>
 
+
+<!-- ── ACADEMY TEASER ─────────────────────────────────── -->
+<section class="academy-section">
+  <div class="academy-inner">
+    <div class="academy-eyebrow">ERP.SaaS Academy</div>
+    <h2 class="academy-h2">The community for serious<br>accounting professionals.</h2>
+    <p class="academy-sub">Monthly live sessions, a growing resource library, ERP consulting project referrals, and a network of 130k+ bookkeepers and ERP professionals.</p>
+
+    <div class="academy-strip">
+      <div>
+        <div class="academy-strip-label">ERP.SaaS Academy Membership</div>
+        <div class="academy-strip-title">Go beyond certification.</div>
+        <div class="academy-strip-sub">Live sessions &middot; Resource library &middot; Consulting referrals &middot; Job board priority</div>
+      </div>
+      <div class="academy-strip-price">
+        <div class="academy-strip-val">$29</div>
+        <div class="academy-strip-period">/month &middot; or $249/year</div>
+        <a href="/academy" class="academy-strip-btn">Join Academy &rarr;</a>
+      </div>
+    </div>
+
+    <div class="academy-features">
+      <div class="academy-feat">
+        <div class="academy-feat-icon">&#x1F399;</div>
+        <div class="academy-feat-title">Monthly live Q&amp;A</div>
+        <div class="academy-feat-text">Live sessions on ERP implementation, cloud accounting, and consulting career paths. Replays always included.</div>
+      </div>
+      <div class="academy-feat">
+        <div class="academy-feat-icon">&#x1F4DA;</div>
+        <div class="academy-feat-title">Resource library</div>
+        <div class="academy-feat-text">Every marketplace product, template, SOP, and AI workflow &mdash; included free for Academy members.</div>
+      </div>
+      <div class="academy-feat">
+        <div class="academy-feat-icon">&#x1F4BC;</div>
+        <div class="academy-feat-title">Consulting referrals</div>
+        <div class="academy-feat-text">Members get first access to ERP project referrals from the LedgerLearn consulting network.</div>
+      </div>
+      <div class="academy-feat">
+        <div class="academy-feat-icon">&#x1F30D;</div>
+        <div class="academy-feat-title">Global job network</div>
+        <div class="academy-feat-text">Priority visibility in the jobs board. Your Academy badge appears on your profile alongside your cert verification.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
 <section class="cta-section" id="cta">
   <div class="cta-inner">
     <div class="cta-eyebrow">Start your transformation today</div>
@@ -678,10 +901,11 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
     <ul class="footer-links">
       <li><a href="/learn">Courses</a></li>
       <li><a href="/test">Certifications</a></li>
+      <li><a href="/marketplace">Marketplace</a></li>
+      <li><a href="/academy">Academy</a></li>
       <li><a href="/jobs">Jobs board</a></li>
       <li><a href="/recruiter-register">Post a job</a></li>
       <li><a href="/verify">Verify certificate</a></li>
-      <li><a href="/erp-academy">ERP Academy</a></li>
       <li><a href="/partners">Partners</a></li>
       <li><a href="/dashboard">Dashboard</a></li>
       <li><a href="/faq">FAQ</a></li>
