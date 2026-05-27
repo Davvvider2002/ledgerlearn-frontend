@@ -241,6 +241,27 @@
   status = 200
 
 
+
+[[redirects]]
+  from   = "/marketplace"
+  to     = "/marketplace.html"
+  status = 200
+
+[[redirects]]
+  from   = "/academy"
+  to     = "/academy.html"
+  status = 200
+
+[[redirects]]
+  from   = "/api/marketplace-api"
+  to     = "/.netlify/functions/marketplace-api"
+  status = 200
+
+[[redirects]]
+  from   = "/api/academy-api"
+  to     = "/.netlify/functions/academy-api"
+  status = 200
+
 [functions.expire-trials]
   schedule = "0 8 * * *"
 [[redirects]]
