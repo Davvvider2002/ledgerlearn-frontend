@@ -1165,12 +1165,13 @@ async function publishProfile() {
   });
 
   // Collect work experience entries
-  var workCards = document.querySelectorAll('#work-list .entry-card');
+  var workCards = document.querySelectorAll('#exp-list .entry-card');
   var workExperience = Array.from(workCards).map(function(card) {
     return {
       title: (card.querySelector('.entry-title') || {}).textContent || '',
       sub:   (card.querySelector('.entry-sub')   || {}).textContent || '',
       dates: (card.querySelector('.entry-dates') || {}).textContent || '',
+      description: (card.querySelector('.entry-desc') || {}).textContent || '',
     };
   });
 
@@ -1188,31 +1189,52 @@ async function publishProfile() {
     }
   });
 
+  // Map years_experience to TEXT range as schema expects
+  var yearsExpText = '';
+  var yearsNum = parseInt(yearsExp) || 0;
+  if (yearsNum >= 10)     yearsExpText = '10+';
+  else if (yearsNum >= 6) yearsExpText = '6-10';
+  else if (yearsNum >= 3) yearsExpText = '3-5';
+  else if (yearsNum >= 1) yearsExpText = '1-2';
+  else                    yearsExpText = yearsExp || null;
+
+  // profile_complete as INTEGER 0-100
+  var completenessScore = 0;
+  if (firstName && lastName)       completenessScore += 25;
+  if (summary && summary.length > 50) completenessScore += 20;
+  if (skills.length >= 3)          completenessScore += 20;
+  if (workExperience.length > 0)   completenessScore += 20;
+  if (education.length > 0)        completenessScore += 15;
+
   var profileData = {
-    first_name:         firstName,
-    last_name:          lastName,
-    email:              email,
-    phone:              phone || null,
-    city:               city  || null,
-    country:            country || 'NG',
-    professional_summary: summary || null,
-    years_experience:   parseInt(yearsExp) || null,
-    availability:       availability || null,
-    employment_pref:    workType || null,
-    salary_expectation: salary || null,
-    core_skills:        skills,
-    education:          education,
-    work_experience:    workExperience,
-    cert_snapshot:      certSnapshot,
-    resume_filename:    _resumeFile ? _resumeFile.name : null,
-    resume_scanned:     !!((_resumeFile || {})._parsed),
-    profile_visible:    true,
-    profile_complete:   !!(firstName && lastName && (skills.length > 0 || summary)),
-    updated_at:         new Date().toISOString(),
+    first_name:           firstName,
+    last_name:            lastName,
+    email:                email,
+    phone:                phone            || null,
+    city:                 city             || null,
+    country:              country          || 'NG',
+    professional_summary: summary          || null,
+    years_experience:     yearsExpText     || null,
+    availability:         availability     || null,
+    employment_pref:      workType         || null,
+    salary_expectation:   salary           || null,
+    core_skills:          skills,
+    education:            education,
+    work_experience:      workExperience,
+    resume_filename:      _resumeFile ? _resumeFile.name : null,
+    resume_scanned:       !!((_resumeFile || {})._parsed),
+    profile_visible:      true,
+    profile_complete:     completenessScore,
+    updated_at:           new Date().toISOString(),
   };
 
-  // Also save to localStorage for fast local reads
-  try { localStorage.setItem('ll_applicant_profile', JSON.stringify(profileData)); } catch(e) {}
+  // Store cert snapshot separately — not in applicant_profiles schema
+  // It will be included when applying for jobs
+  var certSnapshotForLocal = certSnapshot;
+
+  // Save to localStorage with cert snapshot for local use
+  var localProfile = Object.assign({}, profileData, { cert_snapshot: certSnapshotForLocal });
+  try { localStorage.setItem('ll_applicant_profile', JSON.stringify(localProfile)); } catch(e) {}
 
   // ── Save to Supabase via job-board-api ──
   var token = '';
