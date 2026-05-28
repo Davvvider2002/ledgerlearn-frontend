@@ -36,33 +36,58 @@ async function supa(path, method, body, useAnon) {
   const key = useAnon ? SUPA_ANO : SUPA_SVC;
   if (!SUPA_URL || !key) return null;
   try {
+    const m = method || 'GET';
+    // Ask Supabase to return the row for POST and PATCH
+    const prefer = (m === 'POST' || m === 'PATCH') ? 'return=representation' : '';
     const res = await fetch(SUPA_URL + path, {
-      method:  method || 'GET',
+      method:  m,
       headers: {
         'apikey':        key,
         'Authorization': 'Bearer ' + key,
         'Content-Type':  'application/json',
-        'Prefer':        method === 'POST' ? 'return=representation' : '',
+        ...(prefer ? { 'Prefer': prefer } : {}),
       },
       body: body ? JSON.stringify(body) : undefined,
     });
     if (!res.ok) {
       const err = await res.text();
-      console.error('[job-board-api] Supabase', res.status, err.slice(0,200));
+      console.error('[job-board-api] Supabase', res.status, path, err.slice(0, 200));
       return null;
     }
-    return res.json();
+    // 204 No Content — PATCH/DELETE with no Prefer header
+    if (res.status === 204) return { ok: true };
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('json')) return { ok: true };
+    return res.json().catch(() => ({ ok: true }));
   } catch(e) {
     console.error('[job-board-api] fetch error:', e.message);
     return null;
   }
 }
 
-// Verify recruiter access via paygate RPC
+// Verify recruiter access — direct table query, no RPC dependency
 async function checkRecruiterAccess(userId) {
-  const result = await supa('/rest/v1/rpc/check_recruiter_access', 'POST', { p_user_id: userId });
-  if (!result) return { allowed: false, reason: 'DB error' };
-  return Array.isArray(result) ? result[0] : result;
+  const rows = await supa(
+    `/rest/v1/recruiters?user_id=eq.${encodeURIComponent(userId)}&select=id,plan,status,trial_end&limit=1`
+  );
+  if (!rows) return { allowed: false, plan: 'error', reason: 'Could not reach database' };
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return { allowed: false, plan: 'none', reason: 'Recruiter account not found' };
+  }
+  const rec = rows[0];
+  const plan = rec.plan || 'trial';
+  if (plan === 'trial') {
+    const trialEnd = rec.trial_end ? new Date(rec.trial_end).getTime() : 0;
+    const daysLeft = Math.max(0, Math.floor((trialEnd - Date.now()) / 86400000));
+    if (rec.status !== 'active' || daysLeft <= 0) {
+      return { allowed: false, plan: 'expired', reason: 'Your free trial has ended.' };
+    }
+    return { allowed: true, plan: 'trial', trial_days_left: daysLeft };
+  }
+  if (plan === 'per_post' || plan === 'monthly') {
+    return { allowed: rec.status === 'active', plan, reason: rec.status !== 'active' ? 'Account suspended' : null };
+  }
+  return { allowed: false, plan, reason: 'Account is not active' };
 }
 
 // Get user_id from JWT token
