@@ -517,6 +517,7 @@ nav{height:56px;background:var(--navy);border-bottom:2px solid var(--gold);displ
             <div class="upload-title">Click to upload your resume</div>
             <div class="upload-sub">PDF or Word (.docx) · Max 5MB</div>
           </div>
+          <div id="scan-result-box" style="display:none;margin-top:.75rem;background:#E1F5EE;border-radius:8px;padding:10px 14px;font-size:.78rem;color:#0F6E56;"><span id="scan-result-text"></span></div>
           <div id="uploaded-file-row" style="display:none;">
             <div class="uploaded-row">
               <div class="uploaded-icon">📄</div>
@@ -856,16 +857,101 @@ function saveExtCert() {
 }
 
 // ── Resume upload ──────────────────────────────────────────────
+var _resumeFile = null;
+
 function handleFileSelect(input) {
   if (!input.files || !input.files[0]) return;
   var file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('File too large. Max 5MB.', 'error'); return;
+  }
+  var allowedTypes = ['application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  if (!allowedTypes.includes(file.type) &&
+      !file.name.match(/\.(pdf|doc|docx)$/i)) {
+    showToast('Please upload a PDF or Word document.', 'error'); return;
+  }
+  _resumeFile = file;
   var size = (file.size / 1024).toFixed(0) + ' KB';
   document.getElementById('uploaded-name').textContent = file.name;
-  document.getElementById('uploaded-size').textContent = size + ' · Uploaded';
+  document.getElementById('uploaded-size').textContent = size + ' · Ready to scan';
   document.getElementById('uploaded-file-row').style.display = 'block';
   document.getElementById('upload-zone').classList.add('has-file');
-  showToast('Resume uploaded. AI will extract your skills automatically.','success');
-  updateStrength();
+  // Kick off AI parse immediately
+  parseResumeWithAI(file);
+}
+
+async function parseResumeWithAI(file) {
+  var scanStatus = document.getElementById('uploaded-size');
+  scanStatus.textContent = 'Scanning with AI…';
+  try {
+    // Convert file to base64
+    var base64 = await new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload  = function(e) { resolve(e.target.result.split(',')[1]); };
+      reader.onerror = function()  { reject(new Error('File read failed')); };
+      reader.readAsDataURL(file);
+    });
+
+    var res = await fetch('/.netlify/functions/ai', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action:       'parse-resume',
+        fileName:     file.name,
+        fileType:     file.type,
+        fileBase64:   base64,
+      })
+    });
+    var data = await res.json();
+    if (!data.ok || !data.parsed) throw new Error(data.error || 'Parse failed');
+
+    var p = data.parsed;
+    scanStatus.textContent = file.name.split('/').pop() + ' · AI scan complete ✓';
+
+    // Auto-populate form fields from AI parse
+    var f = function(id, val) {
+      if (!val) return;
+      var el = document.getElementById(id);
+      if (el) el.value = val;
+    };
+    if (p.firstName)  f('p-fname',   p.firstName);
+    if (p.lastName)   f('p-lname',   p.lastName);
+    if (p.phone)      f('p-phone',   p.phone);
+    if (p.city)       f('p-city',    p.city);
+    if (p.summary)    f('p-summary', p.summary);
+    if (p.yearsExp)   f('p-exp',     p.yearsExp);
+
+    // Populate skills
+    if (Array.isArray(p.skills) && p.skills.length) {
+      p.skills.forEach(function(skill) {
+        document.querySelectorAll('.skill-pill').forEach(function(pill) {
+          if (pill.textContent.trim().toLowerCase() === skill.toLowerCase()) {
+            pill.classList.add('on');
+          }
+        });
+      });
+      updateSkillCount();
+    }
+
+    // Store file metadata and parsed data
+    _resumeFile._parsed = p;
+    document.getElementById('scan-result-box').style.display = 'block';
+    document.getElementById('scan-result-text').innerHTML =
+      '&#x2713; AI extracted: ' +
+      [p.firstName ? 'name' : '', p.skills && p.skills.length ? p.skills.length + ' skills' : '',
+       p.summary ? 'summary' : '', p.yearsExp ? 'experience' : ''].filter(Boolean).join(', ') +
+      '. Review fields below then publish.';
+
+    showToast('Resume scanned! Fields auto-populated from your CV.', 'success');
+    updateStrength();
+
+  } catch(e) {
+    console.warn('[profile] AI parse error:', e.message);
+    scanStatus.textContent = _resumeFile ? _resumeFile.name + ' · Uploaded (manual fill required)' : '—';
+    showToast('AI scan unavailable — please fill in fields manually.', 'info');
+  }
 }
 function removeFile() {
   document.getElementById('resume-file').value = '';
@@ -885,27 +971,123 @@ function setMode(mode) {
 
 // ── Publish ────────────────────────────────────────────────────
 async function publishProfile() {
-  // Save to localStorage
+  var btn = document.getElementById('btn-publish');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+  var g = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+
+  var firstName   = g('p-fname');
+  var lastName    = g('p-lname');
+  var email       = g('p-email') || (USER && USER.email) || '';
+  var phone       = g('p-phone');
+  var city        = g('p-city');
+  var country     = g('p-country');
+  var summary     = g('p-summary');
+  var yearsExp    = g('p-exp');
+  var availability= g('p-avail');
+  var workType    = g('p-worktype');
+  var salary      = g('p-salary');
+  var skills      = Array.from(document.querySelectorAll('.skill-pill.on'))
+                        .map(function(p){ return p.textContent.trim(); });
+
+  if (!firstName || !lastName) {
+    showToast('Please enter your first and last name before publishing.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Publish profile'; }
+    return;
+  }
+  if (!email) {
+    showToast('Email address is required.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Publish profile'; }
+    return;
+  }
+
+  // Collect education entries
+  var eduCards = document.querySelectorAll('#edu-list .entry-card');
+  var education = Array.from(eduCards).map(function(card) {
+    return {
+      title: (card.querySelector('.entry-title') || {}).textContent || '',
+      sub:   (card.querySelector('.entry-sub')   || {}).textContent || '',
+      dates: (card.querySelector('.entry-dates') || {}).textContent || '',
+    };
+  });
+
+  // Collect work experience entries
+  var workCards = document.querySelectorAll('#work-list .entry-card');
+  var workExperience = Array.from(workCards).map(function(card) {
+    return {
+      title: (card.querySelector('.entry-title') || {}).textContent || '',
+      sub:   (card.querySelector('.entry-sub')   || {}).textContent || '',
+      dates: (card.querySelector('.entry-dates') || {}).textContent || '',
+    };
+  });
+
+  // Collect cert snapshot from local progress
+  var certSnapshot = [];
+  var completed = PROGRESS.completedLevels || [];
+  ['l1','l2','l3'].forEach(function(lv) {
+    if (completed.includes(lv)) {
+      certSnapshot.push({
+        level: lv,
+        score: PROGRESS[lv + 'Score'] || PROGRESS.l1Score || 0,
+        certId: PROGRESS.certId || '',
+        track: 'Xero',
+      });
+    }
+  });
+
   var profileData = {
-    firstName:  (document.getElementById('p-fname')   || {}).value,
-    lastName:   (document.getElementById('p-lname')   || {}).value,
-    email:      (document.getElementById('p-email')   || {}).value,
-    phone:      (document.getElementById('p-phone')   || {}).value,
-    city:       (document.getElementById('p-city')    || {}).value,
-    country:    (document.getElementById('p-country') || {}).value,
-    summary:    (document.getElementById('p-summary') || {}).value,
-    experience: (document.getElementById('p-exp')     || {}).value,
-    availability:(document.getElementById('p-avail')  || {}).value,
-    workType:   (document.getElementById('p-worktype')|| {}).value,
-    salary:     (document.getElementById('p-salary')  || {}).value,
-    skills:     Array.from(document.querySelectorAll('.skill-pill.on')).map(function(p){return p.textContent.trim();}),
-    profileVisible: true,
-    updatedAt:  new Date().toISOString(),
+    first_name:         firstName,
+    last_name:          lastName,
+    email:              email,
+    phone:              phone || null,
+    city:               city  || null,
+    country:            country || 'NG',
+    professional_summary: summary || null,
+    years_experience:   parseInt(yearsExp) || null,
+    availability:       availability || null,
+    employment_pref:    workType || null,
+    salary_expectation: salary || null,
+    core_skills:        skills,
+    education:          education,
+    work_experience:    workExperience,
+    cert_snapshot:      certSnapshot,
+    resume_filename:    _resumeFile ? _resumeFile.name : null,
+    resume_scanned:     !!((_resumeFile || {})._parsed),
+    profile_visible:    true,
+    profile_complete:   !!(firstName && lastName && (skills.length > 0 || summary)),
+    updated_at:         new Date().toISOString(),
   };
+
+  // Also save to localStorage for fast local reads
   try { localStorage.setItem('ll_applicant_profile', JSON.stringify(profileData)); } catch(e) {}
-  // In production: POST to /.netlify/functions/supabase-progress or similar
-  showToast('Profile saved and published! Recruiters can now see your profile when you apply.', 'success');
-  setTimeout(function(){ window.location.href = '/jobs'; }, 2000);
+
+  // ── Save to Supabase via job-board-api ──
+  var token = '';
+  try { token = JSON.parse(localStorage.getItem('ll_session') || '{}').access_token || ''; } catch(e) {}
+
+  try {
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify({ action: 'save-applicant-profile', profile: profileData })
+    });
+    var result = await res.json();
+
+    if (!result.ok) {
+      console.warn('[profile] save error:', result.error);
+      showToast('Profile saved locally but cloud sync failed: ' + (result.error || 'Unknown error'), 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Publish profile'; }
+      return;
+    }
+
+    showToast('Profile saved and published! Recruiters can now find you.', 'success');
+    setTimeout(function(){ window.location.href = '/jobs'; }, 2000);
+
+  } catch(e) {
+    console.error('[profile] publish error:', e.message);
+    showToast('Network error. Profile saved locally — try again.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Publish profile'; }
+  }
 }
 
 // ── Utilities ──────────────────────────────────────────────────
@@ -920,6 +1102,68 @@ function showToast(msg, type) {
   _toast.textContent = msg;
   document.body.appendChild(_toast);
   setTimeout(function(){ if (_toast) _toast.style.opacity='0'; setTimeout(function(){ if(_toast) _toast.remove(); },300); }, 3500);
+}
+
+
+// ── AI JOB MATCHING ───────────────────────────────────────────
+async function runJobMatch() {
+  var btn = document.getElementById('btn-match');
+  if (btn) { btn.disabled = true; btn.textContent = 'Matching…'; }
+
+  var token = '';
+  try { token = JSON.parse(localStorage.getItem('ll_session') || '{}').access_token || ''; } catch(e) {}
+
+  var skills   = Array.from(document.querySelectorAll('.skill-pill.on'))
+                     .map(function(p){ return p.textContent.trim(); });
+  var summary  = (document.getElementById('p-summary') || {}).value || '';
+  var country  = (document.getElementById('p-country') || {}).value || '';
+  var certLevel = CERTS.length > 0
+    ? CERTS[CERTS.length - 1].level || 'l1'
+    : (PROGRESS.completedLevels || []).slice(-1)[0] || 'none';
+
+  try {
+    var res = await fetch('/.netlify/functions/ai', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action:    'match-jobs',
+        skills:    skills,
+        summary:   summary,
+        country:   country,
+        certLevel: certLevel,
+        track:     'Xero',
+      })
+    });
+    var data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Match failed');
+
+    var matchEl = document.getElementById('match-results');
+    if (!matchEl) return;
+
+    if (!data.matches || !data.matches.length) {
+      matchEl.innerHTML = '<div style="font-size:.82rem;color:var(--muted);padding:.75rem 0;">No strong matches found yet. Complete your profile and add more skills to improve matching.</div>';
+    } else {
+      matchEl.innerHTML = data.matches.map(function(m) {
+        var pct = m.score || 0;
+        var color = pct >= 80 ? 'var(--teal)' : pct >= 60 ? 'var(--gold)' : 'var(--muted)';
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border);">'
+          + '<div><div style="font-size:.82rem;font-weight:700;color:var(--navy);">' + esc(m.title || '—') + '</div>'
+          + '<div style="font-size:.72rem;color:var(--muted);">' + esc(m.company || '') + ' · ' + esc(m.location || '') + '</div></div>'
+          + '<div style="text-align:right;">'
+          + '<div style="font-family:Syne,sans-serif;font-size:1rem;font-weight:800;color:' + color + ';">' + pct + '%</div>'
+          + '<div style="font-size:.65rem;color:var(--muted);">match</div>'
+          + '<a href="/jobs?highlight=' + esc(m.id || '') + '" style="font-size:.68rem;color:var(--teal);font-weight:700;text-decoration:none;">View →</a>'
+          + '</div></div>';
+      }).join('');
+    }
+    if (btn) { btn.disabled = false; btn.textContent = 'Refresh matches'; }
+
+  } catch(e) {
+    console.warn('[profile] job match error:', e.message);
+    var matchEl = document.getElementById('match-results');
+    if (matchEl) matchEl.innerHTML = '<div style="font-size:.78rem;color:var(--muted);">AI matching unavailable right now. <a href="/jobs">Browse all jobs →</a></div>';
+    if (btn) { btn.disabled = false; btn.textContent = 'Try matching again'; }
+  }
 }
 </script>
 </body>

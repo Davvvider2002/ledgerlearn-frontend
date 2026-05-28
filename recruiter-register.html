@@ -192,96 +192,156 @@ select option{background:#0d2044;color:#fff;}
 </main>
 
 <script>
+var _regBusy = false;
+
 (function() {
+  // If already logged in as recruiter, go to dashboard
   if (window.LLAuth && window.LLAuth.isLoggedIn()) {
-    window.location.replace('/recruiter-dashboard');
+    var stored = {};
+    try { stored = JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) {}
+    if (stored.role === 'recruiter') {
+      window.location.replace('/recruiter-dashboard');
+    }
+    // Logged in as learner — don't auto-redirect, let them register as recruiter
   }
 })();
 
 async function doRegister() {
-  var company      = document.getElementById('company').value.trim();
-  var industry     = document.getElementById('industry').value;
-  var companySize  = document.getElementById('company-size').value;
-  var country      = document.getElementById('country').value;
-  var website      = document.getElementById('website').value.trim();
-  var contactName  = document.getElementById('contact-name').value.trim();
-  var contactPhone = document.getElementById('contact-phone').value.trim();
-  var email        = document.getElementById('email').value.trim();
-  var password     = document.getElementById('password').value;
-  var password2    = document.getElementById('password2').value;
+  if (_regBusy) return;
+
+  var company      = (document.getElementById('company')       || {value:''}).value.trim();
+  var industry     = (document.getElementById('industry')      || {value:''}).value;
+  var companySize  = (document.getElementById('company-size')  || {value:''}).value;
+  var country      = (document.getElementById('country')       || {value:''}).value;
+  var website      = (document.getElementById('website')       || {value:''}).value.trim();
+  var contactName  = (document.getElementById('contact-name')  || {value:''}).value.trim();
+  var contactPhone = (document.getElementById('contact-phone') || {value:''}).value.trim();
+  var email        = (document.getElementById('email')         || {value:''}).value.trim().toLowerCase();
+  var password     = (document.getElementById('password')      || {value:''}).value;
+  var password2    = (document.getElementById('password2')     || {value:''}).value;
   var btn          = document.getElementById('btn-reg');
 
   hideErr();
 
-  if (!company)                         { showErr('Company name is required.'); return; }
-  if (!industry)                        { showErr('Please select your industry.'); return; }
-  if (!contactName || contactName.indexOf(' ') < 1) { showErr('Please enter your full name.'); return; }
-  if (!email || !email.includes('@'))   { showErr('Please enter a valid work email address.'); return; }
-  if (password.length < 8)             { showErr('Password must be at least 8 characters.'); return; }
-  if (password !== password2)          { showErr('Passwords do not match.'); return; }
-
-  btn.disabled = true;
-  btn.textContent = 'Creating account…';
-
-  // Step 1: create Supabase user account
-  var result = await window.LLAuth.register(contactName, email, password, country);
-  if (!result.ok) {
-    var msg = result.error || 'Registration failed.';
-    if (msg.includes('already registered') || msg.includes('already exists')) {
-      msg = 'An account with this email already exists. <a href="/login" style="color:#D4A843">Sign in →</a>';
-    }
-    showErr(msg);
-    btn.disabled = false; btn.textContent = 'Start free 30-day trial →';
-    return;
+  // ── Validation ──────────────────────────────────────────
+  if (!company)     { showErr('Company / trading name is required.'); return; }
+  if (!industry)    { showErr('Please select your industry.'); return; }
+  if (!country)     { showErr('Please select your country.'); return; }
+  if (!contactName || contactName.trim().split(/\s+/).length < 2) {
+    showErr('Please enter your full name (first and last).'); return;
   }
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    showErr('Please enter a valid work email address.'); return;
+  }
+  if (password.length < 8)  { showErr('Password must be at least 8 characters.'); return; }
+  if (password !== password2) { showErr('Passwords do not match.'); return; }
 
-  // Step 2: activate recruiter trial via paygate
-  var userId = result.session && result.session.user && result.session.user.id;
+  _regBusy = true;
+  btn.disabled = true;
+  btn.textContent = 'Creating your recruiter account…';
+
   try {
-    var pg = await fetch('/.netlify/functions/jobboard-paygate', {
-      method: 'POST',
+    // ── Step 1: Create user via dedicated recruiter-register action ──
+    var res = await fetch('/.netlify/functions/supabase-auth', {
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action:        'activate-trial',
-        userId:        userId,
+        action:        'register-recruiter',
         email:         email,
-        companyName:   company,
-        companyWebsite:website || null,
-        industry:      industry,
-        companySize:   companySize,
-        country:       country,
+        password:      password,
         contactName:   contactName,
+        companyName:   company,
+        companyWebsite: website || null,
+        industry:      industry,
+        companySize:   companySize || null,
+        country:       country,
         contactPhone:  contactPhone || null,
       })
     });
-    var pgData = await pg.json();
-    if (!pgData.ok) {
-      console.warn('[recruiter-register] paygate error:', pgData.error);
+    var data = await res.json();
+
+    if (!data.ok) {
+      var msg = data.error || 'Registration failed. Please try again.';
+      if (msg.toLowerCase().includes('already')) {
+        msg = 'An account with this email already exists. <a href="/login" style="color:#D4A843;font-weight:700;">Sign in →</a>';
+      }
+      showErr(msg);
+      btn.disabled = false; btn.textContent = 'Start free 30-day trial →';
+      _regBusy = false;
+      return;
     }
+
+    // Save session
+    if (data.session) {
+      try { localStorage.setItem('ll_session', JSON.stringify(data.session)); } catch(e) {}
+    }
+
+    // ── Step 2: Store recruiter identity in localStorage ──
+    var userId = data.userId || (data.session && data.session.user && data.session.user.id);
+    try {
+      var u = {
+        role:        'recruiter',
+        email:       email,
+        name:        contactName,
+        company:     company,
+        region:      country,
+        id:          userId,
+      };
+      localStorage.setItem('ll_user', JSON.stringify(u));
+    } catch(e) {}
+
+    // ── Step 3: Activate recruiter trial ──
+    if (userId) {
+      try {
+        var pg = await fetch('/.netlify/functions/jobboard-paygate', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action:         'activate-trial',
+            userId:         userId,
+            email:          email,
+            companyName:    company,
+            companyWebsite: website || null,
+            industry:       industry,
+            companySize:    companySize || null,
+            country:        country,
+            contactName:    contactName,
+            contactPhone:   contactPhone || null,
+          })
+        });
+        var pgData = await pg.json();
+        if (!pgData.ok && pgData.error) {
+          console.warn('[recruiter-register] trial activation:', pgData.error);
+          // Non-fatal — dashboard will show the status
+        }
+      } catch(e) {
+        console.warn('[recruiter-register] paygate error:', e.message);
+      }
+    }
+
+    // ── Done — go to dashboard ──
+    window.location.replace('/recruiter-dashboard?welcome=1');
+
   } catch(e) {
-    console.warn('[recruiter-register] paygate call failed:', e.message);
+    console.error('[recruiter-register]', e);
+    showErr('Network error. Please check your connection and try again.');
+    btn.disabled = false; btn.textContent = 'Start free 30-day trial →';
+    _regBusy = false;
   }
-
-  // Store recruiter flag in localStorage for UI routing
-  try {
-    var u = JSON.parse(localStorage.getItem('ll_user') || '{}');
-    u.role = 'recruiter';
-    u.company = company;
-    localStorage.setItem('ll_user', JSON.stringify(u));
-  } catch(e) {}
-
-  window.location.replace('/recruiter-dashboard?welcome=1');
 }
 
 function showErr(msg) {
   var el = document.getElementById('global-err');
-  el.innerHTML = msg; el.style.display = 'block';
+  el.innerHTML = msg;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 function hideErr() {
-  document.getElementById('global-err').style.display = 'none';
+  var el = document.getElementById('global-err');
+  if (el) el.style.display = 'none';
 }
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') doRegister();
+  if (e.key === 'Enter' && !_regBusy) doRegister();
 });
 </script>
 </body>
