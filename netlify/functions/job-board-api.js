@@ -179,12 +179,81 @@ exports.handler = async function(event) {
 
     // ── GET ACTIVE JOBS (public) ─────────────────────────────
     if (action === 'get-jobs') {
-      const { region, level, locationType, search, page } = body;
-      let path = '/rest/v1/job_postings?status=eq.active&order=published_at.desc&limit=24';
+      const { region, level, locationType, search } = body;
+
+      // Fetch jobs + recruiter country in one query using Supabase select with foreign table
+      let path = '/rest/v1/job_postings?status=eq.active&order=published_at.desc&limit=48'
+        + '&select=id,title,company,location,location_type,employment_type'
+        + ',salary_min,salary_max,salary_currency,salary_period'
+        + ',cert_level_required,description,view_count,application_count'
+        + ',deadline,published_at,recruiters(country)';
+
       if (level && level !== 'any') path += `&cert_level_required=eq.${level}`;
       if (locationType) path += `&location_type=eq.${locationType}`;
-      const jobs = await supa(path, 'GET', null, true); // anon key for public read
-      return json(200, { ok: true, data: Array.isArray(jobs) ? jobs : [] });
+
+      const raw = await supa(path, 'GET', null, true); // anon key — public listing
+      if (!Array.isArray(raw)) return json(200, { ok: true, data: [] });
+
+      // Normalise: map recruiters.country → region so frontend filter works
+      const COUNTRY_TO_REGION = {
+        'NG':'NG','Nigeria':'NG',
+        'ZA':'ZA','South Africa':'ZA',
+        'UK':'UK','United Kingdom':'UK','GB':'UK',
+        'AU':'AU','Australia':'AU',
+        'US':'US','United States':'US',
+        'AE':'AE','UAE':'AE',
+        'GH':'GH','Ghana':'GH',
+        'KE':'KE','Kenya':'KE',
+        'CA':'CA','Canada':'CA',
+      };
+
+      // Text search filter (server-side since Supabase free tier has no full-text)
+      const q = (search || '').toLowerCase().trim();
+
+      const jobs = raw
+        .filter(function(j) {
+          if (!q) return true;
+          return (j.title       || '').toLowerCase().includes(q)
+              || (j.company     || '').toLowerCase().includes(q)
+              || (j.description || '').toLowerCase().includes(q)
+              || (j.location    || '').toLowerCase().includes(q);
+        })
+        .map(function(j) {
+          const country = j.recruiters && j.recruiters.country
+            ? j.recruiters.country : '';
+          const region  = COUNTRY_TO_REGION[country]
+            || (j.location || '').match(/(NG|ZA|UK|AU|US|AE)/)?.[1]
+            || 'GLOBAL';
+          return {
+            id:                   j.id,
+            title:                j.title,
+            company:              j.company,
+            location:             j.location,
+            location_type:        j.location_type,
+            employment_type:      j.employment_type,
+            salary_min:           j.salary_min,
+            salary_max:           j.salary_max,
+            salary_currency:      j.salary_currency || 'USD',
+            salary_period:        j.salary_period || 'monthly',
+            cert_level_required:  j.cert_level_required || 'any',
+            description:          j.description,
+            view_count:           j.view_count || 0,
+            application_count:    j.application_count || 0,
+            deadline:             j.deadline,
+            published_at:         j.published_at,
+            region,
+          };
+        });
+
+      // Region filter (after mapping)
+      const filtered = region
+        ? jobs.filter(function(j) {
+            if (region === 'remote') return j.location_type === 'remote';
+            return j.region === region || j.region === 'GLOBAL';
+          })
+        : jobs;
+
+      return json(200, { ok: true, data: filtered });
     }
 
     // ── GET RECRUITER JOBS ───────────────────────────────────
