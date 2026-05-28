@@ -118,7 +118,8 @@ nav{height:56px;background:var(--navy);border-bottom:2px solid var(--gold);displ
     <a href="/learn" class="nav-link">Courses</a>
     <a href="/test" class="nav-link">Certifications</a>
     <a href="/faq" class="nav-link">FAQ</a>
-    <a href="/recruiter-register" class="btn-nav">Post a job</a>
+    <button id="btn-post-job" class="btn-nav" onclick="handlePostJob()">Post a job</button>
+    <div id="nav-user-slot"></div>
   </div>
 </nav>
 
@@ -491,6 +492,49 @@ function showToast(msg, type) {
   document.body.appendChild(_toast);
   setTimeout(function(){ if(_toast) _toast.remove(); }, 4000);
 }
+
+function handlePostJob() {
+  // Check if already logged in as recruiter
+  try {
+    var sess = JSON.parse(localStorage.getItem('ll_session') || 'null');
+    var user = sess && sess.user;
+    if (user && sess.expires_at > Date.now()) {
+      if (user.role === 'recruiter') {
+        // Logged in recruiter → go straight to post job
+        window.location.href = '/jobs-post';
+        return;
+      } else {
+        // Logged in as learner → ask them to use a recruiter account
+        var go = confirm(
+          'You are signed in as a learner (\'' + (user.email || 'your account') + '\').\n\n' +
+          'To post a job you need a recruiter account.\n\n' +
+          'Click OK to sign out and register as a recruiter, or Cancel to stay.'
+        );
+        if (go) {
+          window.LLAuth.logout();
+          // logout() clears session and redirects to /login
+          // We override by going to recruiter-register
+          setTimeout(function(){ window.location.href = '/recruiter-register'; }, 50);
+        }
+        return;
+      }
+    }
+  } catch(e) {}
+  // Not logged in → recruiter register (new account flow)
+  window.location.href = '/recruiter-register';
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Show user info + sign out if already logged in
+  try {
+    var sess = JSON.parse(localStorage.getItem('ll_session') || 'null');
+    if (sess && sess.user && sess.expires_at > Date.now()) {
+      if (window.LLAuth) window.LLAuth._updateNav(sess.user);
+    }
+  } catch(e) {}
+});
+
 </script>
 </body>
 </html>

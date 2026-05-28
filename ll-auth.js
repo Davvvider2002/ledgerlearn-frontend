@@ -195,12 +195,71 @@
     },
 
     // Update nav user name (called after require())
+    // Injects name, avatar, role badge, and sign-out into ANY nav
+    // that contains #nav-user-name / #nav-avatar OR .nav-user-slot
     _updateNav: function(user) {
       if (!user) return;
+      var stored = {};
+      try { stored = JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) {}
+      var role    = user.role    || stored.role    || 'applicant';
+      var name    = user.name    || stored.name    || user.email || '';
+      var company = user.company_name || stored.company || stored.company_name || '';
+      var display = role === 'recruiter' ? (company || name.split(' ')[0]) : name.split(' ')[0];
+      var initial = display.charAt(0).toUpperCase() || '?';
+
+      // Update existing named elements
       var nameEl   = document.getElementById('nav-user-name');
       var avatarEl = document.getElementById('nav-avatar');
-      if (nameEl)   nameEl.textContent   = (user.name || user.email || '').split(' ')[0];
-      if (avatarEl) avatarEl.textContent = (user.name || user.email || '?').charAt(0).toUpperCase();
+      if (nameEl)   nameEl.textContent   = display;
+      if (avatarEl) avatarEl.textContent = initial;
+
+      // Inject a user-menu into .nav-user-slot if present (public pages)
+      var slotEl = document.getElementById('nav-user-slot');
+      if (slotEl && !slotEl.dataset.populated) {
+        var roleBadge = role === 'recruiter'
+          ? '<span style="font-size:.6rem;font-weight:700;padding:1px 7px;border-radius:100px;background:rgba(29,169,138,.2);color:#26c9a5;border:1px solid rgba(29,169,138,.25);text-transform:uppercase;letter-spacing:.06em;">Recruiter</span>'
+          : '';
+        // Build DOM nodes (avoids quote-escaping in innerHTML)
+        var wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display:flex;align-items:center;gap:8px;';
+        var ava = document.createElement('div');
+        ava.style.cssText = 'width:28px;height:28px;border-radius:50%;background:#1DA98A;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;';
+        ava.textContent = initial;
+        var nameSpan = document.createElement('span');
+        nameSpan.style.cssText = 'font-size:.8rem;color:rgba(255,255,255,.65);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+        nameSpan.textContent = display;
+        var soBtn = document.createElement('button');
+        soBtn.textContent = 'Sign out';
+        soBtn.style.cssText = 'margin-left:4px;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:4px 10px;border-radius:6px;font-size:.72rem;cursor:pointer;font-family:inherit;white-space:nowrap;';
+        soBtn.onclick     = function(){ window.LLAuth.logout(); };
+        soBtn.onmouseover = function(){ this.style.borderColor='rgba(212,168,67,.5)';this.style.color='#D4A843'; };
+        soBtn.onmouseout  = function(){ this.style.borderColor='rgba(255,255,255,.15)';this.style.color='rgba(255,255,255,.45)'; };
+        wrapper.appendChild(ava);
+        wrapper.appendChild(nameSpan);
+        if (roleBadge) {
+          var rb = document.createElement('span');
+          rb.style.cssText = 'font-size:.6rem;font-weight:700;padding:1px 7px;border-radius:100px;background:rgba(29,169,138,.2);color:#26c9a5;border:1px solid rgba(29,169,138,.25);text-transform:uppercase;letter-spacing:.06em;';
+          rb.textContent = role === 'recruiter' ? 'Recruiter' : role;
+          wrapper.appendChild(rb);
+        }
+        wrapper.appendChild(soBtn);
+        slotEl.innerHTML = '';
+        slotEl.appendChild(wrapper);
+        slotEl.dataset.populated = '1';
+      }
+
+      // If no slot, add sign-out to existing .nav-user containers
+      var navUserEl = document.querySelector('.nav-user');
+      if (navUserEl && !navUserEl.querySelector('.nav-signout')) {
+        var soBtn = document.createElement('button');
+        soBtn.className   = 'nav-signout';
+        soBtn.textContent = 'Sign out';
+        soBtn.style.cssText = 'background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:4px 10px;border-radius:6px;font-size:.72rem;cursor:pointer;font-family:inherit;margin-left:4px;white-space:nowrap;';
+        soBtn.onmouseover = function(){ this.style.borderColor='rgba(212,168,67,.5)';this.style.color='#D4A843'; };
+        soBtn.onmouseout  = function(){ this.style.borderColor='rgba(255,255,255,.15)';this.style.color='rgba(255,255,255,.45)'; };
+        soBtn.onclick     = function(){ window.LLAuth.logout(); };
+        navUserEl.appendChild(soBtn);
+      }
     },
 
     // Save progress to Supabase (call after any progress change)

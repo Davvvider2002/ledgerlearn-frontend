@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Recruiter Sign In — LedgerLearn Pro</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="/ll-auth.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#0a1628;min-height:100vh;display:flex;flex-direction:column;}
+nav{height:56px;background:rgba(10,22,40,0.98);border-bottom:2px solid #1DA98A;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:20px;height:20px;background:#1DA98A;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:#fff;}
+.brand span{color:#1DA98A;}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.nav-link{color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;}
+.nav-link:hover{color:#fff;}
+.nav-pill{font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(29,169,138,.15);color:#1DA98A;border:1px solid rgba(29,169,138,.3);}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;
+  background:
+    radial-gradient(ellipse at 20% 50%,rgba(29,169,138,0.12) 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 20%,rgba(29,169,138,0.06) 0%,transparent 50%),
+    #0a1628;}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:820px;width:100%;border-radius:20px;overflow:hidden;border:1px solid rgba(29,169,138,0.25);box-shadow:0 24px 60px rgba(0,0,0,.4);}
+/* Left panel — value proposition */
+.panel-left{background:linear-gradient(160deg,#0f2a1e 0%,#0a1f17 100%);padding:3rem 2.5rem;display:flex;flex-direction:column;justify-content:space-between;}
+.panel-eyebrow{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:#1DA98A;font-weight:700;margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem;}
+.panel-eyebrow::before{content:'';display:block;width:16px;height:1.5px;background:#1DA98A;}
+.panel-title{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:#fff;line-height:1.2;margin-bottom:.75rem;letter-spacing:-.02em;}
+.panel-sub{font-size:.82rem;color:rgba(255,255,255,.4);line-height:1.65;margin-bottom:2rem;}
+.panel-stats{display:flex;flex-direction:column;gap:.875rem;}
+.stat-item{display:flex;align-items:center;gap:.75rem;}
+.stat-dot{width:8px;height:8px;border-radius:50%;background:#1DA98A;flex-shrink:0;}
+.stat-text{font-size:.8rem;color:rgba(255,255,255,.55);}
+.stat-text strong{color:#fff;font-weight:600;}
+.panel-bottom{margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.07);}
+.panel-register{font-size:.78rem;color:rgba(255,255,255,.35);}
+.panel-register a{color:#1DA98A;text-decoration:none;font-weight:600;}
+/* Right panel — login form */
+.panel-right{background:#0d2044;padding:2.5rem 2rem;}
+.form-eyebrow{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:#1DA98A;font-weight:700;margin-bottom:.5rem;}
+h1{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:.35rem;}
+.form-sub{font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:1.75rem;line-height:1.5;}
+.field{margin-bottom:.875rem;}
+label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.45);margin-bottom:5px;}
+input{width:100%;padding:11px 14px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:.9rem;font-family:inherit;outline:none;transition:border-color .15s;}
+input:focus{border-color:#1DA98A;}
+input::placeholder{color:rgba(255,255,255,.2);}
+.btn-primary{width:100%;padding:13px;background:#1DA98A;color:#fff;border:none;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;margin-top:.25rem;}
+.btn-primary:hover{background:#26c9a5;transform:translateY(-1px);}
+.btn-primary:disabled{background:#1a5c4d;opacity:.6;transform:none;cursor:not-allowed;}
+.global-err{background:rgba(226,75,74,.12);border:1px solid rgba(226,75,74,.3);border-radius:8px;padding:10px 14px;color:#ff8080;font-size:.8rem;margin-bottom:1rem;display:none;}
+.divider{display:flex;align-items:center;gap:.75rem;margin:1.25rem 0;color:rgba(255,255,255,.15);font-size:.72rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
+.learner-link{text-align:center;font-size:.78rem;color:rgba(255,255,255,.3);}
+.learner-link a{color:rgba(255,255,255,.5);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.15);padding-bottom:1px;}
+.learner-link a:hover{color:#fff;border-color:#fff;}
+@media(max-width:600px){
+  .layout{grid-template-columns:1fr;}
+  .panel-left{display:none;}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <div class="nav-right">
+    <span class="nav-pill">Recruiter Portal</span>
+    <a href="/login" class="nav-link">Learner sign in</a>
+  </div>
+</nav>
+
+<main>
+  <div class="layout">
+
+    <!-- Left: value prop -->
+    <div class="panel-left">
+      <div>
+        <div class="panel-eyebrow">Recruiter Portal</div>
+        <h2 class="panel-title">Hire certified<br>accounting talent.</h2>
+        <p class="panel-sub">Post roles, receive applications from LedgerLearn-certified candidates, and verify credentials instantly.</p>
+        <div class="panel-stats">
+          <div class="stat-item">
+            <div class="stat-dot"></div>
+            <div class="stat-text"><strong>Certified candidates only</strong> — every applicant is verified</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-dot"></div>
+            <div class="stat-text"><strong>NG · ZA · UK · AU</strong> — regional talent pools</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-dot"></div>
+            <div class="stat-text"><strong>30-day free trial</strong> — post unlimited roles</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-dot"></div>
+            <div class="stat-text"><strong>AI candidate matching</strong> — ranked by cert level &amp; skills</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-bottom">
+        <div class="panel-register">
+          New recruiter? <a href="/recruiter-register">Create your free account &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: form -->
+    <div class="panel-right">
+      <div class="form-eyebrow">Recruiter sign in</div>
+      <h1>Welcome back</h1>
+      <p class="form-sub">Sign in to manage your job listings and review applications.</p>
+
+      <div class="global-err" id="global-err"></div>
+
+      <div class="field">
+        <label>Work email</label>
+        <input type="email" id="email" placeholder="you@company.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Your password" autocomplete="current-password"/>
+      </div>
+
+      <button class="btn-primary" id="btn-login" onclick="doLogin()">Sign in to Recruiter Portal &rarr;</button>
+
+      <div class="divider">or</div>
+      <div class="learner-link">
+        Looking for your learning account? <a href="/login">Learner / job seeker sign in</a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// If already logged in as recruiter, go straight to dashboard
+(function() {
+  try {
+    var sess = JSON.parse(localStorage.getItem('ll_session') || 'null');
+    if (sess && sess.user && sess.expires_at > Date.now()) {
+      if (sess.user.role === 'recruiter') {
+        var params = new URLSearchParams(window.location.search);
+        window.location.replace(params.get('next') || '/recruiter-dashboard');
+      }
+      // Logged in as learner — don't auto-redirect, show them the form
+      // They may want to switch to recruiter account
+    }
+  } catch(e) {}
+})();
+
+async function doLogin() {
+  var email    = document.getElementById('email').value.trim().toLowerCase();
+  var password = document.getElementById('password').value;
+  var btn      = document.getElementById('btn-login');
+
+  if (!email || !email.includes('@')) { showErr('Please enter a valid email address.'); return; }
+  if (!password)                       { showErr('Please enter your password.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Signing in\u2026';
+
+  var result = await window.LLAuth.login(email, password);
+
+  if (result.ok) {
+    var user = result.session && result.session.user;
+    var isRecruiter = result.isRecruiter || (user && user.role === 'recruiter');
+
+    if (!isRecruiter) {
+      // Wrong account type — signed in as learner
+      showErr(
+        'This account is a learner account, not a recruiter account. ' +
+        '<a href="/login" style="color:#1DA98A;font-weight:700;">Sign in as learner \u2192</a> ' +
+        'or <a href="/recruiter-register" style="color:#1DA98A;font-weight:700;">register as recruiter</a>.'
+      );
+      btn.disabled = false; btn.textContent = 'Sign in to Recruiter Portal \u2192';
+      return;
+    }
+
+    var params = new URLSearchParams(window.location.search);
+    window.location.replace(params.get('next') || '/recruiter-dashboard');
+  } else {
+    showErr(result.error || 'Sign in failed. Check your email and password.');
+    btn.disabled = false; btn.textContent = 'Sign in to Recruiter Portal \u2192';
+  }
+}
+
+function showErr(msg) {
+  var el = document.getElementById('global-err');
+  el.innerHTML = msg; el.style.display = 'block';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>

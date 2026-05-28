@@ -340,8 +340,9 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
     <li><a href="/jobs">Jobs</a></li>
     <li><a href="/academy" class="nav-link-academy">Academy</a></li>
     <li><a href="#tracks">Pricing</a></li>
-    <li><a href="/test" class="nav-cta">Start free &rarr;</a></li>
+    <li><a href="/test" class="nav-cta" id="nav-cta-btn">Start free &rarr;</a></li>
   </ul>
+  <div id="nav-user-slot"></div>
 </nav>
 
 <section class="hero">
@@ -923,5 +924,20 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
 </footer>
 
 <script src="/ll-chatbot.js"></script>
+
+<script>
+// Show user state in nav if logged in
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    var sess = JSON.parse(localStorage.getItem('ll_session') || 'null');
+    if (sess && sess.user && sess.expires_at > Date.now()) {
+      if (window.LLAuth) window.LLAuth._updateNav(sess.user);
+      // Hide "Start free" CTA if already logged in
+      var cta = document.getElementById('nav-cta-btn');
+      if (cta) cta.style.display = 'none';
+    }
+  } catch(e) {}
+});
+</script>
 </body>
 </html>

@@ -243,6 +243,11 @@
 
 
 [[redirects]]
+  from   = "/recruiter-login"
+  to     = "/recruiter-login.html"
+  status = 200
+
+[[redirects]]
   from   = "/marketplace"
   to     = "/marketplace.html"
   status = 200
