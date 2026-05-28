@@ -677,6 +677,46 @@ async function finishTest() {
           .then(function(res){
             if (res.ok) {
               console.log('[LedgerLearn] Certificate saved to database:', updated.certificate.certId);
+              // Auto-update applicant_profiles with latest cert snapshot
+              try {
+                var _apToken = '';
+                try { _apToken = JSON.parse(localStorage.getItem('ll_session')||'{}').access_token || ''; } catch(e2) {}
+                var _apProfile = {};
+                try { _apProfile = JSON.parse(localStorage.getItem('ll_applicant_profile') || '{}'); } catch(e2) {}
+                var _allProgress = {};
+                try { _allProgress = JSON.parse(localStorage.getItem('ll_progress')||'{}'); } catch(e2) {}
+                var _certSnap = [];
+                var _cl2 = _allProgress.completedLevels || [];
+                ['l1','l2','l3'].forEach(function(lv) {
+                  if (_cl2.includes(lv)) {
+                    _certSnap.push({
+                      level: lv,
+                      score: _allProgress[lv+'Score'] || 0,
+                      certId: (lv === test.level) ? updated.certificate.certId : '',
+                      track: (typeof ACTIVE_TRACK !== 'undefined') ? ACTIVE_TRACK : 'Xero',
+                    });
+                  }
+                });
+                if (_certEmail && _certSnap.length > 0) {
+                  fetch('/.netlify/functions/job-board-api', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _apToken },
+                    body: JSON.stringify({
+                      action:  'save-applicant-profile',
+                      profile: Object.assign({}, _apProfile, {
+                        email:            _certEmail,
+                        cert_snapshot:    _certSnap,
+                        profile_complete: _apProfile.first_name ? true : false,
+                        updated_at:       new Date().toISOString(),
+                      })
+                    })
+                  }).then(function(r2){ return r2.json(); })
+                    .then(function(d2){ if(d2.ok) console.log('[LedgerLearn] Applicant profile cert updated'); })
+                    .catch(function(e2){ console.warn('[LedgerLearn] Profile cert update failed:', e2.message); });
+                }
+              } catch(_apErr) {
+                console.warn('[LedgerLearn] Profile cert auto-update error:', _apErr.message);
+              }
             } else {
               console.warn('[LedgerLearn] Cert save failed:', res.error);
               // Store for retry on next dashboard load

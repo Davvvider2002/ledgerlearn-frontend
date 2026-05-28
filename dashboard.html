@@ -1629,31 +1629,48 @@ async function init() {
             headers: {'Content-Type':'application/json'},
             body: JSON.stringify({ action: 'load', email: _user.email })
           });
-          // Also check certificates table directly
+          // Load certificate from supabase-progress load-cert (server-side, service key)
           try {
-            var _certRes = await fetch(
-              (localStorage.getItem('ll_supa_url')||'') + '/rest/v1/certificates?email=eq.' + encodeURIComponent(_user.email) + '&order=created_at.desc&limit=1',
-              { headers: { 'apikey': localStorage.getItem('ll_supa_anon')||'', 'Authorization': 'Bearer '+(localStorage.getItem('ll_supa_anon')||'') }}
-            );
-            var _certs = await _certRes.json();
-            if (Array.isArray(_certs) && _certs.length > 0) {
-              var _c = _certs[0];
-              _pr.certificate = {
-                candidateName:    _c.candidate_name || _user.name || '',
-                certTitle:        _c.cert_title    || '',
-                certLevel:        _c.cert_level    || '',
-                certRegion:       _c.cert_region   || 'UK',
-                certRegionLabel:  _c.cert_region_label || '',
-                certRegionSuffix: _c.cert_region_suffix || '',
-                score:            _c.score         || 0,
-                certId:           _c.cert_id       || '',
-                issueDate:        _c.issue_date    || '',
-                level:            _c.level         || 'l1',
-              };
-              _pr['l'+(_c.level||'1').replace('l','')+'Score'] = _c.score;
+            var _certApiRes = await fetch('/.netlify/functions/supabase-progress', {
+              method: 'POST',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ action: 'load-cert', email: _user.email })
+            });
+            var _certApiData = await _certApiRes.json();
+            if (_certApiData.ok && _certApiData.found && _certApiData.cert) {
+              var _c = _certApiData.cert;
+              // Merge ALL certs into progress — keyed by level
+              var _allCerts = _certApiData.certs || [_c];
+              _allCerts.forEach(function(cert) {
+                var _lvKey = 'l' + (cert.level || '1').replace('l','');
+                _pr[_lvKey + 'Score'] = cert.score;
+                if (!_pr.completedLevels) _pr.completedLevels = [];
+                if (!_pr.completedLevels.includes(cert.level || 'l1')) {
+                  _pr.completedLevels.push(cert.level || 'l1');
+                }
+                // Store highest/most recent cert as the primary certificate
+                if (!_pr.certificate || cert.level === 'l3' ||
+                    (cert.level === 'l2' && _pr.certificate.level === 'l1')) {
+                  _pr.certificate = {
+                    candidateName:    cert.candidateName || _user.name || '',
+                    certTitle:        cert.certTitle     || '',
+                    certLevel:        cert.certLevel     || '',
+                    certRegion:       cert.certRegion    || 'UK',
+                    certRegionLabel:  cert.certRegionLabel || '',
+                    certRegionSuffix: cert.certRegionSuffix || '',
+                    score:            cert.score || 0,
+                    certId:           cert.certId || '',
+                    issueDate:        cert.issueDate || '',
+                    level:            cert.level || 'l1',
+                  };
+                }
+              });
+              _pr.lastScore = _c.score;
               localStorage.setItem('ll_progress', JSON.stringify(_pr));
             }
-          } catch(_ce2) {}
+          } catch(_ce2) {
+            console.warn('[Dashboard] load-cert failed:', _ce2.message);
+          }
         }
       }
     }
@@ -1664,7 +1681,62 @@ async function init() {
 </script>
 <script src="/ll-chatbot.js">
   // ── Retry pending cert save (fires if cert save failed during assessment) ──
-  (async function retryPendingCertSave() {
+  // ── Auto-load cert from Supabase on every dashboard visit ────
+  (async function loadCertAndRetry() {
+    try {
+      var email = '';
+      try {
+        if (window.LLAuth) { var _lu = LLAuth.getUser(); email = (_lu && _lu.email) || ''; }
+      } catch(e) {}
+      if (!email) { try { email = JSON.parse(localStorage.getItem('ll_session')||'{}').user?.email || ''; } catch(e) {} }
+      if (!email) { try { email = JSON.parse(localStorage.getItem('ll_user')||'{}').email || ''; } catch(e) {} }
+
+      if (email) {
+        // Load cert from server — this is the authoritative source
+        var _cr = await fetch('/.netlify/functions/supabase-progress', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ action: 'load-cert', email: email })
+        });
+        var _cd = await _cr.json();
+        if (_cd.ok && _cd.found && _cd.certs && _cd.certs.length > 0) {
+          var _pr = {};
+          try { _pr = JSON.parse(localStorage.getItem('ll_progress')||'{}'); } catch(e2) {}
+          var changed = false;
+          _cd.certs.forEach(function(cert) {
+            var lvScore = cert.level + 'Score';
+            // Update score if server has it and local doesn't
+            if (cert.score && !_pr[lvScore]) {
+              _pr[lvScore] = cert.score;
+              _pr.lastScore = cert.score;
+              changed = true;
+            }
+            // Add to completedLevels if not present
+            if (!_pr.completedLevels) _pr.completedLevels = [];
+            if (!_pr.completedLevels.includes(cert.level)) {
+              _pr.completedLevels.push(cert.level);
+              changed = true;
+            }
+            // Set certificate object if missing or this is a higher level
+            if (!_pr.certificate ||
+                (cert.level === 'l3') ||
+                (cert.level === 'l2' && _pr.certificate.level === 'l1')) {
+              _pr.certificate = cert;
+              changed = true;
+            }
+          });
+          if (changed) {
+            localStorage.setItem('ll_progress', JSON.stringify(_pr));
+            // Re-render dashboard with updated data
+            if (typeof initLevelDashboards === 'function') initLevelDashboards();
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('[Dashboard] loadCertAndRetry failed:', e.message);
+    }
+
+    // Also retry pending cert saves
     try {
       var pending = localStorage.getItem('ll_pending_cert_save');
       if (!pending) return;
@@ -1696,6 +1768,8 @@ async function init() {
       if (data.ok) {
         console.log('[Dashboard] Pending cert save succeeded:', certPayload.certId);
         localStorage.removeItem('ll_pending_cert_save');
+        // Re-render now cert is saved
+        if (typeof initLevelDashboards === 'function') initLevelDashboards();
       }
     } catch(e) {
       console.warn('[Dashboard] Cert retry failed:', e.message);
