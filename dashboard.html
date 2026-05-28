@@ -1620,15 +1620,10 @@ async function init() {
           if (_server.paid_l2) _merged.paid_l2 = true;
           localStorage.setItem('ll_progress', JSON.stringify(_merged));
         }
-        // Load certificate from Supabase if not in localStorage
+        // Always load-cert from server — server is authoritative for scores
         var _pr = {};
         try { _pr = JSON.parse(localStorage.getItem('ll_progress')||'{}'); } catch(e){}
-        if (!_pr.certificate && _user.email) {
-          var _cRes = await fetch('/.netlify/functions/supabase-progress', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ action: 'load', email: _user.email })
-          });
+        if (_user.email) {
           // Load certificate from supabase-progress load-cert (server-side, service key)
           try {
             var _certApiRes = await fetch('/.netlify/functions/supabase-progress', {
@@ -1704,27 +1699,30 @@ async function init() {
           try { _pr = JSON.parse(localStorage.getItem('ll_progress')||'{}'); } catch(e2) {}
           var changed = false;
           _cd.certs.forEach(function(cert) {
+            // Always trust server values — server is authoritative
             var lvScore = cert.level + 'Score';
-            // Update score if server has it and local doesn't
-            if (cert.score && !_pr[lvScore]) {
+            if (cert.score) {
+              // Overwrite stale/missing local score with server value
               _pr[lvScore] = cert.score;
-              _pr.lastScore = cert.score;
+              _pr.lastScore = Math.max(_pr.lastScore || 0, cert.score);
               changed = true;
             }
-            // Add to completedLevels if not present
             if (!_pr.completedLevels) _pr.completedLevels = [];
             if (!_pr.completedLevels.includes(cert.level)) {
               _pr.completedLevels.push(cert.level);
               changed = true;
             }
-            // Set certificate object if missing or this is a higher level
+            // Always store cert object (overwrite null or lower level)
             if (!_pr.certificate ||
                 (cert.level === 'l3') ||
-                (cert.level === 'l2' && _pr.certificate.level === 'l1')) {
+                (cert.level === 'l2' && (_pr.certificate.level||'l1') === 'l1') ||
+                (cert.level === _pr.certificate.level)) {
               _pr.certificate = cert;
               changed = true;
             }
           });
+          // Force changed=true so render always fires with server data
+          changed = true;
           if (changed) {
             localStorage.setItem('ll_progress', JSON.stringify(_pr));
             // Re-render dashboard with updated data
