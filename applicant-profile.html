@@ -295,20 +295,7 @@ nav{height:56px;background:var(--navy);border-bottom:2px solid var(--gold);displ
         <div class="form-card-eyebrow">Step 2 of 6</div>
         <div class="form-card-title">Education &amp; qualifications</div>
         <div class="form-card-sub">Add degrees, diplomas, and professional qualifications.</div>
-        <div id="edu-list">
-          <div class="entry-card">
-            <div class="entry-header">
-              <div>
-                <div class="entry-title">BSc Accounting</div>
-                <div class="entry-sub">University of Lagos · Nigeria</div>
-                <div class="entry-dates">2010 – 2014 · Upper Second Class</div>
-              </div>
-              <div class="entry-actions">
-                <button class="icon-btn danger" onclick="this.closest('.entry-card').remove();updateStrength()">Remove</button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div id="edu-list"></div>
         <div class="add-form" id="edu-form">
           <div class="fg fg-2">
             <div class="field span2"><label>Qualification / degree <span class="req">*</span></label><input id="edu-qual" placeholder="e.g. BSc Accounting, AAT Level 4, ACCA Part 1"></div>
@@ -339,21 +326,7 @@ nav{height:56px;background:var(--navy);border-bottom:2px solid var(--gold);displ
         <div class="form-card-eyebrow">Step 3 of 6</div>
         <div class="form-card-title">Work experience</div>
         <div class="form-card-sub">Add your employment history — most recent first.</div>
-        <div id="exp-list">
-          <div class="entry-card">
-            <div class="entry-header">
-              <div>
-                <div class="entry-title">Senior Bookkeeper</div>
-                <div class="entry-sub">Virtual Bookkeepers Global · Remote · Nigeria</div>
-                <div class="entry-dates">Jan 2024 – Present · Full-time</div>
-              </div>
-              <div class="entry-actions">
-                <button class="icon-btn danger" onclick="this.closest('.entry-card').remove();updateStrength()">Remove</button>
-              </div>
-            </div>
-            <div class="entry-desc">Managing month-end close, VAT returns under FIRS, and Xero bookkeeping for 8 SME clients.</div>
-          </div>
-        </div>
+        <div id="exp-list"></div>
         <div class="add-form" id="exp-form">
           <div class="fg fg-2">
             <div class="field"><label>Job title <span class="req">*</span></label><input id="exp-title" placeholder="e.g. Xero Bookkeeper"></div>
@@ -569,16 +542,11 @@ nav{height:56px;background:var(--navy);border-bottom:2px solid var(--gold);displ
             </div>
             <div class="preview-sec">
               <div class="preview-sec-title">Experience</div>
-              <div id="prev-exp">
-                <div class="preview-item">Senior Bookkeeper — Virtual Bookkeepers Global</div>
-                <div class="preview-item-sub">Jan 2024–Present · Remote · Nigeria</div>
-              </div>
+              <div id="prev-exp"></div>
             </div>
             <div class="preview-sec">
               <div class="preview-sec-title">Qualifications</div>
-              <div id="prev-edu">
-                <div class="preview-item">BSc Accounting · University of Lagos · 2014</div>
-              </div>
+              <div id="prev-edu"></div>
             </div>
             <div class="preview-sec">
               <div class="preview-sec-title">Systems &amp; skills</div>
@@ -640,6 +608,69 @@ var CERTS = [];
   document.getElementById('sb-name').textContent   = USER.name || fname + ' ' + lname;
   document.getElementById('sb-loc').textContent    = u.region || 'Region not set';
   document.getElementById('prev-av').textContent   = initials;
+
+  // Load existing saved profile if available
+  try {
+    var saved = JSON.parse(localStorage.getItem('ll_applicant_profile') || 'null');
+    if (saved) {
+      // Re-populate all fields from saved profile
+      var sf = function(id, val) { if (!val) return; var el=document.getElementById(id); if(el) el.value=val; };
+      sf('p-lname',   saved.last_name);
+      sf('p-phone',   saved.phone);
+      sf('p-city',    saved.city);
+      sf('p-country', saved.country || 'NG');
+      sf('p-summary', saved.professional_summary);
+      sf('p-exp',     saved.years_experience ? String(saved.years_experience) : '');
+      sf('p-avail',   saved.availability);
+      sf('p-salary',  saved.salary_expectation);
+
+      // Restore work experience cards
+      if (Array.isArray(saved.work_experience) && saved.work_experience.length > 0) {
+        var expListEl = document.getElementById('exp-list');
+        if (expListEl) {
+          expListEl.innerHTML = '';
+          saved.work_experience.forEach(function(job) {
+            if (!job.title && !job.company) return;
+            expListEl.appendChild(makeEntryCard(
+              job.title || '',
+              [job.company, job.location].filter(Boolean).join(' · '),
+              job.dates || '',
+              job.description || ''
+            ));
+          });
+        }
+      }
+
+      // Restore education cards
+      if (Array.isArray(saved.education) && saved.education.length > 0) {
+        var eduListEl = document.getElementById('edu-list');
+        if (eduListEl) {
+          eduListEl.innerHTML = '';
+          saved.education.forEach(function(edu) {
+            if (!edu.title && !edu.qualification) return;
+            var qual   = edu.qualification || edu.title || '';
+            var inst   = edu.sub || edu.institution || '';
+            var dates2 = edu.dates || edu.year || '';
+            eduListEl.appendChild(makeEntryCard(qual, inst, dates2, ''));
+          });
+        }
+      }
+
+      // Restore selected skills
+      if (Array.isArray(saved.core_skills) && saved.core_skills.length) {
+        saved.core_skills.forEach(function(skill) {
+          document.querySelectorAll('.skill-pill').forEach(function(pill) {
+            if (pill.textContent.trim().toLowerCase() === skill.toLowerCase()) {
+              pill.classList.add('on');
+            }
+          });
+        });
+        updateSkillCount();
+      }
+    }
+  } catch(e) {
+    console.warn('[profile] Could not load saved profile:', e.message);
+  }
 
   // Load and display certificates
   loadCertificates();
@@ -766,6 +797,39 @@ function updateStrength() {
       return '<span class="preview-tag">' + esc(s) + '</span>';
     }).join('');
   }
+
+  // Work experience preview — always reflects current DOM cards
+  var expCards = document.querySelectorAll('#exp-list .entry-card');
+  var prevExp  = document.getElementById('prev-exp');
+  if (prevExp) {
+    if (expCards.length === 0) {
+      prevExp.innerHTML = '<div class="preview-item" style="color:rgba(255,255,255,.3);font-size:.78rem;font-style:italic;">No work history yet</div>';
+    } else {
+      prevExp.innerHTML = Array.from(expCards).slice(0,2).map(function(card) {
+        var t = (card.querySelector('.entry-title') || {}).textContent || '';
+        var s = (card.querySelector('.entry-sub')   || {}).textContent || '';
+        var d = (card.querySelector('.entry-dates') || {}).textContent || '';
+        return '<div class="preview-item">' + esc(t) + (s ? ' — ' + esc(s) : '') + '</div>'
+          + (d ? '<div class="preview-item-sub">' + esc(d) + '</div>' : '');
+      }).join('');
+    }
+  }
+
+  // Education preview — always reflects current DOM cards
+  var eduCards = document.querySelectorAll('#edu-list .entry-card');
+  var prevEdu  = document.getElementById('prev-edu');
+  if (prevEdu) {
+    if (eduCards.length === 0) {
+      prevEdu.innerHTML = '<div class="preview-item" style="color:rgba(255,255,255,.3);font-size:.78rem;font-style:italic;">No qualifications yet</div>';
+    } else {
+      prevEdu.innerHTML = Array.from(eduCards).slice(0,2).map(function(card) {
+        var t = (card.querySelector('.entry-title') || {}).textContent || '';
+        var s = (card.querySelector('.entry-sub')   || {}).textContent || '';
+        var d = (card.querySelector('.entry-dates') || {}).textContent || '';
+        return '<div class="preview-item">' + esc(t) + (s ? ' · ' + esc(s) : '') + (d ? ' · ' + esc(d) : '') + '</div>';
+      }).join('');
+    }
+  }
 }
 
 // ── Skill toggles ─────────────────────────────────────────────
@@ -886,7 +950,6 @@ async function parseResumeWithAI(file) {
   var scanStatus = document.getElementById('uploaded-size');
   scanStatus.textContent = 'Scanning with AI…';
   try {
-    // Convert file to base64
     var base64 = await new Promise(function(resolve, reject) {
       var reader = new FileReader();
       reader.onload  = function(e) { resolve(e.target.result.split(',')[1]); };
@@ -897,33 +960,66 @@ async function parseResumeWithAI(file) {
     var res = await fetch('/.netlify/functions/ai', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action:       'parse-resume',
-        fileName:     file.name,
-        fileType:     file.type,
-        fileBase64:   base64,
-      })
+      body: JSON.stringify({ action: 'parse-resume', fileName: file.name, fileType: file.type, fileBase64: base64 })
     });
     var data = await res.json();
     if (!data.ok || !data.parsed) throw new Error(data.error || 'Parse failed');
-
     var p = data.parsed;
     scanStatus.textContent = file.name.split('/').pop() + ' · AI scan complete ✓';
 
-    // Auto-populate form fields from AI parse
+    // ── 1. Scalar fields ──────────────────────────────────────
     var f = function(id, val) {
-      if (!val) return;
+      if (!val && val !== 0) return;
       var el = document.getElementById(id);
       if (el) el.value = val;
     };
-    if (p.firstName)  f('p-fname',   p.firstName);
-    if (p.lastName)   f('p-lname',   p.lastName);
-    if (p.phone)      f('p-phone',   p.phone);
-    if (p.city)       f('p-city',    p.city);
-    if (p.summary)    f('p-summary', p.summary);
-    if (p.yearsExp)   f('p-exp',     p.yearsExp);
+    if (p.firstName) f('p-fname',   p.firstName);
+    if (p.lastName)  f('p-lname',   p.lastName);
+    if (p.phone)     f('p-phone',   p.phone);
+    if (p.city)      f('p-city',    p.city);
+    if (p.summary)   f('p-summary', p.summary);
+    if (p.yearsExp)  f('p-exp',     String(p.yearsExp));
 
-    // Populate skills
+    // ── 2. Work history → #exp-list ───────────────────────────
+    if (Array.isArray(p.workHistory) && p.workHistory.length > 0) {
+      var expList = document.getElementById('exp-list');
+      if (expList) {
+        expList.innerHTML = ''; // clear placeholder data
+        p.workHistory.forEach(function(job) {
+          if (!job.title && !job.company) return;
+          expList.appendChild(makeEntryCard(
+            job.title || '',
+            [job.company, job.location].filter(Boolean).join(' · '),
+            job.dates || '',
+            job.description || ''
+          ));
+        });
+        var expCount = document.getElementById('exp-count');
+        if (expCount) expCount.textContent = p.workHistory.length + ' position' + (p.workHistory.length !== 1 ? 's' : '') + ' added';
+      }
+    }
+
+    // ── 3. Education → #edu-list ──────────────────────────────
+    if (Array.isArray(p.education) && p.education.length > 0) {
+      var eduList = document.getElementById('edu-list');
+      if (eduList) {
+        eduList.innerHTML = ''; // clear placeholder data
+        p.education.forEach(function(edu) {
+          if (!edu.qualification && !edu.institution) return;
+          var dates = [edu.year, edu.grade].filter(Boolean).join(' · ');
+          eduList.appendChild(makeEntryCard(
+            edu.qualification || '',
+            edu.institution   || '',
+            dates,
+            ''
+          ));
+        });
+        var eduCount = document.getElementById('edu-count');
+        if (eduCount) eduCount.textContent = p.education.length + ' qualification' + (p.education.length !== 1 ? 's' : '') + ' added';
+      }
+    }
+
+    // ── 4. Skills pills ───────────────────────────────────────
     if (Array.isArray(p.skills) && p.skills.length) {
       p.skills.forEach(function(skill) {
         document.querySelectorAll('.skill-pill').forEach(function(pill) {
@@ -935,36 +1031,32 @@ async function parseResumeWithAI(file) {
       updateSkillCount();
     }
 
-    // Store file metadata and parsed data
     _resumeFile._parsed = p;
 
-    // Show appropriate message based on what was extracted
-    var extracted = [
-      p.firstName ? 'name' : '',
-      p.skills && p.skills.length ? p.skills.length + ' skills' : '',
-      p.summary ? 'summary' : '',
-      p.yearsExp ? 'experience' : '',
-      p.education && p.education.length ? p.education.length + ' education records' : '',
-      p.workHistory && p.workHistory.length ? p.workHistory.length + ' work entries' : '',
+    // ── 5. Result banner ──────────────────────────────────────
+    var counts = [
+      p.firstName                                        ? 'name'                                          : '',
+      p.summary                                          ? 'summary'                                       : '',
+      p.yearsExp                                         ? p.yearsExp + ' yrs exp'                         : '',
+      Array.isArray(p.workHistory) && p.workHistory.length ? p.workHistory.length + ' jobs'               : '',
+      Array.isArray(p.education)   && p.education.length   ? p.education.length   + ' qualifications'     : '',
+      Array.isArray(p.skills)      && p.skills.length      ? p.skills.length      + ' skills'             : '',
     ].filter(Boolean);
-
     var box = document.getElementById('scan-result-box');
     var txt = document.getElementById('scan-result-text');
     box.style.display = 'block';
-
     if (p.note) {
-      // DOCX without mammoth or unsupported file — show helpful message
       box.style.background = '#fff8e1';
-      txt.innerHTML = '⚠️ ' + esc(p.note);
+      txt.textContent = '⚠ ' + p.note;
       showToast(p.note, 'info');
-    } else if (extracted.length === 0) {
+    } else if (!counts.length) {
       box.style.background = '#fff8e1';
-      txt.innerHTML = '⚠️ Could not extract data from this file. Please fill in the fields manually or try a PDF.';
+      txt.textContent = '⚠ Could not extract data. Please fill in manually or try a PDF.';
       showToast('Could not read file. Please fill in manually.', 'info');
     } else {
       box.style.background = '#E1F5EE';
-      txt.innerHTML = '✓ AI extracted: ' + extracted.join(', ') + '. Review and edit below then publish.';
-      showToast('CV scanned! ' + extracted.length + ' fields auto-filled.', 'success');
+      txt.textContent = '✓ Extracted from CV: ' + counts.join(', ') + '. Review all sections below then publish.';
+      showToast('✓ CV scanned — ' + counts.join(', ') + ' populated!', 'success');
     }
     updateStrength();
 
@@ -974,6 +1066,46 @@ async function parseResumeWithAI(file) {
     showToast('AI scan unavailable — please fill in fields manually.', 'info');
   }
 }
+
+// Build a safe entry-card DOM node — no innerHTML with dynamic content
+function makeEntryCard(title, sub, dates, description) {
+  var card = document.createElement('div');
+  card.className = 'entry-card';
+  var header = document.createElement('div');
+  header.className = 'entry-header';
+  var info = document.createElement('div');
+  var titleEl = document.createElement('div');
+  titleEl.className = 'entry-title';
+  titleEl.textContent = title;
+  var subEl = document.createElement('div');
+  subEl.className = 'entry-sub';
+  subEl.textContent = sub;
+  var datesEl = document.createElement('div');
+  datesEl.className = 'entry-dates';
+  datesEl.textContent = dates;
+  info.appendChild(titleEl);
+  info.appendChild(subEl);
+  info.appendChild(datesEl);
+  var actions = document.createElement('div');
+  actions.className = 'entry-actions';
+  var removeBtn = document.createElement('button');
+  removeBtn.className = 'icon-btn danger';
+  removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', function() { card.remove(); updateStrength(); });
+  actions.appendChild(removeBtn);
+  header.appendChild(info);
+  header.appendChild(actions);
+  card.appendChild(header);
+  if (description) {
+    var descEl = document.createElement('div');
+    descEl.className = 'entry-desc';
+    descEl.textContent = description;
+    card.appendChild(descEl);
+  }
+  return card;
+}
+
+
 function removeFile() {
   document.getElementById('resume-file').value = '';
   document.getElementById('uploaded-name').textContent = '—';
