@@ -98,7 +98,15 @@ async function doLogin() {
 
   if (result.ok) {
     var params = new URLSearchParams(window.location.search);
-    window.location.replace(params.get('next') || '/dashboard');
+    var next   = params.get('next');
+    // Route recruiters to recruiter dashboard unless a specific next is set
+    if (!next) {
+      var sess = result.session && result.session.user;
+      var isRec = (sess && sess.role === 'recruiter') ||
+                  (result.isRecruiter === true);
+      next = isRec ? '/recruiter-dashboard' : '/dashboard';
+    }
+    window.location.replace(next);
   } else {
     showErr(result.error || 'Sign in failed. Please check your email and password.');
     btn.disabled    = false;

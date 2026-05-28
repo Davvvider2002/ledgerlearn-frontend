@@ -145,23 +145,33 @@ var ALL_APPS      = [];
 // ── INIT ─────────────────────────────────────────────────────
 (async function init() {
   // Require authentication
-  var user = await window.LLAuth.require();
-  if (!user) return;
+  var sessionUser = await window.LLAuth.require();
+  if (!sessionUser) return;
 
+  // Read full identity — ll_user is the authority (set by saveSession)
   var stored = {};
   try { stored = JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) {}
 
-  // Redirect non-recruiters away
-  if (stored.role && stored.role !== 'recruiter') {
+  // Check role from BOTH sources — role must be recruiter
+  var role = stored.role || (sessionUser && sessionUser.role) || '';
+  if (role && role !== 'recruiter') {
     window.location.replace('/dashboard');
     return;
   }
 
-  USER_ID = user.id || user.sub || '';
+  // If role not set at all, check if recruiter row exists before redirecting
+  if (!role) {
+    // Role missing in localStorage — could be stale session. Try to determine from server.
+    // Allow through with a note — loadPlanStatus will surface the issue.
+    console.warn('[dashboard] role not set in stored session — will check via check-access');
+  }
 
-  // Show company name
-  var company = stored.company || user.user_metadata && user.user_metadata.company || '';
-  if (company) document.getElementById('nav-company').textContent = company;
+  USER_ID = stored.id || (sessionUser && (sessionUser.id || sessionUser.sub)) || '';
+
+  // Company name — from ll_user (most up-to-date after login)
+  var company = stored.company || stored.company_name || sessionUser.company_name || '';
+  var navComp = document.getElementById('nav-company');
+  if (navComp) navComp.textContent = company || 'Your Company';
 
   // Welcome on first login
   var params = new URLSearchParams(window.location.search);

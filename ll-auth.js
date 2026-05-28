@@ -27,16 +27,21 @@
 
   function saveSession(session) {
     if (!session) { localStorage.removeItem(SESSION_KEY); return; }
-    // Calculate absolute expiry
     session.expires_at = Date.now() + ((session.expires_in || 3600) * 1000);
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    // Also update ll_user for compatibility with existing pages
+    // Sync ll_user — include role and company so dashboard knows who this is
     if (session.user) {
       try {
         var u = JSON.parse(localStorage.getItem('ll_user') || '{}');
-        u.name   = session.user.name   || u.name   || '';
-        u.email  = session.user.email  || u.email  || '';
-        u.region = session.user.region || u.region || 'UK';
+        u.name         = session.user.name         || u.name         || '';
+        u.email        = session.user.email        || u.email        || '';
+        u.region       = session.user.region       || u.region       || 'UK';
+        u.role         = session.user.role         || u.role         || 'applicant';
+        u.id           = session.user.id           || u.id           || '';
+        // Recruiter-specific — only overwrite if present in response
+        if (session.user.company_name)   u.company    = session.user.company_name;
+        if (session.user.recruiter_id)   u.recruiter_id = session.user.recruiter_id;
+        if (session.user.recruiter_plan) u.recruiter_plan = session.user.recruiter_plan;
         localStorage.setItem('ll_user', JSON.stringify(u));
       } catch(e) {}
     }
@@ -108,7 +113,7 @@
   // ── Public API ────────────────────────────────────────────
   window.LLAuth = {
 
-    // Register new user
+    // Register new user (learner)
     register: async function(name, email, password, region) {
       const res  = await fetch(AUTH_FN, {
         method:  'POST',
@@ -118,7 +123,10 @@
       const data = await res.json();
       if (data.ok && data.session) {
         saveSession(data.session);
-        await syncProgressOnLogin(email, data.session.access_token);
+        // Only sync progress for learner accounts
+        if (data.session.user && data.session.user.role !== 'recruiter') {
+          await syncProgressOnLogin(email, data.session.access_token);
+        }
       }
       return data;
     },
@@ -133,7 +141,10 @@
       const data = await res.json();
       if (data.ok && data.session) {
         saveSession(data.session);
-        await syncProgressOnLogin(email, data.session.access_token);
+        // Only sync learner progress for non-recruiters
+        if (!data.isRecruiter && data.session.user && data.session.user.role !== 'recruiter') {
+          await syncProgressOnLogin(email, data.session.access_token);
+        }
       }
       return data;
     },

@@ -236,6 +236,7 @@ tr:hover td{background:#fafbfc;}
 
       <div class="sb-section">Users &amp; Certs</div>
       <button class="sb-item" onclick="nav('users',this)"><span class="icon">&#x1F465;</span> All Users</button>
+      <button class="sb-item" onclick="nav('recruiters-list',this)"><span class="icon">&#x1F3E2;</span> Recruiters <span class="sb-badge sb-new">NEW</span></button>
       <button class="sb-item" onclick="nav('certs',this)"><span class="icon">&#x1F3C6;</span> Certificates</button>
       <button class="sb-item" onclick="nav('upgrades',this)"><span class="icon">&#x2B06;&#xFE0F;</span> Upgrades</button>
 
@@ -888,6 +889,37 @@ tr:hover td{background:#fafbfc;}
          JOB BOARD — existing pages
          ═══════════════════════════════════════════════════ -->
 
+
+    <!-- RECRUITERS LIST -->
+    <div class="page-view" id="view-recruiters-list">
+      <div class="page-hdr">
+        <div class="page-hdr-left">
+          <div class="page-tag tag-new">New</div>
+          <div class="page-title">Recruiters</div>
+          <div class="page-sub">All recruiter accounts &middot; Fix broken accounts &middot; Change roles</div>
+        </div>
+        <div class="page-hdr-btns">
+          <button class="btn-sm btn-ghost-sm" onclick="loadRecruitersList()">&#8635; Refresh</button>
+        </div>
+      </div>
+      <div class="notice notice-teal" style="margin-bottom:1rem;">
+        <strong>Use "Fix recruiter" to repair accounts that registered but show no recruiter row in the system.</strong>
+        Use the role dropdown in the Users section to change any user between Applicant, Recruiter, and Admin.
+      </div>
+      <div class="stat-row" id="rec-stats-row">
+        <div class="stat-card"><div class="stat-val" id="rec-total">&#x2014;</div><div class="stat-lbl">Total Recruiters</div></div>
+        <div class="stat-card teal"><div class="stat-val" id="rec-active">&#x2014;</div><div class="stat-lbl">Active Trial</div></div>
+        <div class="stat-card"><div class="stat-val" id="rec-expired">&#x2014;</div><div class="stat-lbl">Expired / Suspended</div></div>
+        <div class="stat-card"><div class="stat-val" id="rec-paid">&#x2014;</div><div class="stat-lbl">Paid Plans</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-hdr">
+          <div class="table-title">All recruiter accounts</div>
+          <input class="tbl-search" placeholder="Search company or email&hellip;" id="rec-search" oninput="filterRecruiters()"/>
+        </div>
+        <div class="tbl-wrap" id="recruiters-list-table"></div>
+      </div>
+    </div>
     <!-- JB OVERVIEW -->
     <div class="page-view" id="view-jb-overview">
       <div class="page-hdr">
@@ -1578,6 +1610,7 @@ function nav(page, btnEl) {
   if (page === 'members')           loadMembers();
   if (page === 'content-lib')       loadContentLib();
   if (page === 'track-mgr')         loadTrackConfig();
+  if (page === 'recruiters-list')  loadRecruitersList();
   if (page === 'jb-overview')       loadJBOverview();
   if (page === 'jb-jobs')           loadJBJobs();
   if (page === 'jb-recruiters')     loadJBRecruiters();
@@ -1730,28 +1763,125 @@ function renderUsersTable(users) {
   var el = document.getElementById('users-table'); if (!el) return;
   var flagMap = {UK:'🇬🇧',NG:'🇳🇬',ZA:'🇿🇦',AU:'🇦🇺',US:'🇺🇸',NZ:'🇳🇿',IE:'🇮🇪',AE:'🇦🇪',CA:'🇨🇦',GH:'🇬🇭',KE:'🇰🇪'};
   el.innerHTML = users.length
-    ? '<table><thead><tr><th>Name</th><th>Email</th><th>Region</th><th>Xero</th><th>QB</th><th>Paid L2</th><th>Registered</th><th>Actions</th></tr></thead><tbody>' +
-      users.map(function(u) {
-        var flag = flagMap[u.region||'']||'🌍';
+    ? '<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Region</th><th>Xero</th><th>QB</th><th>Paid L2</th><th>Registered</th><th>Manage</th></tr></thead><tbody>' +
+      users.map(function(u, idx) {
+        var flag    = flagMap[u.region||'']||'🌍';
         var xeroLvl = u.xero_level||u.level||'—';
-        var qbLvl = u.qb_level||'—';
+        var qbLvl   = u.qb_level||'—';
+        var role    = u.role || 'applicant';
+        var roleBadge = role==='recruiter'
+          ? '<span class="badge badge-blue">Recruiter</span>'
+          : role==='admin'
+          ? '<span class="badge" style="background:var(--navy);color:#fff;">Admin</span>'
+          : '<span class="badge badge-grey">Applicant</span>';
         return '<tr>'
           + '<td><strong>' + esc(u.full_name||u.name||'—') + '</strong></td>'
           + '<td style="font-size:.75rem;color:var(--muted);">' + esc(u.email||'—') + '</td>'
+          + '<td>' + roleBadge + '</td>'
           + '<td>' + flag + ' ' + esc(u.region||'—') + '</td>'
           + '<td><span class="badge badge-green">' + esc(xeroLvl) + '</span></td>'
           + '<td>' + (qbLvl !== '—' ? '<span class="badge badge-blue">' + esc(qbLvl) + '</span>' : '<span class="badge badge-grey">—</span>') + '</td>'
           + '<td>' + (u.paid_l2 ? '<span class="badge badge-green">✓ Yes</span>' : '<span class="badge badge-grey">No</span>') + '</td>'
           + '<td style="font-size:.75rem;color:var(--muted);">' + esc((u.registered_at||'').split('T')[0]) + '</td>'
-          + '<td style="display:flex;gap:4px;"><button class="act-btn" onclick="viewUser(\'' + esc(u.email) + '\')">View</button></td>'
+          + '<td style="display:flex;gap:4px;flex-wrap:wrap;">'
+          + '<select class="act-btn" style="padding:3px 5px;font-size:.68rem;" data-uidx="' + idx + '" onchange="changeUserRole(this)" title="Change role">'
+          + '<option value="applicant"' + (role==='applicant'?' selected':'') + '>Applicant</option>'
+          + '<option value="recruiter"' + (role==='recruiter'?' selected':'') + '>Recruiter</option>'
+          + '<option value="admin"'     + (role==='admin'    ?' selected':'') + '>Admin</option>'
+          + '</select>'
+          + (role==='recruiter'
+            ? '<button class="act-btn" data-uidx="' + idx + '" onclick="fixRecruiterFromBtn(this)" title="Fix recruiter row">Fix</button>'
+            : '')
+          + '</td>'
           + '</tr>';
       }).join('') + '</tbody></table>'
     : '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">No users yet.</div></div>';
 }
 function filterUsers(){ var q=document.getElementById('user-search').value.toLowerCase(); renderUsersTable(ALL_USERS.filter(function(u){ return ((u.full_name||'')+(u.email||'')).toLowerCase().includes(q); })); }
+
+async function changeUserRole(sel) {
+  var idx    = parseInt(sel.getAttribute('data-uidx'));
+  var u      = ALL_USERS[idx] || {};
+  var userId = u.id    || '';
+  var email  = u.email || '';
+  var newRole = sel.value;
+  if (!confirm('Change ' + (email||userId) + ' to role: ' + newRole + '?')) { loadUsers(); return; }
+  var result = await adminFetch('update-user-role', { userId: userId, email: email, newRole: newRole });
+  if (result) { inlineToast('Role updated to ' + newRole + ' for ' + (email||userId)); loadUsers(); }
+  else { inlineToast('Failed to update role', 'error'); loadUsers(); }
+}
+
+async function fixRecruiterFromBtn(btn) {
+  var idx    = parseInt(btn.getAttribute('data-uidx'));
+  var u      = ALL_USERS[idx] || {};
+  fixRecruiterAccount(u.id || '', u.email || '');
+}
+
+async function fixRecruiterAccount(userId, email) {
+  var company = prompt('Company name for ' + (email||userId) + ' (leave blank to keep existing):');
+  var result  = await adminFetch('fix-recruiter-account', { userId: userId, email: email, companyName: company || undefined });
+  if (result) { inlineToast('Recruiter fixed: ' + result.action + ' for ' + (email||userId)); loadUsers(); }
+  else { inlineToast('Fix failed', 'error'); }
+}
+
+async function fixRecruiterByIdx(btn) {
+  var idx = parseInt(btn.getAttribute('data-idx'));
+  var r   = ALL_RECRUITERS_LIST[idx];
+  if (!r) return;
+  fixRecruiterAccount(r.user_id||'', r.email||'');
+}
+
+async function suspendRecruiterByIdx(btn) {
+  var idx = parseInt(btn.getAttribute('data-idx'));
+  var r   = ALL_RECRUITERS_LIST[idx];
+  if (!r) return;
+  if (!confirm('Suspend ' + (r.company_name||r.email) + '?')) return;
+  var result = await adminFetch('suspend-recruiter', { id: r.id });
+  if (result) { inlineToast('Recruiter suspended'); loadRecruitersList(); }
+}
 function viewUser(email){ inlineToast('User: ' + email, 'info'); }
 
 // ── UPGRADES ─────────────────────────────────────────────────
+var ALL_RECRUITERS_LIST = [];
+async function loadRecruitersList() {
+  var result = await adminFetch('list-recruiters');
+  if (!result || !Array.isArray(result.data)) { ALL_RECRUITERS_LIST = []; renderRecruitersList([]); return; }
+  ALL_RECRUITERS_LIST = result.data;
+  // Stats
+  var sv = function(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; };
+  sv('rec-total',   ALL_RECRUITERS_LIST.length);
+  sv('rec-active',  ALL_RECRUITERS_LIST.filter(function(r){ return r.plan==='trial' && r.status==='active'; }).length);
+  sv('rec-expired', ALL_RECRUITERS_LIST.filter(function(r){ return r.plan==='expired' || r.status==='suspended'; }).length);
+  sv('rec-paid',    ALL_RECRUITERS_LIST.filter(function(r){ return ['per_post','monthly'].includes(r.plan); }).length);
+  renderRecruitersList(ALL_RECRUITERS_LIST);
+}
+function renderRecruitersList(recs) {
+  var el = document.getElementById('recruiters-list-table'); if (!el) return;
+  el.innerHTML = recs.length
+    ? '<table><thead><tr><th>Company</th><th>Contact</th><th>Email</th><th>Country</th><th>Plan</th><th>Status</th><th>Trial ends</th><th>Jobs</th><th>Actions</th></tr></thead><tbody>' +
+      recs.map(function(r) {
+        var planBadge = r.plan==='trial'?'badge-gold':['per_post','monthly'].includes(r.plan)?'badge-green':'badge-red';
+        var statusBadge = r.status==='active'?'badge-green':'badge-red';
+        var trialEnd = r.trial_end ? r.trial_end.split('T')[0] : '—';
+        var idx_r = recs.indexOf(r);
+        return '<tr>'
+          + '<td><strong>' + esc(r.company_name||'—') + '</strong></td>'
+          + '<td style="font-size:.78rem;">' + esc(r.contact_name||'—') + '</td>'
+          + '<td style="font-size:.75rem;color:var(--muted);">' + esc(r.email||'—') + '</td>'
+          + '<td>' + esc(r.country||'—') + '</td>'
+          + '<td><span class="badge ' + planBadge + '">' + esc(r.plan||'—') + '</span></td>'
+          + '<td><span class="badge ' + statusBadge + '">' + esc(r.status||'—') + '</span></td>'
+          + '<td style="font-size:.75rem;color:var(--muted);">' + trialEnd + '</td>'
+          + '<td>' + (r.total_posts||0) + '</td>'
+          + '<td style="display:flex;gap:4px;">'
+          + '<button class="act-btn" data-idx="' + idx_r + '" onclick="fixRecruiterByIdx(this)">Fix</button>'
+          + '<button class="act-btn act-btn-red" data-idx="' + idx_r + '" onclick="suspendRecruiterByIdx(this)">Suspend</button>'
+          + '</td></tr>';
+      }).join('') + '</tbody></table>'
+    : '<div class="empty-state"><div class="empty-icon">&#x1F3E2;</div><div class="empty-text">No recruiter accounts yet.</div></div>';
+}
+function filterRecruiters(){ var q=document.getElementById('rec-search').value.toLowerCase(); renderRecruitersList(ALL_RECRUITERS_LIST.filter(function(r){ return ((r.company_name||'')+(r.email||'')).toLowerCase().includes(q); })); }
+
 var ALL_UPGRADES = [];
 async function loadUpgrades() {
   var result = await adminFetch('upgrades');
