@@ -127,6 +127,40 @@ exports.handler = async function(event) {
   const cleanEmail = email ? email.toLowerCase().trim() : '';
 
   // ── LOAD ──────────────────────────────────────────────────
+  // ── LOAD-CERT — fetch certificate from certificates table ──
+  if (action === 'load-cert') {
+    try {
+      const rows = await supaFetch(
+        '/rest/v1/certificates?email=eq.' + encodeURIComponent(cleanEmail) +
+        '&order=created_at.desc&limit=5',
+        'GET'
+      );
+      if (!Array.isArray(rows) || rows.length === 0) {
+        return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, found: false }) };
+      }
+      // Return all certs, most recent first
+      const certs = rows.map(function(c) {
+        return {
+          candidateName:    c.candidate_name    || '',
+          certTitle:        c.cert_title        || '',
+          certLevel:        c.cert_level        || '',
+          certRegion:       c.cert_region       || 'UK',
+          certRegionLabel:  c.cert_region_label || '',
+          certRegionSuffix: c.cert_region_suffix || '',
+          score:            c.score             || 0,
+          certId:           c.cert_id           || '',
+          issueDate:        c.issue_date        || '',
+          level:            c.level             || 'l1',
+        };
+      });
+      return { statusCode: 200, headers: CORS,
+        body: JSON.stringify({ ok: true, found: true, certs, cert: certs[0] }) };
+    } catch(e) {
+      return { statusCode: 500, headers: CORS,
+        body: JSON.stringify({ error: 'load-cert failed: ' + e.message }) };
+    }
+  }
+
   if (action === 'load') {
     try {
       const rows = await supaFetch(
