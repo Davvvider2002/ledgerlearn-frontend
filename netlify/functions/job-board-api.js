@@ -32,6 +32,34 @@ function json(code, body) {
   return { statusCode: code, headers: CORS, body: JSON.stringify(body) };
 }
 
+async function supaRaw(path, method, body, prefer) {
+  // Like supa() but with custom Prefer header
+  const key = SUPA_SVC;
+  if (!SUPA_URL || !key) return null;
+  try {
+    const res = await fetch(SUPA_URL + path, {
+      method: method || 'GET',
+      headers: {
+        'Content-Type':  'application/json',
+        'apikey':        key,
+        'Authorization': 'Bearer ' + key,
+        ...(prefer ? { 'Prefer': prefer } : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (res.status === 204) return {};
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      console.error('[job-board-api] supaRaw error', res.status, path, JSON.stringify(data).slice(0,200));
+      return { error: data };
+    }
+    return data;
+  } catch(e) {
+    console.error('[job-board-api] supaRaw fetch error:', e.message);
+    return null;
+  }
+}
+
 async function supa(path, method, body, useAnon) {
   const key = useAnon ? SUPA_ANO : SUPA_SVC;
   if (!SUPA_URL || !key) return null;
@@ -483,6 +511,7 @@ exports.handler = async function(event) {
         `/rest/v1/applicant_profiles?user_id=eq.${userId}&select=id&limit=1`
       );
 
+      // Map to exact column types in applicant_profiles schema
       const profileRow = {
         user_id:              userId,
         email:                profile.email             || '',
@@ -492,34 +521,40 @@ exports.handler = async function(event) {
         city:                 profile.city              || null,
         country:              profile.country           || 'NG',
         professional_summary: profile.professional_summary || null,
-        years_experience:     profile.years_experience  || null,
+        years_experience:     profile.years_experience  || null,   // TEXT: '1-2','3-5','6-10','10+'
         availability:         profile.availability      || null,
         employment_pref:      profile.employment_pref   || null,
         salary_expectation:   profile.salary_expectation || null,
-        core_skills:          profile.core_skills       || [],
-        education:            profile.education         || [],
-        work_experience:      profile.work_experience   || [],
+        core_skills:          Array.isArray(profile.core_skills) ? profile.core_skills : [],
+        education:            Array.isArray(profile.education)    ? profile.education    : [],
+        work_experience:      Array.isArray(profile.work_experience) ? profile.work_experience : [],
         resume_filename:      profile.resume_filename   || null,
-        resume_scanned:       profile.resume_scanned    || false,
-        resume_scan_data:     profile.resume_scan_data  || null,
+        resume_scanned:       profile.resume_scanned    === true,
         profile_visible:      profile.profile_visible   !== false,
-        profile_complete:     profile.profile_complete  || false,
+        profile_complete:     typeof profile.profile_complete === 'number'
+                                ? profile.profile_complete
+                                : (profile.profile_complete ? 80 : 0),  // INTEGER
         updated_at:           new Date().toISOString(),
       };
 
       if (Array.isArray(existing) && existing.length > 0) {
-        // Update existing row
-        const updated = await supa(
-          `/rest/v1/applicant_profiles?user_id=eq.${userId}`,
+        // Update — PATCH existing row
+        await supa(
+          `/rest/v1/applicant_profiles?user_id=eq.${encodeURIComponent(userId)}`,
           'PATCH',
           profileRow
         );
         return json(200, { ok: true, action: 'updated' });
       } else {
-        // Insert new row
+        // Insert new row — use upsert so concurrent requests don't fail
         profileRow.created_at = new Date().toISOString();
-        const inserted = await supa('/rest/v1/applicant_profiles', 'POST', profileRow);
-        if (!inserted) return json(500, { error: 'Failed to create applicant profile' });
+        const insertRes = await supaRaw('/rest/v1/applicant_profiles', 'POST', profileRow,
+          'resolution=merge-duplicates,return=representation');
+        // insertRes may be {} (204) or array — either is success as long as no error key
+        if (insertRes && insertRes.error) {
+          console.error('[job-board-api] save-applicant-profile insert error:', insertRes.error);
+          return json(500, { error: insertRes.error.message || 'Failed to create applicant profile' });
+        }
         return json(200, { ok: true, action: 'created' });
       }
     }
