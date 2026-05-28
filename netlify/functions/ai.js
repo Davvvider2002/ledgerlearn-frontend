@@ -326,37 +326,36 @@ exports.handler = async function (event) {
         const { fileBase64, fileName, fileType } = body;
         if (!fileBase64) return json(400, { error: 'fileBase64 required' });
 
-        const isPDF  = (fileType || '').includes('pdf') || (fileName || '').match(/\.pdf$/i);
-        const isDocx = (fileType || '').includes('word') || (fileName || '').match(/\.docx?$/i);
+        const isPDF  = (fileType || '').includes('pdf')  || /\.pdf$/i.test(fileName || '');
+        const isDocx = (fileType || '').includes('word') || /\.docx?$/i.test(fileName || '');
 
         let extractedText = '';
+        let parseMethod = 'unknown';
 
         if (isPDF) {
-          // Send PDF to Claude as document
-          const parseRes = await fetch('https://api.anthropic.com/v1/messages', {
-            method:  'POST',
-            headers: {
-              'Content-Type':      'application/json',
-              'x-api-key':         process.env.ANTHROPIC_API_KEY,
-              'anthropic-version': '2023-06-01',
-            },
-            body: JSON.stringify({
-              model:      'claude-haiku-4-5-20251001',
-              max_tokens: 1500,
-              messages: [{
-                role:    'user',
-                content: [
-                  {
-                    type: 'document',
-                    source: {
-                      type:       'base64',
-                      media_type: 'application/pdf',
-                      data:       fileBase64,
-                    }
-                  },
-                  {
-                    type: 'text',
-                    text: `Extract structured data from this resume. Return ONLY valid JSON with these fields:
+          // ── PDF: send to Claude as a document block ──────────
+          parseMethod = 'claude-pdf';
+          try {
+            const parseRes = await fetch('https://api.anthropic.com/v1/messages', {
+              method:  'POST',
+              headers: {
+                'Content-Type':      'application/json',
+                'x-api-key':         process.env.ANTHROPIC_API_KEY,
+                'anthropic-version': '2023-06-01',
+              },
+              body: JSON.stringify({
+                model:      'claude-haiku-4-5-20251001',
+                max_tokens: 1500,
+                messages: [{
+                  role:    'user',
+                  content: [
+                    {
+                      type:   'document',
+                      source: { type: 'base64', media_type: 'application/pdf', data: fileBase64 }
+                    },
+                    {
+                      type: 'text',
+                      text: `Extract structured data from this resume/CV. Return ONLY valid JSON, no markdown fences, no preamble:
 {
   "firstName": "string or null",
   "lastName":  "string or null",
@@ -364,55 +363,121 @@ exports.handler = async function (event) {
   "phone":     "string or null",
   "city":      "string or null",
   "country":   "string or null",
-  "summary":   "2-3 sentence professional summary or null",
+  "summary":   "2-3 sentence professional summary derived from the document, or null",
   "yearsExp":  number or null,
-  "skills":    ["skill1","skill2",...],
+  "skills":    ["only accounting/ERP/software skills like Xero, QuickBooks, Sage, VAT, Payroll, Bank Reconciliation, Excel, IFRS, GAAP etc. No soft skills."],
   "education": [{"qualification":"","institution":"","year":""}],
   "workHistory":[{"title":"","company":"","dates":"","description":""}]
 }
-Skills must be actual accounting/ERP/software skills only (e.g. Xero, QuickBooks, Sage, VAT, Payroll, Bank Reconciliation, Excel, etc). No soft skills. Return null for fields not found.`
-                  }
-                ]
-              }]
-            })
-          });
-          const parseData = await parseRes.json();
-          extractedText = parseData.content?.[0]?.text?.trim() || '';
+Return null for fields not found in the document. Base every field strictly on what is in the document — do not invent.`
+                    }
+                  ]
+                }]
+              })
+            });
+            const d = await parseRes.json();
+            extractedText = d.content?.[0]?.text?.trim() || '';
+          } catch(e) {
+            extractedText = JSON.stringify({ note: 'PDF parse failed: ' + e.message });
+          }
+
+        } else if (isDocx) {
+          // ── DOCX: extract raw text with mammoth, then send to Claude ──
+          parseMethod = 'mammoth-docx';
+          try {
+            const mammoth = require('mammoth');
+            const buffer  = Buffer.from(fileBase64, 'base64');
+            const result  = await mammoth.extractRawText({ buffer });
+            const docText = (result.value || '').slice(0, 6000); // trim to fit context
+
+            if (!docText.trim()) {
+              extractedText = JSON.stringify({
+                note: 'DOCX file appears to be empty or could not be read. Try saving as PDF.'
+              });
+            } else {
+              // Send extracted text to Claude for structuring
+              const parseRes = await fetch('https://api.anthropic.com/v1/messages', {
+                method:  'POST',
+                headers: {
+                  'Content-Type':      'application/json',
+                  'x-api-key':         process.env.ANTHROPIC_API_KEY,
+                  'anthropic-version': '2023-06-01',
+                },
+                body: JSON.stringify({
+                  model:      'claude-haiku-4-5-20251001',
+                  max_tokens: 1500,
+                  messages: [{
+                    role:    'user',
+                    content: `Here is the plain text extracted from a resume/CV document:
+
+${docText}
+
+Extract structured data and return ONLY valid JSON, no markdown fences, no preamble:
+{
+  "firstName": "string or null",
+  "lastName":  "string or null",
+  "email":     "string or null",
+  "phone":     "string or null",
+  "city":      "string or null",
+  "country":   "string or null",
+  "summary":   "2-3 sentence professional summary derived from the text, or null",
+  "yearsExp":  number or null,
+  "skills":    ["only accounting/ERP/software skills — Xero, QuickBooks, Sage, VAT, Payroll, Bank Reconciliation, Excel etc. No soft skills."],
+  "education": [{"qualification":"","institution":"","year":""}],
+  "workHistory":[{"title":"","company":"","dates":"","description":""}]
+}
+Return null for fields not found. Base every field strictly on the text above.`
+                  }]
+                })
+              });
+              const d = await parseRes.json();
+              extractedText = d.content?.[0]?.text?.trim() || '';
+            }
+          } catch(mammothErr) {
+            // mammoth not installed — fall back to Claude text extraction
+            const parseRes = await fetch('https://api.anthropic.com/v1/messages', {
+              method:  'POST',
+              headers: {
+                'Content-Type':      'application/json',
+                'x-api-key':         process.env.ANTHROPIC_API_KEY,
+                'anthropic-version': '2023-06-01',
+              },
+              body: JSON.stringify({
+                model:      'claude-haiku-4-5-20251001',
+                max_tokens: 400,
+                messages: [{
+                  role:    'user',
+                  content: 'Return this JSON only: {"firstName":null,"lastName":null,"email":null,"phone":null,"city":null,"country":null,"summary":null,"yearsExp":null,"skills":[],"education":[],"workHistory":[],"note":"Please save your CV as PDF for best AI parsing results."}'
+                }]
+              })
+            });
+            const d = await parseRes.json();
+            extractedText = d.content?.[0]?.text?.trim() || '{}';
+            parseMethod = 'mammoth-fallback';
+          }
+
         } else {
-          // For DOCX — send base64 as text extraction request
-          const parseRes = await fetch('https://api.anthropic.com/v1/messages', {
-            method:  'POST',
-            headers: {
-              'Content-Type':      'application/json',
-              'x-api-key':         process.env.ANTHROPIC_API_KEY,
-              'anthropic-version': '2023-06-01',
-            },
-            body: JSON.stringify({
-              model:      'claude-haiku-4-5-20251001',
-              max_tokens: 1500,
-              messages: [{
-                role:    'user',
-                content: `I have a Word document resume (base64). The filename is "${fileName}". 
-I cannot share the binary content as text, so please provide an empty structured response.
-Return this JSON: {"firstName":null,"lastName":null,"email":null,"phone":null,"city":null,"country":null,"summary":null,"yearsExp":null,"skills":[],"education":[],"workHistory":[],"note":"DOCX files require server-side text extraction - please save as PDF for AI parsing"}`
-              }]
-            })
+          extractedText = JSON.stringify({
+            note: 'Unsupported file type. Please upload a PDF or Word document (.docx).'
           });
-          const parseData = await parseRes.json();
-          extractedText = parseData.content?.[0]?.text?.trim() || '{}';
         }
 
+        // Parse JSON from Claude's response
         let parsed = {};
         try {
-          const clean = extractedText.replace(/^```(?:json)?\n?/i,'').replace(/\n?```$/,'').trim();
+          const clean = extractedText
+            .replace(/^```(?:json)?\n?/i, '')
+            .replace(/\n?```$/, '')
+            .trim();
           parsed = JSON.parse(clean);
         } catch(e) {
-          parsed = { note: 'Could not parse AI response', raw: extractedText.slice(0, 200) };
+          parsed = { note: 'Could not parse AI response. Please fill in fields manually.' };
         }
 
-        return json(200, { ok: true, parsed, fileName });
+        return json(200, { ok: true, parsed, fileName, parseMethod });
       }
 
+      
       // ── MATCH JOBS — AI-powered job matching for applicant ──
       case 'match-jobs': {
         const { skills: apSkills, summary: apSummary, country: apCountry,

@@ -275,43 +275,51 @@ exports.handler = async function(event) {
       const { jobId, coverNote, screeningAnswers } = body;
       if (!jobId) return json(400, { error: 'jobId required' });
 
-      // Check not already applied
+      // Check not already applied — use SERVICE KEY (bypasses RLS, userId verified from JWT)
       const existing = await supa(
-        `/rest/v1/job_applications?job_id=eq.${jobId}&applicant_id=eq.${userId}&select=id`,
-        'GET', null, true
+        `/rest/v1/job_applications?job_id=eq.${encodeURIComponent(jobId)}&applicant_id=eq.${encodeURIComponent(userId)}&select=id&limit=1`
       );
-      if (existing && existing.length > 0) {
+      if (Array.isArray(existing) && existing.length > 0) {
         return json(409, { error: 'You have already applied for this job' });
       }
 
-      // Get applicant profile snapshot
+      // Get profile + cert snapshots — service key, safe even with no profile yet
       const profiles = await supa(
-        `/rest/v1/applicant_profiles?user_id=eq.${userId}&select=*`,
-        'GET', null, true
+        `/rest/v1/applicant_profiles?user_id=eq.${encodeURIComponent(userId)}&select=*&limit=1`
       );
       const certs = await supa(
-        `/rest/v1/certificates?user_id=eq.${userId}&select=*`,
-        'GET', null, true
+        `/rest/v1/certificates?user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc&select=*`
       );
 
+      const profileSnap  = Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
+      const certSnap     = Array.isArray(certs) ? certs : [];
+
+      // Insert application
       const result = await supa('/rest/v1/job_applications', 'POST', {
-        job_id:             jobId,
-        applicant_id:       userId,
-        profile_snapshot:   profiles?.[0] || null,
-        cert_snapshot:      certs         || [],
-        cover_note:         coverNote     || null,
-        screening_answers:  screeningAnswers || {},
-        status:             'applied',
-        applied_at:         new Date().toISOString(),
+        job_id:            jobId,
+        applicant_id:      userId,
+        profile_snapshot:  profileSnap,
+        cert_snapshot:     certSnap,
+        cover_note:        coverNote     || null,
+        screening_answers: screeningAnswers || {},
+        status:            'applied',
+        applied_at:        new Date().toISOString(),
+        status_updated_at: new Date().toISOString(),
       });
 
-      // Increment application count on job posting
-      const job = await supa(`/rest/v1/job_postings?id=eq.${jobId}&select=application_count`, 'GET');
-      if (job && job[0]) {
-        await supa(`/rest/v1/job_postings?id=eq.${jobId}`, 'PATCH', {
-          application_count: (job[0].application_count || 0) + 1
-        });
-      }
+      if (!result) return json(500, { error: 'Could not submit application. Please try again.' });
+
+      // Increment application_count (non-critical — fire and forget)
+      supa(
+        `/rest/v1/job_postings?id=eq.${encodeURIComponent(jobId)}&select=application_count&limit=1`
+      ).then(function(jobs) {
+        if (Array.isArray(jobs) && jobs[0]) {
+          supa(`/rest/v1/job_postings?id=eq.${encodeURIComponent(jobId)}`, 'PATCH', {
+            application_count: (jobs[0].application_count || 0) + 1,
+            updated_at:        new Date().toISOString(),
+          });
+        }
+      }).catch(function() {});
 
       return json(200, { ok: true, application: Array.isArray(result) ? result[0] : result });
     }
