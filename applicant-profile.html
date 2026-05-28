@@ -937,14 +937,35 @@ async function parseResumeWithAI(file) {
 
     // Store file metadata and parsed data
     _resumeFile._parsed = p;
-    document.getElementById('scan-result-box').style.display = 'block';
-    document.getElementById('scan-result-text').innerHTML =
-      '&#x2713; AI extracted: ' +
-      [p.firstName ? 'name' : '', p.skills && p.skills.length ? p.skills.length + ' skills' : '',
-       p.summary ? 'summary' : '', p.yearsExp ? 'experience' : ''].filter(Boolean).join(', ') +
-      '. Review fields below then publish.';
 
-    showToast('Resume scanned! Fields auto-populated from your CV.', 'success');
+    // Show appropriate message based on what was extracted
+    var extracted = [
+      p.firstName ? 'name' : '',
+      p.skills && p.skills.length ? p.skills.length + ' skills' : '',
+      p.summary ? 'summary' : '',
+      p.yearsExp ? 'experience' : '',
+      p.education && p.education.length ? p.education.length + ' education records' : '',
+      p.workHistory && p.workHistory.length ? p.workHistory.length + ' work entries' : '',
+    ].filter(Boolean);
+
+    var box = document.getElementById('scan-result-box');
+    var txt = document.getElementById('scan-result-text');
+    box.style.display = 'block';
+
+    if (p.note) {
+      // DOCX without mammoth or unsupported file — show helpful message
+      box.style.background = '#fff8e1';
+      txt.innerHTML = '⚠️ ' + esc(p.note);
+      showToast(p.note, 'info');
+    } else if (extracted.length === 0) {
+      box.style.background = '#fff8e1';
+      txt.innerHTML = '⚠️ Could not extract data from this file. Please fill in the fields manually or try a PDF.';
+      showToast('Could not read file. Please fill in manually.', 'info');
+    } else {
+      box.style.background = '#E1F5EE';
+      txt.innerHTML = '✓ AI extracted: ' + extracted.join(', ') + '. Review and edit below then publish.';
+      showToast('CV scanned! ' + extracted.length + ' fields auto-filled.', 'success');
+    }
     updateStrength();
 
   } catch(e) {
