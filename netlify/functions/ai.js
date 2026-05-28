@@ -216,7 +216,7 @@ exports.handler = async function (event) {
                             region === 'NG' ? 'NGN (₦)' : region === 'ZA' ? 'ZAR (R)' :
                             region === 'AE' ? 'AED' : region === 'IE' ? 'EUR (€)' : '£';
         // Pool key includes region so questions stay region-specific
-        const poolKey    = `${module_}:${difficulty}:${region}`;
+        const poolKey    = `${track}:${module_}:${difficulty}:${region}`;
 
         // Check pool
         const pool    = POOL.questions[poolKey] || [];
@@ -320,6 +320,161 @@ exports.handler = async function (event) {
         const hasKey = !!process.env.ANTHROPIC_API_KEY;
         return json(200, { ok:hasKey, status: hasKey ? 'API key SET' : 'ANTHROPIC_API_KEY MISSING — add in Netlify env vars', keyPreview: hasKey ? process.env.ANTHROPIC_API_KEY.slice(0,8)+'...' : 'NOT SET', model:'claude-haiku-4-5-20251001' });
       }
+
+      // ── PARSE RESUME — extract structured data from PDF/DOCX ──
+      case 'parse-resume': {
+        const { fileBase64, fileName, fileType } = body;
+        if (!fileBase64) return json(400, { error: 'fileBase64 required' });
+
+        const isPDF  = (fileType || '').includes('pdf') || (fileName || '').match(/\.pdf$/i);
+        const isDocx = (fileType || '').includes('word') || (fileName || '').match(/\.docx?$/i);
+
+        let extractedText = '';
+
+        if (isPDF) {
+          // Send PDF to Claude as document
+          const parseRes = await fetch('https://api.anthropic.com/v1/messages', {
+            method:  'POST',
+            headers: {
+              'Content-Type':      'application/json',
+              'x-api-key':         process.env.ANTHROPIC_API_KEY,
+              'anthropic-version': '2023-06-01',
+            },
+            body: JSON.stringify({
+              model:      'claude-haiku-4-5-20251001',
+              max_tokens: 1500,
+              messages: [{
+                role:    'user',
+                content: [
+                  {
+                    type: 'document',
+                    source: {
+                      type:       'base64',
+                      media_type: 'application/pdf',
+                      data:       fileBase64,
+                    }
+                  },
+                  {
+                    type: 'text',
+                    text: `Extract structured data from this resume. Return ONLY valid JSON with these fields:
+{
+  "firstName": "string or null",
+  "lastName":  "string or null",
+  "email":     "string or null",
+  "phone":     "string or null",
+  "city":      "string or null",
+  "country":   "string or null",
+  "summary":   "2-3 sentence professional summary or null",
+  "yearsExp":  number or null,
+  "skills":    ["skill1","skill2",...],
+  "education": [{"qualification":"","institution":"","year":""}],
+  "workHistory":[{"title":"","company":"","dates":"","description":""}]
+}
+Skills must be actual accounting/ERP/software skills only (e.g. Xero, QuickBooks, Sage, VAT, Payroll, Bank Reconciliation, Excel, etc). No soft skills. Return null for fields not found.`
+                  }
+                ]
+              }]
+            })
+          });
+          const parseData = await parseRes.json();
+          extractedText = parseData.content?.[0]?.text?.trim() || '';
+        } else {
+          // For DOCX — send base64 as text extraction request
+          const parseRes = await fetch('https://api.anthropic.com/v1/messages', {
+            method:  'POST',
+            headers: {
+              'Content-Type':      'application/json',
+              'x-api-key':         process.env.ANTHROPIC_API_KEY,
+              'anthropic-version': '2023-06-01',
+            },
+            body: JSON.stringify({
+              model:      'claude-haiku-4-5-20251001',
+              max_tokens: 1500,
+              messages: [{
+                role:    'user',
+                content: `I have a Word document resume (base64). The filename is "${fileName}". 
+I cannot share the binary content as text, so please provide an empty structured response.
+Return this JSON: {"firstName":null,"lastName":null,"email":null,"phone":null,"city":null,"country":null,"summary":null,"yearsExp":null,"skills":[],"education":[],"workHistory":[],"note":"DOCX files require server-side text extraction - please save as PDF for AI parsing"}`
+              }]
+            })
+          });
+          const parseData = await parseRes.json();
+          extractedText = parseData.content?.[0]?.text?.trim() || '{}';
+        }
+
+        let parsed = {};
+        try {
+          const clean = extractedText.replace(/^```(?:json)?\n?/i,'').replace(/\n?```$/,'').trim();
+          parsed = JSON.parse(clean);
+        } catch(e) {
+          parsed = { note: 'Could not parse AI response', raw: extractedText.slice(0, 200) };
+        }
+
+        return json(200, { ok: true, parsed, fileName });
+      }
+
+      // ── MATCH JOBS — AI-powered job matching for applicant ──
+      case 'match-jobs': {
+        const { skills: apSkills, summary: apSummary, country: apCountry,
+                certLevel, track } = body;
+
+        // Fetch active jobs from Supabase
+        const SUPA_URL = process.env.SUPABASE_URL || '';
+        const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+        let liveJobs = [];
+        if (SUPA_URL && SUPA_KEY) {
+          try {
+            const jobsRes = await fetch(
+              SUPA_URL + '/rest/v1/job_postings?status=eq.active&select=id,title,company,location,cert_level_required,description&limit=20',
+              { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
+            );
+            liveJobs = await jobsRes.json();
+            if (!Array.isArray(liveJobs)) liveJobs = [];
+          } catch(e) { liveJobs = []; }
+        }
+
+        if (!liveJobs.length) {
+          return json(200, { ok: true, matches: [], note: 'No active jobs to match against' });
+        }
+
+        // Build matching prompt
+        const jobList = liveJobs.slice(0,15).map(function(j,i) {
+          return `${i+1}. ID:${j.id} | Title:${j.title} | Company:${j.company||'—'} | Cert:${j.cert_level_required||'any'} | Desc:${(j.description||'').slice(0,120)}`;
+        }).join('\n');
+
+        const prompt = `You are a job matching engine for accounting professionals.
+
+Applicant profile:
+- Skills: ${(apSkills||[]).join(', ') || 'not specified'}
+- Summary: ${apSummary || 'not provided'}
+- Country: ${apCountry || 'not specified'}
+- Certification level: ${certLevel || 'none'}
+- Track: ${track || 'Xero'}
+
+Active job listings:
+${jobList}
+
+For each job, calculate a match score 0-100 based on:
+- Skills alignment (40%)
+- Certification level match (30%)
+- Location/region relevance (20%)
+- Experience fit (10%)
+
+Return ONLY a JSON array of the top 5 matches:
+[{"id":"job_id","title":"job title","company":"company","location":"location","score":85}]
+Sort by score descending. Only include jobs with score >= 40.`;
+
+        const matchText = await callClaude(prompt, 'claude-haiku-4-5-20251001', 600);
+        let matches = [];
+        try {
+          const clean = matchText.replace(/^```(?:json)?\n?/i,'').replace(/\n?```$/,'').trim();
+          matches = JSON.parse(clean);
+          if (!Array.isArray(matches)) matches = [];
+        } catch(e) { matches = []; }
+
+        return json(200, { ok: true, matches });
+      }
+
       default:
         return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: `Unknown action: ${action}` }) };
     }
@@ -332,11 +487,17 @@ exports.handler = async function (event) {
 
 // ── Generate a batch of questions in one API call ──────────
 async function generateBatch(apiKey, track, module_, difficulty, region="UK", regionLabel="United Kingdom", tax="VAT", taxRate="20%", taxBody="HMRC", currency="£") {
+  // QB-specific terminology guidance for the AI prompt
+  const trackTerminology = track === 'QuickBooks'
+    ? `Use QuickBooks Online terminology throughout: use "Sales Tax" (not VAT for US/CA), "Customer" (not Contact), "Vendor" (not Supplier), "Expense" (not Spend Money), "Company Settings" (not Organisation Settings), "Class Tracking" (not Tracking Categories), "Items & Services" (not Products & Services in Xero context). All UI navigation should reference QuickBooks Online menus.`
+    : `Use Xero terminology throughout: use "Organisation Settings", "Contacts", "Spend Money", "Tracking Categories", "Products & Services". All UI navigation should reference Xero menus.`;
+
   const prompt = `Generate ${POOL.BATCH} different accounting multiple choice questions for ${track} software training.
 Topic: ${module_}. Difficulty: ${difficulty}.
 Region: ${regionLabel}. Use ${currency} for amounts. Tax system: ${tax} at ${taxRate}, administered by ${taxBody}.
 All scenarios, amounts, tax references, and regulatory context must reflect ${regionLabel} practice — not UK-specific unless region is UK.
 Each question must be completely different — different scenarios, different concepts.
+${trackTerminology}
 
 Return ONLY a raw JSON array — no markdown, no backticks:
 [

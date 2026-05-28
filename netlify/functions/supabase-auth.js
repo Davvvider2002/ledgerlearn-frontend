@@ -90,6 +90,80 @@ exports.handler = async function(event) {
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, action: 'registered', message: 'Account created. Please sign in.' }) };
   }
 
+  // ── REGISTER RECRUITER ────────────────────────────────────
+  // Separate path so role is set at user creation, not patched after
+  if (action === 'register-recruiter') {
+    const { companyName, contactName, email: rEmail, password: rPassword,
+            industry, companySize, country: rCountry, companyWebsite, contactPhone } = body;
+    if (!rEmail || !rPassword || !companyName || !contactName) {
+      return { statusCode: 400, headers: CORS,
+        body: JSON.stringify({ error: 'Company name, contact name, email and password required' }) };
+    }
+    if (rPassword.length < 8) {
+      return { statusCode: 400, headers: CORS,
+        body: JSON.stringify({ error: 'Password must be at least 8 characters' }) };
+    }
+
+    // Create user with role=recruiter in metadata — trigger picks this up
+    const r = await supaFetch('/auth/v1/admin/users', 'POST', {
+      email:         rEmail,
+      password:      rPassword,
+      email_confirm: true,
+      user_metadata: {
+        full_name:    contactName,
+        region:       rCountry || 'NG',
+        role:         'recruiter',
+        company_name: companyName,
+      },
+    });
+
+    if (r.data.error || r.status >= 400) {
+      const msg = r.data.message || r.data.error || 'Registration failed';
+      const isDup = msg.toLowerCase().includes('already') || msg.toLowerCase().includes('exists');
+      return { statusCode: 400, headers: CORS,
+        body: JSON.stringify({ error: isDup
+          ? 'An account with this email already exists.'
+          : msg }) };
+    }
+
+    const userId = r.data.id;
+
+    // Sign in immediately
+    const signIn = await supaFetch('/auth/v1/token?grant_type=password', 'POST',
+      { email: rEmail, password: rPassword });
+    if (!signIn.data.access_token) {
+      return { statusCode: 200, headers: CORS,
+        body: JSON.stringify({ ok: true, action: 'registered',
+          message: 'Account created. Please sign in.' }) };
+    }
+
+    // Update profiles.role NOW (trigger may not have run yet — belt and braces)
+    await supaFetch(
+      '/rest/v1/profiles?id=eq.' + userId,
+      'PATCH',
+      { role: 'recruiter', full_name: contactName, region: rCountry || 'NG' },
+      signIn.data.access_token
+    );
+
+    return { statusCode: 200, headers: CORS, body: JSON.stringify({
+      ok: true, action: 'recruiter-registered',
+      userId,
+      session: {
+        access_token:  signIn.data.access_token,
+        refresh_token: signIn.data.refresh_token,
+        expires_in:    signIn.data.expires_in,
+        user: {
+          id:           userId,
+          email:        rEmail,
+          name:         contactName,
+          region:       rCountry || 'NG',
+          role:         'recruiter',
+          company_name: companyName,
+        }
+      }
+    })};
+  }
+
   // ── LOGIN ─────────────────────────────────────────────────
   if (action === 'login') {
     if (!email || !password) {

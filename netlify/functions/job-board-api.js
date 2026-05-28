@@ -369,6 +369,72 @@ exports.handler = async function(event) {
       return json(200, { ok: true, data: Array.isArray(saved) ? saved : [] });
     }
 
+
+    // ── SAVE APPLICANT PROFILE ───────────────────────────────
+    if (action === 'save-applicant-profile') {
+      if (!userId) return json(401, { error: 'Authentication required' });
+      const { profile } = body;
+      if (!profile) return json(400, { error: 'profile required' });
+
+      // Upsert applicant_profiles row keyed on user_id
+      const existing = await supa(
+        `/rest/v1/applicant_profiles?user_id=eq.${userId}&select=id&limit=1`
+      );
+
+      const profileRow = {
+        user_id:              userId,
+        email:                profile.email             || '',
+        first_name:           profile.first_name        || '',
+        last_name:            profile.last_name         || '',
+        phone:                profile.phone             || null,
+        city:                 profile.city              || null,
+        country:              profile.country           || 'NG',
+        professional_summary: profile.professional_summary || null,
+        years_experience:     profile.years_experience  || null,
+        availability:         profile.availability      || null,
+        employment_pref:      profile.employment_pref   || null,
+        salary_expectation:   profile.salary_expectation || null,
+        core_skills:          profile.core_skills       || [],
+        education:            profile.education         || [],
+        work_experience:      profile.work_experience   || [],
+        resume_filename:      profile.resume_filename   || null,
+        resume_scanned:       profile.resume_scanned    || false,
+        resume_scan_data:     profile.resume_scan_data  || null,
+        profile_visible:      profile.profile_visible   !== false,
+        profile_complete:     profile.profile_complete  || false,
+        updated_at:           new Date().toISOString(),
+      };
+
+      if (Array.isArray(existing) && existing.length > 0) {
+        // Update existing row
+        const updated = await supa(
+          `/rest/v1/applicant_profiles?user_id=eq.${userId}`,
+          'PATCH',
+          profileRow
+        );
+        return json(200, { ok: true, action: 'updated' });
+      } else {
+        // Insert new row
+        profileRow.created_at = new Date().toISOString();
+        const inserted = await supa('/rest/v1/applicant_profiles', 'POST', profileRow);
+        if (!inserted) return json(500, { error: 'Failed to create applicant profile' });
+        return json(200, { ok: true, action: 'created' });
+      }
+    }
+
+    // ── GET APPLICANT PROFILE ────────────────────────────────
+    if (action === 'get-applicant-profile') {
+      if (!userId) return json(401, { error: 'Authentication required' });
+      const rows = await supa(
+        `/rest/v1/applicant_profiles?user_id=eq.${userId}&limit=1`
+      );
+      if (!Array.isArray(rows) || !rows.length) {
+        return json(200, { ok: true, profile: null });
+      }
+      return json(200, { ok: true, profile: rows[0] });
+    }
+
+
     return json(400, { error: 'Unknown action: ' + action });
 
   } catch(e) {
