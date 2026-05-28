@@ -569,6 +569,106 @@ exports.handler = async function(event) {
         return json(200, { ok:true });
       }
 
+
+      case 'update-user-role': {
+        // Change a user's role — admin only
+        const { userId, email: uEmail, newRole } = body;
+        if (!newRole || !['applicant','recruiter','admin'].includes(newRole)) {
+          return json(400, { error: 'newRole must be applicant, recruiter, or admin' });
+        }
+        const target = userId ? `id=eq.${userId}` : `email=eq.${encodeURIComponent(uEmail)}`;
+
+        // Update profiles
+        await fetch(`${SUPA_URL}/rest/v1/profiles?${target}`, {
+          method: 'PATCH',
+          headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: newRole }),
+        });
+
+        // If downgrading from recruiter: suspend their recruiter row
+        if (newRole !== 'recruiter') {
+          await fetch(`${SUPA_URL}/rest/v1/recruiters?user_id=eq.${userId}`, {
+            method: 'PATCH',
+            headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'suspended' }),
+          });
+        }
+        await auditLog('update-user-role', (userId || uEmail) + ':' + newRole);
+        return json(200, { ok: true });
+      }
+
+      case 'list-recruiters': {
+        const data = await supa('/rest/v1/recruiters?select=*,profiles(full_name,email,role)&order=created_at.desc&limit=100');
+        return json(200, { ok: true, data: Array.isArray(data) ? data : [] });
+      }
+
+      case 'fix-recruiter-account': {
+        // Called when admin sees a recruiter with missing/broken data
+        // Ensures profiles.role=recruiter, recruiter row exists and is active
+        const { userId: fixUserId, email: fixEmail, companyName } = body;
+        if (!fixUserId && !fixEmail) return json(400, { error: 'userId or email required' });
+
+        // Find the user
+        const filter = fixUserId ? `id=eq.${fixUserId}` : `email=eq.${encodeURIComponent(fixEmail)}`;
+        const profRows = await supa(`/rest/v1/profiles?${filter}&select=id,email,full_name,region&limit=1`);
+        if (!Array.isArray(profRows) || !profRows.length) return json(404, { error: 'User not found' });
+        const prof = profRows[0];
+
+        // Set role=recruiter
+        await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${prof.id}`, {
+          method: 'PATCH',
+          headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'recruiter' }),
+        });
+
+        // Check if recruiter row exists
+        const recRows = await supa(`/rest/v1/recruiters?user_id=eq.${prof.id}&select=id,plan,status&limit=1`);
+        if (!Array.isArray(recRows) || !recRows.length) {
+          // Create it
+          const trialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+          await supa('/rest/v1/recruiters', 'POST', {
+            user_id:      prof.id,
+            email:        prof.email,
+            company_name: companyName || 'Unknown Company',
+            contact_name: prof.full_name || 'Unknown',
+            country:      prof.region || 'NG',
+            plan:         'trial',
+            trial_start:  new Date().toISOString(),
+            trial_end:    trialEnd,
+            status:       'active',
+            verified:     false,
+            total_posts:  0,
+            total_applications: 0,
+          });
+          await auditLog('fix-recruiter-account:created', prof.email);
+          return json(200, { ok: true, action: 'created', userId: prof.id });
+        } else {
+          // Activate existing row if suspended
+          if (recRows[0].status !== 'active') {
+            await fetch(`${SUPA_URL}/rest/v1/recruiters?id=eq.${recRows[0].id}`, {
+              method: 'PATCH',
+              headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: 'active' }),
+            });
+          }
+          await auditLog('fix-recruiter-account:activated', prof.email);
+          return json(200, { ok: true, action: 'activated', userId: prof.id, recruiterId: recRows[0].id });
+        }
+      }
+
+      case 'delete-user': {
+        // Soft delete — suspend account (never hard delete)
+        const { userId: delId } = body;
+        if (!delId) return json(400, { error: 'userId required' });
+        await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${delId}`, {
+          method: 'PATCH',
+          headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'suspended' }),
+        });
+        await auditLog('delete-user', delId);
+        return json(200, { ok: true });
+      }
+
       case 'add-user': {
         const { name, email, region } = body; if (!email) return json(400, { error: 'email required' });
         await supa('/rest/v1/profiles','POST',{full_name:name||'',email,region:region||'UK',registered_at:new Date().toISOString()});
