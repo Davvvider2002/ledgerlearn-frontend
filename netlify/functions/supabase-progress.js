@@ -21,16 +21,32 @@ const SUPA_URL = process.env.SUPABASE_URL;
 const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 async function supaFetch(path, method, body) {
+  // For progress table upserts (POST), use resolution=merge-duplicates
+  // so existing rows are updated, not rejected with a 409 conflict error
+  const isUpsert = method === 'POST' && path.includes('/rest/v1/progress');
+  const headers = {
+    'Content-Type':  'application/json',
+    'apikey':         SUPA_KEY,
+    'Authorization': 'Bearer ' + SUPA_KEY,
+  };
+  if (isUpsert) {
+    headers['Prefer'] = 'resolution=merge-duplicates,return=representation';
+  } else if (method === 'POST') {
+    headers['Prefer'] = 'return=representation';
+  } else if (method === 'PATCH') {
+    headers['Prefer'] = 'return=representation';
+  }
   const res = await fetch(SUPA_URL + path, {
     method,
-    headers: {
-      'Content-Type':  'application/json',
-      'apikey':         SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
-      'Prefer':         method === 'POST' ? 'return=representation' : '',
-    },
+    headers,
     body: body ? JSON.stringify(body) : undefined,
   });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    console.error('[supabase-progress] supaFetch error', res.status, path, errText.slice(0,200));
+    return {};
+  }
+  if (res.status === 204) return {};
   return res.json().catch(() => ({}));
 }
 
@@ -170,8 +186,54 @@ exports.handler = async function(event) {
       if (!Array.isArray(rows) || rows.length === 0) {
         return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, found: false, data: null }) };
       }
+      const prog = toLegacy(rows[0]);
+
+      // If progress table is missing scores, fill from certificates table
+      // This handles the case where cert was saved to certificates but progress wasn't updated
+      const needsScores = prog.l1Score == null && prog.l2Score == null && prog.l3Score == null;
+      if (needsScores || prog.l1Score == null) {
+        try {
+          const certs = await supaFetch(
+            '/rest/v1/certificates?email=eq.' + encodeURIComponent(cleanEmail) +
+            '&order=created_at.desc',
+            'GET'
+          );
+          if (Array.isArray(certs) && certs.length > 0) {
+            certs.forEach(function(cert) {
+              var lvKey = (cert.level || 'l1').replace('l','');
+              var scoreKey = 'l' + lvKey + 'Score';
+              if (!prog[scoreKey] && cert.score) {
+                prog[scoreKey] = cert.score;
+                prog.lastScore = cert.score;
+              }
+              if (!prog.completedLevels) prog.completedLevels = [];
+              if (cert.level && !prog.completedLevels.includes(cert.level)) {
+                prog.completedLevels.push(cert.level);
+              }
+            });
+            // Back-fill the progress table so future loads are fast
+            const backfill = {};
+            if (prog.l1Score) backfill.l1_score = prog.l1Score;
+            if (prog.l2Score) backfill.l2_score = prog.l2Score;
+            if (prog.l3Score) backfill.l3_score = prog.l3Score;
+            if (prog.lastScore) backfill.last_score = prog.lastScore;
+            if (prog.completedLevels) backfill.completed_levels = prog.completedLevels;
+            backfill.updated_at = new Date().toISOString();
+            if (Object.keys(backfill).length > 1) {
+              supaFetch(
+                '/rest/v1/progress?email=eq.' + encodeURIComponent(cleanEmail),
+                'PATCH',
+                backfill
+              ).catch(function() {}); // fire and forget
+            }
+          }
+        } catch(certErr) {
+          // Non-critical — just return what we have from progress table
+        }
+      }
+
       return { statusCode: 200, headers: CORS, body: JSON.stringify({
-        ok: true, found: true, data: toLegacy(rows[0])
+        ok: true, found: true, data: prog
       })};
     } catch(e) {
       return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Load failed: ' + e.message }) };
