@@ -293,19 +293,57 @@ var SAMPLE_JOBS = [
       '<a href="/applicant-profile" style="display:block;text-align:center;background:var(--navy);color:var(--gold);border-radius:8px;padding:9px;font-size:0.8rem;font-weight:700;text-decoration:none;">Edit my profile →</a>';
   }
 
-  ALL_JOBS = SAMPLE_JOBS;
-  renderJobs();
-  updateSidebarCounts();
+  // Show loading state while fetching real jobs
+  document.getElementById('jobs-list').innerHTML =
+    '<div style="text-align:center;padding:3rem;color:var(--muted);">'
+    + '<div style="font-size:1.5rem;margin-bottom:.5rem;">&#x23F3;</div>Loading live roles…</div>';
 
-  // Auto-detect region and pre-set filter
+  // Auto-detect region from user profile and pre-set filter
   try {
     var u = JSON.parse(localStorage.getItem('ll_user') || '{}');
     if (u.region && u.region !== 'GLOBAL') {
       document.getElementById('filter-region').value = u.region;
-      applyFilters();
     }
   } catch(e) {}
+
+  // Load real jobs from Supabase, fall back to SAMPLE_JOBS if API fails
+  await loadLiveJobs();
 })();
+
+// ── Load live jobs from Supabase ──────────────────────────────
+async function loadLiveJobs() {
+  var region = document.getElementById('filter-region').value || '';
+  var level  = document.getElementById('filter-level').value  || '';
+  var search = document.getElementById('search-input').value.trim() || '';
+
+  try {
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'get-jobs', region: region, level: level, search: search }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+
+    if (data.ok && Array.isArray(data.data) && data.data.length > 0) {
+      ALL_JOBS = data.data;
+      var badge = document.getElementById('jobs-live-badge');
+      if (badge) {
+        badge.textContent = data.data.length + ' live role' + (data.data.length !== 1 ? 's' : '');
+        badge.style.display = 'inline-block';
+      }
+    } else {
+      ALL_JOBS = SAMPLE_JOBS;
+    }
+  } catch(e) {
+    console.warn('[jobs] API unavailable, using sample jobs:', e.message);
+    ALL_JOBS = SAMPLE_JOBS;
+  }
+
+  VISIBLE = 9;
+  updateSidebarCounts();
+  renderJobs();
+}
 
 function renderJobs() {
   var q       = document.getElementById('search-input').value.toLowerCase().trim();
@@ -410,7 +448,10 @@ function updateSidebarCounts() {
   if (anyEl) anyEl.textContent = ALL_JOBS.length + ' roles';
 }
 
-function applyFilters() { VISIBLE = 9; renderJobs(); }
+async function applyFilters() {
+  VISIBLE = 9;
+  await loadLiveJobs();
+}
 function loadMore()     { VISIBLE += 9; renderJobs(); }
 function setLevelFilter(level) {
   document.getElementById('filter-level').value = level;
