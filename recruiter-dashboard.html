@@ -136,42 +136,61 @@ tr:hover td{background:#fafbfc;}
 </div>
 
 <script>
-var USER_ID = '';
-var RECRUITER_PLAN = 'trial';
+var USER_ID       = '';
+var RECRUITER_ID  = '';
+var RECRUITER_PLAN = 'loading';
+var ALL_JOBS      = [];
+var ALL_APPS      = [];
 
+// ── INIT ─────────────────────────────────────────────────────
 (async function init() {
+  // Require authentication
   var user = await window.LLAuth.require();
   if (!user) return;
 
   var stored = {};
   try { stored = JSON.parse(localStorage.getItem('ll_user') || '{}'); } catch(e) {}
 
-  // Redirect learners away
+  // Redirect non-recruiters away
   if (stored.role && stored.role !== 'recruiter') {
     window.location.replace('/dashboard');
     return;
   }
 
   USER_ID = user.id || user.sub || '';
-  var company = stored.company || user.name || 'Your company';
-  document.getElementById('nav-company').textContent = company;
 
-  // Welcome message
+  // Show company name
+  var company = stored.company || user.user_metadata && user.user_metadata.company || '';
+  if (company) document.getElementById('nav-company').textContent = company;
+
+  // Welcome on first login
   var params = new URLSearchParams(window.location.search);
   if (params.get('welcome') === '1') {
-    showToast('Welcome! Your 30-day free trial is now active. Post your first role below.', 'success');
+    showToast('Welcome! Your 30-day free trial is now active.', 'success');
+    // Clean URL without reload
+    history.replaceState(null, '', '/recruiter-dashboard');
   }
 
-  // Check access / plan status
-  await loadPlanStatus();
+  // Check plan status — this must complete before showing the dashboard
+  var planOk = await loadPlanStatus();
 
-  // Load data
-  loadJobs();
-  loadApplications();
+  // Load real data regardless of plan (so they can see existing data)
+  await Promise.all([loadJobs(), loadApplications()]);
 })();
 
+// ── PLAN STATUS ───────────────────────────────────────────────
 async function loadPlanStatus() {
-  if (!USER_ID) return;
+  if (!USER_ID) return false;
+
+  var banner = document.getElementById('trial-banner');
+  var daysEl = document.getElementById('trial-days');
+  var textEl = document.getElementById('trial-text');
+  var actEl  = document.getElementById('trial-actions');
+
+  // Show loading state while checking
+  daysEl.textContent = '…';
+  textEl.innerHTML   = '<strong>Checking account status…</strong>';
+
   try {
     var res = await fetch('/.netlify/functions/jobboard-paygate', {
       method: 'POST',
@@ -179,163 +198,314 @@ async function loadPlanStatus() {
       body: JSON.stringify({ action: 'check-access', userId: USER_ID })
     });
     var data = await res.json();
-    var banner = document.getElementById('trial-banner');
-    var daysEl = document.getElementById('trial-days');
-    var textEl = document.getElementById('trial-text');
-    var actEl  = document.getElementById('trial-actions');
 
-    RECRUITER_PLAN = data.plan || 'trial';
+    RECRUITER_PLAN = data.plan || 'unknown';
+
+    if (data.plan === 'error' || !data.ok) {
+      // DB error — show a clear message, NOT "trial expired"
+      banner.classList.remove('expired');
+      banner.style.borderColor = 'rgba(255,200,0,0.4)';
+      daysEl.textContent = '⚠';
+      daysEl.style.fontSize = '1.5rem';
+      daysEl.style.color = '#D4A843';
+      textEl.innerHTML = '<strong>Could not load account status.</strong> '
+        + (data.reason || 'Please refresh the page.');
+      actEl.innerHTML = '<button class="btn-sm btn-gold" onclick="location.reload()">Refresh →</button>';
+      return false;
+    }
+
+    if (data.plan === 'none') {
+      // No recruiter row — registration incomplete
+      banner.classList.add('expired');
+      daysEl.textContent = '!';
+      daysEl.style.color = '#ff8080';
+      textEl.innerHTML = '<strong style="color:#ff8080">Setup incomplete.</strong> '
+        + 'Your recruiter account was not fully created. '
+        + '<a href="/recruiter-register" style="color:var(--gold)">Complete registration →</a>';
+      actEl.innerHTML = '';
+      return false;
+    }
 
     if (data.plan === 'trial' && data.allowed) {
       var days = data.trial_days_left || 0;
-      daysEl.textContent = days + (days === 1 ? ' day' : ' days');
-      textEl.innerHTML = '<strong>Free trial active</strong> — post unlimited roles for the next ' + days + ' day' + (days === 1 ? '' : 's') + '.';
+      banner.classList.remove('expired');
+      daysEl.style.color = 'var(--gold)';
+      daysEl.textContent = days + ' day' + (days === 1 ? '' : 's');
+      textEl.innerHTML = '<strong>Free trial active</strong> — post unlimited roles for the next '
+        + days + ' day' + (days === 1 ? '' : 's') + '. No card needed.';
       actEl.innerHTML = '<a href="/jobs-pricing" class="btn-sm btn-gold">Upgrade plan →</a>';
-    } else if (data.plan === 'monthly' && data.allowed) {
+      return true;
+    }
+
+    if (data.plan === 'monthly' && data.allowed) {
+      banner.classList.remove('expired');
+      daysEl.style.color = 'var(--teal)';
       daysEl.textContent = '∞';
       textEl.innerHTML = '<strong>Monthly plan active</strong> — unlimited job postings.';
-      actEl.innerHTML = '';
-    } else if (data.plan === 'per_post' && data.allowed) {
+      actEl.innerHTML  = '<a href="/jobs-pricing" class="btn-sm btn-gold">Manage plan →</a>';
+      return true;
+    }
+
+    if (data.plan === 'per_post' && data.allowed) {
+      banner.classList.remove('expired');
+      daysEl.style.color = 'var(--gold)';
       daysEl.textContent = '$39';
       textEl.innerHTML = '<strong>Pay per post</strong> — each listing costs $39 for 30 days.';
-      actEl.innerHTML = '<a href="/jobs-pricing" class="btn-sm btn-gold">Switch to monthly →</a>';
-    } else {
-      banner.classList.add('expired');
-      daysEl.style.color = '#ff8080';
-      daysEl.textContent = '0';
-      textEl.innerHTML = '<strong style="color:#ff8080">Trial expired</strong> — upgrade to continue posting roles. Your applications are preserved.';
-      actEl.innerHTML = '<a href="/jobs-pricing" class="btn-sm btn-gold">Upgrade now →</a>';
+      actEl.innerHTML  = '<a href="/jobs-pricing" class="btn-sm btn-gold">Switch to monthly →</a>';
+      return true;
     }
+
+    // Trial expired or suspended — show clearly with upgrade path
+    banner.classList.add('expired');
+    daysEl.style.color = '#ff8080';
+    daysEl.textContent = '0';
+    textEl.innerHTML = '<strong style="color:#ff8080">Trial expired</strong> — '
+      + 'upgrade to continue posting roles. Your applications and data are preserved.';
+    actEl.innerHTML = '<a href="/jobs-pricing" class="btn-sm btn-gold">Upgrade now →</a>';
+    return false;
+
   } catch(e) {
-    console.warn('plan status error:', e);
+    console.error('[dashboard] loadPlanStatus error:', e);
+    banner.classList.remove('expired');
+    daysEl.textContent = '?';
+    textEl.innerHTML = '<strong>Could not check account status.</strong> Check your connection and refresh.';
+    actEl.innerHTML = '<button class="btn-sm btn-gold" onclick="location.reload()">Refresh</button>';
+    return false;
   }
 }
 
+// ── LOAD JOBS (real data only) ────────────────────────────────
 async function loadJobs() {
-  var wrap = document.getElementById('jobs-table-wrap');
-  var token = '';
-  try { token = JSON.parse(localStorage.getItem('ll_session')||'{}').access_token || ''; } catch(e) {}
+  var wrap   = document.getElementById('jobs-table-wrap');
+  var token  = '';
+  try { token = JSON.parse(localStorage.getItem('ll_session') || '{}').access_token || ''; } catch(e) {}
 
-  var dummy = [];
+  wrap.innerHTML = '<div class="empty"><div class="empty-icon" style="font-size:1.5rem;">⏳</div>Loading your listings…</div>';
+
   try {
     var res = await fetch('/.netlify/functions/job-board-api', {
-      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body: JSON.stringify({ action:'get-recruiter-jobs' })
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify({ action: 'get-recruiter-jobs' })
     });
     var data = await res.json();
-    if (data.ok && Array.isArray(data.data) && data.data.length > 0) {
-      // Map Supabase columns to display format
-      dummy = data.data.map(function(j) {
-        return {
-          id: j.id, title: j.title, status: j.status, apps: j.application_count||0,
-          views: j.view_count||0, deadline: j.deadline||'—', level: (j.cert_level_required||'any').toUpperCase()
-        };
-      });
-    } else {
-      // Fallback to sample data if no live jobs yet
-      dummy = [
-        { title:'Xero Bookkeeper — Remote', status:'active', apps:8, views:142, deadline:'2026-06-30', level:'L1+' },
-        { title:'ERP Finance Consultant', status:'active', apps:4, views:89, deadline:'2026-07-15', level:'L2+' },
-      ];
+
+    if (!data.ok) {
+      wrap.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>'
+        + 'Could not load listings: ' + esc(data.error || 'Unknown error')
+        + '<br><button class="act-btn" onclick="loadJobs()" style="margin-top:8px;">Retry</button></div>';
+      resetStats();
+      return;
     }
+
+    ALL_JOBS = Array.isArray(data.data) ? data.data : [];
+    renderJobs(ALL_JOBS);
+
   } catch(e) {
-    dummy = [
-      { title:'Xero Bookkeeper — Remote', status:'active', apps:8, views:142, deadline:'2026-06-30', level:'L1+' },
-      { title:'ERP Finance Consultant', status:'active', apps:4, views:89, deadline:'2026-07-15', level:'L2+' },
-    ];
+    console.error('[dashboard] loadJobs error:', e);
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>'
+      + 'Network error loading listings.'
+      + '<br><button class="act-btn" onclick="loadJobs()" style="margin-top:8px;">Retry</button></div>';
+    resetStats();
   }
-  if (!dummy.length) {
-    wrap.innerHTML = '<div class="empty"><div class="empty-icon">💼</div>No job listings yet.<br><a href="/jobs-post" style="color:var(--gold);font-weight:700;">Post your first role →</a></div>';
+}
+
+function renderJobs(jobs) {
+  var wrap = document.getElementById('jobs-table-wrap');
+
+  // Update stats from real data
+  var active   = jobs.filter(function(j){ return j.status === 'active'; }).length;
+  var views    = jobs.reduce(function(s,j){ return s+(j.view_count||0); }, 0);
+  var appTotal = jobs.reduce(function(s,j){ return s+(j.application_count||0); }, 0);
+
+  document.getElementById('stat-active-jobs').textContent  = active;
+  document.getElementById('stat-total-jobs').textContent   = jobs.length + ' total';
+  document.getElementById('stat-total-views').textContent  = views;
+  document.getElementById('stat-total-apps').textContent   = appTotal;
+  document.getElementById('stat-new-apps').textContent     = '';   // only known server-side
+  document.getElementById('stat-shortlisted').textContent  = '';   // loaded from applications
+
+  if (!jobs.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">💼</div>'
+      + 'No job listings yet.<br>'
+      + '<a href="/jobs-post" style="color:var(--gold);font-weight:700;">Post your first role →</a></div>';
     return;
   }
-  document.getElementById('stat-active-jobs').textContent = dummy.filter(function(j){return j.status==='active';}).length;
-  document.getElementById('stat-total-jobs').textContent = dummy.length + ' total';
-  document.getElementById('stat-total-views').textContent = dummy.reduce(function(s,j){return s+j.views;},0);
-  document.getElementById('stat-total-apps').textContent = dummy.reduce(function(s,j){return s+j.apps;},0);
-  document.getElementById('stat-new-apps').textContent = '3 new today';
-  document.getElementById('stat-shortlisted').textContent = '2';
 
   var levelBadge = function(l) {
-    return '<span class="badge badge-green">' + esc(l) + '</span>';
+    return '<span class="badge badge-green">' + esc((l || 'any').toUpperCase()) + '</span>';
   };
   var statusBadge = function(s) {
     var cls = s==='active'?'badge-green':s==='paused'?'badge-gold':'badge-grey';
-    return '<span class="badge ' + cls + '">' + s + '</span>';
+    return '<span class="badge ' + cls + '">' + esc(s) + '</span>';
   };
 
-  wrap.innerHTML = '<table><thead><tr><th>Role</th><th>Status</th><th>Level</th><th>Applications</th><th>Views</th><th>Deadline</th><th>Actions</th></tr></thead><tbody>' +
-    dummy.map(function(j, i) {
-      return '<tr>' +
-        '<td><strong>' + esc(j.title) + '</strong></td>' +
-        '<td>' + statusBadge(j.status) + '</td>' +
-        '<td>' + levelBadge(j.level) + '</td>' +
-        '<td style="font-weight:700;color:var(--teal);">' + j.apps + '</td>' +
-        '<td>' + j.views + '</td>' +
-        '<td style="font-size:0.78rem;color:var(--muted);">' + esc(j.deadline) + '</td>' +
-        '<td style="display:flex;gap:4px;">' +
-          '<button class="act-btn" onclick="editJob(' + i + ')">Edit</button>' +
-          '<button class="act-btn" onclick="viewApps(' + i + ')">Applications</button>' +
-          '<button class="act-btn danger" onclick="pauseJob(' + i + ')">Pause</button>' +
-        '</td>' +
-      '</tr>';
-    }).join('') +
-  '</tbody></table>';
+  wrap.innerHTML = '<table><thead><tr>'
+    + '<th>Role</th><th>Status</th><th>Level</th>'
+    + '<th>Applications</th><th>Views</th><th>Deadline</th><th>Actions</th>'
+    + '</tr></thead><tbody>'
+    + jobs.map(function(j) {
+      var deadline = j.deadline ? String(j.deadline).split('T')[0] : '—';
+      return '<tr>'
+        + '<td><strong>' + esc(j.title || '—') + '</strong></td>'
+        + '<td>' + statusBadge(j.status) + '</td>'
+        + '<td>' + levelBadge(j.cert_level_required) + '</td>'
+        + '<td style="font-weight:700;color:var(--teal);">' + (j.application_count || 0) + '</td>'
+        + '<td>' + (j.view_count || 0) + '</td>'
+        + '<td style="font-size:0.78rem;color:var(--muted);">' + esc(deadline) + '</td>'
+        + '<td style="display:flex;gap:4px;">'
+        + '<a href="/jobs-post?edit=' + esc(j.id || '') + '" class="act-btn">Edit</a>'
+        + '<a href="/jobs-applications?job=' + esc(j.id || '') + '" class="act-btn">Applications</a>'
+        + '<button class="act-btn danger" onclick="toggleJobStatus(\'' + esc(j.id || '') + '\',\'' + esc(j.status) + '\')">'
+        + (j.status === 'active' ? 'Pause' : 'Activate') + '</button>'
+        + '</td></tr>';
+    }).join('')
+    + '</tbody></table>';
 }
 
-function loadApplications() {
-  var wrap = document.getElementById('apps-table-wrap');
-  var certs = ['L2 ✓ 90%', 'L1 ✓ 85%', 'L1 ✓ 78%', 'L2 ✓ 82%'];
-  var dummy = [
-    { name:'David Ayomidotun',  email:'david@ledgerlearn.pro', job:'Xero Bookkeeper', cert:'L2 ✓ 90%', region:'NG', status:'shortlisted', time:'2h ago' },
-    { name:'Sipho Ndlovu',      email:'sipho.n@outlook.com',  job:'Xero Bookkeeper', cert:'L1 ✓ 85%', region:'ZA', status:'applied',     time:'5h ago' },
-    { name:'Priya Sharma',      email:'priya.s@gmail.com',    job:'ERP Consultant',  cert:'L1 ✓ 92%', region:'UK', status:'applied',     time:'1d ago' },
-  ];
+function resetStats() {
+  ['stat-active-jobs','stat-total-jobs','stat-total-views',
+   'stat-total-apps','stat-new-apps','stat-shortlisted'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.textContent = '—';
+  });
+}
 
-  if (!dummy.length) {
-    wrap.innerHTML = '<div class="empty"><div class="empty-icon">📨</div>No applications yet.</div>';
+// ── LOAD APPLICATIONS (real data only) ───────────────────────
+async function loadApplications() {
+  var wrap  = document.getElementById('apps-table-wrap');
+  var token = '';
+  try { token = JSON.parse(localStorage.getItem('ll_session') || '{}').access_token || ''; } catch(e) {}
+
+  wrap.innerHTML = '<div class="empty"><div class="empty-icon" style="font-size:1.5rem;">⏳</div>Loading applications…</div>';
+
+  try {
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify({ action: 'get-applications' })
+    });
+    var data = await res.json();
+
+    if (!data.ok) {
+      wrap.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>'
+        + 'Could not load applications: ' + esc(data.error || 'Unknown error')
+        + '<br><button class="act-btn" onclick="loadApplications()" style="margin-top:8px;">Retry</button></div>';
+      return;
+    }
+
+    ALL_APPS = Array.isArray(data.data) ? data.data : [];
+
+    // Update shortlisted stat from real data
+    var shortlisted = ALL_APPS.filter(function(a){ return a.status === 'shortlisted'; }).length;
+    var todayStr    = new Date().toISOString().split('T')[0];
+    var newToday    = ALL_APPS.filter(function(a){ return (a.applied_at||'').startsWith(todayStr); }).length;
+    document.getElementById('stat-shortlisted').textContent = shortlisted;
+    document.getElementById('stat-new-apps').textContent    = newToday + ' today';
+
+    renderApplications(ALL_APPS);
+
+  } catch(e) {
+    console.error('[dashboard] loadApplications error:', e);
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>'
+      + 'Network error loading applications.'
+      + '<br><button class="act-btn" onclick="loadApplications()" style="margin-top:8px;">Retry</button></div>';
+  }
+}
+
+function renderApplications(apps) {
+  var wrap = document.getElementById('apps-table-wrap');
+
+  if (!apps.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">📨</div>'
+      + 'No applications yet. '
+      + '<a href="/jobs-post" style="color:var(--gold);font-weight:700;">Post a role to get started →</a></div>';
     return;
   }
 
   var statusBadge = function(s) {
     var cls = s==='shortlisted'?'badge-green':s==='applied'?'badge-gold':s==='rejected'?'badge-red':'badge-grey';
-    return '<span class="badge ' + cls + '">' + s + '</span>';
+    return '<span class="badge ' + cls + '">' + esc(s) + '</span>';
   };
-  var flags = {NG:'🇳🇬',ZA:'🇿🇦',UK:'🇬🇧',AE:'🇦🇪',AU:'🇦🇺',GH:'🇬🇭'};
+  var flags = {NG:'🇳🇬',ZA:'🇿🇦',UK:'🇬🇧',AE:'🇦🇪',AU:'🇦🇺',GH:'🇬🇭',KE:'🇰🇪',US:'🇺🇸',CA:'🇨🇦'};
+  var certBadge = function(snap) {
+    if (!snap) return '<span class="badge badge-grey">—</span>';
+    try {
+      var c = typeof snap === 'string' ? JSON.parse(snap) : snap;
+      if (Array.isArray(c) && c.length > 0) {
+        var top = c.sort(function(a,b){ return (b.level||'').localeCompare(a.level||''); })[0];
+        return '<span class="badge badge-green">' + esc((top.level||'').toUpperCase()) + ' ✓ ' + (top.score||'—') + '%</span>';
+      }
+    } catch(e) {}
+    return '<span class="badge badge-grey">Unverified</span>';
+  };
 
-  wrap.innerHTML = '<table><thead><tr><th>Candidate</th><th>Job applied for</th><th>LedgerLearn cert</th><th>Region</th><th>Status</th><th>Received</th><th>Action</th></tr></thead><tbody>' +
-    dummy.map(function(a, i) {
-      return '<tr>' +
-        '<td><strong>' + esc(a.name) + '</strong><div style="font-size:0.72rem;color:var(--muted);">' + esc(a.email) + '</div></td>' +
-        '<td style="font-size:0.8rem;">' + esc(a.job) + '</td>' +
-        '<td><span class="badge badge-green">' + esc(a.cert) + '</span></td>' +
-        '<td>' + (flags[a.region]||'🌍') + ' ' + esc(a.region) + '</td>' +
-        '<td>' + statusBadge(a.status) + '</td>' +
-        '<td style="font-size:0.75rem;color:var(--muted);">' + esc(a.time) + '</td>' +
-        '<td><button class="act-btn" onclick="viewCandidate(' + i + ')">View profile</button></td>' +
-      '</tr>';
-    }).join('') +
-  '</tbody></table>';
+  wrap.innerHTML = '<table><thead><tr>'
+    + '<th>Candidate</th><th>Job applied for</th><th>LedgerLearn cert</th>'
+    + '<th>Region</th><th>Status</th><th>Received</th><th>Action</th>'
+    + '</tr></thead><tbody>'
+    + apps.map(function(a) {
+      var name  = esc((a.applicant_name  || a.full_name || '—'));
+      var email = esc((a.applicant_email || a.email     || ''));
+      var job   = esc(a.job_title || a.title || '—');
+      var region = (a.region || '').toUpperCase();
+      var appliedAt = (a.applied_at || '').split('T')[0];
+      return '<tr>'
+        + '<td><strong>' + name + '</strong>'
+        + (email ? '<div style="font-size:0.72rem;color:var(--muted);">' + email + '</div>' : '')
+        + '</td>'
+        + '<td style="font-size:0.8rem;">' + job + '</td>'
+        + '<td>' + certBadge(a.cert_snapshot) + '</td>'
+        + '<td>' + (flags[region] || '🌍') + ' ' + (region || '—') + '</td>'
+        + '<td>' + statusBadge(a.status) + '</td>'
+        + '<td style="font-size:0.75rem;color:var(--muted);">' + esc(appliedAt) + '</td>'
+        + '<td><a href="/jobs-applications?application=' + esc(a.id || '') + '" class="act-btn">View profile</a></td>'
+        + '</tr>';
+    }).join('')
+    + '</tbody></table>';
 }
 
-function editJob(i)       { window.location.href = '/jobs-post?edit=' + i; }
-function viewApps(i)      { window.location.href = '/jobs-applications?job=' + i; }
-function pauseJob(i)      { showToast('Job paused. Users can no longer see or apply.','info'); }
-function viewCandidate(i) { window.location.href = '/jobs-applications'; }
+// ── JOB ACTIONS ───────────────────────────────────────────────
+async function toggleJobStatus(jobId, currentStatus) {
+  if (!jobId) return;
+  var newStatus = currentStatus === 'active' ? 'paused' : 'active';
+  var token = '';
+  try { token = JSON.parse(localStorage.getItem('ll_session') || '{}').access_token || ''; } catch(e) {}
+
+  try {
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify({ action: 'update-job-status', jobId, status: newStatus })
+    });
+    var data = await res.json();
+    if (data.ok) {
+      showToast('Job ' + (newStatus === 'active' ? 'activated' : 'paused') + '.', 'success');
+      loadJobs();
+    } else {
+      showToast(data.error || 'Could not update job status.', 'error');
+    }
+  } catch(e) {
+    showToast('Network error. Please try again.', 'error');
+  }
+}
 
 function doLogout() {
   if (window.LLAuth) window.LLAuth.logout();
   else { localStorage.clear(); window.location.href = '/login'; }
 }
 
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 var _toast;
 function showToast(msg, type) {
   if (_toast) _toast.remove();
   _toast = document.createElement('div');
-  _toast.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:' +
-    (type==='success'?'#1DA98A':type==='error'?'#e05555':'#0B1F3A') +
-    ';color:#fff;padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+  _toast.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:'
+    + (type === 'success' ? '#1DA98A' : type === 'error' ? '#e05555' : '#0B1F3A')
+    + ';color:#fff;padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;'
+    + 'max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
   _toast.textContent = msg;
   document.body.appendChild(_toast);
   setTimeout(function(){ if (_toast) _toast.remove(); }, 4000);
