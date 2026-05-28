@@ -345,7 +345,7 @@ exports.handler = async function (event) {
               },
               body: JSON.stringify({
                 model:      'claude-haiku-4-5-20251001',
-                max_tokens: 1500,
+                max_tokens: 2500,
                 messages: [{
                   role:    'user',
                   content: [
@@ -355,21 +355,26 @@ exports.handler = async function (event) {
                     },
                     {
                       type: 'text',
-                      text: `Extract structured data from this resume/CV. Return ONLY valid JSON, no markdown fences, no preamble:
+                      text: `Extract ALL structured data from this resume/CV document. Return ONLY valid JSON with no markdown fences, no preamble, no trailing commas:
 {
-  "firstName": "string or null",
-  "lastName":  "string or null",
-  "email":     "string or null",
-  "phone":     "string or null",
-  "city":      "string or null",
-  "country":   "string or null",
-  "summary":   "2-3 sentence professional summary derived from the document, or null",
-  "yearsExp":  number or null,
-  "skills":    ["only accounting/ERP/software skills like Xero, QuickBooks, Sage, VAT, Payroll, Bank Reconciliation, Excel, IFRS, GAAP etc. No soft skills."],
-  "education": [{"qualification":"","institution":"","year":""}],
-  "workHistory":[{"title":"","company":"","dates":"","description":""}]
+  "firstName":   "first name or null",
+  "lastName":    "last name or null",
+  "email":       "email address or null",
+  "phone":       "phone number or null",
+  "city":        "city only or null",
+  "country":     "country only or null",
+  "summary":     "full professional summary exactly as written in document — do not truncate or shorten",
+  "yearsExp":    "extract the number of years experience as an integer, or null",
+  "skills":      ["ALL technical/software/accounting skills found — include: ERP systems, Xero, QuickBooks, Sage, SAP, Tally, Busy, Excel, VAT, Payroll, Bank Reconciliation, AP/AR, GL Reconciliation, Financial Reporting, IFRS, GAAP, Month-End Close, Journal Entries, Invoice Processing, Audit, Data Analysis, SQL, Power BI, and any software/system mentioned. Include professional certifications as skills: CISA, AAT, ACCA, CPA, CIMA etc."],
+  "education":   [{"qualification":"exact degree/diploma/cert title","institution":"exact institution name","year":"graduation year or date range or In Progress","grade":"grade/class if mentioned or empty string"}],
+  "workHistory": [{"title":"exact job title","company":"exact company name","location":"city and country","dates":"date range exactly as written","description":"key responsibilities in 1-2 sentences"}]
 }
-Return null for fields not found in the document. Base every field strictly on what is in the document — do not invent.`
+CRITICAL RULES:
+- Extract ALL work history entries, not just the most recent
+- Extract ALL education entries including professional certifications listed under Education
+- The summary field must include the COMPLETE text — do not stop at the first paragraph
+- Return arrays even if empty []
+- Base every field strictly on the document — do not invent or assume`
                     }
                   ]
                 }]
@@ -412,21 +417,21 @@ Return null for fields not found in the document. Base every field strictly on w
 
 ${docText}
 
-Extract structured data and return ONLY valid JSON, no markdown fences, no preamble:
+Extract ALL structured data and return ONLY valid JSON, no markdown fences, no preamble:
 {
-  "firstName": "string or null",
-  "lastName":  "string or null",
-  "email":     "string or null",
-  "phone":     "string or null",
-  "city":      "string or null",
-  "country":   "string or null",
-  "summary":   "2-3 sentence professional summary derived from the text, or null",
-  "yearsExp":  number or null,
-  "skills":    ["only accounting/ERP/software skills — Xero, QuickBooks, Sage, VAT, Payroll, Bank Reconciliation, Excel etc. No soft skills."],
-  "education": [{"qualification":"","institution":"","year":""}],
-  "workHistory":[{"title":"","company":"","dates":"","description":""}]
+  "firstName":   "first name or null",
+  "lastName":    "last name or null",
+  "email":       "email address or null",
+  "phone":       "phone number or null",
+  "city":        "city only or null",
+  "country":     "country only or null",
+  "summary":     "complete professional summary as written in document — do not truncate or shorten",
+  "yearsExp":    number_of_years_as_integer_or_null,
+  "skills":      ["ALL technical/accounting/software skills found: ERP systems, Xero, QuickBooks, Sage, Tally, Busy, SAP, Excel, VAT, Payroll, Bank Reconciliation, AP Accounts Payable, AR Accounts Receivable, GL Reconciliation, Financial Reporting, IFRS, GAAP, Month-End Close, Journal Entries, Invoice Processing, Audit Support, Data Analysis, Power BI, SQL — include professional certifications as skills: CISA, AAT, ACCA, CPA, CIMA, ITCP"],
+  "education":   [{"qualification":"exact degree/diploma/cert title","institution":"exact institution name","year":"graduation year or date range or In Progress","grade":"grade or class if mentioned or empty string"}],
+  "workHistory": [{"title":"exact job title","company":"exact company name","location":"city and country","dates":"date range exactly as written","description":"key responsibilities summarised in 1-2 sentences"}]
 }
-Return null for fields not found. Base every field strictly on the text above.`
+CRITICAL: Extract ALL work history entries (not just the most recent). Extract ALL education and certification entries. Include the COMPLETE summary text. Return arrays even if empty [].`
                   }]
                 })
               });
