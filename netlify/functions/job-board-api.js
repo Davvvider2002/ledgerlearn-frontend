@@ -225,23 +225,72 @@ exports.handler = async function(event) {
     // ── GET APPLICATIONS (recruiter inbox) ───────────────────
     if (action === 'get-applications') {
       if (!userId) return json(401, { error: 'Authentication required' });
-      const recs = await supa(`/rest/v1/recruiters?user_id=eq.${userId}&select=id`, 'GET');
+
+      // Get this recruiter's ID
+      const recs = await supa(
+        `/rest/v1/recruiters?user_id=eq.${userId}&select=id&limit=1`, 'GET'
+      );
       if (!recs || !recs.length) return json(404, { error: 'Recruiter account not found' });
       const recruiterId = recs[0].id;
-      const { jobId } = body;
 
       // Get job IDs belonging to this recruiter
-      let jobsPath = `/rest/v1/job_postings?recruiter_id=eq.${recruiterId}&select=id`;
+      const { jobId } = body;
+      let jobsPath = `/rest/v1/job_postings?recruiter_id=eq.${recruiterId}&select=id,title`;
       if (jobId) jobsPath += `&id=eq.${jobId}`;
-      const jobs = await supa(jobsPath, 'GET');
-      if (!jobs || !jobs.length) return json(200, { ok: true, data: [] });
-      const jobIds = jobs.map(function(j){ return j.id; }).join(',');
+      const recruiterJobs = await supa(jobsPath, 'GET');
+      if (!Array.isArray(recruiterJobs) || !recruiterJobs.length) {
+        return json(200, { ok: true, data: [] });
+      }
 
+      // Build map of job_id → job title
+      const jobTitleMap = {};
+      const jobIds = recruiterJobs.map(function(j){ jobTitleMap[j.id]=j.title; return j.id; });
+
+      // Fetch applications for those jobs with applicant profile data
+      // Use job_id=in.(id1,id2,...) Supabase filter
+      const inFilter = jobIds.map(encodeURIComponent).join(',');
       const apps = await supa(
-        `/rest/v1/admin_applications_summary?order=applied_at.desc&limit=100`,
+        `/rest/v1/job_applications?job_id=in.(${inFilter})` +
+        `&select=id,job_id,applicant_id,status,cert_snapshot,applied_at,cover_note` +
+        `&order=applied_at.desc&limit=200`,
         'GET'
       );
-      return json(200, { ok: true, data: Array.isArray(apps) ? apps : [] });
+      if (!Array.isArray(apps) || !apps.length) return json(200, { ok: true, data: [] });
+
+      // Enrich with applicant profile data
+      const applicantIds = [...new Set(apps.map(a => a.applicant_id).filter(Boolean))];
+      let profileMap = {};
+      if (applicantIds.length) {
+        const profiles = await supa(
+          `/rest/v1/applicant_profiles?id=in.(${applicantIds.map(encodeURIComponent).join(',')})` +
+          `&select=id,user_id,email,first_name,last_name,city,country`,
+          'GET'
+        );
+        if (Array.isArray(profiles)) {
+          profiles.forEach(function(p){ profileMap[p.id] = p; });
+        }
+      }
+
+      const enriched = apps.map(function(a) {
+        const prof = profileMap[a.applicant_id] || {};
+        const fullName = [prof.first_name, prof.last_name].filter(Boolean).join(' ') || '—';
+        const region   = (prof.country || '').toUpperCase().slice(0, 2);
+        return {
+          id:             a.id,
+          job_id:         a.job_id,
+          job_title:      jobTitleMap[a.job_id] || '—',
+          applicant_id:   a.applicant_id,
+          applicant_name: fullName,
+          applicant_email:prof.email || '',
+          region:         region,
+          status:         a.status || 'applied',
+          cert_snapshot:  a.cert_snapshot,
+          applied_at:     a.applied_at,
+          cover_note:     a.cover_note,
+        };
+      });
+
+      return json(200, { ok: true, data: enriched });
     }
 
     // ── GET MY APPLICATIONS (applicant) ─────────────────────
@@ -267,6 +316,34 @@ exports.handler = async function(event) {
         status_updated_at: new Date().toISOString()
       });
       return json(200, { ok: true });
+    }
+
+
+    // ── UPDATE JOB STATUS (recruiter pause/activate) ─────────
+    if (action === 'update-job-status') {
+      if (!userId) return json(401, { error: 'Authentication required' });
+      const { jobId, status: newStatus } = body;
+      if (!jobId || !['active','paused','closed'].includes(newStatus)) {
+        return json(400, { error: 'jobId and valid status required' });
+      }
+      // Verify this job belongs to this recruiter
+      const recs = await supa(
+        `/rest/v1/recruiters?user_id=eq.${userId}&select=id&limit=1`, 'GET'
+      );
+      if (!recs || !recs.length) return json(404, { error: 'Recruiter not found' });
+      const recruiterId = recs[0].id;
+      const owns = await supa(
+        `/rest/v1/job_postings?id=eq.${jobId}&recruiter_id=eq.${recruiterId}&select=id&limit=1`,
+        'GET'
+      );
+      if (!Array.isArray(owns) || !owns.length) {
+        return json(403, { error: 'Job not found or does not belong to your account' });
+      }
+      await supa(`/rest/v1/job_postings?id=eq.${jobId}`, 'PATCH', {
+        status:     newStatus,
+        updated_at: new Date().toISOString(),
+      });
+      return json(200, { ok: true, status: newStatus });
     }
 
     // ── SAVE JOB (applicant bookmark) ────────────────────────
