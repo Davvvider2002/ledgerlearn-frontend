@@ -269,6 +269,22 @@
 
 [functions.expire-trials]
   schedule = "0 8 * * *"
+
+[[redirects]]
+  from   = "/quickbooks-dashboard"
+  to     = "/quickbooks-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from   = "/quickbooks-practice"
+  to     = "/quickbooks-practice.html"
+  status = 200
+
+[[redirects]]
+  from   = "/quickbooks-simulations"
+  to     = "/quickbooks-simulations.html"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to   = "/index.html"

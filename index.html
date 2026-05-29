@@ -14,15 +14,13 @@
   --white:#ffffff;--off-white:#f8f7f4;
   --text-dark:#0B1F3A;--text-mid:#3d5a7a;--text-muted:#6b87a3;
   --border:rgba(11,31,58,0.12);
-  --purple:#7c3aed;--purple-pale:rgba(124,58,237,0.08);--purple-border:rgba(124,58,237,0.2);
-  --orange:#ea580c;--orange-pale:rgba(234,88,12,0.08);--orange-border:rgba(234,88,12,0.2);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--text-dark);overflow-x:hidden;}
+body{font-family:\'DM Sans\',sans-serif;background:var(--off-white);color:var(--text-dark);overflow-x:hidden;}
 nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(11,31,58,0.97);backdrop-filter:blur(12px);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(212,168,67,0.2);}
 .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
 .nav-logo-hex{width:30px;height:30px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
-.nav-logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:#fff;letter-spacing:-0.02em;}
+.nav-logo-text{font-family:\'Syne\',sans-serif;font-weight:800;font-size:1rem;color:#fff;letter-spacing:-0.02em;}
 .nav-logo-text span{color:var(--gold);}
 .nav-links{display:flex;align-items:center;gap:1.75rem;list-style:none;}
 .nav-links a{color:rgba(255,255,255,0.65);text-decoration:none;font-size:0.875rem;transition:color .2s;}
@@ -38,7 +36,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(11,31,58,0.9
 .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.25);border-radius:100px;padding:5px 14px;font-size:0.75rem;font-weight:700;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:1.25rem;}
 .hero-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-h1.hero-h1{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,4.5vw,3.4rem);font-weight:800;color:#fff;line-height:1.12;letter-spacing:-0.03em;margin-bottom:1.25rem;}
+h1.hero-h1{font-family:\'Syne\',sans-serif;font-size:clamp(2.2rem,4.5vw,3.4rem);font-weight:800;color:#fff;line-height:1.12;letter-spacing:-0.03em;margin-bottom:1.25rem;}
 h1.hero-h1 .gold{color:var(--gold);}
 h1.hero-h1 .teal{color:var(--teal-light);}
 .hero-sub{font-size:1.05rem;color:rgba(255,255,255,0.6);line-height:1.7;margin-bottom:2rem;max-width:520px;}
@@ -49,15 +47,12 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .btn-secondary{background:rgba(255,255,255,0.08);color:#fff;padding:14px 28px;border-radius:10px;font-size:0.95rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,0.15);transition:all .15s;white-space:nowrap;}
 .btn-secondary:hover{background:rgba(255,255,255,0.14);}
 .hero-trust{display:flex;align-items:center;gap:12px;}
-.hero-independence{margin-top:1rem;font-size:0.72rem;color:rgba(255,255,255,0.3);
-  line-height:1.5;max-width:520px;border-left:2px solid rgba(212,168,67,0.2);
-  padding-left:10px;}
 .hero-trust-checks{display:flex;gap:16px;flex-wrap:wrap;}
 .hero-trust-check{display:flex;align-items:center;gap:5px;color:rgba(255,255,255,0.5);font-size:0.78rem;}
-.hero-trust-check::before{content:"✓";color:var(--teal);font-weight:700;font-size:0.85rem;}
+.hero-trust-check::before{content:"\u2713";color:var(--teal);font-weight:700;font-size:0.85rem;}
 .hero-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:1.75rem;backdrop-filter:blur(8px);}
 .hero-card-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,0.3);margin-bottom:1rem;font-weight:700;}
-.hero-card-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:1.25rem;line-height:1.4;}
+.hero-card-title{font-family:\'Syne\',sans-serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:1.25rem;line-height:1.4;}
 .assess-step{display:flex;align-items:flex-start;gap:12px;margin-bottom:1rem;}
 .assess-num{width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
 .assess-title{font-size:0.88rem;font-weight:700;color:#fff;margin-bottom:2px;}
@@ -69,33 +64,33 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .proof-bar{background:#0d1f36;border-top:1px solid rgba(212,168,67,0.15);border-bottom:1px solid rgba(212,168,67,0.15);padding:1.25rem 2rem;}
 .proof-bar-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;}
 .proof-stat{text-align:center;flex:1;min-width:120px;}
-.proof-num{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--gold);line-height:1;}
+.proof-num{font-family:\'Syne\',sans-serif;font-size:1.6rem;font-weight:800;color:var(--gold);line-height:1;}
 .proof-label{font-size:0.72rem;color:rgba(255,255,255,0.45);margin-top:4px;line-height:1.3;}
 .proof-divider{width:1px;height:36px;background:rgba(255,255,255,0.08);flex-shrink:0;}
 .section-inner{max-width:1100px;margin:0 auto;}
 .section-eyebrow{display:flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:0.75rem;}
 .section-eyebrow::before{content:"";width:28px;height:2px;background:var(--teal);}
-.section-h2{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3vw,2.4rem);font-weight:800;color:var(--navy);line-height:1.2;margin-bottom:1rem;}
+.section-h2{font-family:\'Syne\',sans-serif;font-size:clamp(1.8rem,3vw,2.4rem);font-weight:800;color:var(--navy);line-height:1.2;margin-bottom:1rem;}
 .section-sub{font-size:1rem;color:var(--text-muted);max-width:560px;line-height:1.7;margin-bottom:3rem;}
 .how-section{background:var(--off-white);padding:6rem 2rem;}
 .how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;}
 @media(max-width:700px){.how-grid{grid-template-columns:1fr;}}
 .how-step{position:relative;}
-.how-num{width:64px;height:64px;border-radius:50%;background:var(--navy);border:3px solid var(--gold);font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--gold);display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;}
+.how-num{width:64px;height:64px;border-radius:50%;background:var(--navy);border:3px solid var(--gold);font-family:\'Syne\',sans-serif;font-size:1.4rem;font-weight:800;color:var(--gold);display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;}
 .how-tag{display:inline-block;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:2px 9px;border-radius:100px;margin-bottom:0.75rem;}
 .how-tag-1{background:var(--teal-pale);color:var(--teal);}
 .how-tag-2{background:var(--gold-pale);color:#8a6200;}
 .how-tag-3{background:rgba(11,31,58,0.07);color:var(--navy);}
-.how-title{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;color:var(--navy);margin-bottom:0.625rem;}
+.how-title{font-family:\'Syne\',sans-serif;font-size:1.15rem;font-weight:700;color:var(--navy);margin-bottom:0.625rem;}
 .how-text{font-size:0.88rem;color:var(--text-muted);line-height:1.7;}
 .how-features{margin-top:0.875rem;display:flex;flex-direction:column;gap:4px;}
 .how-feat{font-size:0.8rem;color:var(--text-mid);display:flex;align-items:flex-start;gap:7px;}
-.how-feat::before{content:"✓";color:var(--teal);font-weight:700;font-size:0.78rem;flex-shrink:0;margin-top:1px;}
+.how-feat::before{content:"\u2713";color:var(--teal);font-weight:700;font-size:0.78rem;flex-shrink:0;margin-top:1px;}
 .insight-section{background:var(--navy);padding:6rem 2rem;}
 .insight-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;}
 @media(max-width:768px){.insight-inner{grid-template-columns:1fr;}}
 .insight-eyebrow{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:0.75rem;}
-.insight-h2{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3vw,2.2rem);font-weight:800;color:#fff;line-height:1.2;margin-bottom:1.25rem;}
+.insight-h2{font-family:\'Syne\',sans-serif;font-size:clamp(1.8rem,3vw,2.2rem);font-weight:800;color:#fff;line-height:1.2;margin-bottom:1.25rem;}
 .insight-h2 .gold{color:var(--gold);}
 .insight-sub{font-size:0.95rem;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:1.75rem;}
 .insight-quote{background:rgba(255,255,255,0.05);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:1.25rem 1.5rem;margin-bottom:1.75rem;}
@@ -107,9 +102,9 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .outcome-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1.25rem 1.5rem;}
 .outcome-card.featured{border-color:rgba(212,168,67,0.3);background:rgba(212,168,67,0.05);}
 .outcome-flag{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:0.5rem;}
-.outcome-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:4px;}
+.outcome-title{font-family:\'Syne\',sans-serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:4px;}
 .outcome-meta{font-size:0.8rem;color:rgba(255,255,255,0.4);}
-.outcome-salary{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--teal-light);margin-top:8px;}
+.outcome-salary{font-family:\'Syne\',sans-serif;font-size:1.4rem;font-weight:800;color:var(--teal-light);margin-top:8px;}
 .skills-section{background:var(--white);padding:6rem 2rem;}
 .skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;margin-top:2.5rem;}
 .skill-card{border:1px solid var(--border);border-radius:14px;padding:1.5rem;transition:all .2s;}
@@ -118,17 +113,17 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .skill-icon-teal{background:var(--teal-pale);}
 .skill-icon-gold{background:var(--gold-pale);}
 .skill-icon-navy{background:rgba(11,31,58,0.06);}
-.skill-title{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;color:var(--navy);margin-bottom:0.4rem;}
+.skill-title{font-family:\'Syne\',sans-serif;font-size:0.95rem;font-weight:700;color:var(--navy);margin-bottom:0.4rem;}
 .skill-text{font-size:0.82rem;color:var(--text-muted);line-height:1.6;}
 .skill-badge{display:inline-block;margin-top:0.75rem;font-size:0.68rem;font-weight:700;padding:2px 9px;border-radius:100px;background:var(--teal-pale);color:var(--teal);}
 .journey-section{background:var(--off-white);padding:6rem 2rem;}
 .journey-track{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-top:3rem;}
 .journey-step{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.75rem;transition:all .2s;}
 .journey-step:hover{border-color:var(--gold);box-shadow:0 8px 28px rgba(11,31,58,0.08);}
-.journey-step-num{width:44px;height:44px;border-radius:50%;font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;}
+.journey-step-num{width:44px;height:44px;border-radius:50%;font-family:\'Syne\',sans-serif;font-weight:800;font-size:1.2rem;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;}
 .j1{background:var(--teal);color:#fff;}.j2{background:var(--gold);color:var(--navy);}.j3{background:var(--navy);color:var(--gold);}.j4{background:linear-gradient(135deg,var(--teal),var(--gold));color:#fff;}
 .journey-step-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;color:var(--text-muted);}
-.journey-step-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:0.5rem;}
+.journey-step-title{font-family:\'Syne\',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:0.5rem;}
 .journey-step-text{font-size:0.82rem;color:var(--text-muted);line-height:1.6;margin-bottom:1rem;}
 .journey-step-tag{display:inline-block;font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:100px;}
 .tag-free{background:var(--teal-pale);color:var(--teal);}.tag-paid{background:var(--gold-pale);color:#8a6200;}.tag-erp{background:rgba(11,31,58,0.07);color:var(--navy);}
@@ -139,9 +134,9 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .track-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:16px;overflow:hidden;transition:all .2s;}
 .track-card:hover{border-color:rgba(212,168,67,0.4);transform:translateY(-2px);}
 .track-card-head{display:flex;align-items:center;gap:14px;padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.07);}
-.track-logo{width:48px;height:48px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:800;font-size:0.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.track-logo{width:48px;height:48px;border-radius:10px;font-family:\'Syne\',sans-serif;font-weight:800;font-size:0.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .tl-xero{background:rgba(29,169,138,0.2);color:var(--teal-light);}.tl-qb{background:rgba(212,168,67,0.15);color:var(--gold);}.tl-sage{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);}
-.track-name{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;color:#fff;}.track-tag{font-size:0.72rem;color:rgba(255,255,255,0.35);margin-top:2px;}
+.track-name{font-family:\'Syne\',sans-serif;font-size:0.95rem;font-weight:700;color:#fff;}.track-tag{font-size:0.72rem;color:rgba(255,255,255,0.35);margin-top:2px;}
 .track-body{padding:1.25rem 1.5rem;}.track-levels{display:flex;flex-direction:column;gap:0.625rem;margin-bottom:1.25rem;}.track-level{display:flex;align-items:center;gap:10px;}
 .tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}.tl-free{background:var(--teal);}.tl-paid{background:var(--gold);}.tl-locked{background:rgba(255,255,255,0.15);}
 .track-cta{display:block;text-align:center;background:var(--gold);color:var(--navy);padding:11px;border-radius:8px;font-size:0.85rem;font-weight:700;text-decoration:none;transition:background .15s;}
@@ -153,7 +148,7 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .testimonial-stars{color:var(--gold);font-size:0.9rem;letter-spacing:2px;}
 .testimonial-text{font-size:0.9rem;color:var(--text-mid);line-height:1.7;font-style:italic;flex:1;}
 .testimonial-author{display:flex;align-items:center;gap:10px;}
-.testimonial-av{width:38px;height:38px;border-radius:50%;font-family:'Syne',sans-serif;font-weight:800;font-size:0.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.testimonial-av{width:38px;height:38px;border-radius:50%;font-family:\'Syne\',sans-serif;font-weight:800;font-size:0.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .av-teal{background:var(--teal-pale);color:var(--teal);}.av-gold{background:var(--gold-pale);color:#8a6200;}.av-navy{background:rgba(11,31,58,0.08);color:var(--navy);}
 .testimonial-name{font-size:0.85rem;font-weight:700;color:var(--navy);}.testimonial-role{font-size:0.72rem;color:var(--text-muted);}
 .testimonial-cert{display:inline-block;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:100px;background:var(--teal-pale);color:var(--teal);}
@@ -161,7 +156,7 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .employer-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 400px;gap:4rem;align-items:center;}
 @media(max-width:768px){.employer-inner{grid-template-columns:1fr;gap:2.5rem;}}
 .employer-badge{display:inline-block;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.3);border-radius:100px;font-size:0.7rem;font-weight:700;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;margin-bottom:1rem;}
-.employer-h2{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3vw,2.2rem);font-weight:800;color:#fff;line-height:1.2;margin-bottom:1rem;}
+.employer-h2{font-family:\'Syne\',sans-serif;font-size:clamp(1.8rem,3vw,2.2rem);font-weight:800;color:#fff;line-height:1.2;margin-bottom:1rem;}
 .employer-h2 .gold{color:var(--gold);}
 .employer-sub{font-size:0.95rem;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:2rem;}
 .employer-features{display:flex;flex-direction:column;gap:0.875rem;margin-bottom:2rem;}
@@ -178,7 +173,7 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .employer-card-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.3);font-weight:700;margin-bottom:1.25rem;}
 .employer-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;}
 .employer-stat{background:rgba(255,255,255,0.04);border-radius:10px;padding:1rem;}
-.employer-stat-val{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--gold);line-height:1;}
+.employer-stat-val{font-family:\'Syne\',sans-serif;font-size:1.6rem;font-weight:800;color:var(--gold);line-height:1;}
 .employer-stat-label{font-size:0.7rem;color:rgba(255,255,255,0.35);margin-top:3px;}
 .ecert{font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(29,169,138,0.15);color:var(--teal-light);}
 .jobs-section{background:var(--off-white);padding:5rem 2rem;}
@@ -189,7 +184,7 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .job-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 28px rgba(11,31,58,0.08);}
 .job-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;}
 .job-co-logo{width:36px;height:36px;border-radius:8px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--gold);flex-shrink:0;}
-.job-co-name{font-size:0.75rem;color:var(--text-muted);margin-bottom:2px;}.job-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);}
+.job-co-name{font-size:0.75rem;color:var(--text-muted);margin-bottom:2px;}.job-title{font-family:\'Syne\',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);}
 .job-tags{display:flex;gap:.4rem;flex-wrap:wrap;}
 .job-tag{font-size:0.68rem;font-weight:600;padding:3px 9px;border-radius:100px;}
 .tag-loc{background:rgba(11,31,58,0.06);color:var(--text-mid);}.tag-level{background:rgba(29,169,138,0.1);color:#0F6E56;}.tag-sal{background:rgba(212,168,67,0.12);color:#7a5c00;}
@@ -198,19 +193,19 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .btn-apply{background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:8px 16px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;transition:background .15s;}
 .btn-apply:hover{background:var(--gold-light);}
 .jobs-cta-bar{background:var(--navy);border-radius:14px;padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
-.jobs-cta-text h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:4px;}
+.jobs-cta-text h3{font-family:\'Syne\',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:4px;}
 .jobs-cta-text p{font-size:0.82rem;color:rgba(255,255,255,0.5);}
 .btn-post-job{background:var(--gold);color:var(--navy);border:none;border-radius:9px;padding:12px 24px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;white-space:nowrap;}
 .btn-post-job:hover{background:var(--gold-light);}
 .erp-section{background:var(--off-white);padding:6rem 2rem;}
 .erp-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;}
 @media(max-width:768px){.erp-inner{grid-template-columns:1fr;}}
-.erp-h2{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3vw,2.2rem);font-weight:800;color:var(--navy);line-height:1.2;margin-bottom:1rem;}
+.erp-h2{font-family:\'Syne\',sans-serif;font-size:clamp(1.8rem,3vw,2.2rem);font-weight:800;color:var(--navy);line-height:1.2;margin-bottom:1rem;}
 .erp-h2 .gold{color:var(--gold);}
 .erp-sub{font-size:0.95rem;color:var(--text-muted);line-height:1.7;margin-bottom:1.75rem;}
 .erp-steps{display:flex;flex-direction:column;gap:1rem;}
 .erp-step{display:flex;align-items:flex-start;gap:14px;padding:1rem 1.25rem;border-radius:12px;background:#fff;border:1px solid var(--border);}
-.erp-step-dot{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:0.85rem;}
+.erp-step-dot{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:\'Syne\',sans-serif;font-weight:800;font-size:0.85rem;}
 .ed1{background:var(--teal-pale);color:var(--teal);}.ed2{background:var(--gold-pale);color:#8a6200;}.ed3{background:rgba(11,31,58,0.07);color:var(--navy);}
 .erp-step-title{font-size:0.9rem;font-weight:700;color:var(--navy);margin-bottom:3px;}.erp-step-text{font-size:0.78rem;color:var(--text-muted);line-height:1.5;}
 .erp-income{background:var(--navy);border-radius:16px;padding:2rem;}
@@ -218,12 +213,12 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .erp-income-row{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.07);}
 .erp-income-row:last-child{border-bottom:none;}
 .erp-income-role{font-size:0.85rem;color:rgba(255,255,255,0.65);}
-.erp-income-sal{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--gold);}
+.erp-income-sal{font-family:\'Syne\',sans-serif;font-size:1rem;font-weight:800;color:var(--gold);}
 .erp-income-note{font-size:0.68rem;color:rgba(255,255,255,0.25);margin-top:1rem;line-height:1.5;}
 .cta-section{background:var(--navy);padding:7rem 2rem;background-image:radial-gradient(ellipse at 70% 50%,rgba(29,169,138,0.1) 0%,transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(212,168,67,0.07) 0%,transparent 50%);}
 .cta-inner{max-width:700px;margin:0 auto;text-align:center;}
 .cta-eyebrow{display:inline-block;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.3);border-radius:100px;font-size:0.7rem;font-weight:700;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;margin-bottom:1.25rem;}
-.cta-h2{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#fff;line-height:1.15;letter-spacing:-0.02em;margin-bottom:1rem;}
+.cta-h2{font-family:\'Syne\',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#fff;line-height:1.15;letter-spacing:-0.02em;margin-bottom:1rem;}
 .cta-h2 .gold{color:var(--gold);}
 .cta-sub{font-size:1rem;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:2.5rem;}
 .cta-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem;}
@@ -233,20 +228,10 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .btn-cta-secondary:hover{background:rgba(255,255,255,0.14);}
 .cta-reassure{display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;}
 .cta-check{font-size:0.78rem;color:rgba(255,255,255,0.35);display:flex;align-items:center;gap:5px;}
-.cta-check::before{content:"✓";color:var(--teal);font-weight:700;}
-.legal-strip{background:#060f1e;border-top:1px solid rgba(255,255,255,0.06);
-  border-bottom:1px solid rgba(255,255,255,0.05);padding:2rem 2rem;}
-.legal-strip-inner{max-width:1100px;margin:0 auto;display:flex;gap:3rem;
-  align-items:flex-start;flex-wrap:wrap;}
-.legal-strip-left,.legal-strip-right{flex:1;min-width:280px;}
-.legal-strip-title{font-size:0.65rem;font-weight:700;text-transform:uppercase;
-  letter-spacing:.1em;color:rgba(255,255,255,0.25);margin-bottom:0.5rem;}
-.legal-strip-text{font-size:0.72rem;color:rgba(255,255,255,0.2);line-height:1.65;}
-.legal-strip-divider{width:1px;background:rgba(255,255,255,0.07);
-  align-self:stretch;flex-shrink:0;}
+.cta-check::before{content:"\u2713";color:var(--teal);font-weight:700;}
 footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);padding:2.5rem 2rem;}
 .footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;}
-.footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:#fff;}
+.footer-logo{font-family:\'Syne\',sans-serif;font-weight:800;font-size:1rem;color:#fff;}
 .footer-logo span{color:var(--gold);}
 .footer-links{display:flex;gap:1.5rem;list-style:none;flex-wrap:wrap;}
 .footer-links a{color:rgba(255,255,255,0.4);text-decoration:none;font-size:0.82rem;transition:color .15s;}
@@ -336,11 +321,11 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
   <ul class="nav-links">
     <li><a href="/learn">Courses</a></li>
     <li><a href="/test">Certifications</a></li>
-    <li><a href="/marketplace" class="nav-link-market">Marketplace <span class="nav-new-pill">NEW</span></a></li>
     <li><a href="/jobs">Jobs</a></li>
-    <li><a href="/academy" class="nav-link-academy">Academy</a></li>
+    <li><a href="/partners">Partners</a></li>
+    <li><a href="/faq">FAQ</a></li>
     <li><a href="#tracks">Pricing</a></li>
-    <li><a href="/test" class="nav-cta" id="nav-cta-btn">Start free &rarr;</a></li>
+    <li><a href="/placement" class="nav-cta">Find my starting point &rarr;</a></li>
   </ul>
   <div id="nav-user-slot"></div>
 </nav>
@@ -356,19 +341,14 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
       <div class="hero-btns">
         <a href="/test" class="btn-primary">Test your skills free &rarr;</a>
         <a href="#how" class="btn-secondary">See how it works</a>
+      <a href="/quickbooks" class="btn-primary" style="background:#ea580c;border-color:#ea580c;font-size:.88rem">Start QuickBooks L1 &mdash; free &rarr;</a>
       </div>
       <div class="hero-trust">
-        <div class="hero-ecosystem-label">One platform. Four pathways.</div>
-        <div class="hero-ecosystem-pills">
-          <span class="eco-pill eco-cert">&#x1F3C6; Certifications</span>
-          <span class="eco-pill eco-market">&#x1F6D2; Marketplace</span>
-          <span class="eco-pill eco-jobs">&#x1F4BC; Jobs Board</span>
-          <span class="eco-pill eco-academy">&#x1F393; ERP Academy</span>
+        <div class="hero-trust-checks">
+          <span class="hero-trust-check">No credit card</span>
+          <span class="hero-trust-check">L1 always free</span>
+          <span class="hero-trust-check">Certificate in minutes</span>
         </div>
-      </div>
-      <div class="hero-independence">
-        Independent assessment platform &mdash; not affiliated with Xero, Intuit or Sage.
-        Our certificates validate your practical skills. They are separate from any vendor certification.
       </div>
     </div>
     <div class="hero-card">
@@ -662,279 +642,81 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
           <a href="/learn" class="track-cta">Start Xero L1 &mdash; free &rarr;</a>
         </div>
       </div>
-      <div class="track-card">
-        <div class="track-card-head"><div class="track-logo tl-qb">QB</div><div><div class="track-name">QuickBooks Certification</div><div class="track-tag">3 levels &middot; US, UK, CA, AU</div></div></div>
+      <div class="track-card" id="track-qb">
+        <div class="track-card-head" style="background:linear-gradient(135deg,rgba(67,20,7,.5),rgba(124,45,18,.4))">
+          <div class="track-logo tl-qb">QB</div>
+          <div>
+            <div class="track-name">QuickBooks Online</div>
+            <div class="track-tag">US &middot; Canada &middot; Philippines &middot; South Africa</div>
+          </div>
+          <span style="margin-left:auto;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;background:rgba(234,88,12,.2);color:#fdba74;border:1px solid rgba(234,88,12,.35)">Live</span>
+        </div>
         <div class="track-body">
           <div class="track-levels">
-            <div class="track-level"><div class="tl-dot tl-free"></div><span style="font-size:0.82rem;flex:1;color:rgba(255,255,255,0.75)">L1 Associate &mdash; free</span><span style="font-size:0.72rem;color:var(--teal);font-weight:700">Free</span></div>
-            <div class="track-level"><div class="tl-dot tl-locked"></div><span style="font-size:0.82rem;flex:1;color:var(--text-muted)">L2 Professional &mdash; coming soon</span></div>
-            <div class="track-level"><div class="tl-dot tl-locked"></div><span style="font-size:0.82rem;flex:1;color:var(--text-muted)">L3 Advisor &mdash; coming soon</span></div>
+            <div class="track-level">
+              <div class="tl-dot tl-free"></div>
+              <span style="font-size:.82rem;flex:1;color:rgba(255,255,255,.85)">L1 &mdash; QB Associate &middot; 6 modules</span>
+              <span style="font-size:.72rem;color:var(--teal);font-weight:700">Free</span>
+            </div>
+            <div class="track-level">
+              <div class="tl-dot tl-paid"></div>
+              <span style="font-size:.82rem;flex:1;color:rgba(255,255,255,.75)">L2 &mdash; QB Professional</span>
+              <span style="font-size:.72rem;color:var(--gold);font-weight:700">$49</span>
+            </div>
+            <div class="track-level" style="opacity:.55">
+              <div class="tl-dot tl-locked"></div>
+              <span style="font-size:.82rem;flex:1;color:var(--text-muted)">L3 &mdash; QB Advisor (free after L2)</span>
+            </div>
           </div>
-          <a href="/quickbooks" class="track-cta track-cta-ghost">Join QuickBooks waitlist &rarr;</a>
+          <div style="display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap">
+            <a href="/quickbooks" class="track-cta" style="background:#ea580c;border-color:#ea580c;flex:1;text-align:center;min-width:140px">Start QB L1 &mdash; free &rarr;</a>
+            <a href="/quickbooks-simulations" class="track-cta track-cta-ghost" style="flex:none">Practice first</a>
+          </div>
         </div>
       </div>
-      <div class="track-card">
-        <div class="track-card-head"><div class="track-logo tl-sage">SGE</div><div><div class="track-name">Sage Certification</div><div class="track-tag">Coming 2026 &middot; UK, SA, IE</div></div></div>
+      <div class="track-card" id="track-sage" style="opacity:.75">
+        <div class="track-card-head" style="background:linear-gradient(135deg,rgba(26,46,26,.7),rgba(45,74,45,.5))">
+          <div class="track-logo tl-sage">SGE</div>
+          <div>
+            <div class="track-name">Sage</div>
+            <div class="track-tag">UK &middot; Ireland &middot; South Africa</div>
+          </div>
+          <span style="margin-left:auto;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15)">Soon</span>
+        </div>
         <div class="track-body">
-          <div class="track-levels">
-            <div class="track-level"><div class="tl-dot tl-locked"></div><span style="font-size:0.82rem;flex:1;color:var(--text-muted)">L1&ndash;L3 in development</span></div>
+          <div style="padding:16px 0;text-align:center">
+            <div style="font-size:2rem;margin-bottom:10px">&#x1F6A7;</div>
+            <div style="font-size:.88rem;font-weight:600;color:#fff;margin-bottom:6px">Sage track in development</div>
+            <div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:16px;line-height:1.5">L1 &middot; L2 &middot; L3 launching 2026. Sage 50, Sage 200, and Sage Accounting.</div>
+            <form id="sage-waitlist-form" onsubmit="joinSageWaitlist(event)" style="display:flex;flex-direction:column;gap:8px;max-width:260px;margin:0 auto">
+              <input type="email" id="sage-email" placeholder="Your email address" required style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;padding:9px 12px;border-radius:7px;font-size:.83rem;outline:none;font-family:inherit">
+              <button type="submit" style="background:#22c55e;color:#fff;border:none;padding:9px;border-radius:7px;font-size:.83rem;font-weight:600;cursor:pointer;font-family:inherit">Notify me when Sage launches &rarr;</button>
+            </form>
+            <div id="sage-waitlist-success" style="display:none;color:#86efac;font-size:.83rem;margin-top:10px">&#x2713; You're on the list!</div>
           </div>
-          <a href="#cta" class="track-cta track-cta-ghost">Get notified &rarr;</a>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+function joinSageWaitlist(e) {
+  e.preventDefault();
+  var email = document.getElementById('sage-email').value.trim();
+  if (!email) return;
+  localStorage.setItem('ll_sage_waitlist', email);
+  fetch('/.netlify/functions/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, listId: 4, source: 'sage-waitlist' })
+  }).catch(function(){});
+  document.getElementById('sage-waitlist-form').style.display = 'none';
+  document.getElementById('sage-waitlist-success').style.display = 'block';
+}
 
-<section class="testimonials-section" id="testimonials">
-  <div class="section-inner">
-    <div class="section-eyebrow">Candidate outcomes</div>
-    <h2 class="section-h2">Real people. Real results.</h2>
-    <p class="section-sub">From their first free assessment to their first certified role &mdash; here is what happens when you prove your skills instead of just listing them.</p>
-    <div class="testimonials-grid">
-      <div class="testimonial-card">
-        <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        <div class="testimonial-text">&ldquo;I had five years of Xero experience but kept losing roles to candidates from bigger firms. After getting my L2, I had three interview requests in two weeks. The certificate made the difference &mdash; employers could verify my score before we even spoke.&rdquo;</div>
-        <div class="testimonial-author">
-          <div class="testimonial-av av-teal">CO</div>
-          <div><div class="testimonial-name">Chidinma O.</div><div class="testimonial-role">Virtual Bookkeeper &middot; Lagos, Nigeria</div><span class="testimonial-cert">Xero L2 Certified &middot; 87%</span></div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        <div class="testimonial-text">&ldquo;The simulations are genuinely harder than most jobs I have worked in &mdash; which means when you pass, you actually know your stuff. I got my L3 and immediately started quoting higher rates to clients. Worth every cent.&rdquo;</div>
-        <div class="testimonial-author">
-          <div class="testimonial-av av-gold">TN</div>
-          <div><div class="testimonial-name">Thandeka N.</div><div class="testimonial-role">Cloud Accountant &middot; Cape Town, SA</div><span class="testimonial-cert">Xero L3 Certified &middot; 91%</span></div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        <div class="testimonial-text">&ldquo;I was a bookkeeper earning R18,000 a month. Six months after getting my L2 and L3 I am consulting on ERP implementations at R75,000 a month. This platform showed me what was possible and gave me the credentials to get there.&rdquo;</div>
-        <div class="testimonial-author">
-          <div class="testimonial-av av-navy">KM</div>
-          <div><div class="testimonial-name">Kagiso M.</div><div class="testimonial-role">ERP Consultant &middot; Johannesburg, SA</div><span class="testimonial-cert">Xero L3 + ERP &middot; 94%</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="employer-section" id="employers">
-  <div class="employer-inner">
-    <div>
-      <div class="employer-badge">For employers &amp; hiring managers</div>
-      <h2 class="employer-h2">Hire <span class="gold">pre-vetted</span><br>certified bookkeepers.</h2>
-      <p class="employer-sub">Every LedgerLearn candidate has passed a practical software assessment &mdash; not just watched a video. You see their score, their level, and their verified certificate ID before the first conversation.</p>
-      <div class="employer-features">
-        <div class="employer-feat"><div class="employer-feat-icon">&#x2713;</div><div><div class="employer-feat-title">Verified skill scores</div><div class="employer-feat-text">Every applicant&rsquo;s certificate includes a score you can verify at ledgerlearn.pro/verify &mdash; no more guessing from CV claims.</div></div></div>
-        <div class="employer-feat"><div class="employer-feat-icon">&#x1F30D;</div><div><div class="employer-feat-title">Region-specific talent</div><div class="employer-feat-text">Candidates certified in your region&rsquo;s tax and compliance rules &mdash; FIRS, SARS, HMRC MTD, GST. No retraining required.</div></div></div>
-        <div class="employer-feat"><div class="employer-feat-icon">&#x26A1;</div><div><div class="employer-feat-title">30-day free trial</div><div class="employer-feat-text">Post unlimited roles during your trial. Applications land in your inbox with cert level, score, and full candidate profile attached.</div></div></div>
-      </div>
-      <div class="employer-btns">
-        <a href="/recruiter-register" class="btn-employer-primary">Post a role free &mdash; 30 days &rarr;</a>
-        <a href="/jobs-pricing" class="btn-employer-ghost">View recruiter pricing</a>
-      </div>
-    </div>
-    <div class="employer-card">
-      <div class="employer-card-title">Sample applicant profile</div>
-      <div class="employer-stat-row">
-        <div class="employer-stat"><div class="employer-stat-val">91%</div><div class="employer-stat-label">Xero L3 score</div></div>
-        <div class="employer-stat"><div class="employer-stat-val">8yr</div><div class="employer-stat-label">Experience</div></div>
-      </div>
-      <div style="font-size:0.72rem;color:rgba(255,255,255,0.3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Verified certifications</div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;"><span class="ecert">Xero L1 &#x2713; 88%</span><span class="ecert">Xero L2 &#x2713; 90%</span><span class="ecert">Xero L3 &#x2713; 91%</span></div>
-      <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:1rem;"></div>
-      <div style="font-size:0.72rem;color:rgba(255,255,255,0.3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Skills verified</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:1rem;">
-        <span style="font-size:0.68rem;padding:2px 7px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);">Bank reconciliation</span>
-        <span style="font-size:0.68rem;padding:2px 7px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);">VAT returns</span>
-        <span style="font-size:0.68rem;padding:2px 7px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);">Payroll</span>
-        <span style="font-size:0.68rem;padding:2px 7px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);">Management accounts</span>
-        <span style="font-size:0.68rem;padding:2px 7px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);">MTD (HMRC)</span>
-        <span style="font-size:0.68rem;padding:2px 7px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);">Dext / Hubdoc</span>
-      </div>
-      <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:1rem;"></div>
-      <a href="/recruiter-register" style="display:block;text-align:center;background:var(--gold);color:var(--navy);padding:11px;border-radius:8px;font-weight:700;font-size:0.85rem;text-decoration:none;">Access the full talent pool &rarr;</a>
-    </div>
-  </div>
-</section>
-
-<section class="jobs-section" id="jobs-section">
-  <div class="jobs-inner">
-    <div class="jobs-header">
-      <div>
-        <div class="section-eyebrow">Certified jobs board</div>
-        <h2 class="section-h2" style="font-size:clamp(1.5rem,2.5vw,2rem);margin-bottom:0.5rem;">Land your first <span style="color:var(--gold)">certified role</span></h2>
-        <p style="font-size:0.9rem;color:var(--text-muted);max-width:480px;line-height:1.6;">Accounting and bookkeeping roles matched to your LedgerLearn certification. Apply in one click &mdash; your verified profile and certificate go with you.</p>
-      </div>
-      <a href="/jobs" class="btn-apply" style="padding:10px 22px;font-size:0.88rem;">View all jobs &rarr;</a>
-    </div>
-    <div class="jobs-grid" id="home-jobs-grid">
-      <div class="job-card"><div class="job-card-top"><div><div class="job-co-name">KPMG Nigeria</div><div class="job-title">Xero Bookkeeper &mdash; Remote</div></div><div class="job-co-logo">KPM</div></div><div class="job-tags"><span class="job-tag tag-loc">Lagos / Remote</span><span class="job-tag tag-level">L1+ required</span><span class="job-tag tag-sal">&#x20A6;180k&ndash;240k</span></div><div class="job-card-footer"><span class="job-views">142 views &middot; 8 applied</span><a href="/jobs" class="btn-apply">Apply &rarr;</a></div></div>
-      <div class="job-card"><div class="job-card-top"><div><div class="job-co-name">PwC South Africa</div><div class="job-title">Cloud Accounting Specialist</div></div><div class="job-co-logo">PWC</div></div><div class="job-tags"><span class="job-tag tag-loc">Cape Town</span><span class="job-tag tag-level">L2+ required</span><span class="job-tag tag-sal">R35k&ndash;50k</span></div><div class="job-card-footer"><span class="job-views">89 views &middot; 4 applied</span><a href="/jobs" class="btn-apply">Apply &rarr;</a></div></div>
-      <div class="job-card"><div class="job-card-top"><div><div class="job-co-name">Deloitte UK</div><div class="job-title">Management Accountant (Xero)</div></div><div class="job-co-logo">DEL</div></div><div class="job-tags"><span class="job-tag tag-loc">London / Hybrid</span><span class="job-tag tag-level">L3 preferred</span><span class="job-tag tag-sal">&pound;42k&ndash;55k</span></div><div class="job-card-footer"><span class="job-views">315 views &middot; 21 applied</span><a href="/jobs" class="btn-apply">Apply &rarr;</a></div></div>
-    </div>
-    <div class="jobs-cta-bar">
-      <div class="jobs-cta-text"><h3>Hiring certified bookkeepers?</h3><p>Post to LedgerLearn&rsquo;s verified talent pool &mdash; free for 30 days. No card needed.</p></div>
-      <a href="/recruiter-register" class="btn-post-job">Post a role free &rarr;</a>
-    </div>
-  </div>
-</section>
-
-<section class="erp-section" id="erp">
-  <div class="erp-inner">
-    <div>
-      <div class="section-eyebrow">The growth ladder</div>
-      <h2 class="erp-h2">Do not stop at<br>getting a job.<br>Become an <span class="gold">ERP consultant.</span></h2>
-      <p class="erp-sub">ERP consulting is the premium tier of accounting careers. Projects pay $5,000&ndash;$12,000. Demand is growing faster than the supply of qualified people. LedgerLearn is the bridge.</p>
-      <div class="erp-steps">
-        <div class="erp-step"><div class="erp-step-dot ed1">1</div><div><div class="erp-step-title">Complete your Xero L3 certification</div><div class="erp-step-text">The L3 Advisor track covers management accounts, multi-entity reporting, and financial advisory skills &mdash; the foundation of ERP work.</div></div></div>
-        <div class="erp-step"><div class="erp-step-dot ed2">2</div><div><div class="erp-step-title">Enter the ERP Academy</div><div class="erp-step-text">Learn cloud ERP implementation, requirements gathering, data migration, and go-live support. Real projects, real clients, real fees.</div></div></div>
-        <div class="erp-step"><div class="erp-step-dot ed3">3</div><div><div class="erp-step-title">Command consulting rates</div><div class="erp-step-text">ERP consultants charge $80&ndash;$200/hour or $5,000&ndash;$12,000 per implementation project. LedgerLearn certified consultants have the credentials to justify it.</div></div></div>
-      </div>
-      <div style="margin-top:1.75rem;"><a href="/erp-academy" class="btn-primary">Explore ERP Academy &rarr;</a></div>
-    </div>
-    <div class="erp-income">
-      <div class="erp-income-label">Earning potential by level</div>
-      <div class="erp-income-row"><span class="erp-income-role">Bookkeeper (uncertified)</span><span class="erp-income-sal">$800&ndash;1,400/mo</span></div>
-      <div class="erp-income-row"><span class="erp-income-role">Xero L1 Certified</span><span class="erp-income-sal">$1,200&ndash;2,200/mo</span></div>
-      <div class="erp-income-row"><span class="erp-income-role">Xero L2 Professional</span><span class="erp-income-sal">$2,000&ndash;3,500/mo</span></div>
-      <div class="erp-income-row"><span class="erp-income-role">Xero L3 Advisor</span><span class="erp-income-sal">$3,000&ndash;5,500/mo</span></div>
-      <div class="erp-income-row"><span class="erp-income-role">ERP Consultant</span><span class="erp-income-sal" style="color:var(--gold-light)">$5k&ndash;12k/project</span></div>
-      <div class="erp-income-note">Figures are global market ranges based on remote and in-market rates. Actual earnings vary by region, experience, and client type.</div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ── ACADEMY TEASER ─────────────────────────────────── -->
-<section class="academy-section">
-  <div class="academy-inner">
-    <div class="academy-eyebrow">ERP.SaaS Academy</div>
-    <h2 class="academy-h2">The community for serious<br>accounting professionals.</h2>
-    <p class="academy-sub">Monthly live sessions, a growing resource library, ERP consulting project referrals, and a network of 130k+ bookkeepers and ERP professionals.</p>
-
-    <div class="academy-strip">
-      <div>
-        <div class="academy-strip-label">ERP.SaaS Academy Membership</div>
-        <div class="academy-strip-title">Go beyond certification.</div>
-        <div class="academy-strip-sub">Live sessions &middot; Resource library &middot; Consulting referrals &middot; Job board priority</div>
-      </div>
-      <div class="academy-strip-price">
-        <div class="academy-strip-val">$29</div>
-        <div class="academy-strip-period">/month &middot; or $249/year</div>
-        <a href="/academy" class="academy-strip-btn">Join Academy &rarr;</a>
-      </div>
-    </div>
-
-    <div class="academy-features">
-      <div class="academy-feat">
-        <div class="academy-feat-icon">&#x1F399;</div>
-        <div class="academy-feat-title">Monthly live Q&amp;A</div>
-        <div class="academy-feat-text">Live sessions on ERP implementation, cloud accounting, and consulting career paths. Replays always included.</div>
-      </div>
-      <div class="academy-feat">
-        <div class="academy-feat-icon">&#x1F4DA;</div>
-        <div class="academy-feat-title">Resource library</div>
-        <div class="academy-feat-text">Every marketplace product, template, SOP, and AI workflow &mdash; included free for Academy members.</div>
-      </div>
-      <div class="academy-feat">
-        <div class="academy-feat-icon">&#x1F4BC;</div>
-        <div class="academy-feat-title">Consulting referrals</div>
-        <div class="academy-feat-text">Members get first access to ERP project referrals from the LedgerLearn consulting network.</div>
-      </div>
-      <div class="academy-feat">
-        <div class="academy-feat-icon">&#x1F30D;</div>
-        <div class="academy-feat-title">Global job network</div>
-        <div class="academy-feat-text">Priority visibility in the jobs board. Your Academy badge appears on your profile alongside your cert verification.</div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-
-<section class="cta-section" id="cta">
-  <div class="cta-inner">
-    <div class="cta-eyebrow">Start your transformation today</div>
-    <h2 class="cta-h2">From bookkeeper to <span class="gold">certified professional</span> &mdash; start free, right now.</h2>
-    <p class="cta-sub">No prior software experience needed. No credit card. No commitment. Your first Xero assessment is completely free &mdash; live simulations, practical scenarios, and a timed test. Start in the next five minutes.</p>
-    <div class="cta-btns">
-      <a href="/test" class="btn-cta-primary">Take free skills assessment &rarr;</a>
-      <a href="/placement" class="btn-cta-secondary">Find my starting point</a>
-    </div>
-    <div class="cta-reassure">
-      <span class="cta-check">No credit card required</span>
-      <span class="cta-check">L1 always free</span>
-      <span class="cta-check">Certificate in 30 minutes</span>
-      <span class="cta-check">Results immediately</span>
-    </div>
-  </div>
-</section>
-
-<div class="legal-strip">
-  <div class="legal-strip-inner">
-    <div class="legal-strip-left">
-      <div class="legal-strip-title">Independent assessment platform</div>
-      <div class="legal-strip-text">
-        LedgerLearn Pro is an independent skills assessment and career development platform.
-        We are not affiliated with, endorsed by, or a partner of Xero Limited, Intuit Inc.
-        (QuickBooks), or Sage Group plc. All product names, logos, and brands are property
-        of their respective owners and are used for identification purposes only.
-      </div>
-    </div>
-    <div class="legal-strip-divider"></div>
-    <div class="legal-strip-right">
-      <div class="legal-strip-title">What our certificates mean</div>
-      <div class="legal-strip-text">
-        A LedgerLearn certificate confirms that you passed our practical assessment of
-        real-world software skills. It is a skills credential issued by LedgerLearn Pro,
-        not a vendor certification from Xero, Intuit, or Sage. Both types of credential
-        have value &mdash; they measure different things.
-      </div>
-    </div>
-  </div>
-</div>
-<footer>
-  <div class="footer-inner">
-    <div class="footer-logo">Ledger<span>Learn</span> Pro</div>
-    <ul class="footer-links">
-      <li><a href="/learn">Courses</a></li>
-      <li><a href="/test">Certifications</a></li>
-      <li><a href="/marketplace">Marketplace</a></li>
-      <li><a href="/academy">Academy</a></li>
-      <li><a href="/jobs">Jobs board</a></li>
-      <li><a href="/recruiter-register">Post a job</a></li>
-      <li><a href="/verify">Verify certificate</a></li>
-      <li><a href="/partners">Partners</a></li>
-      <li><a href="/dashboard">Dashboard</a></li>
-      <li><a href="/faq">FAQ</a></li>
-      <li><a href="mailto:hello@ledgerlearn.pro">Contact</a></li>
-    </ul>
-    <div class="footer-disclaimer">
-  LedgerLearn Pro is an independent skills assessment platform.
-  Not affiliated with Xero Limited, Intuit Inc., or Sage Group plc.
-  &ldquo;Xero&rdquo;, &ldquo;QuickBooks&rdquo;, and &ldquo;Sage&rdquo; are registered
-  trademarks of their respective owners. LedgerLearn certificates are independent
-  credentials and are not vendor-issued qualifications.
-  &copy; 2026 LedgerLearn Pro.
-</div>
-  </div>
-</footer>
-
-<script src="/ll-chatbot.js"></script>
 
 <script>
-// Show user state in nav if logged in
 document.addEventListener('DOMContentLoaded', function() {
   try {
     var sess = JSON.parse(localStorage.getItem('ll_session') || 'null');
     if (sess && sess.user && sess.expires_at > Date.now()) {
       if (window.LLAuth) window.LLAuth._updateNav(sess.user);
-      // Hide "Start free" CTA if already logged in
-      var cta = document.getElementById('nav-cta-btn');
-      if (cta) cta.style.display = 'none';
     }
   } catch(e) {}
 });
