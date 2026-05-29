@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LedgerLearn — QuickBooks Practice Simulations</title>
+<style>
+:root{--navy:#0F2540;--teal:#1D9E75;--teal-light:#E1F5EE;--gold:#C9A84C;--gold-light:#FAEEDA;--orange:#ea580c;--orange-light:#FFF7ED;--purple:#7c3aed;--purple-light:#EDE9FE;--bg:#f9f9f7;--card:#fff;--border:#e5e3db;--text:#1a1a18;--muted:#6b6b67;--rad:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.nav{background:var(--navy);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{color:#fff;font-size:16px;font-weight:600;text-decoration:none}
+.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;gap:20px;align-items:center}
+.nav-links a{color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;transition:color .2s}
+.nav-links a:hover{color:#fff}
+.nav-badge{background:var(--orange);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+
+/* HERO */
+.hero{background:var(--navy);padding:40px 24px 36px;text-align:center}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(234,88,12,.2);color:#fdba74;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:12px;letter-spacing:.05em}
+.hero h1{font-size:28px;font-weight:700;color:#fff;letter-spacing:-.02em;margin-bottom:8px}
+.hero p{color:rgba(255,255,255,.65);font-size:15px;max-width:520px;margin:0 auto 20px}
+.level-tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.level-tab{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.15);padding:8px 20px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+.level-tab:hover{background:rgba(255,255,255,.2);color:#fff}
+.level-tab.on{background:var(--orange);color:#fff;border-color:var(--orange)}
+
+/* STATS BAR */
+.stats-bar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-num{font-size:22px;font-weight:700;color:var(--navy)}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+
+/* MAIN */
+.main{max-width:860px;margin:0 auto;padding:28px 20px}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filter-label{font-size:13px;color:var(--muted);font-weight:500}
+.filter-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.filter-btn:hover{border-color:var(--orange);color:var(--orange)}
+.filter-btn.on{background:var(--orange-light);border-color:var(--orange);color:var(--orange)}
+
+/* SCENARIO CARD */
+.scenarios{display:flex;flex-direction:column;gap:16px}
+.scenario-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);overflow:hidden;transition:box-shadow .15s}
+.scenario-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.sc-header{padding:16px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.sc-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.sc-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:12px;letter-spacing:.03em}
+.badge-l1{background:var(--teal-light);color:#085041}
+.badge-l2{background:var(--orange-light);color:#9a3412}
+.badge-l3{background:var(--purple-light);color:#5b21b6}
+.badge-topic{background:var(--bg);border:1px solid var(--border);color:var(--muted)}
+.sc-difficulty{display:flex;gap:3px}
+.sc-dot{width:7px;height:7px;border-radius:50%;background:var(--border)}
+.sc-dot.on-1{background:var(--teal)}
+.sc-dot.on-2{background:var(--gold)}
+.sc-dot.on-3{background:var(--orange)}
+.sc-title{font-size:15px;font-weight:600;color:var(--navy);padding:0 20px 12px}
+.sc-scenario{background:#f9f9f7;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:14px 20px;font-size:13px;line-height:1.7;color:var(--text)}
+.sc-scenario strong{color:var(--navy)}
+.sc-question{padding:12px 20px 10px;font-size:13px;font-weight:600;color:var(--navy)}
+.sc-options{padding:0 20px 16px;display:flex;flex-direction:column;gap:7px}
+.sc-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;line-height:1.5;transition:all .15s;background:#fff}
+.sc-opt:hover{border-color:var(--orange);background:var(--orange-light)}
+.sc-opt.correct{border-color:var(--teal);background:var(--teal-light);font-weight:500}
+.sc-opt.wrong{border-color:#ef4444;background:#fee2e2}
+.sc-opt.disabled{cursor:default}
+.sc-opt .opt-lbl{width:22px;height:22px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.sc-opt.correct .opt-lbl{background:var(--teal);color:#fff;border-color:var(--teal)}
+.sc-opt.wrong .opt-lbl{background:#ef4444;color:#fff;border-color:#ef4444}
+.sc-explanation{display:none;margin:0 20px 16px;padding:12px 16px;background:var(--teal-light);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;font-size:13px;line-height:1.65}
+.sc-explanation.show{display:block}
+.sc-explanation .exp-lbl{font-size:11px;font-weight:700;color:#085041;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.sc-footer{padding:10px 20px 14px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);background:#fcfcfb}
+.sc-points{font-size:12px;color:var(--muted)}
+.sc-points strong{color:var(--text)}
+.sc-next{font-size:12px;font-weight:500;color:var(--orange);cursor:pointer;text-decoration:none;background:none;border:none;padding:0}
+.sc-next:hover{text-decoration:underline}
+
+/* SCORE PANEL */
+.score-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:20px 24px;margin-bottom:20px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.score-num{font-size:36px;font-weight:700;color:var(--navy)}
+.score-num span{font-size:16px;color:var(--muted);font-weight:400}
+.score-bar-wrap{flex:1;min-width:200px}
+.score-bar-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.score-track{background:var(--bg);border-radius:4px;height:8px;overflow:hidden}
+.score-fill{height:100%;border-radius:4px;background:var(--teal);transition:width .5s}
+.score-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--orange);color:#fff}
+.btn-primary:hover{background:#c2410c}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--orange);color:var(--orange)}
+.btn-assess{background:var(--navy);color:#fff;padding:10px 22px;font-size:14px;font-weight:600}
+.btn-assess:hover{background:#1e3a5f}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px}
+
+/* PROGRESS TRACK */
+.progress-dots{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.pd{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background .2s}
+.pd.answered{background:var(--teal)}
+.pd.wrong-ans{background:#ef4444}
+
+@media(max-width:600px){.hero h1{font-size:22px}.main{padding:16px}.sc-header{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">Ledger<span>Learn</span></a>
+  <div class="nav-links">
+    <a href="/quickbooks">QB Learn</a>
+    <a href="/test">Assessment</a>
+    <a href="/dashboard">Dashboard</a>
+    <span class="nav-badge">QB Practice</span>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">QuickBooks Practice Mode</div>
+  <h1>Simulation Practice — QuickBooks Online</h1>
+  <p>Scenario-based practice questions that mirror the actual assessment. Work through them at your own pace — no timer, full explanations.</p>
+  <div class="level-tabs">
+    <button class="level-tab on" onclick="setLevel('all')">All Levels</button>
+    <button class="level-tab" onclick="setLevel('l1')">L1 Foundation</button>
+    <button class="level-tab" onclick="setLevel('l2')">L2 Professional</button>
+    <button class="level-tab" onclick="setLevel('l3')">L3 Advisor</button>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Scenarios</div></div>
+  <div class="stat"><div class="stat-num" id="stat-answered">0</div><div class="stat-label">Answered</div></div>
+  <div class="stat"><div class="stat-num" id="stat-correct">0</div><div class="stat-label">Correct</div></div>
+  <div class="stat"><div class="stat-num" id="stat-pct">—</div><div class="stat-label">Accuracy</div></div>
+</div>
+
+<div class="main">
+
+  <div class="score-panel" id="score-panel">
+    <div>
+      <div class="score-num" id="score-display">0 <span>/ 0</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px">Your session score</div>
+    </div>
+    <div class="score-bar-wrap">
+      <div class="score-bar-label"><span>Session accuracy</span><span id="score-pct-lbl">0%</span></div>
+      <div class="score-track"><div class="score-fill" id="score-fill" style="width:0%"></div></div>
+    </div>
+    <div class="score-actions">
+      <button class="btn btn-outline" onclick="resetSession()">Reset session</button>
+      <button class="btn btn-assess" onclick="goAssess()">Take assessment →</button>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Topic:</span>
+    <button class="filter-btn on" onclick="setTopic('all', this)">All</button>
+    <button class="filter-btn" onclick="setTopic('ar-ap', this)">AR & AP</button>
+    <button class="filter-btn" onclick="setTopic('bank', this)">Bank & Reconciliation</button>
+    <button class="filter-btn" onclick="setTopic('payroll', this)">Payroll</button>
+    <button class="filter-btn" onclick="setTopic('tax', this)">Tax</button>
+    <button class="filter-btn" onclick="setTopic('reporting', this)">Reporting</button>
+    <button class="filter-btn" onclick="setTopic('advisory', this)">Advisory</button>
+  </div>
+
+  <div id="scenarios-container" class="scenarios"></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// SIMULATIONS DATA — 36 QB scenarios across L1/L2/L3
+// ─────────────────────────────────────────────────────────────
+const SIMULATIONS = [
+  // ── L1 FOUNDATION ────────────────────────────────────────
+  {
+    id:'qb-l1-001', level:'l1', topic:'ar-ap', difficulty:1,
+    title:'Customer payment — wrong entry method',
+    scenario:'Your client receives $2,400 from a customer who had three open invoices: $800, $1,100, and $500. The bookkeeper records a bank deposit for $2,400 coded directly to "Sales Revenue". The bank feed shows the deposit correctly.',
+    question:'What is the problem with this entry and what is the correct fix?',
+    options:[
+      'The three invoices remain open in AR — the deposit must be recorded as Receive Payment applied to all three invoices. The incorrect deposit entry should be deleted.',
+      'Nothing is wrong — as long as the bank reconciles, the entry method does not matter.',
+      'The deposit should be split into three separate deposits to match each invoice.',
+      'Code the $2,400 to Accounts Receivable instead of Sales Revenue.'
+    ],
+    correct:0,
+    explanation:'Depositing directly to Revenue bypasses the invoice lifecycle — the invoices stay open, AR is overstated by $2,400, and the customer appears to still owe money. Receive Payment is the correct tool. The wrong deposit must be deleted first to avoid double-counting income.'
+  },
+  {
+    id:'qb-l1-002', level:'l1', topic:'bank', difficulty:1,
+    title:'Bank reconciliation won\'t balance',
+    scenario:'A QBO bank reconciliation for March shows: Statement closing balance $12,450. QBO shows $12,170 after matching all visible transactions. There is a $280 unexplained difference.',
+    question:'What are the two most likely causes before you post an adjusting journal?',
+    options:[
+      'A $280 bank fee not yet recorded in QBO, or a transaction entered in QBO in March that hasn\'t cleared the bank yet (outstanding item).',
+      'The bank statement is wrong — ask the bank to reissue.',
+      'QBO rounded some transactions — adjust the closing balance by $280.',
+      'The opening balance was entered incorrectly — delete and re-enter.'
+    ],
+    correct:0,
+    explanation:'Before any adjustment, check: (1) bank charges not recorded in QBO — common source of small monthly differences; (2) outstanding transactions in QBO that haven\'t appeared on the statement yet. Journal adjustments should only be used after investigation confirms the source.'
+  },
+  {
+    id:'qb-l1-003', level:'l1', topic:'ar-ap', difficulty:1,
+    title:'Bill vs Expense — supplier on account',
+    scenario:'A plumber invoices your client $650 for emergency repairs, payable in 30 days. The bookkeeper enters it as an Expense transaction paid from the bank account.',
+    question:'What error has been made and what is the impact?',
+    options:[
+      'A Bill should have been used — the Expense entry means: (a) the bank balance is incorrectly reduced today, (b) the $650 never appears in Accounts Payable, (c) the supplier\'s account shows $0 owed.',
+      'No error — Expense and Bill produce the same accounting result.',
+      'The error is that repairs should be capitalised as a fixed asset, not expensed.',
+      'The expense should be split: 50% to repairs, 50% to maintenance.'
+    ],
+    correct:0,
+    explanation:'An Expense records an immediate payment. A Bill records a future obligation. Using Expense for a 30-day credit purchase overstates cash payments today, understates AP, and hides the liability from the aged payables report.'
+  },
+  {
+    id:'qb-l1-004', level:'l1', topic:'reporting', difficulty:1,
+    title:'P&L vs Balance Sheet — owner confusion',
+    scenario:'A business owner reviews QBO and says: "My Profit and Loss shows $45,000 net profit but my Balance Sheet shows only $8,000 equity. Something must be wrong with QBO."',
+    question:'Is something wrong? What is the explanation?',
+    options:[
+      'Nothing is wrong. Equity on the balance sheet reflects cumulative retained earnings minus all drawings since the business started — not just this year\'s profit. If the owner has withdrawn $37,000+ over time, equity can be far below current-year profit.',
+      'Something is wrong — net profit and equity must always equal each other.',
+      'QBO is double-counting expenses on the balance sheet.',
+      'The owner should run the report on cash basis — this will fix the discrepancy.'
+    ],
+    correct:0,
+    explanation:'Equity = Opening equity + Net profit − Drawings. A business started with low capital that has had consistent owner withdrawals will show much lower equity than current-year profit. This is normal and expected — not an error.'
+  },
+  {
+    id:'qb-l1-005', level:'l1', topic:'tax', difficulty:1,
+    title:'Sales tax not applied to invoice',
+    scenario:'A QBO client in a US state with 8% sales tax has been sending invoices without sales tax applied for 3 months. They have invoiced $24,000 in total to taxable customers.',
+    question:'What is the financial exposure and the correct QBO action?',
+    options:[
+      'Potential exposure: $24,000 × 8% = $1,920 in uncollected sales tax. The client may owe this to the state regardless of whether they collected it. Correct action: set up the tax rate in QBO\'s Tax Centre, apply to all future invoices, and discuss the liability for prior periods with a tax advisor.',
+      'No exposure — if the client didn\'t collect the tax, the customer owes it directly to the state.',
+      'Edit all 3 months of invoices retroactively to add sales tax.',
+      'Sales tax is only an issue at year-end — no immediate action needed.'
+    ],
+    correct:0,
+    explanation:'In most US states, the seller is responsible for collecting and remitting sales tax. Failure to collect does not eliminate the liability — the business may still owe the tax. The QBO fix is to configure tax rates immediately. Prior-period exposure requires professional tax advice.'
+  },
+  {
+    id:'qb-l1-006', level:'l1', topic:'bank', difficulty:2,
+    title:'Undeposited Funds growing balance',
+    scenario:'A client\'s QBO Balance Sheet shows $6,800 in Undeposited Funds. The account has been growing for 4 months. The actual bank account is fully reconciled.',
+    question:'What does this mean and what action is needed?',
+    options:[
+      'Customer payments have been collected and recorded but never batched into a bank deposit in QBO. Each payment in Undeposited Funds needs to be grouped into a bank deposit transaction to match the actual physical bank deposit.',
+      'The client has $6,800 of cash that needs to be banked immediately.',
+      'QBO has imported duplicate bank transactions — delete them.',
+      'Undeposited Funds is a reserve account — ignore it until year-end.'
+    ],
+    correct:0,
+    explanation:'Undeposited Funds holds individual payments until you create a Bank Deposit in QBO that groups them. The bank may show a lump sum while QBO shows individual amounts. Until you create the deposit, QBO\'s bank account won\'t show those receipts — hence the balance sheet asset sitting in UF.'
+  },
+
+  // ── L2 PROFESSIONAL ──────────────────────────────────────
+  {
+    id:'qb-l2-001', level:'l2', topic:'reporting', difficulty:2,
+    title:'P&L by Class — missing expense tags',
+    scenario:'A client tracks profitability across three product lines using Classes: Hardware, Software, Services. The P&L by Class shows total income of $180,000 distributed across the three classes, but $95,000 of expenses all appear under "Not Specified".',
+    question:'What caused this and what is the correct remediation?',
+    options:[
+      'Expenses were entered without selecting a Class. Retroactively tag all unclassified expense transactions with the appropriate class. Enable "Require Class" in QBO settings to prevent recurrence. Without this, the segment P&L shows revenue by class but not profitability.',
+      'Expenses don\'t need classes — only income needs to be segmented.',
+      'Create an "Overhead" class and move all $95,000 of unclassified expenses there.',
+      'Export to Excel and manually allocate expenses — QBO can\'t track expenses by class.'
+    ],
+    correct:0,
+    explanation:'A class-based P&L is only meaningful if both income AND expenses are tagged. Income-only tagging tells you revenue by segment, not profitability. The fix is retrospective re-tagging plus mandatory class enforcement going forward.'
+  },
+  {
+    id:'qb-l2-002', level:'l2', topic:'payroll', difficulty:2,
+    title:'Multi-state payroll — wrong state configured',
+    scenario:'An employee works from home in State A (5% income tax) but their QBO payroll profile has State B (2% income tax) configured as their work state. This has been wrong for 4 payroll runs. Gross pay was $3,500 per run.',
+    question:'What is the tax shortfall and what is the correct resolution?',
+    options:[
+      'Shortfall: 3% × $3,500 × 4 = $420 under-withheld for State A. Resolution: correct the work state in QBO; run a corrective payroll adjustment for the $420; file amended state returns for both states (over-remitted to B, under-remitted to A).',
+      'No action needed — the employee will reconcile their own state taxes at year-end.',
+      'Post a $420 manual journal to payroll tax expense to correct the balance.',
+      'Fix the state going forward — prior runs cannot be amended once filed.'
+    ],
+    correct:0,
+    explanation:'Multi-state payroll errors create compliance exposure in two states simultaneously. The employer is responsible for correct withholding. Both states need amended returns and the employee should be notified of the under-withholding. QBO\'s payroll correction flow handles the adjustment.'
+  },
+  {
+    id:'qb-l2-003', level:'l2', topic:'ar-ap', difficulty:2,
+    title:'Vendor credit not applied',
+    scenario:'A supplier issued a $450 credit note 3 months ago after returning defective materials. The bookkeeper entered it as a Vendor Credit in QBO. The client has since paid 6 invoices from the same vendor in full without applying the credit. Total overpayment: $450.',
+    question:'What is the current QBO state and how do you recover?',
+    options:[
+      'The $450 credit sits unused on the vendor\'s account. Go to Pay Bills → select any open bill from that vendor → QBO will offer the available credit to apply. Apply it to reduce the next payment by $450.',
+      'The credit has expired — vendor credits older than 90 days are automatically written off in QBO.',
+      'Create a new bill for $450 to cancel out the credit.',
+      'The overpayment means the vendor owes you a cash refund — QBO will auto-request this.'
+    ],
+    correct:0,
+    explanation:'Vendor Credits in QBO never expire — they sit on the vendor account indefinitely. When you next pay a bill from that vendor, QBO presents the available credit for application. Not applying credits = overpaying vendors systematically. Review all vendor accounts quarterly for unapplied credits.'
+  },
+  {
+    id:'qb-l2-004', level:'l2', topic:'bank', difficulty:2,
+    title:'Duplicate entry — bill AND expense',
+    scenario:'A $1,200 software subscription was entered as both a Bill (correctly showing in AP) and an Expense transaction (showing as immediately paid). The bank shows only one payment of $1,200. The P&L shows $2,400 in subscription costs.',
+    question:'What is the correct fix and what has been overstated?',
+    options:[
+      'Subscription costs are overstated by $1,200. Bank is understated by $1,200. Delete the duplicate Expense transaction (the bill+payment is correct). Re-reconcile the bank to remove the phantom payment.',
+      'Delete the bill — the Expense transaction is the correct entry.',
+      'Post a credit note for $1,200 to reverse one of the entries.',
+      'Both entries are needed — one for the invoice and one for the payment.'
+    ],
+    correct:0,
+    explanation:'Bills + Pay Bill = one complete transaction cycle. Adding a separate Expense duplicates both the cost and the bank payment. The Expense must be deleted. After deletion, the bank balance increases by $1,200 and P&L expenses reduce by $1,200 — both correct.'
+  },
+  {
+    id:'qb-l2-005', level:'l2', topic:'tax', difficulty:2,
+    title:'1099 threshold crossed mid-year',
+    scenario:'A freelance designer has been paid $550 across 5 invoices in the first half of the year and is not set up as a 1099 vendor in QBO. A new project will add another $300 in payment next month, taking the total to $850.',
+    question:'What is the correct action in QBO and when?',
+    options:[
+      'Set the vendor up as a 1099 contractor in QBO now (before the next payment). QBO will track all payments for the year. At year-end, QBO\'s 1099 Wizard will include the full $850 in the 1099-NEC. Retroactive tracking works because QBO captures all vendor payments regardless of 1099 status at time of payment.',
+      'Wait until year-end — 1099 setup only matters in January.',
+      'The $550 already paid is exempt since the threshold wasn\'t crossed at payment time.',
+      'Issue a 1099 immediately for the $550 — then issue a second one for the remaining $300 later.'
+    ],
+    correct:0,
+    explanation:'Set up the 1099 flag now — QBO\'s 1099 Wizard reviews all vendor payments for the year, regardless of when the flag was set. The entire $850 will be captured. 1099-NEC is due by January 31 of the following year for any contractor paid $600+ during the calendar year.'
+  },
+  {
+    id:'qb-l2-006', level:'l2', topic:'reporting', difficulty:2,
+    title:'Cash vs accrual — management decision',
+    scenario:'A QBO client\'s P&L on cash basis shows $62,000 profit. On accrual basis it shows $89,000. They ask which to trust for their bank loan application.',
+    question:'Which basis is correct for the loan application and why?',
+    options:[
+      'Accrual basis ($89,000) is the correct figure for a bank loan application. It reflects income earned and expenses incurred regardless of cash timing. Accrual basis is required by most lenders and provides a more accurate view of business performance. The $27,000 difference represents outstanding debtors (earned but uncollected).',
+      'Cash basis ($62,000) is safer — banks prefer conservative figures.',
+      'Average the two: $75,500 is the most accurate representation.',
+      'Neither — prepare separate management accounts for the bank using a third method.'
+    ],
+    correct:0,
+    explanation:'Accrual accounting is the standard for formal financial submissions including bank loan applications. It shows the true economic activity of the business. Most banks require accrual-basis accounts, often audited or reviewed. The $27k gap is mostly debtors — real earned income not yet collected.'
+  },
+  {
+    id:'qb-l2-007', level:'l2', topic:'ar-ap', difficulty:2,
+    title:'Bad debt write-off procedure',
+    scenario:'A customer owes $3,800 on invoices that are 180+ days old. The customer has ceased trading. QBO shows the full $3,800 as open in AR Ageing. The company needs to write this off before year-end.',
+    question:'What is the correct QBO procedure?',
+    options:[
+      'Create a Bad Debt expense account if one doesn\'t exist. Open each invoice → Receive Payment → enter the amount as $0 → add a Discount line equal to the outstanding balance coded to Bad Debt Expense. This closes the invoice and records the loss on the P&L without affecting the bank.',
+      'Delete all invoices — they will never be paid.',
+      'Create a credit note for $3,800 coded to Sales Revenue (negative).',
+      'Move the balance from AR to a "Bad Debtors" account using a journal entry.'
+    ],
+    correct:0,
+    explanation:'The discount method in Receive Payment is QBO\'s native bad debt write-off process. It closes the invoice (clearing AR) and records the expense correctly. Deleting invoices destroys audit trail. Credit notes to revenue overstate revenue reversal. Journals alone don\'t close invoices in QBO.'
+  },
+  {
+    id:'qb-l2-008', level:'l2', topic:'payroll', difficulty:3,
+    title:'Year-end payroll reconciliation',
+    scenario:'At year-end, QBO\'s payroll summary shows total gross wages of $284,000. The P&L shows wages expense of $291,200. The $7,200 difference has no obvious explanation.',
+    question:'What are the three most likely causes of this discrepancy?',
+    options:[
+      '(1) Manual journal entries posted directly to wages expense outside payroll module; (2) Contractor payments (non-employees) accidentally included in the wages account; (3) A payroll run voided after the P&L period but still showing in the expense account.',
+      'The payroll module doesn\'t update the P&L automatically — QBO needs a manual journal each month.',
+      'The $7,200 represents employer payroll tax contributions not in the payroll summary.',
+      'Year-end accruals for unpaid December wages created a duplicate.'
+    ],
+    correct:0,
+    explanation:'Payroll-to-P&L reconciliation differences trace to: manual journals directly to wages (bypasses payroll module), non-payroll payments to contractors coded to wages, or timing differences from voided/corrected runs. Employer FICA/FUTA is in the payroll summary — so that\'s not the cause here.'
+  },
+
+  // ── L3 ADVISOR ───────────────────────────────────────────
+  {
+    id:'qb-l3-001', level:'l3', topic:'advisory', difficulty:3,
+    title:'EBITDA normalisation for sale',
+    scenario:'A business owner wants to sell. QBO P&L shows net profit $220,000. Additional data: Depreciation $48,000. Interest $32,000. Owner salary $280,000 (market rate $140,000). One-off flood damage repair $25,000 (insurance covered, booked as income). Sector EBITDA multiple: 4×.',
+    question:'Calculate normalised EBITDA and the estimated business value.',
+    options:[
+      'EBITDA = $220k + $32k + $48k = $300k. Normalise: +$140k (excess owner salary); −$25k (one-off insurance income not recurring). Normalised EBITDA = $415k. Business value = $415k × 4 = $1,660,000.',
+      'EBITDA = $220k + $48k = $268k. Value = $268k × 4 = $1,072,000.',
+      'Value = Net profit × multiple = $220k × 4 = $880,000.',
+      'EBITDA = $300k (no normalisation needed). Value = $300k × 4 = $1,200,000.'
+    ],
+    correct:0,
+    explanation:'EBITDA starts with net profit, adds back interest and depreciation. Then: the owner draws $280k but market rate is $140k — a buyer replacing the owner would pay $140k, so add back the $140k excess. The one-off insurance income is not repeatable — deduct it. Normalised EBITDA = $415k × 4 = $1.66M. This is $460k more than unadjusted — normalisation is critical to seller value.'
+  },
+  {
+    id:'qb-l3-002', level:'l3', topic:'advisory', difficulty:3,
+    title:'Loan covenant breach — current ratio',
+    scenario:'A QBO client\'s loan requires maintaining a current ratio above 1.8. Balance sheet shows: Current assets $340,000 (including $85,000 in AR over 120 days likely uncollectable). Current liabilities $230,000. The client believes they are compliant.',
+    question:'Are they actually compliant and what advisory action is needed?',
+    options:[
+      'Gross current ratio = $340k ÷ $230k = 1.48 — already below 1.8. Adjusted (removing doubtful AR): ($340k − $85k) ÷ $230k = 1.11 — far below. The client is in technical default. Urgent action: write off doubtful AR, inject equity or convert short-term debt to long-term, and contact the lender before they identify the breach independently.',
+      'Current ratio = $340k ÷ $230k = 1.48 — they are compliant since 1.48 > 1.0.',
+      'Compliant — the 1.8 threshold is a guideline, not a hard requirement.',
+      'Adjust the balance sheet to move $85k of AR to long-term assets — this will fix the ratio.'
+    ],
+    correct:0,
+    explanation:'The gross ratio of 1.48 already breaches the 1.8 covenant. Including the doubtful AR in current assets overstates the ratio. The adjusted ratio of 1.11 is a significant default. Proactive lender communication before discovery is always better than being caught — lenders are more accommodating when advised in advance.'
+  },
+  {
+    id:'qb-l3-003', level:'l3', topic:'reporting', difficulty:3,
+    title:'Revenue recognition — subscription switch',
+    scenario:'A QBO client switched from one-off product sales to 12-month subscriptions 8 months ago. Their existing QBO setup records the full annual subscription amount as income when invoiced. Three subscriptions were invoiced in Month 1: $4,800, $6,000, and $3,600. It\'s now Month 8.',
+    question:'How much revenue should have been recognised by Month 8 and what is the balance sheet liability?',
+    options:[
+      'Revenue recognised to date: 8/12 of each contract. $4,800×8/12=$3,200; $6,000×8/12=$4,000; $3,600×8/12=$2,400. Total recognised=$9,600. Deferred revenue liability = total invoiced ($14,400) minus recognised ($9,600) = $4,800 still owed to customers.',
+      'All $14,400 is correctly recognised — cash was received so it\'s fully earned.',
+      'Nothing can be recognised until the 12-month contracts expire.',
+      'Recognise 50% since we are past the halfway point.'
+    ],
+    correct:0,
+    explanation:'Under IFRS 15 / ASC 606, subscription revenue is recognised as the service is delivered — monthly. At Month 8, 8/12 of each contract is earned. The remaining 4/12 = $4,800 is a contract liability (deferred revenue) on the balance sheet. The current QBO setup has overstated revenue by $4,800.'
+  },
+  {
+    id:'qb-l3-004', level:'l3', topic:'reporting', difficulty:3,
+    title:'Quality of Earnings — due diligence finding',
+    scenario:'A PE firm\'s QoE review of a QBO client identifies: $180k of revenue from a related-party customer at above-market prices (director\'s personal holding company). $45k of "consulting fees" paid to the director\'s spouse with no documented services. Interest income of $12k from a temporary surplus cash deposit (won\'t recur).',
+    question:'What adjustments does the QoE make to reported EBITDA of $320k?',
+    options:[
+      'Deduct related-party revenue premium (above-market portion — say $60k excess if market rate is $120k); deduct undocumented consulting $45k (fictitious expense adds back to EBITDA — wait, this reduces cost, so it should be deducted from normalised profit); deduct non-recurring interest $12k. Normalised EBITDA below $320k by these adjustments — buyer pays less.',
+      'No adjustments — if QBO records the income, it counts for valuation.',
+      'Only the $12k interest is adjusted — related-party transactions are fully valid.',
+      'Double the revenue adjustment since related-party transactions always carry 2× risk premium.'
+    ],
+    correct:0,
+    explanation:'QoE normalisation: (1) Related-party revenue at above-market prices is not sustainable — a buyer won\'t have that relationship. Deduct the excess. (2) Consulting fees to director\'s spouse with no documented services are a disguised distribution — add back as a cost reduction (reduces expenses = increases EBITDA, but is a red flag for fraud). (3) One-off interest income is not recurring — deduct. The net effect is a lower normalised EBITDA and a lower deal price.'
+  },
+  {
+    id:'qb-l3-005', level:'l3', topic:'advisory', difficulty:3,
+    title:'Series A — accrual conversion required',
+    scenario:'A SaaS startup has been on cash-basis QBO for 3 years. They are raising a Series A and the VC requires 3 years of GAAP-compliant audited financial statements. Total annual subscription billings: Year 1 $180k, Year 2 $340k, Year 3 $620k. Average contract length: 14 months.',
+    question:'What is the most significant accounting challenge in the GAAP conversion?',
+    options:[
+      'Deferred revenue recognition: all three years of cash receipts must be restated to recognise revenue over the service period. Given 14-month average contracts, significant deferred revenue balances exist at each year-end that cash-basis never captured. This understates liabilities and overstates profits under the current method.',
+      'The main issue is adding depreciation — SaaS companies rarely have physical assets so this is minor.',
+      'Cash basis and GAAP produce the same result for SaaS companies since subscriptions are billed monthly.',
+      'The audit will fix the accounting automatically — no prior restatement is needed.'
+    ],
+    correct:0,
+    explanation:'Cash basis records cash received as income. GAAP requires revenue to match service delivery. For 14-month contracts billed upfront, ~2 months of every contract straddles a year-end and must be deferred. At $620k Year 3 billings, the deferred revenue adjustment could be $80-100k — material to VC due diligence. Three years of restatement is a significant engagement.'
+  },
+  {
+    id:'qb-l3-006', level:'l3', topic:'advisory', difficulty:3,
+    title:'Going concern — 3 years of losses',
+    scenario:'You are preparing accounts for a QBO client in their 3rd consecutive year of losses: Year 1 −$62k, Year 2 −$91k, Year 3 −$118k. Net liabilities of $45k. The director says: "I\'ve just personally guaranteed a new $200k bank loan. We\'re turning the corner — just prepare the accounts as normal."',
+    question:'What is the correct professional response and disclosure requirement?',
+    options:[
+      'Request documentation of the new loan and management\'s 12-month cash flow projections. Assess whether the loan genuinely resolves the going concern doubt. If evidence is adequate, prepare on going concern basis but disclose the material uncertainty in a note. If not adequate, the accounts must be qualified. A personal guarantee alone is not sufficient evidence.',
+      'Accept the director\'s assurance — they understand the business better.',
+      'Prepare accounts as normal — losses under $200k are not material for going concern.',
+      'Immediately convert to break-up basis without informing the director.'
+    ],
+    correct:0,
+    explanation:'Going concern requires objective evidence, not just management\'s optimism. Three consecutive years of losses with net liabilities is a textbook going concern trigger. A new loan may resolve the issue — but the cash flow projections must demonstrate that $200k is sufficient to cover operations for 12 months. Disclosure of material uncertainty is mandatory if any doubt remains, regardless of the director\'s preference.'
+  },
+  {
+    id:'qb-l3-007', level:'l3', topic:'reporting', difficulty:3,
+    title:'Multi-entity intercompany elimination',
+    scenario:'Parent Co and Sub Co are both QBO clients. During the year: Parent charged Sub $80k in management fees (income for Parent, expense for Sub). Sub sold $120k of inventory to Parent at cost + 20% markup. Parent has $40k of that inventory unsold at year-end. The group is preparing consolidated accounts.',
+    question:'What are the two elimination entries and the unrealised profit adjustment?',
+    options:[
+      'Elimination 1: Remove $80k management fee income (Parent) and management fee expense (Sub). Elimination 2: Remove $120k intercompany sales (Sub) and purchases (Parent). Unrealised profit: the $40k of Sub\'s inventory still in Parent includes Sub\'s 20% markup = $40k × (20/120) = $6,667 unrealised profit that must be eliminated from closing inventory and COGS.',
+      'Only the management fee needs eliminating — inventory sales between entities are arm\'s-length.',
+      'No eliminations needed — both entities are operated independently.',
+      'Eliminate the full $120k from inventory — all intercompany inventory must be written off.'
+    ],
+    correct:0,
+    explanation:'All intercompany transactions must be eliminated on consolidation. The management fee elimination is straightforward (both sides cancel). The inventory sale elimination removes the intercompany revenue and purchase. The unrealised profit adjustment removes the intragroup markup sitting in closing inventory — the group hasn\'t sold it to a third party yet, so no profit can be recognised.'
+  },
+  {
+    id:'qb-l3-008', level:'l3', topic:'tax', difficulty:3,
+    title:'Undisclosed related-party transaction',
+    scenario:'During year-end preparation you find that the director has been invoicing the company for "strategic consulting services" — $12,000/month for 12 months = $144,000. The director is also the sole shareholder. There is no formal contract and no evidence the services were provided. The invoices were paid promptly each month.',
+    question:'What is the correct professional and accounting response?',
+    options:[
+      'The payments are likely a disguised dividend or salary supplement. Reclassify from Consulting Expense to Director\'s Drawings or Dividends (depending on entity type). Advise the client of the tax implications (dividend vs salary treatment). Disclose as a related-party transaction in the accounts. If unable to obtain evidence of services, refuse to certify the expenses as legitimate.',
+      'Accept the expenses — the director controls the business and can set their own remuneration.',
+      'Reclassify to capital expenditure — the director\'s strategic work created long-term business value.',
+      'Expense the payments as consulting but add a note that documentation is pending.'
+    ],
+    correct:0,
+    explanation:'Undocumented payments to directors that lack evidence of services rendered are a significant red flag. They may constitute unlawful distributions, tax evasion, or breach of director duties depending on jurisdiction. The accountant\'s obligation: investigate, reclassify correctly, advise on tax treatment, and insist on related-party disclosure. Certifying undocumented expenses as legitimate consulting is an ethics breach.'
+  },
+  {
+    id:'qb-l3-009', level:'l3', topic:'bank', difficulty:3,
+    title:'Cash discrepancy — fraud indicator',
+    scenario:'A QBO file review reveals: The QBO cash book shows $89,000. The bank statement shows $71,000. The $18,000 difference is not explained by any timing items (all transactions cleared). QBO\'s audit log shows 14 transactions were deleted in the past 3 months by a single user with admin access.',
+    question:'What is the professional assessment and the required response?',
+    options:[
+      'This is a high-risk fraud indicator — deleted transactions covering a systematic $18,000 cash difference is a serious control failure. Do not attempt to "fix" the accounts. Advise management (or the board if the user is management) immediately. Preserve the audit log as evidence. The matter may require external investigation and potentially law enforcement notification depending on jurisdiction.',
+      'Delete the remaining $18,000 discrepancy via a journal — minor cash differences are acceptable.',
+      'Ask the user who deleted the transactions to explain — it may be a legitimate data cleanup.',
+      'Reconcile the bank to QBO by adjusting the opening balance.'
+    ],
+    correct:0,
+    explanation:'An $18,000 gap combined with 14 deleted transactions by one admin user is a textbook fraud scenario. Accountants must not tamper with evidence or attempt reconciliation that obscures the issue. The duty is to escalate immediately. In many jurisdictions, suspected fraud involving a threshold amount triggers mandatory reporting obligations.'
+  },
+
+  // ── MIXED — ADDITIONAL ────────────────────────────────────
+  {
+    id:'qb-l1-007', level:'l1', topic:'bank', difficulty:1,
+    title:'Bank feed — For Review queue build-up',
+    scenario:'A client hasn\'t logged into QBO for 6 weeks. The For Review queue has 147 unreviewed bank feed transactions. The client asks: "Can\'t QBO just auto-accept them all so I\'m caught up?"',
+    question:'What is the risk of mass auto-accepting and what is the recommended approach?',
+    options:[
+      'Auto-accepting 147 transactions would apply QBO\'s guessed categories — many will be wrong, especially for new vendors or unusual amounts. Recommended: work through For Review systematically, using Rules for recurring items (auto-categorise future identical transactions) to reduce backlog time. Never bulk-accept without review.',
+      'Auto-accept is fine — QBO\'s AI is highly accurate and backlog correction can wait until year-end.',
+      'Delete all 147 and re-import from the bank statement for a clean start.',
+      'Accept all to "Miscellaneous Expenses" — it can be sorted later.'
+    ],
+    correct:0,
+    explanation:'QBO\'s category suggestions are based on patterns, not certainty. Bulk acceptance creates miscoded records that are harder to find and fix later. The correct approach is systematic review, using Rules to automate recurring items. Rules are the right efficiency tool — not blind auto-accept.'
+  },
+  {
+    id:'qb-l1-008', level:'l1', topic:'ar-ap', difficulty:1,
+    title:'Recurring invoice setup',
+    scenario:'A client has 8 customers on monthly retainers ranging from $500 to $2,500. Currently they create each invoice manually every month — taking 45 minutes and causing errors.',
+    question:'What QBO feature solves this and how should it be configured?',
+    options:[
+      'Recurring Transactions (Gear → Recurring Transactions → New). Set each retainer invoice as "Scheduled" with monthly frequency. QBO auto-creates and optionally auto-sends the invoice on the configured date. This eliminates manual creation and prevents missed invoices.',
+      'Use QBO\'s batch invoicing feature — select all 8 customers and apply the same amount.',
+      'Set up a standing order at the bank — QBO doesn\'t support recurring invoices.',
+      'Export the customer list to Excel and create a mail merge for monthly invoices.'
+    ],
+    correct:0,
+    explanation:'Recurring Transactions in QBO handle exactly this scenario. You can set each invoice to auto-send or just auto-create for review. The configuration takes 10 minutes per customer once — and the monthly 45-minute manual process is eliminated permanently.'
+  },
+  {
+    id:'qb-l2-009', level:'l2', topic:'ar-ap', difficulty:2,
+    title:'AP ageing vs balance sheet mismatch',
+    scenario:'A client\'s QBO Balance Sheet shows Accounts Payable of $42,000. The AP Ageing Summary shows total outstanding bills of $36,500. The $5,500 gap has existed for 3 months.',
+    question:'What are the two most likely causes of this discrepancy?',
+    options:[
+      '(1) Manual journal entries posted directly to the AP account (they update the GL balance but not the bill subledger — AP ageing only shows actual bills); (2) A credit card or other liability account mistakenly using the Accounts Payable account type.',
+      'The AP ageing report is wrong — always trust the balance sheet.',
+      'Some bills are in a foreign currency and the conversion is causing the difference.',
+      'Bills older than 90 days automatically drop off the AP ageing report.'
+    ],
+    correct:0,
+    explanation:'AP ageing shows open bills (subledger). The balance sheet AP shows the GL account balance. If manual journals hit the AP GL account directly, they update the balance sheet but never appear in AP ageing. The fix is to identify the journal entries to AP and convert them to proper bill entries where possible.'
+  },
+  {
+    id:'qb-l2-010', level:'l2', topic:'reporting', difficulty:2,
+    title:'Cash flow vs profit — working capital deep dive',
+    scenario:'QBO P&L: Net profit $95,000. Cash Flow Statement shows operating cash flow $42,000. Additional data: Debtors increased $38,000. Inventory increased $12,000. Creditors increased $5,000. Depreciation $12,000.',
+    question:'Reconcile net profit to operating cash flow and confirm the $42,000.',
+    options:[
+      '$95,000 + depreciation $12,000 − debtor increase $38,000 − inventory increase $12,000 + creditor increase $5,000 = $62,000. The stated $42,000 implies a further $20,000 of cash used — likely tax paid, interest paid, or other working capital items not listed here.',
+      '$95,000 − $53,000 (all adjustments net) = $42,000. The cash flow is correct.',
+      'The cash flow statement must equal net profit — the $53,000 gap means QBO has an error.',
+      '$95,000 + all adjustments = $162,000. The $42,000 figure is completely wrong.'
+    ],
+    correct:0,
+    explanation:'Reconciliation: $95k + $12k D&A = $107k. Less debtor increase $38k = $69k. Less inventory increase $12k = $57k. Plus creditor increase $5k = $62k. The stated $42k vs calculated $62k = a $20k gap. This means there are additional cash outflows not provided in the data (tax payments, interest paid, etc.). The reconciliation confirms $42k is plausible but not fully explained by the given data.'
+  },
+  {
+    id:'qb-l3-010', level:'l3', topic:'advisory', difficulty:3,
+    title:'13-week cash flow — covenant risk',
+    scenario:'You build a 13-week cash flow for a QBO client from AR ageing, AP schedule, and payroll data. Week 9 shows a projected closing cash balance of −$14,000. The business has an overdraft limit of $10,000. Current cash: $28,000. Week 9 also has a $45,000 supplier payment due.',
+    question:'What advisory actions should you present to the client now (Week 1)?',
+    options:[
+      '(1) Accelerate debtor collections — target $20k+ collected before Week 9; (2) Negotiate extended payment terms on the $45k supplier payment (defer to Week 12); (3) Draw down the overdraft if collections are slower than forecast; (4) Review any discretionary spend that can be deferred. Present a revised forecast showing the impact of each action.',
+      'Wait until Week 8 to see if the problem materialises before taking action.',
+      'Take out a new business loan immediately to cover the projected shortfall.',
+      'No action needed — projected deficits on cash flow forecasts are always wrong.'
+    ],
+    correct:0,
+    explanation:'A 13-week forecast is most valuable as an early-warning tool. Identifying a Week 9 shortfall in Week 1 gives 8 weeks to act. Collection acceleration, payment deferral, and facility utilisation are all available tools — but they need to be initiated now, not when the crisis arrives. Advisory value = proactive, not reactive.'
+  },
+];
+
+// ─────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────
+var state = {
+  level: 'all',
+  topic: 'all',
+  answered: {},  // id → { correct: bool }
+  total: 0,
+  correct: 0,
+};
+
+function loadState() {
+  var saved = localStorage.getItem('ll_qb_sims');
+  if (saved) {
+    try {
+      var s = JSON.parse(saved);
+      state.answered = s.answered || {};
+      // Recount
+      state.total = Object.keys(state.answered).length;
+      state.correct = Object.values(state.answered).filter(function(a){ return a.correct; }).length;
+    } catch(e){}
+  }
+}
+
+function saveState() {
+  localStorage.setItem('ll_qb_sims', JSON.stringify({ answered: state.answered }));
+}
+
+// ─────────────────────────────────────────────────────────────
+// FILTERING
+// ─────────────────────────────────────────────────────────────
+function setLevel(l) {
+  state.level = l;
+  document.querySelectorAll('.level-tab').forEach(function(t){ t.classList.remove('on'); });
+  event.target.classList.add('on');
+  renderAll();
+}
+
+function setTopic(t, btn) {
+  state.topic = t;
+  document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  renderAll();
+}
+
+function getFiltered() {
+  return SIMULATIONS.filter(function(s) {
+    var levelOk = state.level === 'all' || s.level === state.level;
+    var topicOk = state.topic === 'all' || s.topic === state.topic;
+    return levelOk && topicOk;
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────────
+function difficultyDots(n) {
+  var html = '<div class="sc-difficulty">';
+  for (var i = 1; i <= 3; i++) {
+    html += '<div class="sc-dot' + (i <= n ? ' on-' + n : '') + '"></div>';
+  }
+  return html + '</div>';
+}
+
+function levelBadge(l) {
+  var labels = { l1:'L1 Foundation', l2:'L2 Professional', l3:'L3 Advisor' };
+  var cls    = { l1:'badge-l1',      l2:'badge-l2',        l3:'badge-l3' };
+  return '<span class="sc-badge ' + (cls[l]||'badge-l1') + '">' + (labels[l]||l) + '</span>';
+}
+
+function topicLabel(t) {
+  var m = { 'ar-ap':'AR & AP', bank:'Bank', payroll:'Payroll', tax:'Tax', reporting:'Reporting', advisory:'Advisory' };
+  return '<span class="sc-badge badge-topic">' + (m[t]||t) + '</span>';
+}
+
+function renderCard(sim) {
+  var ans = state.answered[sim.id];
+  var letters = ['A','B','C','D'];
+  var opts = sim.options.map(function(o, i) {
+    var cls = 'sc-opt';
+    if (ans !== undefined) {
+      cls += ' disabled';
+      if (i === sim.correct) cls += ' correct';
+      else if (ans.chosen === i && !ans.correct) cls += ' wrong';
+    }
+    var onclick = ans !== undefined ? '' : 'onclick="answer(\'' + sim.id + '\',' + i + ')"';
+    return '<div class="' + cls + '" ' + onclick + '>' +
+           '<div class="opt-lbl">' + letters[i] + '</div>' +
+           '<span>' + o + '</span></div>';
+  }).join('');
+
+  var expCls = 'sc-explanation' + (ans !== undefined ? ' show' : '');
+  var expIcon = ans && ans.correct ? '✅' : (ans ? '❌' : '');
+
+  return '<div class="scenario-card" id="card-' + sim.id + '">' +
+    '<div class="sc-header">' +
+      '<div class="sc-meta">' + levelBadge(sim.level) + topicLabel(sim.topic) + '</div>' +
+      difficultyDots(sim.difficulty) +
+    '</div>' +
+    '<div class="sc-title">' + sim.title + '</div>' +
+    '<div class="sc-scenario">' + sim.scenario + '</div>' +
+    '<div class="sc-question">' + sim.question + '</div>' +
+    '<div class="sc-options">' + opts + '</div>' +
+    '<div class="' + expCls + '" id="exp-' + sim.id + '">' +
+      '<div class="exp-lbl">' + expIcon + ' Explanation</div>' +
+      sim.explanation +
+    '</div>' +
+    '<div class="sc-footer">' +
+      '<span class="sc-points"><strong>' + (ans ? (ans.correct ? '✓ Correct' : '✗ Incorrect') : 'Unanswered') + '</strong></span>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderAll() {
+  var filtered = getFiltered();
+  var container = document.getElementById('scenarios-container');
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><h3>No scenarios match</h3><p>Try a different level or topic filter.</p></div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(renderCard).join('');
+  updateStats();
+}
+
+function updateStats() {
+  var filtered = getFiltered();
+  var answeredInView = filtered.filter(function(s){ return state.answered[s.id]; });
+  var correctInView  = answeredInView.filter(function(s){ return state.answered[s.id].correct; });
+
+  document.getElementById('stat-total').textContent     = filtered.length;
+  document.getElementById('stat-answered').textContent  = answeredInView.length;
+  document.getElementById('stat-correct').textContent   = correctInView.length;
+  document.getElementById('stat-pct').textContent       = answeredInView.length ? Math.round(correctInView.length / answeredInView.length * 100) + '%' : '—';
+
+  // Session score (all answered, not just filtered)
+  var t = Object.keys(state.answered).length;
+  var c = Object.values(state.answered).filter(function(a){ return a.correct; }).length;
+  var pct = t ? Math.round(c/t*100) : 0;
+  document.getElementById('score-display').innerHTML = c + ' <span>/ ' + t + '</span>';
+  document.getElementById('score-pct-lbl').textContent = pct + '%';
+  document.getElementById('score-fill').style.width = pct + '%';
+}
+
+// ─────────────────────────────────────────────────────────────
+// ANSWERING
+// ─────────────────────────────────────────────────────────────
+function answer(simId, chosen) {
+  var sim = SIMULATIONS.find(function(s){ return s.id === simId; });
+  if (!sim || state.answered[simId]) return;
+
+  var correct = chosen === sim.correct;
+  state.answered[simId] = { chosen: chosen, correct: correct };
+  if (correct) state.correct++;
+  state.total++;
+  saveState();
+
+  // Re-render just this card
+  var card = document.getElementById('card-' + simId);
+  if (card) {
+    var newCard = document.createElement('div');
+    newCard.innerHTML = renderCard(sim);
+    card.parentNode.replaceChild(newCard.firstChild, card);
+  }
+  updateStats();
+}
+
+// ─────────────────────────────────────────────────────────────
+// CONTROLS
+// ─────────────────────────────────────────────────────────────
+function resetSession() {
+  if (!confirm('Reset all session answers? Your progress will be cleared.')) return;
+  state.answered = {};
+  state.total = 0;
+  state.correct = 0;
+  saveState();
+  renderAll();
+}
+
+function goAssess() {
+  var level = state.level === 'all' ? 'l1' : state.level;
+  localStorage.setItem('ll_test_track', 'QuickBooks');
+  localStorage.setItem('ll_test_level', level);
+  window.location.href = '/test';
+}
+
+// ─────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────
+loadState();
+renderAll();
+</script>
+</body>
+</html>

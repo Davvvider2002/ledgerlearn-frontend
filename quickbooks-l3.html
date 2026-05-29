@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LedgerLearn — QuickBooks L3 Advisor</title>
+<style>
+:root{--navy:#0F2540;--teal:#1D9E75;--teal-light:#E1F5EE;--gold:#C9A84C;--gold-light:#FAEEDA;--purple:#7c3aed;--purple-light:#EDE9FE;--bg:#f9f9f7;--card:#fff;--border:#e5e3db;--text:#1a1a18;--muted:#6b6b67;--radius:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+.nav{background:var(--navy);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.nav-logo{color:#fff;font-size:16px;font-weight:600;text-decoration:none;letter-spacing:-.01em}
+.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;gap:20px;align-items:center}
+.nav-links a{color:rgba(255,255,255,.7);text-decoration:none;font-size:13px}
+.nav-links a:hover{color:#fff}
+.nav-badge{background:var(--purple);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.layout{display:flex;flex:1;max-width:1100px;margin:0 auto;width:100%;padding:24px 20px;gap:24px}
+.sidebar{width:240px;flex-shrink:0}
+.track-badge{background:var(--purple-light);border:1px solid #c4b5fd;border-radius:8px;padding:12px 14px;margin-bottom:16px}
+.track-badge .track-name{font-size:13px;font-weight:600;color:var(--purple)}
+.track-badge .track-level{font-size:12px;color:#5b21b6;margin-top:2px}
+.lesson-nav{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.lesson-nav-hdr{padding:12px 16px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.lesson-item{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;font-size:13px;color:var(--muted);border-left:3px solid transparent;transition:all .15s}
+.lesson-item:hover{background:#f5f5f3;color:var(--text)}
+.lesson-item.on{background:var(--purple-light);color:var(--purple);border-left-color:var(--purple);font-weight:500}
+.lesson-item.done{color:var(--teal)}
+.lesson-num{width:20px;height:20px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.lesson-item.on .lesson-num{background:var(--purple);color:#fff}
+.lesson-item.done .lesson-num{background:var(--teal);color:#fff}
+.progress-bar-wrap{padding:14px 16px;border-top:1px solid var(--border)}
+.progress-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-track{background:var(--bg);border-radius:4px;height:5px;overflow:hidden}
+.progress-fill{height:100%;background:var(--purple);border-radius:4px;transition:width .4s}
+.main{flex:1;min-width:0}
+.lesson-header{margin-bottom:20px}
+.lesson-tag{display:inline-flex;align-items:center;gap:6px;background:var(--purple-light);color:#5b21b6;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.lesson-title{font-size:24px;font-weight:700;color:var(--navy);letter-spacing:-.02em}
+.lesson-subtitle{font-size:14px;color:var(--muted);margin-top:4px}
+.content-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;margin-bottom:20px}
+.content-card h2{font-size:17px;font-weight:600;color:var(--navy);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.content-card h3{font-size:15px;font-weight:600;color:var(--text);margin:18px 0 8px}
+.content-card p{font-size:14px;color:var(--text);margin-bottom:12px;line-height:1.7}
+.content-card ul,.content-card ol{margin:0 0 14px 20px}
+.content-card li{font-size:14px;color:var(--text);margin-bottom:6px;line-height:1.6}
+.info-box{border-left:3px solid var(--purple);background:var(--purple-light);border-radius:0 8px 8px 0;padding:14px 16px;margin:16px 0;font-size:13px;line-height:1.6}
+.info-box.teal{border-left-color:var(--teal);background:var(--teal-light)}
+.info-box.gold{border-left-color:var(--gold);background:var(--gold-light)}
+.info-box.red{border-left-color:#dc2626;background:#fef2f2}
+.info-box strong{display:block;margin-bottom:4px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--purple)}
+.info-box.teal strong{color:#085041}
+.info-box.gold strong{color:#633806}
+.info-box.red strong{color:#991b1b}
+.sim-card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:20px 24px;margin:16px 0}
+.sim-card-hdr{font-size:12px;font-weight:700;color:#065f46;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sim-scenario{background:#fff;border:1px solid #d1fae5;border-radius:8px;padding:14px 16px;margin-bottom:12px;font-size:13px;line-height:1.6}
+.sim-question{font-size:13px;font-weight:600;color:#065f46;margin-bottom:10px}
+.sim-options{display:flex;flex-direction:column;gap:8px}
+.sim-opt{background:#fff;border:1.5px solid #d1fae5;border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px}
+.sim-opt:hover{border-color:var(--teal);background:var(--teal-light)}
+.sim-opt.correct{border-color:var(--teal);background:#d1fae5;font-weight:500}
+.sim-opt.wrong{border-color:#ef4444;background:#fee2e2}
+.sim-opt-label{width:20px;height:20px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.sim-explanation{margin-top:12px;padding:12px 14px;background:#fff;border-radius:8px;border-left:3px solid var(--teal);font-size:13px;line-height:1.6;display:none}
+.compare-table{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0}
+.compare-table th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-weight:500}
+.compare-table td{padding:10px 14px;border-bottom:1px solid var(--border)}
+.compare-table tr:nth-child(even) td{background:#f9f9f7}
+.compare-table .hl{background:var(--purple-light)!important;font-weight:500}
+.lesson-nav-btns{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.btn{padding:10px 22px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--purple);color:var(--purple)}
+.btn-primary{background:var(--purple);color:#fff}
+.btn-primary:hover{background:#6d28d9}
+.btn-test{background:var(--navy);color:#fff;padding:12px 28px;font-size:15px;border-radius:8px;cursor:pointer;border:none;font-weight:600;transition:background .2s}
+.btn-test:hover{background:#1e3a5f}
+.level-banner{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap}
+.level-pill{display:flex;align-items:center;gap:6px;font-size:13px;padding:6px 14px;border-radius:20px;background:var(--bg);border:1px solid var(--border);color:var(--muted)}
+.level-pill.done{background:var(--teal-light);border-color:#9FE1CB;color:#085041;font-weight:500}
+.level-pill.current{background:var(--purple-light);border-color:#c4b5fd;color:var(--purple);font-weight:600}
+@media(max-width:768px){.layout{flex-direction:column;padding:16px}.sidebar{width:100%}.content-card{padding:20px}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/" class="nav-logo">Ledger<span>Learn</span></a>
+  <div class="nav-links">
+    <a href="/learn">Learn</a>
+    <a href="/test">Assess</a>
+    <a href="/dashboard">Dashboard</a>
+    <span class="nav-badge">QB L3 Advisor</span>
+  </div>
+</nav>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="track-badge">
+      <div class="track-name">QuickBooks Online</div>
+      <div class="track-level">L3 — Advisor · Free after L2</div>
+    </div>
+    <div class="lesson-nav">
+      <div class="lesson-nav-hdr">L3 Modules</div>
+      <div class="lesson-item on" onclick="showLesson(0)" id="li-0"><div class="lesson-num">1</div><span>Advanced Multi-Entity</span></div>
+      <div class="lesson-item" onclick="showLesson(1)" id="li-1"><div class="lesson-num">2</div><span>Revenue Recognition</span></div>
+      <div class="lesson-item" onclick="showLesson(2)" id="li-2"><div class="lesson-num">3</div><span>Due Diligence & M&A</span></div>
+      <div class="lesson-item" onclick="showLesson(3)" id="li-3"><div class="lesson-num">4</div><span>International QBO</span></div>
+      <div class="lesson-item" onclick="showLesson(4)" id="li-4"><div class="lesson-num">5</div><span>Ethics & Going Concern</span></div>
+      <div class="lesson-item" onclick="showLesson(5)" id="li-5"><div class="lesson-num">6</div><span>Advisory & Valuation</span></div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Progress</span><span id="prog-pct">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="level-banner">
+      <div class="level-pill done">✓ QB L1 Certified</div>
+      <div class="level-pill done">✓ QB L2 Certified</div>
+      <div class="level-pill current">QB L3 Advisor</div>
+    </div>
+
+    <!-- LESSON 0: Advanced Multi-Entity -->
+    <div id="lesson-0">
+      <div class="lesson-header">
+        <div class="lesson-tag">L3 Module 1</div>
+        <div class="lesson-title">Advanced Multi-Entity Accounting</div>
+        <div class="lesson-subtitle">Group structures, intercompany transactions, consolidation, and QBO's limitations</div>
+      </div>
+      <div class="content-card">
+        <h2>Multi-Entity Group Structures in QBO</h2>
+        <p>At advisor level you will encounter clients who operate multiple legal entities — holding companies, subsidiaries, joint ventures, and franchise networks. Understanding how to manage these in QBO and where QBO falls short is critical to avoiding costly errors.</p>
+        <h3>QBO's multi-entity capability</h3>
+        <p>Each QBO subscription is a single legal entity. You manage multiple entities by having separate QBO files linked under the same accountant login. There is <strong>no native consolidation engine</strong> — intercompany eliminations must be performed manually.</p>
+        <div class="info-box red">
+          <strong>Critical limitation</strong>
+          QBO does not automatically eliminate intercompany transactions on consolidation. If Entity A sells $50,000 of services to Entity B, both the income (Entity A) and expense (Entity B) must be removed from the consolidated P&L manually — otherwise group revenue and costs are both overstated by $50,000.
+        </div>
+        <h3>Intercompany loan accounting</h3>
+        <p>When one entity lends money to another, both sides need corresponding entries:</p>
+        <table class="compare-table">
+          <tr><th>Entity A (Lender)</th><th>Entity B (Borrower)</th></tr>
+          <tr><td>Dr Intercompany Loan Receivable<br>Cr Bank</td><td>Dr Bank<br>Cr Intercompany Loan Payable</td></tr>
+          <tr><td class="hl">Interest income each period</td><td class="hl">Interest expense each period</td></tr>
+        </table>
+        <div class="info-box gold">
+          <strong>Transfer pricing risk</strong>
+          Related-party loans at 0% interest may be challenged by tax authorities. Under IRS Section 7872 (US) or similar rules, below-market loans require imputed interest — income is deemed earned even if not charged. Advisors must flag this risk to clients.
+        </div>
+        <h3>Consolidation workflow (manual in QBO)</h3>
+        <ol>
+          <li>Export trial balance from each entity at the consolidation date</li>
+          <li>Combine all entities into a consolidation spreadsheet</li>
+          <li>Identify all intercompany balances (loans, sales, purchases)</li>
+          <li>Eliminate each intercompany item (both sides must cancel)</li>
+          <li>Adjust for minority interests if applicable</li>
+          <li>Produce consolidated P&L, Balance Sheet, and Cash Flow</li>
+        </ol>
+        <h3>When to recommend moving beyond QBO</h3>
+        <p>QBO is appropriate for groups up to 5–6 entities with simple intercompany activity. Beyond that, consider: Xero with consolidation add-ons, Sage Intacct, NetSuite, or Microsoft Dynamics — depending on complexity and budget.</p>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Scenario</div>
+        <div class="sim-scenario">A holding company (Entity A) owns two subsidiaries (Entity B and C). During the year: A charged B $120,000 in management fees; B sold $85,000 of products to C at cost; A has a $200,000 intercompany loan to C at 0% interest. You are preparing consolidated accounts.</div>
+        <div class="sim-question">What are the three elimination entries required and what tax risk must be flagged?</div>
+        <div class="sim-options" id="sim-0">
+          <div class="sim-opt" onclick="answerSim(0,0,0)"><div class="sim-opt-label">A</div>Eliminations: (1) Remove $120k management fee income (A) and expense (B); (2) Remove $85k intercompany sales (B) and purchases (C) — and any unrealised profit in C's closing inventory; (3) Eliminate $200k intercompany loan receivable (A) and payable (C). Tax risk: 0% loan requires imputed interest disclosure under Section 7872 or equivalent.</div>
+          <div class="sim-opt" onclick="answerSim(0,1,0)"><div class="sim-opt-label">B</div>Only the loan needs eliminating — trading transactions between subsidiaries are kept in the consolidated accounts</div>
+          <div class="sim-opt" onclick="answerSim(0,2,0)"><div class="sim-opt-label">C</div>No eliminations needed as all three entities are under common control</div>
+          <div class="sim-opt" onclick="answerSim(0,3,0)"><div class="sim-opt-label">D</div>Eliminate only the management fee — product sales are third-party equivalent transactions</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-0">✅ A is correct. All three intercompany flows must be eliminated. The management fee elimination removes fictitious income/expense. The product sale elimination removes revenue and COGS plus any profit still sitting in closing inventory (unrealised profit). The loan elimination removes assets and liabilities that cancel within the group. The 0% interest rate creates a transfer pricing/imputed interest obligation.</div>
+      </div>
+      <div class="lesson-nav-btns"><span></span><button class="btn btn-primary" onclick="nextLesson(0)">Next: Revenue Recognition →</button></div>
+    </div>
+
+    <!-- LESSON 1: Revenue Recognition -->
+    <div id="lesson-1" style="display:none">
+      <div class="lesson-header">
+        <div class="lesson-tag">L3 Module 2</div>
+        <div class="lesson-title">Revenue Recognition — ASC 606 / IFRS 15</div>
+        <div class="lesson-subtitle">The 5-step model, deferred revenue, contract liabilities, and QBO implementation</div>
+      </div>
+      <div class="content-card">
+        <h2>Why Revenue Recognition Matters at Advisor Level</h2>
+        <p>The single most common financial statement misstatement in growing businesses is incorrect revenue recognition. For any client raising investment, preparing for acquisition, or subject to audit — getting this right in QBO is non-negotiable.</p>
+        <h3>The ASC 606 / IFRS 15 five-step model</h3>
+        <ol>
+          <li><strong>Identify the contract</strong> — written, oral, or implied agreement with a customer</li>
+          <li><strong>Identify performance obligations</strong> — what distinct goods/services have been promised?</li>
+          <li><strong>Determine the transaction price</strong> — fixed, variable, or constrained?</li>
+          <li><strong>Allocate the price to obligations</strong> — based on standalone selling prices</li>
+          <li><strong>Recognise revenue when (or as) obligations are satisfied</strong> — point-in-time vs over time</li>
+        </ol>
+        <div class="info-box">
+          <strong>Point-in-time vs over time</strong>
+          Point-in-time: revenue at delivery (product sales, one-off services). Over time: revenue spread across the service period (SaaS, maintenance contracts, construction). The wrong choice materially misrepresents profitability.
+        </div>
+        <h3>Deferred revenue in QBO</h3>
+        <p>When cash is received before the performance obligation is met (e.g. annual subscription paid upfront), the amount is a <strong>liability</strong> — the business owes the customer the service.</p>
+        <ol>
+          <li>Record cash receipt: Dr Bank / Cr Deferred Revenue (liability)</li>
+          <li>Each period as service is delivered: Dr Deferred Revenue / Cr Revenue</li>
+          <li>At any balance sheet date, Deferred Revenue shows obligations still to be fulfilled</li>
+        </ol>
+        <table class="compare-table">
+          <tr><th>Revenue Type</th><th>Recognition Timing</th><th>QBO Treatment</th></tr>
+          <tr><td>Product sale</td><td>On delivery</td><td>Invoice on shipment date</td></tr>
+          <tr><td>Annual SaaS subscription</td><td class="hl">Monthly over 12 months</td><td class="hl">Deferred revenue → monthly journal release</td></tr>
+          <tr><td>Construction contract</td><td>% of completion</td><td>Progress invoices + manual accruals</td></tr>
+          <tr><td>Retainer (professional services)</td><td>As hours are worked</td><td>Bill against time tracking records</td></tr>
+        </table>
+        <h3>Contract assets vs contract liabilities</h3>
+        <p>Under ASC 606: if you've done more work than you've billed, you have a <strong>contract asset</strong> (unbilled receivable). If you've billed more than you've earned, you have a <strong>contract liability</strong> (deferred/unearned revenue). Both must appear on the balance sheet.</p>
+        <h3>QBO limitation</h3>
+        <p>QBO has no native revenue recognition schedule engine. Advisors must either: (1) set up recurring journal entries for deferred revenue releases, or (2) use an integrated app (e.g. Maxio, Chargebee, or Deferred) that syncs with QBO and automates the recognition schedule.</p>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Scenario</div>
+        <div class="sim-scenario">A SaaS client signs three new annual contracts in October: Contract 1: $24,000 (October start). Contract 2: $36,000 (November start). Contract 3: $18,000 (December start). All are billed upfront and received in cash. The financial year ends December 31. The client has recorded all $78,000 as revenue in October–December.</div>
+        <div class="sim-question">What is the correct year-end revenue and what balance sheet adjustment is required?</div>
+        <div class="sim-options" id="sim-1">
+          <div class="sim-opt" onclick="answerSim(1,0,1)"><div class="sim-opt-label">A</div>Correct revenue: Contract 1: 3/12 × $24k = $6k. Contract 2: 2/12 × $36k = $6k. Contract 3: 1/12 × $18k = $1.5k. Total = $13,500. Deferred revenue liability = $78,000 − $13,500 = $64,500 on the balance sheet.</div>
+          <div class="sim-opt" onclick="answerSim(1,1,1)"><div class="sim-opt-label">B</div>All $78,000 is correctly recognised — cash has been received so it's income</div>
+          <div class="sim-opt" onclick="answerSim(1,2,1)"><div class="sim-opt-label">C</div>Defer all $78,000 — none can be recognised until the full contract is delivered</div>
+          <div class="sim-opt" onclick="answerSim(1,3,1)"><div class="sim-opt-label">D</div>Recognise 50% of each contract at year-end as a halfway estimate</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-1">✅ A is correct. Revenue is recognised as service is delivered. By Dec 31: Contract 1 has delivered 3 months, Contract 2 has delivered 2 months, Contract 3 has delivered 1 month. Total recognised = $13,500. The remaining $64,500 is a contract liability (deferred revenue) on the balance sheet — the company still owes 9–11 months of service to those customers.</div>
+      </div>
+      <div class="lesson-nav-btns"><button class="btn btn-outline" onclick="showLesson(0)">← Previous</button><button class="btn btn-primary" onclick="nextLesson(1)">Next: Due Diligence →</button></div>
+    </div>
+
+    <!-- LESSON 2: Due Diligence & M&A -->
+    <div id="lesson-2" style="display:none">
+      <div class="lesson-header">
+        <div class="lesson-tag">L3 Module 3</div>
+        <div class="lesson-title">Due Diligence & M&A Accounting</div>
+        <div class="lesson-subtitle">Quality of earnings, purchase price allocation, goodwill, and pre-sale preparation</div>
+      </div>
+      <div class="content-card">
+        <h2>The Accountant's Role in M&A Transactions</h2>
+        <p>Whether your client is buying or selling, the QBO file is the primary evidence base. Poorly maintained books kill deals, reduce valuations, and create post-closing disputes. An advisor-level bookkeeper must prepare files to withstand scrutiny.</p>
+        <h3>Quality of Earnings (QoE) report</h3>
+        <p>The QoE is a financial due diligence report produced for buyers, investors, and PE firms. It normalises EBITDA by removing:</p>
+        <ul>
+          <li>One-off, non-recurring items (legal settlements, once-off grants, unusual losses)</li>
+          <li>Owner compensation above or below market rate</li>
+          <li>Related-party transactions at non-market prices</li>
+          <li>Accounting policy choices that inflate earnings (aggressive revenue recognition, under-depreciation)</li>
+        </ul>
+        <div class="info-box">
+          <strong>EBITDA normalisation example</strong>
+          Reported EBITDA: $420,000. Add back: owner salary above market rate $80,000. Deduct: one-off insurance payout included in income $50,000. Add back: litigation expense unlikely to recur $30,000. Normalised EBITDA: $480,000. At a 4× multiple, this $60,000 adjustment = $240,000 in deal value.
+        </div>
+        <h3>Purchase price allocation (PPA)</h3>
+        <p>When a business is acquired, the purchase price must be allocated to identifiable assets and liabilities at fair value. Any residual = goodwill.</p>
+        <table class="compare-table">
+          <tr><th>Component</th><th>Valuation Method</th><th>Balance Sheet Treatment</th></tr>
+          <tr><td>Tangible assets (PPE, inventory)</td><td>Fair market value appraisal</td><td>Restated at FMV</td></tr>
+          <tr><td>Customer relationships</td><td>Multi-period excess earnings</td><td>Intangible asset — amortised</td></tr>
+          <tr><td>Brand/trade names</td><td>Relief from royalty method</td><td>Intangible asset — may have indefinite life</td></tr>
+          <tr><td class="hl">Goodwill</td><td class="hl">Residual (price − net FMV assets)</td><td class="hl">Not amortised (US GAAP); tested for impairment</td></tr>
+        </table>
+        <h3>Pre-sale QBO preparation checklist</h3>
+        <ul>
+          <li>All bank accounts reconciled to latest date</li>
+          <li>Remove personal expenses from business records — recode to director's drawings</li>
+          <li>Write off all uncollectable debts (clean AR ageing)</li>
+          <li>Ensure revenue recognition is correct — no deferred revenue buried in income</li>
+          <li>Fixed asset register reconciled to balance sheet</li>
+          <li>No large "Miscellaneous" or "Other" balances — everything coded and described</li>
+          <li>3 years of clean, consistent financial statements</li>
+        </ul>
+        <h3>Post-acquisition integration in QBO</h3>
+        <p>If the acquirer uses QBO: set up the acquired entity as a new QBO file, enter opening balances at fair values (not historical cost), and establish intercompany transaction processes from day one. Do not merge historical data into the acquirer's existing QBO file.</p>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Scenario</div>
+        <div class="sim-scenario">A client is selling their business. During pre-sale due diligence you discover: (1) $28,000 of the owner's personal car loan is being paid through the business and expensed to Vehicle Costs. (2) $15,000 of revenue was recognised in the current year for a contract that is only 40% complete. (3) A $45,000 "Miscellaneous Expense" balance has no supporting documentation.</div>
+        <div class="sim-question">How do these three issues affect the sale valuation and what must be done?</div>
+        <div class="sim-options" id="sim-2">
+          <div class="sim-opt" onclick="answerSim(2,0,2)"><div class="sim-opt-label">A</div>(1) Recode $28k to drawings — adds back to EBITDA, increasing business value. (2) Reverse $9k of premature revenue (60% undelivered portion) — reduces normalised EBITDA. (3) Investigate and document $45k or write off to drawings if personal — undocumented expenses are a deal-breaker for any serious buyer.</div>
+          <div class="sim-opt" onclick="answerSim(2,1,2)"><div class="sim-opt-label">B</div>All three should be left as-is and disclosed in the sale agreement for the buyer to deal with</div>
+          <div class="sim-opt" onclick="answerSim(2,2,2)"><div class="sim-opt-label">C</div>Only item (1) is material — items (2) and (3) are common in small businesses</div>
+          <div class="sim-opt" onclick="answerSim(2,3,2)"><div class="sim-opt-label">D</div>Post a single year-end adjusting journal to tidy all three items before providing accounts to the buyer</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-2">✅ A is correct. Each item has a specific valuation impact: (1) recoding personal expenses increases normalised EBITDA — at a 4× multiple, $28k adds $112k to deal value. (2) Early revenue recognition must be corrected — QoE analysts always check this. (3) $45k undocumented creates audit qualification risk and buyer concern about cash diversion. Clean books before sale, not after.</div>
+      </div>
+      <div class="lesson-nav-btns"><button class="btn btn-outline" onclick="showLesson(1)">← Previous</button><button class="btn btn-primary" onclick="nextLesson(2)">Next: International QBO →</button></div>
+    </div>
+
+    <!-- LESSON 3: International QBO -->
+    <div id="lesson-3" style="display:none">
+      <div class="lesson-header">
+        <div class="lesson-tag">L3 Module 4</div>
+        <div class="lesson-title">International QBO & Multi-Currency</div>
+        <div class="lesson-subtitle">Foreign currency accounting, exchange gains/losses, transfer pricing, and cross-border compliance</div>
+      </div>
+      <div class="content-card">
+        <h2>Multi-Currency in QBO Advanced</h2>
+        <p>International clients add complexity at every accounting touchpoint. Multi-currency setup in QBO is the foundation — but the advisory challenges go far beyond software configuration.</p>
+        <h3>Enabling multi-currency in QBO</h3>
+        <ul>
+          <li>Settings → Company Settings → Advanced → Currency → enable multi-currency</li>
+          <li><strong>Warning: once enabled, multi-currency cannot be turned off</strong></li>
+          <li>Set the home/base currency first — all reporting will be in this currency</li>
+          <li>Add foreign currency bank accounts as separate accounts in QBO</li>
+        </ul>
+        <h3>Exchange rate policy decisions</h3>
+        <table class="compare-table">
+          <tr><th>Approach</th><th>Pros</th><th>Cons</th></tr>
+          <tr><td>Real-time rates (QBO auto)</td><td>Most accurate daily</td><td>Monthly statements fluctuate</td></tr>
+          <tr><td class="hl">Fixed monthly rate</td><td class="hl">Consistent P&L comparisons</td><td class="hl">Must update manually each month</td></tr>
+          <tr><td>Transaction-date rate</td><td>Precise per-transaction</td><td>Admin intensive</td></tr>
+        </table>
+        <h3>Realised vs unrealised exchange gains/losses</h3>
+        <p><strong>Unrealised:</strong> arises when a foreign currency balance is revalued at a new rate before settlement. Example: a USD invoice raised when $1 = R18 is still unpaid when $1 = R19 — the ZAR value increased, creating an unrealised gain.</p>
+        <p><strong>Realised:</strong> arises at the point of actual settlement (payment or receipt). The difference between the rate at invoice date and the rate at payment date is the realised gain or loss.</p>
+        <div class="info-box teal">
+          <strong>Year-end revaluation</strong>
+          QBO does not auto-revalue foreign currency balances at year-end. Advisors must manually revalue all foreign currency debtors, creditors, and bank balances at the closing rate and post the unrealised gain/loss — then reverse on the first day of the new period.
+        </div>
+        <h3>Transfer pricing</h3>
+        <p>When related entities in different countries transact with each other, tax authorities require these to be priced at <strong>arm's length</strong> (market rates). Key obligations:</p>
+        <ul>
+          <li>Intercompany services must be charged at a rate a third party would pay</li>
+          <li>Loans must carry market interest rates (or imputed interest applies)</li>
+          <li>Documentation requirements increase with entity size — advisors must flag this early</li>
+        </ul>
+        <h3>Cross-border VAT/GST / withholding tax</h3>
+        <p>International invoicing triggers complex tax questions: Does the client have a permanent establishment in the foreign country? Is the service subject to reverse charge? Are there withholding taxes on royalties or service fees? These require specialist tax advice — the advisor's role is to identify the questions and refer appropriately.</p>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Scenario</div>
+        <div class="sim-scenario">A South African client (ZAR base currency) invoiced a US customer $10,000 on November 1 when the rate was $1 = R18.20. The customer paid $10,000 on December 15 when the rate was $1 = R18.85. The year-end is December 31 and a second invoice for $8,000 is still outstanding at a rate of $1 = R19.10.</div>
+        <div class="sim-question">What are the two exchange differences to record and what is the year-end adjustment?</div>
+        <div class="sim-options" id="sim-3">
+          <div class="sim-opt" onclick="answerSim(3,0,3)"><div class="sim-opt-label">A</div>Realised gain on Nov invoice: ($18.85 − $18.20) × $10,000 = R6,500. Year-end unrealised gain on Dec invoice: ($19.10 − invoice rate) × $8,000 — need the Dec invoice rate to calculate. Both posted to Exchange Gains/Losses in P&L. Unrealised gain reversed Jan 1.</div>
+          <div class="sim-opt" onclick="answerSim(3,1,3)"><div class="sim-opt-label">B</div>No entries needed — both amounts are in USD so no ZAR conversion is required</div>
+          <div class="sim-opt" onclick="answerSim(3,2,3)"><div class="sim-opt-label">C</div>Record both as income at the original invoice rates only — payment rates don't affect the accounts</div>
+          <div class="sim-opt" onclick="answerSim(3,3,3)"><div class="sim-opt-label">D</div>Exchange differences are only recorded at year-end for all transactions together</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-3">✅ A is correct. The realised gain on the settled invoice = R6,500 (rate moved R0.65 × 10,000 units). The outstanding December invoice requires year-end revaluation at the closing rate — the difference vs the rate when invoiced is an unrealised gain/loss posted to P&L and reversed January 1. This is the standard treatment under IAS 21 / ASC 830.</div>
+      </div>
+      <div class="lesson-nav-btns"><button class="btn btn-outline" onclick="showLesson(2)">← Previous</button><button class="btn btn-primary" onclick="nextLesson(3)">Next: Ethics & Going Concern →</button></div>
+    </div>
+
+    <!-- LESSON 4: Ethics & Going Concern -->
+    <div id="lesson-4" style="display:none">
+      <div class="lesson-header">
+        <div class="lesson-tag">L3 Module 5</div>
+        <div class="lesson-title">Professional Ethics & Going Concern</div>
+        <div class="lesson-subtitle">Ethical obligations, going concern assessment, fraud indicators, and professional standards</div>
+      </div>
+      <div class="content-card">
+        <h2>Professional Ethics in Accounting</h2>
+        <p>At advisor level, you will encounter ethical dilemmas. Understanding your professional obligations — and the consequences of getting them wrong — protects both you and your clients.</p>
+        <h3>The five fundamental principles (IESBA / AICPA)</h3>
+        <ul>
+          <li><strong>Integrity</strong> — be straightforward and honest in all professional relationships</li>
+          <li><strong>Objectivity</strong> — do not allow bias, conflict of interest, or undue influence to override professional judgement</li>
+          <li><strong>Professional competence and due care</strong> — maintain knowledge and act with diligence</li>
+          <li><strong>Confidentiality</strong> — do not disclose information without authority (unless legally required)</li>
+          <li><strong>Professional behaviour</strong> — comply with relevant laws; avoid actions that discredit the profession</li>
+        </ul>
+        <h3>Ethical red lines — situations you must refuse</h3>
+        <table class="compare-table">
+          <tr><th>Client Request</th><th>Correct Response</th></tr>
+          <tr><td>Backdate an invoice to reduce this year's tax</td><td class="hl">Refuse — this is tax evasion</td></tr>
+          <tr><td>Inflate revenue to meet a bank covenant</td><td class="hl">Refuse — financial statement fraud</td></tr>
+          <tr><td>"Just put it in Miscellaneous" (large unexplained items)</td><td class="hl">Investigate; refuse to mask undisclosed items</td></tr>
+          <tr><td>Don't disclose related-party loans to auditors</td><td class="hl">Refuse — related-party disclosure is mandatory</td></tr>
+        </table>
+        <div class="info-box red">
+          <strong>What to do when a client insists</strong>
+          Document your refusal in writing. If the client proceeds without you, consider whether continued association compromises your professional standing. In cases involving suspected money laundering or tax fraud, you may have a legal reporting obligation (Suspicious Activity Report — SAR) that overrides client confidentiality.
+        </div>
+        <h3>Going concern assessment</h3>
+        <p>Going concern is the assumption that a business will continue operating for at least 12 months from the reporting date. You must assess this — not just accept management's assurance.</p>
+        <p><strong>Indicators of going concern doubt:</strong></p>
+        <ul>
+          <li>3+ consecutive years of losses</li>
+          <li>Current ratio below 1.0 (current liabilities exceed current assets)</li>
+          <li>Net liabilities (total liabilities exceed total assets)</li>
+          <li>Key loan covenant breaches</li>
+          <li>Loss of a major customer (significant revenue concentration)</li>
+          <li>Inability to obtain refinancing</li>
+        </ul>
+        <p>When doubt exists, the accounts must <strong>disclose the uncertainty</strong> — with evidence of management's plans to address it. Preparing accounts on a going concern basis without adequate evidence is a professional standards breach.</p>
+        <h3>Fraud indicators in QBO</h3>
+        <ul>
+          <li>Large, round-number transactions with no supporting documentation</li>
+          <li>Payments to vendors with no physical address or history</li>
+          <li>Payroll payments to employees not on the HR list</li>
+          <li>Transactions deleted or voided after reconciliation</li>
+          <li>Journal entries posted directly to revenue by non-finance staff</li>
+          <li>Audit log showing unusual after-hours access or bulk changes</li>
+        </ul>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Scenario</div>
+        <div class="sim-scenario">You are preparing year-end accounts for a client who has made losses in each of the last 3 years. Year 1: −$45,000. Year 2: −$62,000. Year 3: −$89,000. The balance sheet shows net liabilities of $38,000 (liabilities exceed assets). The director tells you: "We've signed a new contract — things will turn around. Just prepare the accounts as a going concern."</div>
+        <div class="sim-question">What is the correct professional response?</div>
+        <div class="sim-options" id="sim-4">
+          <div class="sim-opt" onclick="answerSim(4,0,4)"><div class="sim-opt-label">A</div>Request written evidence of the new contract value and start date; obtain management's formal going concern assessment with 12-month cash flow projections; if evidence is sufficient, prepare on going concern basis with disclosure of the material uncertainty; if insufficient, qualify the accounts.</div>
+          <div class="sim-opt" onclick="answerSim(4,1,4)"><div class="sim-opt-label">B</div>Accept the director's assurance — they know the business better than you</div>
+          <div class="sim-opt" onclick="answerSim(4,2,4)"><div class="sim-opt-label">C</div>Refuse to prepare accounts — the business is insolvent and must be wound up</div>
+          <div class="sim-opt" onclick="answerSim(4,3,4)"><div class="sim-opt-label">D</div>Prepare accounts on a break-up basis without informing the client</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-4">✅ A is correct. The evidence must be obtained and documented — verbal assurance is not sufficient. A single new contract does not automatically resolve 3 years of losses and net liabilities. If proper evidence supports going concern, disclose the material uncertainty in the notes. If not, the accounts may need qualification. This is the accountant's professional obligation, not a choice.</div>
+      </div>
+      <div class="lesson-nav-btns"><button class="btn btn-outline" onclick="showLesson(3)">← Previous</button><button class="btn btn-primary" onclick="nextLesson(4)">Next: Advisory & Valuation →</button></div>
+    </div>
+
+    <!-- LESSON 5: Advisory & Valuation -->
+    <div id="lesson-5" style="display:none">
+      <div class="lesson-header">
+        <div class="lesson-tag">L3 Module 6</div>
+        <div class="lesson-title">Business Advisory & Valuation</div>
+        <div class="lesson-subtitle">EBITDA, valuation multiples, cash flow forecasting, KPIs, and the advisory transition</div>
+      </div>
+      <div class="content-card">
+        <h2>From Bookkeeper to Trusted Advisor</h2>
+        <p>The highest-value accounting service is advisory — helping business owners make better decisions using their financial data. This requires mastering the language of business value, not just transaction recording.</p>
+        <h3>Business valuation fundamentals</h3>
+        <p>For SMEs, the most common valuation method is the EBITDA multiple:</p>
+        <div style="background:var(--purple-light);border-radius:8px;padding:16px 20px;margin:14px 0;font-size:14px;text-align:center">
+          <strong>Enterprise Value = Normalised EBITDA × Sector Multiple</strong><br>
+          <span style="font-size:12px;color:var(--muted);margin-top:4px;display:block">Typical SME multiples: 2×–5× EBITDA (varies by sector, growth rate, and risk)</span>
+        </div>
+        <h3>How to extract EBITDA from QBO</h3>
+        <ol>
+          <li>Start with Net Profit from QBO P&L</li>
+          <li>Add back: Interest expense, Tax provisions</li>
+          <li>Add back: Depreciation and Amortisation (from fixed asset schedule)</li>
+          <li>= EBITDA (Earnings Before Interest, Tax, Depreciation and Amortisation)</li>
+          <li>Apply normalisation adjustments (owner salary, one-offs)</li>
+          <li>= Normalised EBITDA for valuation purposes</li>
+        </ol>
+        <h3>13-week cash flow forecasting</h3>
+        <p>A 13-week (90-day) cash flow is the most powerful tool for managing working capital. Build it from QBO data:</p>
+        <table class="compare-table">
+          <tr><th>Input</th><th>QBO Source</th></tr>
+          <tr><td>Debtor collections (week by week)</td><td>AR Ageing + payment history</td></tr>
+          <tr><td>Supplier payments due</td><td>AP Ageing + payment terms</td></tr>
+          <tr><td>Weekly payroll</td><td>Payroll schedule</td></tr>
+          <tr><td>Loan repayments</td><td>Loan schedule (external)</td></tr>
+          <tr><td class="hl">Opening cash</td><td class="hl">Bank reconciliation balance</td></tr>
+        </table>
+        <h3>Key Performance Indicators (KPIs) from QBO</h3>
+        <ul>
+          <li><strong>Gross Margin %:</strong> (Revenue − COGS) ÷ Revenue — benchmark against industry</li>
+          <li><strong>Debtor Days:</strong> (AR ÷ Revenue) × 365 — how long customers take to pay</li>
+          <li><strong>Creditor Days:</strong> (AP ÷ COGS) × 365 — how long you take to pay suppliers</li>
+          <li><strong>Inventory Turns:</strong> COGS ÷ Average Inventory — how fast stock moves</li>
+          <li><strong>Current Ratio:</strong> Current Assets ÷ Current Liabilities — liquidity health</li>
+          <li><strong>Revenue per Employee:</strong> Total Revenue ÷ Headcount — productivity benchmark</li>
+        </ul>
+        <div class="info-box teal">
+          <strong>The advisory conversation shift</strong>
+          Compliance-only: "Here are your accounts." Advisory: "Your debtor days have increased from 28 to 47 days — that's $85,000 of cash tied up in late payments. If we get this back to 28 days, you free up enough cash to avoid the overdraft you used in Q3." This is the value proposition of advisor-level certification.
+        </div>
+        <h3>Loan covenant monitoring</h3>
+        <p>Many business loans include financial covenants (minimum current ratio, maximum debt-to-equity, minimum EBITDA coverage). Advisors must: identify all covenants in their client's loan agreements, calculate the ratios from QBO monthly, and alert clients before a breach occurs — not after the bank does.</p>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Final scenario — full advisory analysis</div>
+        <div class="sim-scenario">A client's QBO shows: Net profit $180,000. Depreciation $45,000. Interest expense $28,000. Tax provision $52,000. Owner salary $240,000 (market rate for their role: $120,000). One-off legal settlement income: $35,000. The industry trades at a 3.5× EBITDA multiple.</div>
+        <div class="sim-question">Calculate normalised EBITDA and the estimated enterprise value.</div>
+        <div class="sim-options" id="sim-5">
+          <div class="sim-opt" onclick="answerSim(5,0,5)"><div class="sim-opt-label">A</div>EBITDA = $180k + $28k + $52k + $45k = $305k. Normalise: add back excess owner salary $120k; deduct one-off legal income $35k. Normalised EBITDA = $305k + $120k − $35k = $390k. Enterprise value = $390k × 3.5 = $1,365,000.</div>
+          <div class="sim-opt" onclick="answerSim(5,1,5)"><div class="sim-opt-label">B</div>EBITDA = $180k + $45k = $225k. Enterprise value = $225k × 3.5 = $787,500.</div>
+          <div class="sim-opt" onclick="answerSim(5,2,5)"><div class="sim-opt-label">C</div>Enterprise value = Net profit × multiple = $180k × 3.5 = $630,000.</div>
+          <div class="sim-opt" onclick="answerSim(5,3,5)"><div class="sim-opt-label">D</div>EBITDA = $305k. Enterprise value = $305k × 3.5 = $1,067,500 — no normalisation adjustments needed.</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-5">✅ A is correct. Step 1: Build EBITDA from net profit by adding back interest, tax, and depreciation = $305,000. Step 2: Normalise — add back the excess owner salary ($240k paid vs $120k market rate = $120k addback, as a buyer would replace the owner-manager at market rate); deduct the one-off legal income (not repeatable, so buyers exclude it). Normalised EBITDA = $390,000. Enterprise Value = $390k × 3.5 = $1,365,000. This is a $297,500 difference vs unadjusted EBITDA — normalisation has a massive impact on deal value.</div>
+      </div>
+
+      <!-- COMPLETE -->
+      <div class="content-card" style="text-align:center;padding:40px">
+        <div style="font-size:48px;margin-bottom:16px">🏆</div>
+        <h2 style="border:none;text-align:center;font-size:22px;margin-bottom:8px">You have completed all QB L3 modules</h2>
+        <p style="color:var(--muted);max-width:460px;margin:0 auto 12px;font-size:14px">The L3 Advisor assessment tests your ability to handle complex scenarios at the level of a practicing accountant. Pass rate required: 80%.</p>
+        <p style="color:var(--muted);max-width:460px;margin:0 auto 24px;font-size:13px">This is the highest QuickBooks certification on LedgerLearn. Certificate issued with your name, score, region, and a unique verifiable ID.</p>
+        <button class="btn-test" onclick="startAssessment()">Start QB L3 Assessment →</button>
+      </div>
+
+      <div class="lesson-nav-btns"><button class="btn btn-outline" onclick="showLesson(4)">← Previous</button><span></span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOTAL=6;
+let progress=JSON.parse(localStorage.getItem('ll_qb_l3_progress')||'{"done":[]}');
+function saveProgress(){localStorage.setItem('ll_qb_l3_progress',JSON.stringify(progress));}
+function showLesson(n){
+  for(let i=0;i<TOTAL;i++){
+    const el=document.getElementById('lesson-'+i);
+    if(el)el.style.display=i===n?'block':'none';
+    const li=document.getElementById('li-'+i);
+    if(li){li.classList.remove('on');if(progress.done.includes(i)&&i!==n)li.classList.add('done');else li.classList.remove('done');}
+  }
+  const cur=document.getElementById('li-'+n);
+  if(cur){cur.classList.add('on');cur.classList.remove('done');}
+  updateProgress();window.scrollTo(0,0);
+}
+function nextLesson(c){if(!progress.done.includes(c)){progress.done.push(c);saveProgress();}showLesson(c+1);}
+function updateProgress(){
+  const pct=Math.round((progress.done.length/TOTAL)*100);
+  const f=document.getElementById('prog-fill'),p=document.getElementById('prog-pct');
+  if(f)f.style.width=pct+'%';if(p)p.textContent=pct+'%';
+}
+function answerSim(sId,cIdx,corrIdx){
+  const opts=document.querySelectorAll('#sim-'+sId+' .sim-opt');
+  opts.forEach(function(o,i){o.onclick=null;if(i===corrIdx)o.classList.add('correct');else if(i===cIdx&&cIdx!==corrIdx)o.classList.add('wrong');});
+  const exp=document.getElementById('sim-exp-'+sId);if(exp)exp.style.display='block';
+}
+function startAssessment(){localStorage.setItem('ll_test_track','QuickBooks');localStorage.setItem('ll_test_level','L3');window.location.href='/test';}
+showLesson(0);updateProgress();
+</script>
+</body>
+</html>

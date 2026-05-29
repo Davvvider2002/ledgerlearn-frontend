@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LedgerLearn — QuickBooks L2 Professional</title>
+<style>
+:root{--navy:#0F2540;--teal:#1D9E75;--teal-light:#E1F5EE;--gold:#C9A84C;--gold-light:#FAEEDA;--orange:#ea580c;--orange-light:#FFF7ED;--bg:#f9f9f7;--card:#fff;--border:#e5e3db;--text:#1a1a18;--muted:#6b6b67;--radius:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+.nav{background:var(--navy);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.nav-logo{color:#fff;font-size:16px;font-weight:600;text-decoration:none;letter-spacing:-.01em}
+.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;gap:20px;align-items:center}
+.nav-links a{color:rgba(255,255,255,.7);text-decoration:none;font-size:13px}
+.nav-links a:hover{color:#fff}
+.nav-badge{background:var(--orange);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.layout{display:flex;flex:1;max-width:1100px;margin:0 auto;width:100%;padding:24px 20px;gap:24px}
+.sidebar{width:240px;flex-shrink:0}
+.track-badge{background:var(--orange-light);border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;margin-bottom:16px}
+.track-badge .track-name{font-size:13px;font-weight:600;color:var(--orange)}
+.track-badge .track-level{font-size:12px;color:#9a3412;margin-top:2px}
+.lesson-nav{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.lesson-nav-hdr{padding:12px 16px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.lesson-item{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;font-size:13px;color:var(--muted);border-left:3px solid transparent;transition:all .15s}
+.lesson-item:hover{background:#f5f5f3;color:var(--text)}
+.lesson-item.on{background:var(--orange-light);color:var(--orange);border-left-color:var(--orange);font-weight:500}
+.lesson-item.done{color:var(--teal)}
+.lesson-num{width:20px;height:20px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.lesson-item.on .lesson-num{background:var(--orange);color:#fff}
+.lesson-item.done .lesson-num{background:var(--teal);color:#fff}
+.progress-bar-wrap{padding:14px 16px;border-top:1px solid var(--border)}
+.progress-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-track{background:var(--bg);border-radius:4px;height:5px;overflow:hidden}
+.progress-fill{height:100%;background:var(--orange);border-radius:4px;transition:width .4s}
+.main{flex:1;min-width:0}
+.lesson-header{margin-bottom:20px}
+.lesson-tag{display:inline-flex;align-items:center;gap:6px;background:var(--orange-light);color:#9a3412;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.lesson-title{font-size:24px;font-weight:700;color:var(--navy);letter-spacing:-.02em}
+.lesson-subtitle{font-size:14px;color:var(--muted);margin-top:4px}
+.content-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;margin-bottom:20px}
+.content-card h2{font-size:17px;font-weight:600;color:var(--navy);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.content-card h3{font-size:15px;font-weight:600;color:var(--text);margin:18px 0 8px}
+.content-card p{font-size:14px;color:var(--text);margin-bottom:12px;line-height:1.7}
+.content-card ul,.content-card ol{margin:0 0 14px 20px}
+.content-card li{font-size:14px;color:var(--text);margin-bottom:6px;line-height:1.6}
+.info-box{border-left:3px solid var(--orange);background:var(--orange-light);border-radius:0 8px 8px 0;padding:14px 16px;margin:16px 0;font-size:13px;line-height:1.6}
+.info-box.teal{border-left-color:var(--teal);background:var(--teal-light)}
+.info-box.gold{border-left-color:var(--gold);background:var(--gold-light)}
+.info-box strong{display:block;margin-bottom:4px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--orange)}
+.info-box.teal strong{color:#085041}
+.info-box.gold strong{color:#633806}
+.sim-card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:20px 24px;margin:16px 0}
+.sim-card-hdr{font-size:12px;font-weight:700;color:#065f46;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sim-scenario{background:#fff;border:1px solid #d1fae5;border-radius:8px;padding:14px 16px;margin-bottom:12px;font-size:13px;line-height:1.6}
+.sim-question{font-size:13px;font-weight:600;color:#065f46;margin-bottom:10px}
+.sim-options{display:flex;flex-direction:column;gap:8px}
+.sim-opt{background:#fff;border:1.5px solid #d1fae5;border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px}
+.sim-opt:hover{border-color:var(--teal);background:var(--teal-light)}
+.sim-opt.correct{border-color:var(--teal);background:#d1fae5;font-weight:500}
+.sim-opt.wrong{border-color:#ef4444;background:#fee2e2}
+.sim-opt-label{width:20px;height:20px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.sim-explanation{margin-top:12px;padding:12px 14px;background:#fff;border-radius:8px;border-left:3px solid var(--teal);font-size:13px;line-height:1.6;display:none}
+.compare-table{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0}
+.compare-table th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-weight:500}
+.compare-table td{padding:10px 14px;border-bottom:1px solid var(--border)}
+.compare-table tr:nth-child(even) td{background:#f9f9f7}
+.compare-table .hl{background:var(--orange-light)!important;font-weight:500}
+.lesson-nav-btns{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.btn{padding:10px 22px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--orange);color:var(--orange)}
+.btn-primary{background:var(--orange);color:#fff}
+.btn-primary:hover{background:#c2410c}
+.btn-test{background:var(--navy);color:#fff;padding:12px 28px;font-size:15px;border-radius:8px;cursor:pointer;border:none;font-weight:600;transition:background .2s}
+.btn-test:hover{background:#1e3a5f}
+.level-banner{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap}
+.level-pill{display:flex;align-items:center;gap:6px;font-size:13px;padding:6px 14px;border-radius:20px;background:var(--bg);border:1px solid var(--border);color:var(--muted)}
+.level-pill.done{background:var(--teal-light);border-color:#9FE1CB;color:#085041;font-weight:500}
+.level-pill.current{background:var(--orange-light);border-color:#fed7aa;color:var(--orange);font-weight:600}
+@media(max-width:768px){.layout{flex-direction:column;padding:16px}.sidebar{width:100%}.content-card{padding:20px}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/" class="nav-logo">Ledger<span>Learn</span></a>
+  <div class="nav-links">
+    <a href="/learn">Learn</a>
+    <a href="/test">Assess</a>
+    <a href="/dashboard">Dashboard</a>
+    <span class="nav-badge">QB L2 Pro</span>
+  </div>
+</nav>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="track-badge">
+      <div class="track-name">QuickBooks Online</div>
+      <div class="track-level">L2 — Professional · $49</div>
+    </div>
+    <div class="lesson-nav">
+      <div class="lesson-nav-hdr">L2 Modules</div>
+      <div class="lesson-item on" onclick="showLesson(0)" id="li-0"><div class="lesson-num">1</div><span>Advanced AR & AP</span></div>
+      <div class="lesson-item" onclick="showLesson(1)" id="li-1"><div class="lesson-num">2</div><span>Inventory & COGS</span></div>
+      <div class="lesson-item" onclick="showLesson(2)" id="li-2"><div class="lesson-num">3</div><span>Payroll Deep Dive</span></div>
+      <div class="lesson-item" onclick="showLesson(3)" id="li-3"><div class="lesson-num">4</div><span>Classes, Locations & Projects</span></div>
+      <div class="lesson-item" onclick="showLesson(4)" id="li-4"><div class="lesson-num">5</div><span>Fixed Assets & Depreciation</span></div>
+      <div class="lesson-item" onclick="showLesson(5)" id="li-5"><div class="lesson-num">6</div><span>Advanced Reporting & Year-End</span></div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Progress</span><span id="prog-pct">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="level-banner">
+      <div class="level-pill done">✓ QB L1 Certified</div>
+      <div class="level-pill current">QB L2 Professional</div>
+      <div class="level-pill">🔒 QB L3 (after L2)</div>
+    </div>
+
+    <!-- LESSON 0: Advanced AR & AP -->
+    <div id="lesson-0">
+      <div class="lesson-header">
+        <div class="lesson-tag">L2 Module 1</div>
+        <div class="lesson-title">Advanced AR & Accounts Payable</div>
+        <div class="lesson-subtitle">Partial payments, bad debts, statement reconciliation, and multi-bill payments</div>
+      </div>
+      <div class="content-card">
+        <h2>Advanced Receivables Management</h2>
+        <p>At L2 level, you move beyond creating invoices to managing complex AR situations: partial payments, disputes, bad debts, and customer credit management.</p>
+        <h3>Partial payments</h3>
+        <p>When a customer pays part of an invoice, QBO's Receive Payment applies the amount to the invoice and leaves the balance open. The open balance remains in AR ageing until paid, credited, or written off. Never edit the invoice to match a partial payment — that loses the original agreed amount.</p>
+        <h3>Writing off bad debts in QBO</h3>
+        <ol>
+          <li>Create a <strong>Bad Debt</strong> expense account in the Chart of Accounts if one doesn't exist</li>
+          <li>Go to the overdue invoice and click <strong>Receive Payment</strong></li>
+          <li>Add a <strong>Discount</strong> line equal to the full outstanding amount, coded to Bad Debt expense</li>
+          <li>Apply the discount — the invoice balance clears to zero</li>
+        </ol>
+        <div class="info-box gold">
+          <strong>Tax note</strong>
+          Writing off a bad debt reduces income for tax purposes in most jurisdictions. If VAT/GST was already declared on the invoice, a corresponding input tax adjustment (bad debt relief) may also be claimable — check your regional rules.
+        </div>
+        <h3>Customer statements</h3>
+        <p>QBO can generate customer statements showing all open invoices and credits on a customer's account. Use these for: monthly statement sends, dispute resolution, and year-end confirmation requests from auditors.</p>
+        <h3>Advanced AP: batch bill payments</h3>
+        <p>For businesses with many vendors, <strong>Pay Bills</strong> (Expenses → Pay Bills) lets you select multiple vendors and bills, set payment dates, and process in one batch — much more efficient than paying each bill individually.</p>
+        <h3>Vendor credit application</h3>
+        <p>Vendor credits don't apply automatically. When paying a bill where a credit exists, QBO shows the available credit — you must manually apply it to reduce the payment. Not applying credits means overpaying vendors and understating cash.</p>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Scenario</div>
+        <div class="sim-scenario">A customer owes $3,600 on an invoice 120 days old. They've declared insolvency. You need to write off the full amount as bad debt. Your QBO currently has no Bad Debt account.</div>
+        <div class="sim-question">What is the correct sequence of actions?</div>
+        <div class="sim-options" id="sim-0">
+          <div class="sim-opt" onclick="answerSim(0,0,0)"><div class="sim-opt-label">A</div>Create a Bad Debt expense account → open the invoice → Receive Payment → apply a $3,600 discount to Bad Debt → save to close the invoice</div>
+          <div class="sim-opt" onclick="answerSim(0,1,0)"><div class="sim-opt-label">B</div>Delete the invoice — it will never be paid so it shouldn't be in QBO</div>
+          <div class="sim-opt" onclick="answerSim(0,2,0)"><div class="sim-opt-label">C</div>Credit the $3,600 to Miscellaneous Income to offset the loss</div>
+          <div class="sim-opt" onclick="answerSim(0,3,0)"><div class="sim-opt-label">D</div>Leave the invoice open — it may be recoverable from the liquidator</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-0">✅ A is correct. The Bad Debt account must exist first, then the write-off is applied via a discount on the payment screen. Deleting the invoice destroys the audit trail. Crediting to income is incorrect accounting. Leaving open inflates AR and produces misleading reports.</div>
+      </div>
+      <div class="lesson-nav-btns"><span></span><button class="btn btn-primary" onclick="nextLesson(0)">Next: Inventory →</button></div>
+    </div>
+
+    <!-- LESSON 1: Inventory & COGS -->
+    <div id="lesson-1" style="display:none">
+      <div class="lesson-header">
+        <div class="lesson-tag">L2 Module 2</div>
+        <div class="lesson-title">Inventory & COGS</div>
+        <div class="lesson-subtitle">Inventory tracking, adjustments, COGS automation, and shrinkage management</div>
+      </div>
+      <div class="content-card">
+        <h2>Inventory Tracking in QBO</h2>
+        <p>QBO uses the <strong>weighted average cost</strong> method for inventory valuation. When you sell a product, QBO automatically calculates and posts the cost of that item to Cost of Goods Sold (COGS).</p>
+        <h3>Setting up inventory items</h3>
+        <ul>
+          <li>Products &amp; Services → New → Inventory part</li>
+          <li>Set: description, sales price, income account, COGS account, asset account, and opening quantity/value</li>
+          <li>QBO tracks: quantity on hand, reorder point, and average cost per unit in real time</li>
+        </ul>
+        <h3>What happens when you sell</h3>
+        <p>When an inventory item is invoiced, QBO automatically:</p>
+        <ol>
+          <li>Credits the Inventory Asset account (reduces the asset)</li>
+          <li>Debits COGS (recognises the cost as an expense)</li>
+          <li>Decrements the quantity on hand</li>
+        </ol>
+        <div class="info-box teal">
+          <strong>Average cost calculation</strong>
+          Each new purchase updates the average cost. Example: 10 units @ $20 = $200. Buy 10 more @ $25 = $250. New average = $450 ÷ 20 = $22.50. All future sales use $22.50/unit for COGS until the next purchase changes the average.
+        </div>
+        <h3>Inventory adjustments</h3>
+        <p>Physical count reveals fewer units than QBO shows? Use <strong>+ New → Inventory Qty Adjustment</strong>. Enter the actual count and adjustment date. QBO posts the variance value to an Inventory Shrinkage expense account (or another account you specify).</p>
+        <h3>Purchase Orders</h3>
+        <p>Purchase Orders (POs) in QBO are non-posting — they don't affect the accounts. They are commitments to buy. When goods arrive and you receive a bill, you link the bill to the PO. This closes the PO and records the inventory receipt properly.</p>
+        <table class="compare-table">
+          <tr><th>Step</th><th>QBO Action</th><th>Financial Impact</th></tr>
+          <tr><td>Order placed</td><td>Purchase Order</td><td>None — non-posting</td></tr>
+          <tr><td>Goods received</td><td>Receive Items (link to PO)</td><td>Inventory ↑, AP ↑</td></tr>
+          <tr><td>Bill received</td><td>Bill (linked to receipt)</td><td>Confirmed — no change</td></tr>
+          <tr><td>Bill paid</td><td>Pay Bill</td><td>AP ↓, Bank ↓</td></tr>
+        </table>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Scenario</div>
+        <div class="sim-scenario">After a physical count you discover 15 fewer units of Product X than QBO shows. Product X has an average cost of $18/unit. QBO shows 80 units; actual count is 65.</div>
+        <div class="sim-question">What is the QBO adjustment and what is the financial statement impact?</div>
+        <div class="sim-options" id="sim-1">
+          <div class="sim-opt" onclick="answerSim(1,0,1)"><div class="sim-opt-label">A</div>Inventory Qty Adjustment: set quantity to 65 units. QBO posts Dr Inventory Shrinkage $270 / Cr Inventory Asset $270 (15 units × $18). P&L expense increases, inventory asset decreases.</div>
+          <div class="sim-opt" onclick="answerSim(1,1,1)"><div class="sim-opt-label">B</div>Edit the product record to show 65 units — no financial entry needed</div>
+          <div class="sim-opt" onclick="answerSim(1,2,1)"><div class="sim-opt-label">C</div>Credit COGS for $270 to offset the missing inventory</div>
+          <div class="sim-opt" onclick="answerSim(1,3,1)"><div class="sim-opt-label">D</div>Recount the items — discrepancies under 20 units should be ignored</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-1">✅ A is correct. QBO's Inventory Adjustment calculates the value automatically (15 × $18 = $270) and posts it to Inventory Shrinkage expense. This reduces the asset and recognises the cost — correct double-entry accounting.</div>
+      </div>
+      <div class="lesson-nav-btns"><button class="btn btn-outline" onclick="showLesson(0)">← Previous</button><button class="btn btn-primary" onclick="nextLesson(1)">Next: Payroll →</button></div>
+    </div>
+
+    <!-- LESSON 2: Payroll -->
+    <div id="lesson-2" style="display:none">
+      <div class="lesson-header">
+        <div class="lesson-tag">L2 Module 3</div>
+        <div class="lesson-title">Payroll Deep Dive</div>
+        <div class="lesson-subtitle">Payroll runs, tax calculations, multi-state compliance, and payroll journal entries</div>
+      </div>
+      <div class="content-card">
+        <h2>QBO Payroll — Professional Level</h2>
+        <p>At L2, payroll knowledge goes beyond running pay. You need to understand: what QBO calculates vs what you must verify, what the journal entries look like, and how errors are corrected.</p>
+        <h3>What QBO Payroll calculates automatically</h3>
+        <ul>
+          <li>Federal income tax withholding (based on W-4 elections)</li>
+          <li>FICA — Social Security (6.2% employee + 6.2% employer) and Medicare (1.45% + 1.45%)</li>
+          <li>FUTA (6% federal unemployment on first $7,000/employee)</li>
+          <li>State income tax and SUTA (requires correct state setup per employee)</li>
+          <li>Employer contributions and deductions (health, 401k, garnishments)</li>
+        </ul>
+        <div class="info-box">
+          <strong>Multi-state payroll</strong>
+          Each employee is taxed based on their <em>work state</em> (where they perform duties) and sometimes their <em>home state</em> (if different). QBO supports multi-state but requires separate registration and tax ID for each state — the bookkeeper must set this up correctly or withholding will be wrong.
+        </div>
+        <h3>The payroll journal entry</h3>
+        <table class="compare-table">
+          <tr><th>Account</th><th>Dr</th><th>Cr</th><th>Explanation</th></tr>
+          <tr><td>Gross Wages Expense</td><td class="hl">$5,000</td><td>—</td><td>Total wages earned</td></tr>
+          <tr><td>Payroll Tax Expense (employer)</td><td class="hl">$382.50</td><td>—</td><td>FICA + FUTA employer share</td></tr>
+          <tr><td>Employee Tax Liability (FICA)</td><td>—</td><td>$382.50</td><td>Employee FICA withheld</td></tr>
+          <tr><td>Federal Income Tax Payable</td><td>—</td><td>$750</td><td>FIT withheld for IRS</td></tr>
+          <tr><td>Net Pay (Bank / Direct Deposit)</td><td>—</td><td>$3,867.50</td><td>Actual pay to employee</td></tr>
+        </table>
+        <h3>Correcting payroll errors in QBO</h3>
+        <p>If a payroll run has an error:</p>
+        <ul>
+          <li><strong>Same period, not yet filed:</strong> void the payroll run and reprocess with corrections</li>
+          <li><strong>Prior period, already filed:</strong> run a corrective payroll (over/under payment) and file an amended 941 if needed</li>
+          <li><strong>Tax filing errors:</strong> file an amended 941 and ensure QBO is updated to match — do not just post a manual journal without updating the payroll module</li>
+        </ul>
+        <h3>Commission pay types</h3>
+        <p>QBO Payroll supports variable pay types. Add <strong>Commission</strong> as a pay type in the employee's payroll profile (Payroll → Employees → edit → Pay Types). Each pay run you enter the actual commission amount — QBO calculates the tax on the total (base + commission).</p>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Scenario</div>
+        <div class="sim-scenario">After running payroll you discover that one employee's work state was set incorrectly — they work in State A but QBO was configured for State B. The error has affected 3 payroll runs. State A has a 5% income tax rate and State B has 3%. The employee's gross pay was $4,000 each run.</div>
+        <div class="sim-question">What is the correct approach?</div>
+        <div class="sim-options" id="sim-2">
+          <div class="sim-opt" onclick="answerSim(2,0,2)"><div class="sim-opt-label">A</div>Correct the work state in QBO → void and reprocess if the pay period is still open, or run a corrective adjustment for the tax difference ($80/run × 3 = $240 under-withheld) and file amended state returns for State A and State B</div>
+          <div class="sim-opt" onclick="answerSim(2,1,2)"><div class="sim-opt-label">B</div>Post a $240 manual journal to payroll tax expense and move on</div>
+          <div class="sim-opt" onclick="answerSim(2,2,2)"><div class="sim-opt-label">C</div>Fix the state setting for future payrolls only — prior runs cannot be amended</div>
+          <div class="sim-opt" onclick="answerSim(2,3,2)"><div class="sim-opt-label">D</div>The employee is responsible for their own state tax — no employer action needed</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-2">✅ A is correct. The error created a compliance issue in two states — underwithholding in State A and overwithholding in State B. Amended returns must be filed for both states. The employee was under-withheld in State A by 2% × $4,000 × 3 = $240 and may owe that tax personally.</div>
+      </div>
+      <div class="lesson-nav-btns"><button class="btn btn-outline" onclick="showLesson(1)">← Previous</button><button class="btn btn-primary" onclick="nextLesson(2)">Next: Classes & Projects →</button></div>
+    </div>
+
+    <!-- LESSON 3: Classes, Locations, Projects -->
+    <div id="lesson-3" style="display:none">
+      <div class="lesson-header">
+        <div class="lesson-tag">L2 Module 4</div>
+        <div class="lesson-title">Classes, Locations & Projects</div>
+        <div class="lesson-subtitle">Segment reporting, profitability by division, and project-level financial tracking</div>
+      </div>
+      <div class="content-card">
+        <h2>Segmented Reporting in QBO</h2>
+        <p>QBO Advanced offers three segmentation dimensions that allow P&L analysis beyond the flat chart of accounts.</p>
+        <table class="compare-table">
+          <tr><th>Feature</th><th>Best Used For</th><th>Report Output</th></tr>
+          <tr><td class="hl"><strong>Classes</strong></td><td>Departments, product lines, revenue streams</td><td>P&L by Class</td></tr>
+          <tr><td><strong>Locations</strong></td><td>Geographic branches, physical sites</td><td>P&L by Location</td></tr>
+          <tr><td><strong>Projects</strong></td><td>Individual jobs or contracts</td><td>Project Profitability</td></tr>
+        </table>
+        <h3>Classes — the most powerful segmentation tool</h3>
+        <p>Classes tag transactions with a business segment. To get meaningful results:</p>
+        <ul>
+          <li>Apply a class to <strong>every income AND expense</strong> transaction — missing class tags distort the segment P&L</li>
+          <li>Set QBO to <strong>warn or require</strong> a class on all transactions (Settings → Account &amp; Settings → Advanced → Classes)</li>
+          <li>Run P&L by Class to see each segment's revenue, COGS, and gross margin</li>
+        </ul>
+        <div class="info-box teal">
+          <strong>Common error</strong>
+          Applying classes to income but not expenses. This makes income look high per class but expenses appear in "unassigned" — producing a useless segment P&L. Consistency is everything.
+        </div>
+        <h3>QBO Projects</h3>
+        <p>Projects (available in Plus and Advanced plans) track profitability at the job level. You assign invoices, expenses, and time entries to a project. QBO's Project Profitability report then shows:</p>
+        <ul>
+          <li>Total invoiced (income)</li>
+          <li>Total costs assigned (expenses and billable time)</li>
+          <li>Gross profit and margin per project</li>
+          <li>Uninvoiced billable items still outstanding</li>
+        </ul>
+        <h3>Time tracking integration</h3>
+        <p>QBO Time (formerly TSheets) integrates with payroll and projects. Employees log hours against customers and projects. Approved billable hours appear in the customer's invoice queue, ready to bill. Non-billable hours post directly to labour expense on the project.</p>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Scenario</div>
+        <div class="sim-scenario">A QBO client runs three departments: Consulting, Training, and Software. They've been applying classes to all income for 6 months but no expense transactions have class tags. The P&L by Class shows Consulting: $85,000 income; Training: $42,000; Software: $38,000. Total expenses show $90,000 under "Not specified".</div>
+        <div class="sim-question">What is the correct diagnosis and the fix?</div>
+        <div class="sim-options" id="sim-3">
+          <div class="sim-opt" onclick="answerSim(3,0,3)"><div class="sim-opt-label">A</div>Expenses were never tagged with classes — the segment P&L is incomplete. Go back through 6 months of expense transactions and add classes. Then turn on "Require class" in settings to prevent this going forward.</div>
+          <div class="sim-opt" onclick="answerSim(3,1,3)"><div class="sim-opt-label">B</div>The report is correct — expenses don't need classes as they are shared across all departments</div>
+          <div class="sim-opt" onclick="answerSim(3,2,3)"><div class="sim-opt-label">C</div>Create a fourth class called "Overhead" and post all shared expenses there</div>
+          <div class="sim-opt" onclick="answerSim(3,3,3)"><div class="sim-opt-label">D</div>Export to Excel and manually allocate expenses equally across the three departments</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-3">✅ A is correct. A P&L by Class with expenses untagged is useless for profitability decisions — you can see revenue per segment but not profit. The fix is retrospective re-tagging plus mandatory class enforcement going forward. An "Overhead" class (Option C) is valid for genuinely shared costs but doesn't fix the core missing-tags problem.</div>
+      </div>
+      <div class="lesson-nav-btns"><button class="btn btn-outline" onclick="showLesson(2)">← Previous</button><button class="btn btn-primary" onclick="nextLesson(3)">Next: Fixed Assets →</button></div>
+    </div>
+
+    <!-- LESSON 4: Fixed Assets & Depreciation -->
+    <div id="lesson-4" style="display:none">
+      <div class="lesson-header">
+        <div class="lesson-tag">L2 Module 5</div>
+        <div class="lesson-title">Fixed Assets & Depreciation</div>
+        <div class="lesson-subtitle">Capitalising assets, depreciation methods, disposals, and the fixed asset register</div>
+      </div>
+      <div class="content-card">
+        <h2>Capital vs Revenue Expenditure</h2>
+        <p>The most important decision in fixed asset accounting: is this a capital purchase (asset on the balance sheet) or a revenue expense (P&L)?</p>
+        <table class="compare-table">
+          <tr><th>Capital (Asset)</th><th>Revenue (Expense)</th></tr>
+          <tr><td>Long-lived (useful life &gt; 1 year)</td><td>Used up within the period</td></tr>
+          <tr><td>Significant value (above capitalisation threshold)</td><td>Low value — expensed directly</td></tr>
+          <tr><td>e.g. Vehicles, equipment, fit-out</td><td>e.g. Stationery, repairs, small tools</td></tr>
+        </table>
+        <div class="info-box gold">
+          <strong>Section 179 / Bonus Depreciation (US)</strong>
+          The IRS allows immediate expensing of qualifying business assets (Section 179 up to $1.16M in 2023; bonus depreciation at 60% in 2024). If a client elects these, QBO's depreciation schedule differs from GAAP financial statements. Track both.
+        </div>
+        <h3>Recording a fixed asset in QBO</h3>
+        <ol>
+          <li>Create a Fixed Asset account in the Chart of Accounts (type: Fixed Asset)</li>
+          <li>Record the purchase: Dr Fixed Asset Account, Cr Bank/AP</li>
+          <li>Set up a <strong>depreciation schedule</strong> — either in QBO or an external fixed asset register</li>
+          <li>Post monthly/annual depreciation: Dr Depreciation Expense, Cr Accumulated Depreciation</li>
+        </ol>
+        <h3>Depreciation methods</h3>
+        <table class="compare-table">
+          <tr><th>Method</th><th>Formula</th><th>Use for</th></tr>
+          <tr><td class="hl">Straight-line</td><td>(Cost − Residual) ÷ Useful life</td><td>Most assets — even charge each year</td></tr>
+          <tr><td>Declining balance</td><td>Book value × Rate %</td><td>Vehicles, technology — faster early write-down</td></tr>
+          <tr><td>Units of production</td><td>Cost ÷ Total units × Units used</td><td>Machinery tied to output</td></tr>
+        </table>
+        <h3>Asset disposals</h3>
+        <p>When an asset is sold or scrapped:</p>
+        <ol>
+          <li>Remove the asset cost: Cr Fixed Asset Account</li>
+          <li>Remove accumulated depreciation: Dr Accumulated Depreciation</li>
+          <li>Record proceeds: Dr Bank (or Dr Loss/Cr Gain)</li>
+          <li>The difference between proceeds and book value = gain or loss on disposal</li>
+        </ol>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Scenario</div>
+        <div class="sim-scenario">A client bought a delivery van 3 years ago for $36,000. It is depreciated straight-line over 6 years with $0 residual. They just sold it for $20,000.</div>
+        <div class="sim-question">What is the book value at disposal and the gain or loss?</div>
+        <div class="sim-options" id="sim-4">
+          <div class="sim-opt" onclick="answerSim(4,0,4)"><div class="sim-opt-label">A</div>Annual depreciation = $36,000 ÷ 6 = $6,000/year. After 3 years: accumulated depreciation = $18,000. Book value = $36,000 − $18,000 = $18,000. Sale at $20,000 = $2,000 gain on disposal.</div>
+          <div class="sim-opt" onclick="answerSim(4,1,4)"><div class="sim-opt-label">B</div>Book value = $36,000 − $20,000 = $16,000. Loss on disposal = $16,000.</div>
+          <div class="sim-opt" onclick="answerSim(4,2,4)"><div class="sim-opt-label">C</div>Book value = $0 (fully depreciated). Gain = $20,000 full sale proceeds.</div>
+          <div class="sim-opt" onclick="answerSim(4,3,4)"><div class="sim-opt-label">D</div>No gain or loss — the asset was recorded at cost and cost = original price.</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-4">✅ A is correct. Annual depreciation = $36,000 ÷ 6 = $6,000. 3 years × $6,000 = $18,000 accumulated. Book value = $36,000 − $18,000 = $18,000. Proceeds $20,000 exceed book value by $2,000 — a $2,000 gain on disposal posted to Other Income.</div>
+      </div>
+      <div class="lesson-nav-btns"><button class="btn btn-outline" onclick="showLesson(3)">← Previous</button><button class="btn btn-primary" onclick="nextLesson(4)">Next: Advanced Reporting →</button></div>
+    </div>
+
+    <!-- LESSON 5: Advanced Reporting & Year-End -->
+    <div id="lesson-5" style="display:none">
+      <div class="lesson-header">
+        <div class="lesson-tag">L2 Module 6</div>
+        <div class="lesson-title">Advanced Reporting & Year-End</div>
+        <div class="lesson-subtitle">Cash flow analysis, budget vs actual, year-end close, and audit preparation</div>
+      </div>
+      <div class="content-card">
+        <h2>Professional-Level QBO Reporting</h2>
+        <h3>Cash flow statement analysis</h3>
+        <p>The indirect method cash flow starts with net income and adjusts for non-cash items and working capital changes. Key adjustments:</p>
+        <ul>
+          <li><strong>Add back</strong>: depreciation, amortisation (non-cash expenses)</li>
+          <li><strong>Deduct</strong>: increase in debtors (earned but not collected)</li>
+          <li><strong>Add</strong>: increase in creditors (incurred but not paid)</li>
+          <li><strong>Deduct</strong>: increase in inventory (cash used to build stock)</li>
+        </ul>
+        <h3>Budget vs Actual reporting in QBO</h3>
+        <ol>
+          <li>Go to <strong>Accounting → Budgeting → Add Budget</strong></li>
+          <li>Enter monthly budget amounts per account</li>
+          <li>Run <strong>Budget vs Actuals</strong> report to see variances</li>
+          <li>Investigate material variances before month-end review</li>
+        </ol>
+        <div class="info-box teal">
+          <strong>Management accounts pack</strong>
+          For a professional monthly pack: P&L vs Budget (variance %), Balance Sheet with month-on-month comparison, Cash Flow summary, AR Ageing (outstanding over 60 days highlighted), AP Ageing (anything overdue), and 3 key KPIs relevant to the business.
+        </div>
+        <h3>Year-end close process in QBO</h3>
+        <p>QBO doesn't have a formal "close" like some ERP systems — but the year-end process includes:</p>
+        <ol>
+          <li>Final bank reconciliation to year-end date</li>
+          <li>Depreciation journals posted</li>
+          <li>Prepayment amortisation reviewed and completed</li>
+          <li>Accruals raised for expenses incurred but not billed</li>
+          <li>Inventory counted and adjusted to actual</li>
+          <li>All payroll tax returns filed and matched to QBO</li>
+          <li>Lock date set to prevent backdating</li>
+          <li>P&amp;L and Balance Sheet shared with accountant/tax preparer</li>
+        </ol>
+        <h3>Audit preparation from QBO</h3>
+        <p>Auditors will request: trial balance, general ledger extract, bank reconciliations, AR and AP ageing, payroll summaries, and fixed asset register. QBO produces all of these — ensure every report is reconciled and can be traced transaction-by-transaction before providing to auditors.</p>
+      </div>
+      <div class="sim-card">
+        <div class="sim-card-hdr">🎯 Scenario</div>
+        <div class="sim-scenario">A QBO client's P&L shows net profit of $68,000 for the year. The operating cash flow on the Cash Flow Statement shows only $31,000. The balance sheet shows: debtors increased by $22,000, creditors decreased by $8,000, and depreciation was $7,000 for the year.</div>
+        <div class="sim-question">Reconcile the net profit to operating cash flow and confirm whether the $31,000 is correct.</div>
+        <div class="sim-options" id="sim-5">
+          <div class="sim-opt" onclick="answerSim(5,0,5)"><div class="sim-opt-label">A</div>Net profit $68,000 + depreciation $7,000 − increase in debtors $22,000 − decrease in creditors $8,000 = $45,000. The $31,000 shown may be incorrect — there are likely other working capital movements not accounted for here.</div>
+          <div class="sim-opt" onclick="answerSim(5,1,5)"><div class="sim-opt-label">B</div>Net profit $68,000 − depreciation $7,000 + debtors $22,000 + creditors $8,000 = $91,000. The cash flow is wrong.</div>
+          <div class="sim-opt" onclick="answerSim(5,2,5)"><div class="sim-opt-label">C</div>Cash flow and net profit are the same thing — the $37,000 difference means QBO has an error</div>
+          <div class="sim-opt" onclick="answerSim(5,3,5)"><div class="sim-opt-label">D</div>The $31,000 is correct because cash was used to pay tax and dividends not in the P&L</div>
+        </div>
+        <div class="sim-explanation" id="sim-exp-5">✅ A is correct. Starting with $68,000: add depreciation $7,000 = $75,000. Deduct debtor increase (cash not collected) $22,000 = $53,000. Deduct creditor decrease (more cash paid to suppliers) $8,000 = $45,000. The gap to $31,000 ($14,000) suggests additional working capital movements (inventory, tax, or other items) not provided in this scenario.</div>
+      </div>
+
+      <div class="content-card" style="text-align:center;padding:36px">
+        <div style="font-size:40px;margin-bottom:12px">🎓</div>
+        <h2 style="border:none;text-align:center;margin-bottom:8px">L2 modules complete</h2>
+        <p style="color:var(--muted);max-width:440px;margin:0 auto 24px">Take the QuickBooks L2 assessment to earn your Professional certificate. Pass rate required: 75%.</p>
+        <button class="btn-test" onclick="startAssessment()">Start QB L2 Assessment →</button>
+      </div>
+      <div class="lesson-nav-btns"><button class="btn btn-outline" onclick="showLesson(4)">← Previous</button><span></span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOTAL=6;
+let progress=JSON.parse(localStorage.getItem('ll_qb_l2_progress')||'{"done":[]}');
+function saveProgress(){localStorage.setItem('ll_qb_l2_progress',JSON.stringify(progress));}
+function showLesson(n){
+  for(let i=0;i<TOTAL;i++){
+    const el=document.getElementById('lesson-'+i);
+    if(el)el.style.display=i===n?'block':'none';
+    const li=document.getElementById('li-'+i);
+    if(li){li.classList.remove('on');if(progress.done.includes(i)&&i!==n)li.classList.add('done');else li.classList.remove('done');}
+  }
+  const cur=document.getElementById('li-'+n);
+  if(cur){cur.classList.add('on');cur.classList.remove('done');}
+  updateProgress();window.scrollTo(0,0);
+}
+function nextLesson(c){if(!progress.done.includes(c)){progress.done.push(c);saveProgress();}showLesson(c+1);}
+function updateProgress(){
+  const pct=Math.round((progress.done.length/TOTAL)*100);
+  const f=document.getElementById('prog-fill'),p=document.getElementById('prog-pct');
+  if(f)f.style.width=pct+'%';if(p)p.textContent=pct+'%';
+}
+function answerSim(sId,cIdx,corrIdx){
+  const opts=document.querySelectorAll('#sim-'+sId+' .sim-opt');
+  opts.forEach(function(o,i){o.onclick=null;if(i===corrIdx)o.classList.add('correct');else if(i===cIdx&&cIdx!==corrIdx)o.classList.add('wrong');});
+  const exp=document.getElementById('sim-exp-'+sId);if(exp)exp.style.display='block';
+}
+function startAssessment(){localStorage.setItem('ll_test_track','QuickBooks');localStorage.setItem('ll_test_level','L2');window.location.href='/test';}
+showLesson(0);updateProgress();
+</script>
+</body>
+</html>
