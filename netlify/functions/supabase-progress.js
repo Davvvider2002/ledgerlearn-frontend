@@ -77,9 +77,9 @@ function merge(a, b) {
 }
 
 // Convert from legacy localStorage format to Supabase column names
-function fromLegacy(d) {
+function fromLegacy(d, track) {
   if (!d) return {};
-  return {
+  const base = {
     completed_levels:   d.completedLevels   || d.completed_levels   || [],
     completed_lessons:  d.completedLessons  || d.completed_lessons  || [],
     l1_score:           d.l1Score           || d.l1_score           || null,
@@ -98,11 +98,43 @@ function fromLegacy(d) {
     issue_date:         d.issueDate         || d.issue_date         || null,
     placement_result:   d.placementResult   || d.placement_result   || null,
   };
+  // QB track — store in qb_progress JSONB column
+  if (track === 'QuickBooks') {
+    return {
+      qb_progress: {
+        completedLevels:   base.completed_levels,
+        l1Score:           base.l1_score,
+        l2Score:           base.l2_score,
+        l3Score:           base.l3_score,
+        lastScore:         base.last_score,
+        paid_qb_l2:        d.paid_qb_l2 || d.paid_l2 || false,
+        paid_qb_l3:        d.paid_qb_l3 || d.paid_l3 || false,
+        cert_id:           base.cert_id,
+        issue_date:        base.issue_date,
+      }
+    };
+  }
+  return base;
 }
 
 // Convert from Supabase columns back to legacy localStorage format
-function toLegacy(d) {
+function toLegacy(d, track) {
   if (!d) return {};
+  // QB track — read from qb_progress JSONB column
+  if (track === 'QuickBooks') {
+    const qb = d.qb_progress || {};
+    return {
+      completedLevels: qb.completedLevels || [],
+      l1Score:         qb.l1Score         || null,
+      l2Score:         qb.l2Score         || null,
+      l3Score:         qb.l3Score         || null,
+      lastScore:       qb.lastScore       || null,
+      paid_qb_l2:      qb.paid_qb_l2      || false,
+      paid_qb_l3:      qb.paid_qb_l3      || false,
+      certId:          qb.cert_id         || null,
+      issueDate:       qb.issue_date      || null,
+    };
+  }
   return {
     completedLevels:    d.completed_levels   || [],
     completedLessons:   d.completed_lessons  || [],
@@ -233,7 +265,8 @@ exports.handler = async function(event) {
       }
 
       return { statusCode: 200, headers: CORS, body: JSON.stringify({
-        ok: true, found: true, data: prog
+        ok: true, found: true, data: prog,
+        track: body.track || 'Xero'
       })};
     } catch(e) {
       return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Load failed: ' + e.message }) };

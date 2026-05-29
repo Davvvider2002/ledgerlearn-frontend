@@ -23,8 +23,9 @@ const CORS = {
   'Content-Type': 'application/json',
 };
 
-const VALID_LEVELS = ['l2', 'l3'];
-const EXPECTED_AMOUNTS = { l2: 49.00, l3: 0 };
+// Levels per track — xero-l2, qb-l2, xero-l3, qb-l3
+const VALID_LEVELS    = ['l2', 'l3', 'qb-l2', 'qb-l3'];
+const EXPECTED_AMOUNTS = { 'l2': 49.00, 'l3': 0, 'qb-l2': 49.00, 'qb-l3': 0 };
 
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') {
@@ -45,8 +46,10 @@ exports.handler = async function(event) {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'orderId, email and level required' }) };
   }
 
-  if (!VALID_LEVELS.includes(level)) {
-    return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Invalid level' }) };
+  // Accept both 'qb-l2' and passing track:'QuickBooks'+level:'l2'
+  const normLevel = (body.track === 'QuickBooks' && !level.startsWith('qb')) ? 'qb-' + level : level;
+  if (!VALID_LEVELS.includes(normLevel)) {
+    return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Invalid level: ' + normLevel }) };
   }
 
   if (!email.includes('@')) {
@@ -61,7 +64,7 @@ exports.handler = async function(event) {
     console.error('[verify-payment] PayPal credentials not set');
     // Graceful degradation: trust the client if PayPal creds not configured
     // Remove this in production once creds are set
-    return await storeAndReturn(email, level, orderId || 'unverified', 'unverified');
+    return await storeAndReturn(email, normLevel || level, orderId || 'unverified', 'unverified');
   }
 
   try {
@@ -112,12 +115,12 @@ exports.handler = async function(event) {
       }
     }
 
-    return await storeAndReturn(email, level, orderId, 'paypal-order-verified');
+    return await storeAndReturn(email, normLevel, orderId, 'paypal-order-verified');
 
   } catch(err) {
     console.error('[verify-payment]', err.message);
     // Graceful degradation
-    return await storeAndReturn(email, level, orderId || 'error', 'unverified-error');
+    return await storeAndReturn(email, normLevel || level, orderId || 'error', 'unverified-error');
   }
 };
 
