@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<!-- DESTINATION: repo root / quickbooks-practice.html -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LedgerLearn — QuickBooks Practice</title>
+<style>
+:root{--navy:#0F2540;--teal:#1D9E75;--teal-light:#E1F5EE;--gold:#C9A84C;--gold-light:#FAEEDA;--orange:#ea580c;--orange-light:#FFF7ED;--purple:#7c3aed;--purple-light:#EDE9FE;--bg:#f9f9f7;--card:#fff;--border:#e5e3db;--text:#1a1a18;--muted:#6b6b67;--rad:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.nav{background:var(--navy);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{color:#fff;font-size:16px;font-weight:600;text-decoration:none}
+.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;gap:4px}
+.nav-links a{color:rgba(255,255,255,.6);text-decoration:none;font-size:13px;padding:6px 10px;border-radius:6px;transition:all .15s}
+.nav-links a:hover,.nav-links a.on{background:rgba(255,255,255,.1);color:#fff}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--navy),#1a3a5c);padding:28px 24px;color:#fff}
+.hero-inner{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
+.hero h1{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+.hero p{font-size:13px;color:rgba(255,255,255,.65)}
+.score-bar{display:flex;gap:20px}
+.score-item{text-align:center}
+.score-num{font-size:22px;font-weight:700;color:#fff}
+.score-label{font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.04em}
+
+/* CONTROLS */
+.controls{background:var(--card);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;max-width:900px;margin:0 auto}
+.ctrl-label{font-size:12px;color:var(--muted);font-weight:500;margin-right:4px}
+.filter-btn{background:var(--bg);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.filter-btn.on{background:var(--orange-light);border-color:var(--orange);color:var(--orange)}
+.filter-btn:hover:not(.on){border-color:var(--orange);color:var(--orange)}
+.controls-wrap{background:var(--card);border-bottom:1px solid var(--border)}
+
+/* MAIN */
+.main{max-width:900px;margin:0 auto;padding:24px 20px}
+
+/* QUESTION CARD */
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);margin-bottom:16px;overflow:hidden;transition:box-shadow .15s}
+.q-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.q-header{padding:14px 18px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.q-meta{display:flex;gap:6px;flex-wrap:wrap}
+.q-badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:12px}
+.badge-l1{background:var(--teal-light);color:#085041}
+.badge-l2{background:var(--orange-light);color:#9a3412}
+.badge-l3{background:var(--purple-light);color:#5b21b6}
+.badge-topic{background:var(--bg);border:1px solid var(--border);color:var(--muted)}
+.q-difficulty{display:flex;gap:3px;align-items:center;padding-top:2px}
+.q-dot{width:6px;height:6px;border-radius:50%;background:var(--border)}
+.q-dot.d1{background:var(--teal)}
+.q-dot.d2{background:var(--gold)}
+.q-dot.d3{background:var(--orange)}
+.q-text{padding:10px 18px 12px;font-size:14px;font-weight:600;color:var(--navy);line-height:1.5}
+.q-options{padding:0 18px 14px;display:flex;flex-direction:column;gap:7px}
+.q-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;line-height:1.5;transition:all .15s;background:#fff}
+.q-opt:hover:not(.answered){border-color:var(--orange);background:var(--orange-light)}
+.q-opt.correct{border-color:var(--teal);background:var(--teal-light);font-weight:500;cursor:default}
+.q-opt.wrong{border-color:#ef4444;background:#fee2e2;cursor:default}
+.q-opt.revealed{cursor:default}
+.opt-letter{width:22px;height:22px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.q-opt.correct .opt-letter{background:var(--teal);color:#fff;border-color:var(--teal)}
+.q-opt.wrong .opt-letter{background:#ef4444;color:#fff;border-color:#ef4444}
+.explanation{display:none;margin:0 18px 14px;padding:12px 14px;background:var(--teal-light);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;font-size:13px;line-height:1.65}
+.explanation.show{display:block}
+.explanation-lbl{font-size:11px;font-weight:700;color:#085041;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.q-footer{padding:8px 18px 12px;display:flex;justify-content:space-between;align-items:center;border-top:.5px solid var(--border);background:#fcfcfb}
+.q-result{font-size:12px;font-weight:500}
+.q-result.correct{color:var(--teal)}
+.q-result.wrong{color:#ef4444}
+.q-result.pending{color:var(--muted)}
+
+/* SESSION PANEL */
+.session-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:16px 20px;margin-bottom:20px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.sp-stat{text-align:center;min-width:60px}
+.sp-num{font-size:22px;font-weight:700;color:var(--text)}
+.sp-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.sp-bar{flex:1;min-width:160px}
+.sp-bar-label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:5px}
+.sp-track{background:var(--bg);border-radius:4px;height:8px;overflow:hidden}
+.sp-fill{height:100%;border-radius:4px;background:var(--teal);transition:width .4s}
+.sp-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-sm{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--orange);color:var(--orange)}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+
+/* PROGRESS DOTS */
+.progress-dots{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px}
+.pd{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background .2s;cursor:pointer;title:"Question"}
+.pd.correct{background:var(--teal)}
+.pd.wrong{background:#ef4444}
+
+@media(max-width:600px){.hero-inner{flex-direction:column}.main{padding:14px}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">Ledger<span>Learn</span></a>
+  <div class="nav-links">
+    <a href="/quickbooks">Learn</a>
+    <a href="/quickbooks-practice" class="on">Practice</a>
+    <a href="/quickbooks-simulations">Simulations</a>
+    <a href="/quickbooks-dashboard">Dashboard</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <h1>QuickBooks Practice Mode</h1>
+      <p>Answer questions at your own pace — no timer, instant explanations, full tracking</p>
+    </div>
+    <div class="score-bar">
+      <div class="score-item"><div class="score-num" id="score-correct">0</div><div class="score-label">Correct</div></div>
+      <div class="score-item"><div class="score-num" id="score-total">0</div><div class="score-label">Answered</div></div>
+      <div class="score-item"><div class="score-num" id="score-pct">—</div><div class="score-label">Accuracy</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="controls-wrap">
+  <div class="controls">
+    <span class="ctrl-label">Level:</span>
+    <button class="filter-btn on" onclick="setFilter('level','all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('level','l1',this)">L1 Foundation</button>
+    <button class="filter-btn" onclick="setFilter('level','l2',this)">L2 Professional</button>
+    <button class="filter-btn" onclick="setFilter('level','l3',this)">L3 Advisor</button>
+    <span class="ctrl-label" style="margin-left:12px">Topic:</span>
+    <button class="filter-btn on" onclick="setFilter('topic','all',this)">All Topics</button>
+    <button class="filter-btn" onclick="setFilter('topic','ar-ap',this)">AR & AP</button>
+    <button class="filter-btn" onclick="setFilter('topic','bank',this)">Bank</button>
+    <button class="filter-btn" onclick="setFilter('topic','payroll',this)">Payroll</button>
+    <button class="filter-btn" onclick="setFilter('topic','tax',this)">Tax</button>
+    <button class="filter-btn" onclick="setFilter('topic','reporting',this)">Reporting</button>
+    <button class="filter-btn" onclick="setFilter('topic','advisory',this)">Advisory</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SESSION PANEL -->
+  <div class="session-panel">
+    <div class="sp-stat"><div class="sp-num" id="sp-correct">0</div><div class="sp-label">Correct</div></div>
+    <div class="sp-stat"><div class="sp-num" id="sp-total">0</div><div class="sp-label">Done</div></div>
+    <div class="sp-stat"><div class="sp-num" id="sp-remain">0</div><div class="sp-label">Remaining</div></div>
+    <div class="sp-bar">
+      <div class="sp-bar-label"><span>Session accuracy</span><span id="sp-pct-lbl">0%</span></div>
+      <div class="sp-track"><div class="sp-fill" id="sp-fill" style="width:0%"></div></div>
+    </div>
+    <div class="sp-actions">
+      <button class="btn-sm btn-outline" onclick="resetSession()">Reset</button>
+      <a href="/test" class="btn-sm btn-orange" onclick="localStorage.setItem('ll_test_track','QuickBooks')">Take assessment →</a>
+    </div>
+  </div>
+
+  <!-- PROGRESS DOTS -->
+  <div class="progress-dots" id="progress-dots"></div>
+
+  <!-- QUESTION LIST -->
+  <div id="questions-container"></div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────
+// QUESTION BANK — all QB questions from question-banks.js
+// Inline fallback if question-banks.js not yet loaded
+// ─────────────────────────────────────────────────────────
+var QB_PRACTICE_QUESTIONS = [];
+
+function loadQuestionsFromBanks() {
+  var banks = window.QUESTION_BANKS;
+  if (!banks) return false;
+  QB_PRACTICE_QUESTIONS = [];
+
+  function addWithMeta(arr, level, topic) {
+    arr.forEach(function(q, i) {
+      QB_PRACTICE_QUESTIONS.push({
+        id: level + '-' + i,
+        level: level,
+        topic: topic,
+        difficulty: level === 'l3' ? 3 : level === 'l2' ? 2 : 1,
+        question: q.question,
+        options: q.options,
+        correct: q.correct_index,
+        explanation: q.explanation
+      });
+    });
+  }
+
+  // Use topic rotation across the bank
+  var l1Topics = ['ar-ap','bank','ar-ap','bank','tax','reporting','bank','payroll','ar-ap','bank','reporting','ar-ap','bank','reporting','tax','bank','ar-ap','reporting','ar-ap','bank','tax','bank','ar-ap','reporting','bank','reporting','ar-ap','bank','reporting','ar-ap','bank','reporting','ar-ap','bank','bank'];
+  var l2Topics = ['ar-ap','bank','reporting','payroll','advisory','ar-ap','payroll','bank','reporting','advisory','ar-ap','tax','bank','reporting','advisory','ar-ap','advisory','bank','reporting','ar-ap','payroll','bank','reporting','advisory','bank','tax','reporting','advisory','bank','advisory','bank','reporting','advisory'];
+  var l3Topics = ['advisory','reporting','advisory','ar-ap','reporting','advisory','reporting','advisory','advisory','reporting','reporting','advisory','advisory','reporting','advisory','advisory','reporting','advisory','advisory','reporting','advisory','reporting','advisory','reporting','reporting','advisory','reporting','advisory','reporting','advisory'];
+
+  if (banks.QB_L1) { banks.QB_L1.forEach(function(q,i){ addWithMeta([q], 'l1', l1Topics[i%l1Topics.length]); }); }
+  if (banks.QB_L2) { banks.QB_L2.forEach(function(q,i){ addWithMeta([q], 'l2', l2Topics[i%l2Topics.length]); }); }
+  if (banks.QB_L3) { banks.QB_L3.forEach(function(q,i){ addWithMeta([q], 'l3', l3Topics[i%l3Topics.length]); }); }
+
+  return QB_PRACTICE_QUESTIONS.length > 0;
+}
+
+// ─────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────
+var state = {
+  levelFilter: 'all',
+  topicFilter: 'all',
+  answered: {},
+  correct: 0,
+  total: 0
+};
+
+function loadState() {
+  var saved = localStorage.getItem('ll_qb_practice');
+  if (saved) {
+    try {
+      var s = JSON.parse(saved);
+      state.answered = s.answered || {};
+      state.correct = Object.values(state.answered).filter(function(a){ return a.correct; }).length;
+      state.total   = Object.keys(state.answered).length;
+    } catch(e){}
+  }
+}
+
+function saveState() {
+  localStorage.setItem('ll_qb_practice', JSON.stringify({ answered: state.answered }));
+}
+
+// ─────────────────────────────────────────────────────────
+// FILTERS
+// ─────────────────────────────────────────────────────────
+function setFilter(type, val, btn) {
+  state[type + 'Filter'] = val;
+  var group = btn.parentElement.querySelectorAll('.filter-btn');
+  // Only toggle within same group (level vs topic)
+  var isLevel = (type === 'level');
+  document.querySelectorAll('.filter-btn').forEach(function(b) {
+    var btnVal = b.getAttribute('onclick') || '';
+    if ((isLevel && btnVal.includes("'level'")) || (!isLevel && btnVal.includes("'topic'"))) {
+      b.classList.remove('on');
+    }
+  });
+  btn.classList.add('on');
+  renderAll();
+}
+
+function getFiltered() {
+  return QB_PRACTICE_QUESTIONS.filter(function(q) {
+    var lvl = state.levelFilter === 'all' || q.level === state.levelFilter;
+    var top = state.topicFilter === 'all' || q.topic === state.topicFilter;
+    return lvl && top;
+  });
+}
+
+// ─────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────
+var LETTERS = ['A','B','C','D'];
+var LEVEL_LABELS = { l1:'L1', l2:'L2', l3:'L3' };
+var TOPIC_LABELS = { 'ar-ap':'AR & AP', bank:'Bank', payroll:'Payroll', tax:'Tax', reporting:'Reporting', advisory:'Advisory' };
+
+function difficultyDots(n, level) {
+  var col = level === 'l3' ? 'd3' : level === 'l2' ? 'd2' : 'd1';
+  var html = '<div class="q-difficulty">';
+  for (var i = 1; i <= 3; i++) html += '<div class="q-dot' + (i <= n ? ' ' + col : '') + '"></div>';
+  return html + '</div>';
+}
+
+function renderCard(q) {
+  var a   = state.answered[q.id];
+  var lbl = LEVEL_LABELS[q.level] || q.level;
+  var top = TOPIC_LABELS[q.topic] || q.topic;
+
+  var opts = q.options.map(function(opt, i) {
+    var cls = 'q-opt';
+    if (a !== undefined) {
+      cls += ' revealed';
+      if (i === q.correct) cls += ' correct';
+      else if (a.chosen === i && !a.correct) cls += ' wrong';
+    }
+    var onclick = a !== undefined ? '' : 'onclick="answer(\'' + q.id + '\',' + i + ')"';
+    return '<div class="' + cls + '" ' + onclick + '>' +
+      '<div class="opt-letter">' + LETTERS[i] + '</div><span>' + opt + '</span></div>';
+  }).join('');
+
+  var result = '';
+  if (a !== undefined) {
+    result = '<span class="q-result ' + (a.correct ? 'correct' : 'wrong') + '">' +
+      (a.correct ? '✓ Correct' : '✗ Incorrect') + '</span>';
+  } else {
+    result = '<span class="q-result pending">Unanswered</span>';
+  }
+
+  var expShow = a !== undefined ? ' show' : '';
+  var expIcon = a ? (a.correct ? '✅' : '❌') : '';
+
+  return '<div class="q-card" id="qcard-' + q.id + '">' +
+    '<div class="q-header">' +
+      '<div class="q-meta">' +
+        '<span class="q-badge badge-' + q.level + '">' + lbl + '</span>' +
+        '<span class="q-badge badge-topic">' + top + '</span>' +
+      '</div>' +
+      difficultyDots(q.difficulty, q.level) +
+    '</div>' +
+    '<div class="q-text">' + q.question + '</div>' +
+    '<div class="q-options">' + opts + '</div>' +
+    '<div class="explanation' + expShow + '" id="exp-' + q.id + '">' +
+      '<div class="explanation-lbl">' + expIcon + ' Explanation</div>' + q.explanation +
+    '</div>' +
+    '<div class="q-footer">' + result + '</div>' +
+  '</div>';
+}
+
+function renderAll() {
+  var filtered = getFiltered();
+  var container = document.getElementById('questions-container');
+  var dots      = document.getElementById('progress-dots');
+
+  // Progress dots
+  dots.innerHTML = filtered.map(function(q) {
+    var a = state.answered[q.id];
+    var cls = 'pd' + (a ? (a.correct ? ' correct' : ' wrong') : '');
+    return '<div class="' + cls + '" title="' + q.question.slice(0,40) + '..."></div>';
+  }).join('');
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty">No questions match this filter — try a different combination.</div>';
+  } else {
+    container.innerHTML = filtered.map(renderCard).join('');
+  }
+
+  updateStats(filtered);
+}
+
+function updateStats(filtered) {
+  var answered = filtered.filter(function(q){ return state.answered[q.id]; });
+  var correct  = answered.filter(function(q){ return state.answered[q.id].correct; });
+  var pct      = answered.length ? Math.round(correct.length / answered.length * 100) : 0;
+  var remain   = filtered.length - answered.length;
+
+  document.getElementById('score-correct').textContent = correct.length;
+  document.getElementById('score-total').textContent   = answered.length;
+  document.getElementById('score-pct').textContent     = answered.length ? pct + '%' : '—';
+  document.getElementById('sp-correct').textContent    = correct.length;
+  document.getElementById('sp-total').textContent      = answered.length;
+  document.getElementById('sp-remain').textContent     = remain;
+  document.getElementById('sp-pct-lbl').textContent    = pct + '%';
+  document.getElementById('sp-fill').style.width       = pct + '%';
+}
+
+// ─────────────────────────────────────────────────────────
+// ANSWERING
+// ─────────────────────────────────────────────────────────
+function answer(qId, chosen) {
+  var q = QB_PRACTICE_QUESTIONS.find(function(x){ return x.id === qId; });
+  if (!q || state.answered[qId]) return;
+
+  var correct = chosen === q.correct;
+  state.answered[qId] = { chosen: chosen, correct: correct };
+  if (correct) state.correct++;
+  state.total++;
+  saveState();
+
+  // Re-render card in place
+  var card = document.getElementById('qcard-' + qId);
+  if (card) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = renderCard(q);
+    card.parentNode.replaceChild(tmp.firstChild, card);
+  }
+
+  // Update dot
+  var filtered = getFiltered();
+  var idx = filtered.findIndex(function(x){ return x.id === qId; });
+  var dots = document.getElementById('progress-dots').children;
+  if (dots[idx]) {
+    dots[idx].className = 'pd ' + (correct ? 'correct' : 'wrong');
+  }
+
+  updateStats(filtered);
+}
+
+function resetSession() {
+  if (!confirm('Reset all practice answers?')) return;
+  state.answered = {};
+  state.correct  = 0;
+  state.total    = 0;
+  saveState();
+  renderAll();
+}
+
+// ─────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────
+function init() {
+  loadState();
+  if (loadQuestionsFromBanks()) {
+    renderAll();
+  } else {
+    // question-banks.js not loaded yet — wait for it
+    var tries = 0;
+    var interval = setInterval(function() {
+      tries++;
+      if (loadQuestionsFromBanks()) {
+        clearInterval(interval);
+        renderAll();
+      } else if (tries > 20) {
+        clearInterval(interval);
+        document.getElementById('questions-container').innerHTML =
+          '<div class="empty"><div style="font-size:32px;margin-bottom:12px">⚠️</div>' +
+          '<strong>question-banks.js not loaded</strong><br><br>' +
+          'Add &lt;script src="/question-banks.js"&gt;&lt;/script&gt; to this page\'s &lt;head&gt; or ensure it uploads to repo root.</div>';
+      }
+    }, 200);
+  }
+}
+
+init();
+</script>
+
+<!-- Load question banks -->
+<script src="/question-banks.js"></script>
+
+</body>
+</html>

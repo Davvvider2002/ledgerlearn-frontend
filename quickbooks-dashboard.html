@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<!-- DESTINATION: repo root / quickbooks-dashboard.html -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LedgerLearn — QuickBooks Dashboard</title>
+<style>
+:root{--navy:#0F2540;--teal:#1D9E75;--teal-light:#E1F5EE;--gold:#C9A84C;--gold-light:#FAEEDA;--orange:#ea580c;--orange-light:#FFF7ED;--purple:#7c3aed;--bg:#f9f9f7;--card:#fff;--border:#e5e3db;--text:#1a1a18;--muted:#6b6b67;--rad:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* NAV */
+.nav{background:var(--navy);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{color:#fff;font-size:16px;font-weight:600;text-decoration:none}
+.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-links a{color:rgba(255,255,255,.6);text-decoration:none;font-size:13px;padding:6px 10px;border-radius:6px;transition:all .15s}
+.nav-links a:hover,.nav-links a.on{background:rgba(255,255,255,.1);color:#fff}
+.nav-badge{background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:4px}
+.nav-track-switcher{display:flex;align-items:center;gap:8px;margin-left:16px;padding-left:16px;border-left:1px solid rgba(255,255,255,.15)}
+.track-pill{font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;cursor:pointer;text-decoration:none;transition:all .15s}
+.track-pill.xero{background:rgba(29,158,117,.2);color:#5DCAA5;border:1px solid rgba(29,158,117,.3)}
+.track-pill.qb{background:rgba(234,88,12,.25);color:#fdba74;border:1px solid rgba(234,88,12,.4)}
+.track-pill.qb.on,.track-pill.qb:hover{background:rgba(234,88,12,.5);color:#fff}
+.track-pill.xero:hover{background:rgba(29,158,117,.4);color:#fff}
+
+/* PAGE HEADER */
+.page-hdr{background:linear-gradient(135deg,var(--navy) 0%,#1a3a5c 100%);padding:32px 24px 28px;color:#fff}
+.page-hdr-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.ph-left h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+.ph-left p{font-size:14px;color:rgba(255,255,255,.6)}
+.ph-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(234,88,12,.25);border:1px solid rgba(234,88,12,.4);color:#fdba74;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px}
+.ph-right{display:flex;gap:10px;flex-wrap:wrap}
+.btn-hdr{font-size:13px;font-weight:500;padding:9px 18px;border-radius:8px;cursor:pointer;text-decoration:none;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-orange:hover{background:#c2410c}
+.btn-ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.btn-ghost:hover{background:rgba(255,255,255,.2)}
+
+/* MAIN */
+.main{max-width:1000px;margin:0 auto;padding:28px 20px}
+
+/* LEVEL STRIP */
+.level-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.level-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:18px 20px;position:relative;overflow:hidden}
+.level-card.active{border-color:var(--orange)}
+.level-card.locked{opacity:.65}
+.level-card.passed{border-color:var(--teal)}
+.lc-status-bar{position:absolute;top:0;left:0;right:0;height:3px}
+.lc-status-bar.passed{background:var(--teal)}
+.lc-status-bar.active{background:var(--orange)}
+.lc-status-bar.locked{background:var(--border)}
+.lc-tag{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+.lc-tag.passed{color:var(--teal)}
+.lc-tag.active{color:var(--orange)}
+.lc-tag.locked{color:var(--muted)}
+.lc-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.lc-meta{font-size:12px;color:var(--muted);margin-bottom:12px}
+.lc-score{font-size:28px;font-weight:700;color:var(--text);line-height:1}
+.lc-score-label{font-size:11px;color:var(--muted);margin-top:2px}
+.lc-bar{height:5px;background:var(--bg);border-radius:4px;margin-top:10px;overflow:hidden}
+.lc-bar-fill{height:100%;border-radius:4px;transition:width .6s}
+.lc-action{margin-top:14px}
+.btn-sm{font-size:12px;font-weight:600;padding:7px 14px;border-radius:7px;cursor:pointer;text-decoration:none;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-sm-orange{background:var(--orange);color:#fff}
+.btn-sm-teal{background:var(--teal);color:#fff}
+.btn-sm-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-sm-outline:hover{border-color:var(--orange);color:var(--orange)}
+
+/* CERT CARD */
+.cert-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:24px;margin-bottom:20px}
+.cert-card-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.cert-card-hdr h2{font-size:15px;font-weight:600;color:var(--text)}
+.cert-empty{text-align:center;padding:28px 0;color:var(--muted)}
+.cert-empty-icon{font-size:32px;margin-bottom:8px}
+.cert-earned{display:flex;align-items:flex-start;gap:16px;padding:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;margin-bottom:12px}
+.cert-earned-icon{width:44px;height:44px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;color:#fff}
+.cert-earned-body{flex:1}
+.cert-title{font-size:14px;font-weight:600;color:var(--text)}
+.cert-id{font-size:12px;font-family:monospace;color:var(--muted);margin-top:2px}
+.cert-meta-row{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap}
+.cert-meta-item{font-size:12px;color:var(--muted)}
+.cert-meta-item strong{color:var(--text)}
+.cert-actions{display:flex;gap:8px;margin-top:10px}
+
+/* PROGRESS GRID */
+.progress-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.prog-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:16px}
+.prog-label{font-size:12px;color:var(--muted);margin-bottom:4px}
+.prog-val{font-size:24px;font-weight:600;color:var(--text)}
+.prog-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.prog-sub.good{color:var(--teal)}
+.prog-sub.warn{color:var(--orange)}
+
+/* LEARN PROGRESS */
+.learn-section{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:20px 24px;margin-bottom:20px}
+.learn-section h2{font-size:14px;font-weight:600;margin-bottom:14px;color:var(--text)}
+.module-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:.5px solid var(--border)}
+.module-row:last-child{border-bottom:none}
+.mod-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.mod-num.done{background:var(--teal);color:#fff}
+.mod-num.current{background:var(--orange);color:#fff}
+.mod-num.open{background:var(--bg);border:1.5px solid var(--border);color:var(--muted)}
+.mod-name{flex:1;font-size:13px;color:var(--text)}
+.mod-status{font-size:12px}
+.mod-status.done{color:var(--teal)}
+.mod-status.current{color:var(--orange)}
+.mod-status.open{color:var(--muted)}
+
+/* QUICK ACTIONS */
+.quick-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px}
+.qa-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:16px;text-decoration:none;transition:all .15s;display:flex;flex-direction:column;gap:8px}
+.qa-card:hover{border-color:var(--orange);transform:translateY(-1px)}
+.qa-icon{font-size:22px}
+.qa-title{font-size:13px;font-weight:600;color:var(--text)}
+.qa-desc{font-size:12px;color:var(--muted);line-height:1.4}
+
+/* RECENT ACTIVITY */
+.activity-list{display:flex;flex-direction:column;gap:0}
+.activity-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:.5px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.act-text{flex:1;font-size:13px;color:var(--text)}
+.act-date{font-size:11px;color:var(--muted)}
+
+/* SHARE SECTION */
+.share-card{background:linear-gradient(135deg,#431407,#7c2d12);border-radius:var(--rad);padding:24px;margin-bottom:20px;color:#fff}
+.share-card h3{font-size:16px;font-weight:600;margin-bottom:6px}
+.share-card p{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:16px}
+.btn-share{background:var(--orange);color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:8px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+
+/* SECTION HEADER */
+.section-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.section-hdr h2{font-size:14px;font-weight:600;color:var(--text)}
+.section-hdr a{font-size:12px;color:var(--orange);text-decoration:none}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+
+@media(max-width:640px){.level-strip{grid-template-columns:1fr}.page-hdr-inner{flex-direction:column}.nav-links{display:none}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">Ledger<span>Learn</span></a>
+  <div style="display:flex;align-items:center;gap:4px">
+    <div class="nav-links">
+      <a href="/quickbooks">Learn</a>
+      <a href="/quickbooks-practice">Practice</a>
+      <a href="/quickbooks-simulations">Simulations</a>
+      <a href="/quickbooks-dashboard" class="on">Dashboard</a>
+    </div>
+    <div class="nav-track-switcher">
+      <a href="/dashboard" class="track-pill xero">Xero</a>
+      <a href="/quickbooks-dashboard" class="track-pill qb on">QuickBooks</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-hdr">
+  <div class="page-hdr-inner">
+    <div class="ph-left">
+      <h1 id="welcome-name">QuickBooks Dashboard</h1>
+      <p>Track your progress, download certificates, and continue learning</p>
+    </div>
+    <div>
+      <span class="ph-badge">QB Track</span>
+    </div>
+    <div class="ph-right">
+      <a href="/quickbooks" class="btn-hdr btn-orange">Continue learning →</a>
+      <a href="/test" onclick="setQBTrack(event)" class="btn-hdr btn-ghost">Take assessment →</a>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- QUICK STATS -->
+  <div class="progress-grid" id="stats-grid">
+    <div class="prog-card">
+      <div class="prog-label">L1 Score</div>
+      <div class="prog-val" id="stat-l1">—</div>
+      <div class="prog-sub" id="stat-l1-sub">Not taken</div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-label">L2 Score</div>
+      <div class="prog-val" id="stat-l2">—</div>
+      <div class="prog-sub" id="stat-l2-sub">Requires L1 + payment</div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-label">L3 Score</div>
+      <div class="prog-val" id="stat-l3">—</div>
+      <div class="prog-sub" id="stat-l3-sub">Requires L2 pass</div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-label">Certificates earned</div>
+      <div class="prog-val" id="stat-certs">0</div>
+      <div class="prog-sub">QB certifications</div>
+    </div>
+  </div>
+
+  <!-- LEVEL CARDS -->
+  <div class="level-strip">
+    <div class="level-card" id="lc-l1">
+      <div class="lc-status-bar locked" id="lc-l1-bar"></div>
+      <div class="lc-tag active" id="lc-l1-tag">L1 — Foundation</div>
+      <div class="lc-name">QB Associate</div>
+      <div class="lc-meta">20 questions · 40 min · 70% to pass</div>
+      <div class="lc-score" id="lc-l1-score">—</div>
+      <div class="lc-score-label" id="lc-l1-label">Not attempted</div>
+      <div class="lc-bar"><div class="lc-bar-fill" id="lc-l1-fill" style="width:0%;background:var(--orange)"></div></div>
+      <div class="lc-action">
+        <a href="/quickbooks" class="btn-sm btn-sm-orange" id="lc-l1-btn">Start learning →</a>
+      </div>
+    </div>
+
+    <div class="level-card locked" id="lc-l2">
+      <div class="lc-status-bar locked" id="lc-l2-bar"></div>
+      <div class="lc-tag locked" id="lc-l2-tag">L2 — Professional</div>
+      <div class="lc-name">QB Professional</div>
+      <div class="lc-meta">25 questions · 50 min · $49 · 70% to pass</div>
+      <div class="lc-score" id="lc-l2-score">—</div>
+      <div class="lc-score-label" id="lc-l2-label">Complete L1 first</div>
+      <div class="lc-bar"><div class="lc-bar-fill" id="lc-l2-fill" style="width:0%;background:var(--orange)"></div></div>
+      <div class="lc-action">
+        <a href="/quickbooks-l2" class="btn-sm btn-sm-outline" id="lc-l2-btn">View L2 →</a>
+      </div>
+    </div>
+
+    <div class="level-card locked" id="lc-l3">
+      <div class="lc-status-bar locked" id="lc-l3-bar"></div>
+      <div class="lc-tag locked" id="lc-l3-tag">L3 — Advisor</div>
+      <div class="lc-name">QB Advisor</div>
+      <div class="lc-meta">30 questions · 60 min · Free after L2</div>
+      <div class="lc-score" id="lc-l3-score">—</div>
+      <div class="lc-score-label" id="lc-l3-label">Requires L2 pass</div>
+      <div class="lc-bar"><div class="lc-bar-fill" id="lc-l3-fill" style="width:0%;background:var(--purple)"></div></div>
+      <div class="lc-action">
+        <a href="/quickbooks-l3" class="btn-sm btn-sm-outline" id="lc-l3-btn">View L3 →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CERTIFICATES -->
+  <div class="cert-card">
+    <div class="cert-card-hdr">
+      <h2>Earned Certificates</h2>
+      <span id="cert-count-badge" style="font-size:12px;color:var(--muted)">0 certificates</span>
+    </div>
+    <div id="cert-list">
+      <div class="cert-empty">
+        <div class="cert-empty-icon">🎓</div>
+        <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">No certificates yet</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Pass the L1 assessment (free) to earn your first QuickBooks certificate</div>
+        <a href="/quickbooks" class="btn-sm btn-sm-orange">Start QB L1 — free →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEARN PROGRESS -->
+  <div class="learn-section">
+    <div class="section-hdr">
+      <h2>Module Progress — L1 Foundation</h2>
+      <a href="/quickbooks">Continue →</a>
+    </div>
+    <div id="module-progress">
+      <div class="module-row"><div class="mod-num open" id="mod-0">1</div><div class="mod-name">QBO Essentials</div><span class="mod-status open" id="mod-s-0">Not started</span></div>
+      <div class="module-row"><div class="mod-num open" id="mod-1">2</div><div class="mod-name">Customers & Sales</div><span class="mod-status open" id="mod-s-1">Not started</span></div>
+      <div class="module-row"><div class="mod-num open" id="mod-2">3</div><div class="mod-name">Vendors & Expenses</div><span class="mod-status open" id="mod-s-2">Not started</span></div>
+      <div class="module-row"><div class="mod-num open" id="mod-3">4</div><div class="mod-name">Bank Feeds & Reconciliation</div><span class="mod-status open" id="mod-s-3">Not started</span></div>
+      <div class="module-row"><div class="mod-num open" id="mod-4">5</div><div class="mod-name">Reporting & Analysis</div><span class="mod-status open" id="mod-s-4">Not started</span></div>
+      <div class="module-row"><div class="mod-num open" id="mod-5">6</div><div class="mod-name">Tax & Compliance</div><span class="mod-status open" id="mod-s-5">Not started</span></div>
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="section-hdr"><h2>Quick Actions</h2></div>
+  <div class="quick-actions">
+    <a href="/quickbooks" class="qa-card">
+      <div class="qa-icon">📚</div>
+      <div class="qa-title">Continue Learning</div>
+      <div class="qa-desc">Pick up where you left off in the QB learn modules</div>
+    </a>
+    <a href="/quickbooks-practice" class="qa-card">
+      <div class="qa-icon">🎯</div>
+      <div class="qa-title">Practice Mode</div>
+      <div class="qa-desc">Answer questions with instant explanations — no timer</div>
+    </a>
+    <a href="/quickbooks-simulations" class="qa-card">
+      <div class="qa-icon">💻</div>
+      <div class="qa-title">Live Simulations</div>
+      <div class="qa-desc">Interact with a real-feel QBO interface simulation</div>
+    </a>
+    <a href="/test" onclick="setQBTrack(event)" class="qa-card">
+      <div class="qa-icon">📋</div>
+      <div class="qa-title">Take Assessment</div>
+      <div class="qa-desc">Timed QB certification assessment — earn your certificate</div>
+    </a>
+    <a href="/dashboard" class="qa-card">
+      <div class="qa-icon">🔀</div>
+      <div class="qa-title">Switch to Xero</div>
+      <div class="qa-desc">View your Xero track progress and certificates</div>
+    </a>
+    <a href="/applicant-profile" class="qa-card">
+      <div class="qa-icon">💼</div>
+      <div class="qa-title">Job Profile</div>
+      <div class="qa-desc">Your QB cert auto-attaches to all job applications</div>
+    </a>
+  </div>
+
+  <!-- SHARE / LINKEDIN -->
+  <div class="share-card" id="share-section" style="display:none">
+    <h3>Share your QuickBooks certificate</h3>
+    <p>Let employers and your network know you're QB certified. Your certificate includes a verification URL — employers can confirm it's real instantly.</p>
+    <button class="btn-share" onclick="shareLinkedIn()">
+      Share on LinkedIn →
+    </button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── ACTIVE_TRACK ──────────────────────────────────────────
+localStorage.setItem('ll_test_track', 'QuickBooks');
+
+function setQBTrack(e) {
+  localStorage.setItem('ll_test_track', 'QuickBooks');
+  // let navigation proceed normally
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────
+function loadDashboard() {
+  var user = JSON.parse(localStorage.getItem('ll_user') || '{}');
+  if (user.name) {
+    document.getElementById('welcome-name').textContent = 'QB Dashboard — ' + user.name;
+  }
+
+  var prog = JSON.parse(localStorage.getItem('ll_progress_qb') || '{}');
+  var completed = prog.completedLevels || [];
+  var scores = { l1: prog.l1Score, l2: prog.l2Score, l3: prog.l3Score };
+  var paidL2 = !!prog.paid_qb_l2;
+
+  // Stats row
+  ['l1','l2','l3'].forEach(function(l) {
+    var s = scores[l];
+    var el = document.getElementById('stat-'+l);
+    var sub = document.getElementById('stat-'+l+'-sub');
+    if (s != null) {
+      el.textContent = s + '%';
+      sub.textContent = s >= 70 ? 'Passed ✓' : 'Below pass (70%)';
+      sub.className = 'prog-sub ' + (s >= 70 ? 'good' : 'warn');
+    }
+  });
+
+  // Cert count
+  var certs = (prog.completedLevels || []).length;
+  document.getElementById('stat-certs').textContent = certs;
+  document.getElementById('cert-count-badge').textContent = certs + ' certificate' + (certs !== 1 ? 's' : '');
+
+  // Level cards
+  updateLevelCard('l1', completed.includes('l1'), scores.l1, true);
+  updateLevelCard('l2', completed.includes('l2'), scores.l2, completed.includes('l1') && paidL2);
+  updateLevelCard('l3', completed.includes('l3'), scores.l3, completed.includes('l2'));
+
+  // Module progress
+  var modProg = JSON.parse(localStorage.getItem('ll_qb_l1_progress') || '{"done":[]}');
+  var done = modProg.done || [];
+  var moduleNames = ['QBO Essentials','Customers & Sales','Vendors & Expenses','Bank Feeds & Reconciliation','Reporting & Analysis','Tax & Compliance'];
+  done.forEach(function(i) {
+    var num = document.getElementById('mod-'+i);
+    var stat = document.getElementById('mod-s-'+i);
+    if (num) { num.className = 'mod-num done'; num.textContent = '✓'; }
+    if (stat) { stat.textContent = 'Complete'; stat.className = 'mod-status done'; }
+  });
+  var nextMod = moduleNames.findIndex(function(_, i){ return !done.includes(i); });
+  if (nextMod >= 0 && !done.includes(nextMod)) {
+    var num = document.getElementById('mod-'+nextMod);
+    var stat = document.getElementById('mod-s-'+nextMod);
+    if (num) num.className = 'mod-num current';
+    if (stat) { stat.textContent = 'Up next'; stat.className = 'mod-status current'; }
+  }
+
+  // Certificates
+  renderCerts(prog, completed);
+
+  // Share section
+  if (completed.length > 0) {
+    document.getElementById('share-section').style.display = 'block';
+  }
+}
+
+function updateLevelCard(level, passed, score, unlocked) {
+  var card = document.getElementById('lc-'+level);
+  var bar  = document.getElementById('lc-'+level+'-bar');
+  var tag  = document.getElementById('lc-'+level+'-tag');
+  var sc   = document.getElementById('lc-'+level+'-score');
+  var lbl  = document.getElementById('lc-'+level+'-label');
+  var fill = document.getElementById('lc-'+level+'-fill');
+  var btn  = document.getElementById('lc-'+level+'-btn');
+  if (!card) return;
+
+  card.classList.remove('locked','active','passed');
+  var levelLabels = { l1:'L1 — Foundation', l2:'L2 — Professional', l3:'L3 — Advisor' };
+  var learnLinks  = { l1:'/quickbooks', l2:'/quickbooks-l2', l3:'/quickbooks-l3' };
+
+  if (passed) {
+    card.classList.add('passed');
+    bar.className = 'lc-status-bar passed';
+    tag.className = 'lc-tag passed';
+    tag.textContent = levelLabels[level] + ' — Passed ✓';
+    sc.textContent = (score || '—') + '%';
+    lbl.textContent = 'Certificate earned';
+    if (fill) { fill.style.width = (score || 0)+'%'; fill.style.background = 'var(--teal)'; }
+    if (btn) { btn.textContent = 'Download cert'; btn.className = 'btn-sm btn-sm-teal'; btn.onclick = function(){ downloadCert(level); }; }
+  } else if (unlocked) {
+    card.classList.add('active');
+    bar.className = 'lc-status-bar active';
+    tag.className = 'lc-tag active';
+    tag.textContent = levelLabels[level] + ' — Ready';
+    if (score != null) {
+      sc.textContent = score + '%';
+      lbl.textContent = 'Last attempt';
+      if (fill) fill.style.width = score+'%';
+    }
+    if (btn) { btn.textContent = 'Take assessment'; btn.className = 'btn-sm btn-sm-orange'; btn.href = '/test'; btn.onclick = function(){ localStorage.setItem('ll_test_track','QuickBooks'); }; }
+  } else {
+    card.classList.add('locked');
+    bar.className = 'lc-status-bar locked';
+    tag.className = 'lc-tag locked';
+  }
+}
+
+function renderCerts(prog, completed) {
+  var list = document.getElementById('cert-list');
+  if (completed.length === 0) return; // keep empty state
+
+  var certTitles = {
+    l1: 'QuickBooks Certified Practitioner — Level 1',
+    l2: 'QuickBooks Professional Practitioner — Level 2',
+    l3: 'QuickBooks Advisor Practitioner — Level 3'
+  };
+  var html = '';
+  completed.forEach(function(l) {
+    var cert = prog['cert_'+l] || {};
+    var certId = cert.certId || 'LLP-QCP'+(l==='l1'?'1':l==='l2'?'2':'3')+'-2026-????';
+    var score  = cert.score || prog[l+'Score'] || '—';
+    var date   = cert.issueDate ? new Date(cert.issueDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    html += '<div class="cert-earned">' +
+      '<div class="cert-earned-icon">🏆</div>' +
+      '<div class="cert-earned-body">' +
+        '<div class="cert-title">' + (certTitles[l]||'QB Certificate') + '</div>' +
+        '<div class="cert-id">' + certId + '</div>' +
+        '<div class="cert-meta-row">' +
+          '<span class="cert-meta-item">Score: <strong>' + score + '%</strong></span>' +
+          '<span class="cert-meta-item">Issued: <strong>' + date + '</strong></span>' +
+        '</div>' +
+        '<div class="cert-actions">' +
+          '<button class="btn-sm btn-sm-teal" onclick="downloadCert(\'' + l + '\')">Download PNG</button>' +
+          '<a href="/verify?id=' + certId + '" class="btn-sm btn-sm-outline" target="_blank">Verify →</a>' +
+          '<button class="btn-sm btn-sm-outline" onclick="shareLinkedIn(\'' + l + '\')">Share on LinkedIn</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function downloadCert(level) {
+  var prog = JSON.parse(localStorage.getItem('ll_progress_qb') || '{}');
+  var cert = prog['cert_'+level] || {};
+  var user = JSON.parse(localStorage.getItem('ll_user') || '{}');
+  // Trigger certificate engine if loaded, else navigate to test page
+  if (typeof window.generateCertificate === 'function') {
+    window.generateCertificate({
+      name: user.name || 'Learner',
+      track: 'QuickBooks',
+      level: level.toUpperCase(),
+      score: cert.score || prog[level+'Score'] || 0,
+      certId: cert.certId || '',
+      issueDate: cert.issueDate || new Date().toISOString()
+    });
+  } else {
+    showToast('Certificate download: certificate engine not loaded. Check dashboard.html includes certificate-engine.js');
+  }
+}
+
+function shareLinkedIn(level) {
+  var prog = JSON.parse(localStorage.getItem('ll_progress_qb') || '{}');
+  var user = JSON.parse(localStorage.getItem('ll_user') || '{}');
+  var l = level || (prog.completedLevels||[])[0] || 'l1';
+  var score = prog[l+'Score'] || '—';
+  var certId = (prog['cert_'+l]||{}).certId || '';
+  var levelTitle = l === 'l3' ? 'L3 Advisor' : l === 'l2' ? 'L2 Professional' : 'L1 Foundation';
+  var text = 'Excited to share that I just earned my QuickBooks ' + levelTitle + ' certificate on LedgerLearn Pro — scoring ' + score + '%!\n\n' +
+    'LedgerLearn is an independent platform helping bookkeepers certify their Xero, QuickBooks & Sage skills through practical scenario-based assessments — not theory tests.\n\n' +
+    'L1 is completely free to start at ledgerlearn.pro\n\n' +
+    (certId ? 'Cert ID: ' + certId + '\nVerify at: ledgerlearn.pro/verify?id=' + certId + '\n\n' : '') +
+    '#QuickBooks #QuickBooksOnline #CloudAccounting #Bookkeeping #CertifiedPractitioner #LedgerLearn #ProfessionalDevelopment #Accounting';
+  var url = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent('https://ledgerlearn.pro') + '&summary=' + encodeURIComponent(text);
+  window.open(url, '_blank');
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+loadDashboard();
+</script>
+
+<!-- Load certificate engine if available -->
+<script src="/certificate-engine.js" onerror="console.log('cert engine not loaded')"></script>
+
+</body>
+</html>

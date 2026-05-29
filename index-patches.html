@@ -1,0 +1,192 @@
+<!--
+DESTINATION: repo root / index.html
+ACTION: Apply the 4 patches below to your existing index.html
+
+PATCH 1 — Hero card: add QuickBooks free start + Sage coming soon
+PATCH 2 — Hero actions: add QB CTA button  
+PATCH 3 — Software picker section: update QB card (remove waitlist)
+PATCH 4 — Nav hero card assessment path panel: add QB option
+
+Apply each FIND_THIS → REPLACE_WITH block using find-and-replace in your editor.
+=============================================================================
+-->
+
+<!-- ═══════════════════════════════════════════════════════
+PATCH 1 — Hero cert card: QuickBooks row changes from "waitlist" to "Free start"
+Find this in the hero-card section:
+═══════════════════════════════════════════════════════ -->
+
+<!-- FIND_THIS:
+        <div class="cert-item">
+          <div class="cert-icon qb">QB</div>
+          <div class="cert-info">
+            <div class="cert-name">QuickBooks L1</div>
+            <div class="cert-meta">Coming soon · Join waitlist</div>
+          </div>
+          <span class="cert-status soon">Soon</span>
+        </div>
+REPLACE_WITH: -->
+        <div class="cert-item active">
+          <div class="cert-icon qb">QB</div>
+          <div class="cert-info">
+            <div class="cert-name">QuickBooks L1</div>
+            <div class="cert-meta">6 modules · Free assessment included</div>
+          </div>
+          <span class="cert-status free">Free start</span>
+        </div>
+
+<!-- ═══════════════════════════════════════════════════════
+PATCH 1b — Hero cert card: Sage row update
+Find and replace the Sage row:
+FIND_THIS:
+        <div class="cert-item">
+          <div class="cert-icon sage">SGE</div>
+          <div class="cert-info">
+            <div class="cert-name">Sage L1</div>
+            <div class="cert-meta">Coming 2026</div>
+          </div>
+          <span class="cert-status locked">2026</span>
+        </div>
+REPLACE_WITH: -->
+        <div class="cert-item" style="opacity:.7">
+          <div class="cert-icon sage">SGE</div>
+          <div class="cert-info">
+            <div class="cert-name">Sage L1</div>
+            <div class="cert-meta">Coming soon — join the waitlist</div>
+          </div>
+          <span class="cert-status" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);font-size:.65rem;padding:3px 8px;border-radius:20px">Soon</span>
+        </div>
+
+<!-- ═══════════════════════════════════════════════════════
+PATCH 2 — Hero actions: add QuickBooks CTA next to Xero
+Find this block:
+FIND_THIS (may be slightly different — find the hero-actions div):
+      <div class="hero-actions">
+        <a href="/learn" class="btn-primary">
+          Start free module
+          ...
+        </a>
+        <a href="/test" class="btn-secondary">View certifications →</a>
+      </div>
+REPLACE_WITH the block below — this adds a second CTA row for QB: -->
+
+<!-- ADD AFTER the existing hero-actions div (not replacing it) — insert this new div: -->
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+  <a href="/learn" class="btn-primary" style="background:#1D9E75;border-color:#1D9E75;font-size:.85rem;padding:10px 18px">
+    Start Xero L1 — free →
+  </a>
+  <a href="/quickbooks" class="btn-primary" style="background:#ea580c;border-color:#ea580c;font-size:.85rem;padding:10px 18px">
+    Start QuickBooks L1 — free →
+  </a>
+  <a href="/test" class="btn-secondary" style="font-size:.85rem;padding:10px 18px">View all certifications →</a>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+PATCH 3 — Software picker / tracks section: update QB card
+Find this in the tracks/software section. The QB card currently has a waitlist form.
+Replace the entire QB track card with:
+═══════════════════════════════════════════════════════ -->
+<div class="track-card" id="track-qb">
+  <div class="track-header" style="background:linear-gradient(135deg,#431407,#7c2d12)">
+    <div class="track-logo-wrap">
+      <div class="track-logo" style="background:#ea580c;color:#fff;font-weight:800;font-size:1.1rem;width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center">QB</div>
+    </div>
+    <div class="track-title-wrap">
+      <div class="track-name">QuickBooks Online</div>
+      <div class="track-sub">US · Canada · Philippines · South Africa</div>
+    </div>
+    <span class="track-badge-live" style="background:rgba(234,88,12,.25);color:#fdba74;border:1px solid rgba(234,88,12,.4)">Live</span>
+  </div>
+  <div class="track-body">
+    <div class="track-levels">
+      <div class="track-level">
+        <div class="tl-dot" style="background:#1D9E75"></div>
+        <div class="tl-info">
+          <div class="tl-name">L1 — QB Associate</div>
+          <div class="tl-meta">6 modules · 20 questions · 40 min</div>
+        </div>
+        <span class="tl-price free">Free</span>
+      </div>
+      <div class="track-level">
+        <div class="tl-dot" style="background:#ea580c"></div>
+        <div class="tl-info">
+          <div class="tl-name">L2 — QB Professional</div>
+          <div class="tl-meta">6 modules · 25 questions · 50 min</div>
+        </div>
+        <span class="tl-price paid">$49</span>
+      </div>
+      <div class="track-level" style="opacity:.6">
+        <div class="tl-dot" style="background:#888"></div>
+        <div class="tl-info">
+          <div class="tl-name">L3 — QB Advisor</div>
+          <div class="tl-meta">Free after L2 pass</div>
+        </div>
+        <span class="tl-price" style="color:#aaa;font-size:.75rem">After L2</span>
+      </div>
+    </div>
+    <div class="track-features">
+      <div class="track-feat"><span class="feat-check">✓</span> Chart of accounts · invoicing · bank feeds</div>
+      <div class="track-feat"><span class="feat-check">✓</span> Payroll · classes · projects · inventory</div>
+      <div class="track-feat"><span class="feat-check">✓</span> Advisory · ASC 606 · M&amp;A · QoE</div>
+      <div class="track-feat"><span class="feat-check">✓</span> Verifiable certificate with unique ID</div>
+    </div>
+    <div class="track-actions">
+      <a href="/quickbooks" class="btn-track-primary" style="background:#ea580c;border-color:#ea580c">
+        Start QB L1 — free →
+      </a>
+      <a href="/quickbooks-simulations" class="btn-track-secondary">Practice first</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+PATCH 4 — Software picker: update Sage card (if it has a waitlist form, replace with coming soon)
+═══════════════════════════════════════════════════════ -->
+<div class="track-card" id="track-sage" style="opacity:.75">
+  <div class="track-header" style="background:linear-gradient(135deg,#1a2e1a,#2d4a2d)">
+    <div class="track-logo-wrap">
+      <div class="track-logo" style="background:#22c55e;color:#fff;font-weight:800;font-size:.9rem;width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center">SGE</div>
+    </div>
+    <div class="track-title-wrap">
+      <div class="track-name">Sage</div>
+      <div class="track-sub">UK · Ireland · South Africa</div>
+    </div>
+    <span class="track-badge-live" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15)">Coming soon</span>
+  </div>
+  <div class="track-body">
+    <div style="padding:20px 0;text-align:center">
+      <div style="font-size:2.5rem;margin-bottom:12px">🚧</div>
+      <div style="font-size:.9rem;font-weight:600;color:var(--text-primary,#fff);margin-bottom:6px">Sage track in development</div>
+      <div style="font-size:.8rem;color:var(--text-muted,rgba(255,255,255,.5));margin-bottom:20px;line-height:1.5">L1 · L2 · L3 certification launching 2026. Covering Sage 50, Sage 200, and Sage Accounting.</div>
+      <form id="sage-waitlist-form" onsubmit="joinSageWaitlist(event)" style="display:flex;flex-direction:column;gap:8px;max-width:280px;margin:0 auto">
+        <input type="email" id="sage-email" placeholder="Your email address" required
+          style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 14px;border-radius:8px;font-size:.85rem;outline:none">
+        <button type="submit" style="background:#22c55e;color:#fff;border:none;padding:10px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer">
+          Notify me when Sage launches →
+        </button>
+      </form>
+      <div id="sage-waitlist-success" style="display:none;color:#86efac;font-size:.85rem;margin-top:10px">✓ You're on the list! We'll email you when Sage launches.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+PATCH 5 — Add this JS function for Sage waitlist (add to existing <script> block)
+═══════════════════════════════════════════════════════ -->
+<script>
+// ADD THIS FUNCTION to your existing script block
+function joinSageWaitlist(e) {
+  e.preventDefault();
+  var email = document.getElementById('sage-email').value.trim();
+  if (!email) return;
+  // Store locally + call Brevo
+  localStorage.setItem('ll_sage_waitlist', email);
+  fetch('/.netlify/functions/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, listId: 4, source: 'sage-waitlist' })
+  }).catch(function(){});
+  document.getElementById('sage-waitlist-form').style.display = 'none';
+  document.getElementById('sage-waitlist-success').style.display = 'block';
+}
+</script>
