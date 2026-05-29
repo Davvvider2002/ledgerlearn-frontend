@@ -3,718 +3,258 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LedgerLearn — QuickBooks L1 Foundation</title>
+<title>QuickBooks Certification — LedgerLearn Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="/ll-auth.js"></script>
 <style>
-:root{--navy:#0F2540;--teal:#1D9E75;--teal-light:#E1F5EE;--gold:#C9A84C;--gold-light:#FAEEDA;--orange:#ea580c;--orange-light:#FFF7ED;--bg:#f9f9f7;--card:#fff;--border:#e5e3db;--text:#1a1a18;--muted:#6b6b67;--radius:10px}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
-/* NAV */
-.nav{background:var(--navy);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.nav-logo{color:#fff;font-size:16px;font-weight:600;text-decoration:none;letter-spacing:-.01em}
-.nav-logo span{color:var(--gold)}
-.nav-links{display:flex;gap:20px;align-items:center}
-.nav-links a{color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;transition:color .2s}
-.nav-links a:hover,.nav-links a.on{color:#fff}
-.nav-badge{background:var(--orange);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
-/* LAYOUT */
-.layout{display:flex;flex:1;max-width:1100px;margin:0 auto;width:100%;padding:24px 20px;gap:24px}
-/* SIDEBAR */
-.sidebar{width:240px;flex-shrink:0}
-.track-badge{background:var(--orange-light);border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;margin-bottom:16px}
-.track-badge .track-name{font-size:13px;font-weight:600;color:var(--orange)}
-.track-badge .track-level{font-size:12px;color:#9a3412;margin-top:2px}
-.lesson-nav{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
-.lesson-nav-hdr{padding:12px 16px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border)}
-.lesson-item{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;font-size:13px;color:var(--muted);border-left:3px solid transparent;transition:all .15s}
-.lesson-item:hover{background:#f5f5f3;color:var(--text)}
-.lesson-item.on{background:var(--orange-light);color:var(--orange);border-left-color:var(--orange);font-weight:500}
-.lesson-item.done{color:var(--teal)}
-.lesson-num{width:20px;height:20px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
-.lesson-item.on .lesson-num{background:var(--orange);color:#fff}
-.lesson-item.done .lesson-num{background:var(--teal);color:#fff}
-.progress-bar-wrap{padding:14px 16px;border-top:1px solid var(--border)}
-.progress-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
-.progress-track{background:var(--bg);border-radius:4px;height:5px;overflow:hidden}
-.progress-fill{height:100%;background:var(--orange);border-radius:4px;transition:width .4s}
-/* MAIN */
-.main{flex:1;min-width:0}
-.lesson-header{margin-bottom:20px}
-.lesson-tag{display:inline-flex;align-items:center;gap:6px;background:var(--orange-light);color:#9a3412;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
-.lesson-title{font-size:24px;font-weight:700;color:var(--navy);letter-spacing:-.02em}
-.lesson-subtitle{font-size:14px;color:var(--muted);margin-top:4px}
-/* CONTENT CARD */
-.content-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;margin-bottom:20px}
-.content-card h2{font-size:17px;font-weight:600;color:var(--navy);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-.content-card h3{font-size:15px;font-weight:600;color:var(--text);margin:18px 0 8px}
-.content-card p{font-size:14px;color:var(--text);margin-bottom:12px;line-height:1.7}
-.content-card ul,.content-card ol{margin:0 0 14px 20px}
-.content-card li{font-size:14px;color:var(--text);margin-bottom:6px;line-height:1.6}
-/* INFO BOX */
-.info-box{border-left:3px solid var(--orange);background:var(--orange-light);border-radius:0 8px 8px 0;padding:14px 16px;margin:16px 0;font-size:13px;line-height:1.6}
-.info-box.teal{border-left-color:var(--teal);background:var(--teal-light)}
-.info-box strong{display:block;margin-bottom:4px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--orange)}
-.info-box.teal strong{color:#085041}
-/* SIM CARD */
-.sim-card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:20px 24px;margin:16px 0}
-.sim-card-hdr{font-size:12px;font-weight:700;color:#065f46;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.sim-scenario{background:#fff;border:1px solid #d1fae5;border-radius:8px;padding:14px 16px;margin-bottom:12px;font-size:13px;line-height:1.6;color:#1a1a18}
-.sim-question{font-size:13px;font-weight:600;color:#065f46;margin-bottom:10px}
-.sim-options{display:flex;flex-direction:column;gap:8px}
-.sim-opt{background:#fff;border:1.5px solid #d1fae5;border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px}
-.sim-opt:hover{border-color:var(--teal);background:var(--teal-light)}
-.sim-opt.correct{border-color:var(--teal);background:#d1fae5;font-weight:500}
-.sim-opt.wrong{border-color:#ef4444;background:#fee2e2}
-.sim-opt-label{width:20px;height:20px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
-.sim-explanation{margin-top:12px;padding:12px 14px;background:#fff;border-radius:8px;border-left:3px solid var(--teal);font-size:13px;line-height:1.6;display:none}
-/* COMPARISON TABLE */
-.compare-table{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0}
-.compare-table th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-weight:500}
-.compare-table td{padding:10px 14px;border-bottom:1px solid var(--border)}
-.compare-table tr:nth-child(even) td{background:#f9f9f7}
-.compare-table .highlight{background:var(--orange-light)!important;font-weight:500}
-/* NAV BUTTONS */
-.lesson-nav-btns{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
-.btn{padding:10px 22px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
-.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
-.btn-outline:hover{border-color:var(--orange);color:var(--orange)}
-.btn-primary{background:var(--orange);color:#fff}
-.btn-primary:hover{background:#c2410c}
-.btn-test{background:var(--navy);color:#fff;padding:12px 28px;font-size:15px;border-radius:8px;cursor:pointer;border:none;font-weight:600;transition:background .2s}
-.btn-test:hover{background:#1e3a5f}
-/* LEVEL BANNER */
-.level-banner{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap}
-.level-pill{display:flex;align-items:center;gap:6px;font-size:13px;padding:6px 14px;border-radius:20px;background:var(--bg);border:1px solid var(--border);color:var(--muted)}
-.level-pill.done{background:var(--teal-light);border-color:#9FE1CB;color:#085041;font-weight:500}
-.level-pill.current{background:var(--orange-light);border-color:#fed7aa;color:var(--orange);font-weight:600}
-.level-pill.locked{opacity:.5}
-/* MOBILE */
-.mob-nav-btn{display:none;background:var(--navy);color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;margin-bottom:16px}
-@media(max-width:768px){
-  .layout{flex-direction:column;padding:16px}
-  .sidebar{width:100%}
-  .lesson-nav{display:none}
-  .lesson-nav.open{display:block}
-  .mob-nav-btn{display:block}
-  .content-card{padding:20px}
-}
+:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--orange:#ea580c;--off-white:#f8f7f4;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:#fff;min-height:100vh;}
+nav{height:64px;background:rgba(11,31,58,.97);border-bottom:1px solid rgba(234,88,12,.25);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:fixed;top:0;left:0;right:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:26px;height:26px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;color:#fff;}
+.brand span{color:var(--orange);}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.nav-right a{color:rgba(255,255,255,.5);text-decoration:none;font-size:.82rem;}
+.nav-right a:hover{color:#fff;}
+#nav-user-slot{}
+main{padding:100px 2rem 60px;max-width:860px;margin:0 auto;}
+.page-eyebrow{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--orange);font-weight:700;margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem;}
+.page-eyebrow::before{content:'';width:16px;height:1.5px;background:var(--orange);}
+h1{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;margin-bottom:.75rem;line-height:1.15;}
+.page-sub{color:rgba(255,255,255,.5);font-size:1rem;line-height:1.65;margin-bottom:2.5rem;max-width:580px;}
+.level-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:2.5rem;}
+@media(max-width:700px){.level-grid{grid-template-columns:1fr;}}
+.level-card{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:14px;padding:1.5rem;transition:border-color .15s;}
+.level-card.active{border-color:rgba(234,88,12,.4);}
+.level-card.locked{opacity:.55;}
+.level-badge{display:inline-flex;align-items:center;gap:6px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 10px;border-radius:100px;margin-bottom:1rem;}
+.badge-free{background:rgba(29,169,138,.15);color:#26c9a5;border:1px solid rgba(29,169,138,.3);}
+.badge-paid{background:rgba(234,88,12,.12);color:#fdba74;border:1px solid rgba(234,88,12,.3);}
+.badge-locked{background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.12);}
+.level-card h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:.4rem;}
+.level-card p{font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.5;margin-bottom:1.25rem;}
+.btn-level{display:block;text-align:center;padding:10px 16px;border-radius:8px;font-size:.82rem;font-weight:700;text-decoration:none;font-family:inherit;cursor:pointer;border:none;transition:all .15s;}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-orange:hover{background:#f97316;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{background:#e8bb4a;}
+.btn-ghost{background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.12);}
+.modules-section{margin-top:1.5rem;}
+.modules-section h2{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:1rem;}
+.module-list{display:flex;flex-direction:column;gap:.5rem;}
+.module-row{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:.875rem 1.25rem;display:flex;align-items:center;gap:1rem;cursor:pointer;transition:border-color .15s;text-decoration:none;color:#fff;}
+.module-row:hover{border-color:rgba(234,88,12,.3);}
+.module-row.done{border-color:rgba(29,169,138,.3);background:rgba(29,169,138,.06);}
+.mod-num{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;color:rgba(255,255,255,.5);}
+.mod-num.done{background:var(--teal);color:#fff;}
+.mod-num.current{background:var(--orange);color:#fff;}
+.mod-title{font-size:.88rem;font-weight:600;flex:1;}
+.mod-meta{font-size:.72rem;color:rgba(255,255,255,.35);}
+.mod-status{font-size:.72rem;font-weight:700;}
+.mod-status.done{color:var(--teal);}
+.mod-status.current{color:var(--orange);}
+.paywall-card{background:linear-gradient(135deg,rgba(234,88,12,.12),rgba(212,168,67,.06));border:1.5px solid rgba(234,88,12,.3);border-radius:14px;padding:1.75rem;margin-top:1.5rem;text-align:center;}
+.paywall-card h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:.5rem;}
+.paywall-card p{font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:1.25rem;line-height:1.5;}
+.price-tag{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--gold);margin-bottom:1rem;}
+.price-tag small{font-size:.85rem;color:rgba(255,255,255,.4);font-family:'DM Sans',sans-serif;font-weight:400;}
 </style>
 </head>
 <body>
-
-<nav class="nav">
-  <a href="/" class="nav-logo">Ledger<span>Learn</span></a>
-  <div class="nav-links">
-    <a href="/learn" id="nav-learn-link">Learn</a>
-    <a href="/test">Assess</a>
-    <a href="/dashboard">Dashboard</a>
-    <span class="nav-badge">QB L1 Free</span>
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <div class="nav-right">
+    <a href="/quickbooks-simulations">Practice</a>
+    <a href="/test">Assessment</a>
+    <a href="/quickbooks-dashboard">Dashboard</a>
+    <div id="nav-user-slot"></div>
   </div>
 </nav>
 
-<div class="layout">
+<main>
+  <div class="page-eyebrow">QuickBooks Online Track</div>
+  <h1>QuickBooks <span style="color:var(--orange)">Certification</span></h1>
+  <p class="page-sub" id="welcome-name">Three levels of verified certification. L1 is completely free — start learning today.</p>
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="track-badge">
-      <div class="track-name">QuickBooks Online</div>
-      <div class="track-level">L1 — Foundation · Free</div>
+  <div class="level-grid">
+    <!-- L1 — always free -->
+    <div class="level-card active" id="card-l1">
+      <span class="level-badge badge-free" id="badge-l1">✓ Free · L1</span>
+      <h3>QB Associate</h3>
+      <p>Chart of accounts, invoicing, bank feeds, reconciliation, basic reporting. 6 modules.</p>
+      <a href="/quickbooks-dashboard" class="btn-level btn-orange" id="btn-l1">Go to L1 →</a>
     </div>
-
-    <button class="mob-nav-btn" onclick="toggleNav()">☰ Lessons</button>
-
-    <div class="lesson-nav" id="lesson-nav">
-      <div class="lesson-nav-hdr">Course modules</div>
-
-      <div class="lesson-item on" onclick="showLesson(0)" id="li-0">
-        <div class="lesson-num">1</div>
-        <span>QBO Essentials</span>
-      </div>
-      <div class="lesson-item" onclick="showLesson(1)" id="li-1">
-        <div class="lesson-num">2</div>
-        <span>Customers & Sales</span>
-      </div>
-      <div class="lesson-item" onclick="showLesson(2)" id="li-2">
-        <div class="lesson-num">3</div>
-        <span>Vendors & Expenses</span>
-      </div>
-      <div class="lesson-item" onclick="showLesson(3)" id="li-3">
-        <div class="lesson-num">4</div>
-        <span>Bank Feeds & Reconciliation</span>
-      </div>
-      <div class="lesson-item" onclick="showLesson(4)" id="li-4">
-        <div class="lesson-num">5</div>
-        <span>Reporting & Analysis</span>
-      </div>
-      <div class="lesson-item" onclick="showLesson(5)" id="li-5">
-        <div class="lesson-num">6</div>
-        <span>Tax & Compliance</span>
-      </div>
-
-      <div class="progress-bar-wrap">
-        <div class="progress-label">
-          <span>Progress</span>
-          <span id="prog-pct">0%</span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill" id="prog-fill" style="width:0%"></div>
-        </div>
-      </div>
+    <!-- L2 — paid after passing L1 -->
+    <div class="level-card" id="card-l2">
+      <span class="level-badge badge-paid" id="badge-l2">$49 · L2</span>
+      <h3>QB Professional</h3>
+      <p>Payroll, classes, projects, inventory, advanced reporting, tax compliance.</p>
+      <a href="#l2-unlock" class="btn-level btn-ghost" id="btn-l2">Pass L1 first</a>
+    </div>
+    <!-- L3 — free after passing L2 -->
+    <div class="level-card locked" id="card-l3">
+      <span class="level-badge badge-locked" id="badge-l3">Free after L2 · L3</span>
+      <h3>QB Advisor</h3>
+      <p>Advisory services, ASC 606, M&amp;A quality of earnings, complex client scenarios.</p>
+      <span class="btn-level btn-ghost" id="btn-l3" style="cursor:default">Pass L2 first</span>
     </div>
   </div>
 
-  <!-- MAIN CONTENT -->
-  <div class="main">
-
-    <!-- LEVEL BANNER -->
-    <div class="level-banner" id="level-banner">
-      <div class="level-pill done">✓ Lesson 1</div>
-      <div class="level-pill current" id="banner-current">Lesson 2</div>
-      <div class="level-pill locked">🔒 L2 ($49)</div>
-      <div class="level-pill locked">🔒 L3 (after L2)</div>
+  <!-- L1 Module List -->
+  <div class="modules-section">
+    <h2>L1 Modules — QuickBooks Associate</h2>
+    <div class="module-list" id="module-list">
+      <a href="/quickbooks-dashboard" class="module-row" id="m-0"><div class="mod-num" id="mn-0">1</div><div><div class="mod-title">QBO Essentials &amp; Setup</div><div class="mod-meta">Company file · chart of accounts · navigation</div></div><span class="mod-status" id="ms-0">Start</span></a>
+      <a href="/quickbooks-dashboard" class="module-row" id="m-1"><div class="mod-num" id="mn-1">2</div><div><div class="mod-title">Customers &amp; Sales</div><div class="mod-meta">Invoicing · payments · customer management</div></div><span class="mod-status" id="ms-1">Locked</span></a>
+      <a href="/quickbooks-dashboard" class="module-row" id="m-2"><div class="mod-num" id="mn-2">3</div><div><div class="mod-title">Vendors &amp; Expenses</div><div class="mod-meta">Bills · purchase orders · expense tracking</div></div><span class="mod-status" id="ms-2">Locked</span></a>
+      <a href="/quickbooks-dashboard" class="module-row" id="m-3"><div class="mod-num" id="mn-3">4</div><div><div class="mod-title">Bank Feeds &amp; Reconciliation</div><div class="mod-meta">Connecting banks · categorisation · reconciling</div></div><span class="mod-status" id="ms-3">Locked</span></a>
+      <a href="/quickbooks-dashboard" class="module-row" id="m-4"><div class="mod-num" id="mn-4">5</div><div><div class="mod-title">Reporting &amp; Analysis</div><div class="mod-meta">P&amp;L · balance sheet · cash flow · custom reports</div></div><span class="mod-status" id="ms-4">Locked</span></a>
+      <a href="/quickbooks-dashboard" class="module-row" id="m-5"><div class="mod-num" id="mn-5">6</div><div><div class="mod-title">Tax &amp; Compliance</div><div class="mod-meta">Sales tax · 1099s · GST/VAT (if applicable)</div></div><span class="mod-status" id="ms-5">Locked</span></a>
     </div>
+  </div>
 
-    <!-- LESSON 0: QBO Essentials -->
-    <div id="lesson-0">
-      <div class="lesson-header">
-        <div class="lesson-tag">Module 1</div>
-        <div class="lesson-title">QuickBooks Online Essentials</div>
-        <div class="lesson-subtitle">Navigate QBO, understand the dashboard, and master the Chart of Accounts</div>
-      </div>
-
-      <div class="content-card">
-        <h2>What is QuickBooks Online?</h2>
-        <p>QuickBooks Online (QBO) is cloud-based accounting software that lets businesses record transactions, manage cash flow, pay employees, and produce financial reports — all from a browser or mobile app.</p>
-        <p>Unlike desktop QuickBooks, QBO stores all data in the cloud, auto-saves changes, and can be accessed by multiple users simultaneously from anywhere.</p>
-
-        <div class="info-box">
-          <strong>QBO vs Xero — Key difference</strong>
-          QBO uses "transaction forms" (invoices, bills, expenses) that feel like physical paperwork. Xero is more workflow-based. QBO is dominant in the US and Latin America; Xero is stronger in UK, Australia, and New Zealand.
-        </div>
-
-        <h3>The QBO dashboard</h3>
-        <p>When you log in, QBO shows the Business Overview — a live summary of invoices owed, bills due, bank balances, and profit for the period. Understanding each panel helps you spot issues fast.</p>
-        <ul>
-          <li><strong>Invoices</strong> — money customers owe you (accounts receivable)</li>
-          <li><strong>Expenses</strong> — what you've spent this period</li>
-          <li><strong>Profit and Loss</strong> — snapshot P&amp;L for the current month</li>
-          <li><strong>Bank Accounts</strong> — current balances from connected feeds</li>
-        </ul>
-
-        <h3>The Chart of Accounts</h3>
-        <p>Every transaction in QBO is coded to an account in the Chart of Accounts (CoA). The CoA is the backbone of your financial reporting — poorly set up CoA = unreliable reports.</p>
-
-        <table class="compare-table">
-          <tr><th>Account Type</th><th>Examples</th><th>Appears On</th></tr>
-          <tr><td>Asset</td><td>Bank, Debtors, Equipment</td><td>Balance Sheet</td></tr>
-          <tr><td>Liability</td><td>Credit Card, Loan, AP</td><td>Balance Sheet</td></tr>
-          <tr><td>Equity</td><td>Owner's Equity, Retained Earnings</td><td>Balance Sheet</td></tr>
-          <tr class="highlight"><td>Income</td><td>Sales, Services, Other Income</td><td>Profit &amp; Loss</td></tr>
-          <tr class="highlight"><td>Expense</td><td>Rent, Payroll, Utilities</td><td>Profit &amp; Loss</td></tr>
-          <tr><td>COGS</td><td>Materials, Direct Labour</td><td>Profit &amp; Loss (above GP line)</td></tr>
-        </table>
-
-        <div class="info-box teal">
-          <strong>Golden rule</strong>
-          Every transaction affects at least two accounts (double-entry). QBO handles the second entry automatically — but you must code the first correctly. Getting the account type wrong puts transactions in the wrong report.
-        </div>
-
-        <h3>Key navigation areas in QBO</h3>
-        <ul>
-          <li><strong>+ New</strong> — create any transaction (invoice, bill, expense, journal)</li>
-          <li><strong>Sales</strong> — customer invoices, payments received, credits</li>
-          <li><strong>Expenses</strong> — vendor bills, expense payments, vendor management</li>
-          <li><strong>Banking</strong> — bank feed, reconciliation, bank accounts</li>
-          <li><strong>Reports</strong> — P&amp;L, Balance Sheet, Cash Flow, AR/AP Ageing</li>
-          <li><strong>Payroll</strong> — employee management, payroll runs</li>
-          <li><strong>Taxes</strong> — sales tax centre, payroll tax, VAT (for non-US)</li>
-        </ul>
-      </div>
-
-      <!-- SCENARIO SIM -->
-      <div class="sim-card">
-        <div class="sim-card-hdr">🎯 Scenario — test your understanding</div>
-        <div class="sim-scenario">
-          You open a QBO file for a new client and the Chart of Accounts has only 12 accounts — everything is coded to either "Income", "General Expenses", or "Other". The P&amp;L is technically balanced but the client can't tell which expense category is largest or how profitable each service line is.
-        </div>
-        <div class="sim-question">What is the fundamental problem and the correct first action?</div>
-        <div class="sim-options" id="sim-0">
-          <div class="sim-opt" onclick="answerSim(0,0,1)"><div class="sim-opt-label">A</div>The CoA is too simple — expand it with meaningful income and expense categories aligned to the business, then recode all existing transactions</div>
-          <div class="sim-opt" onclick="answerSim(0,1,1)"><div class="sim-opt-label">B</div>Export to Excel and build the categories there — QBO reporting is limited</div>
-          <div class="sim-opt" onclick="answerSim(0,2,1)"><div class="sim-opt-label">C</div>Add more bank accounts to separate the income streams</div>
-          <div class="sim-opt" onclick="answerSim(0,3,1)"><div class="sim-opt-label">D</div>No action — the P&amp;L balances so the accounts are correct</div>
-        </div>
-        <div class="sim-explanation" id="sim-exp-0">
-          ✅ A is correct. A flat, undifferentiated CoA produces useless management reports. The fix is to design a meaningful account structure and recode historic transactions. Without category-level detail, the P&amp;L cannot drive business decisions.
-        </div>
-      </div>
-
-      <div class="lesson-nav-btns">
-        <span></span>
-        <button class="btn btn-primary" onclick="nextLesson(0)">Next: Customers & Sales →</button>
-      </div>
-    </div>
-
-    <!-- LESSON 1: Customers & Sales -->
-    <div id="lesson-1" style="display:none">
-      <div class="lesson-header">
-        <div class="lesson-tag">Module 2</div>
-        <div class="lesson-title">Customers & Sales</div>
-        <div class="lesson-subtitle">Invoices, payments, credits, and managing accounts receivable in QBO</div>
-      </div>
-
-      <div class="content-card">
-        <h2>The Sales Workflow in QBO</h2>
-        <p>QBO's sales workflow follows a logical sequence from estimate to cash in the bank. Understanding the full flow prevents the most common AR errors.</p>
-
-        <div style="display:flex;gap:0;margin:16px 0;flex-wrap:wrap">
-          <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px 0 0 8px;padding:10px 14px;flex:1;min-width:100px;text-align:center;font-size:12px;font-weight:600;color:#9a3412">Estimate</div>
-          <div style="background:#fff7ed;border:1px solid #fed7aa;border-left:none;padding:10px 14px;flex:1;min-width:100px;text-align:center;font-size:12px;font-weight:600;color:#9a3412">→ Invoice</div>
-          <div style="background:#fff7ed;border:1px solid #fed7aa;border-left:none;padding:10px 14px;flex:1;min-width:100px;text-align:center;font-size:12px;font-weight:600;color:#9a3412">→ Payment</div>
-          <div style="background:#e1f5ee;border:1px solid #9FE1CB;border-left:none;border-radius:0 8px 8px 0;padding:10px 14px;flex:1;min-width:100px;text-align:center;font-size:12px;font-weight:600;color:#085041">→ Deposit</div>
-        </div>
-
-        <h3>Creating an invoice</h3>
-        <ul>
-          <li>Go to <strong>+ New → Invoice</strong></li>
-          <li>Select the customer — QBO auto-fills their details</li>
-          <li>Add line items from Products &amp; Services (or type a description)</li>
-          <li>Set the due date and payment terms</li>
-          <li>Apply tax rate if applicable</li>
-          <li>Save and send directly to the customer's email</li>
-        </ul>
-
-        <div class="info-box">
-          <strong>Common mistake</strong>
-          Entering a bank deposit directly without using Receive Payment. This records the cash but leaves the invoice open — your AR ageing then shows inflated overdue balances and your reports are wrong.
-        </div>
-
-        <h3>Receiving a payment</h3>
-        <p>When a customer pays, <strong>always</strong> use Receive Payment (not a bank deposit) to close the invoice:</p>
-        <ol>
-          <li>Go to <strong>+ New → Receive Payment</strong></li>
-          <li>Select the customer</li>
-          <li>Tick the invoice(s) being paid</li>
-          <li>Enter the amount received</li>
-          <li>Choose to deposit to bank or Undeposited Funds</li>
-        </ol>
-
-        <h3>Undeposited Funds</h3>
-        <p>Think of Undeposited Funds as a "cash drawer" — physical money or cheques you've collected but not yet taken to the bank. Use it when you batch multiple receipts into one bank deposit, so your QBO bank matches your actual bank statement perfectly.</p>
-
-        <h3>Customer credits and refunds</h3>
-        <table class="compare-table">
-          <tr><th>Situation</th><th>QBO Tool</th><th>Effect</th></tr>
-          <tr><td>Customer overpays</td><td>Overpayment credit auto-created</td><td>Sits on customer account; apply to future invoice</td></tr>
-          <tr><td>Goods returned</td><td>Credit Memo</td><td>Reduces AR; apply to open invoice or refund</td></tr>
-          <tr><td>Cash refund issued</td><td>Refund Receipt</td><td>Records money out to customer; reduces bank</td></tr>
-        </table>
-      </div>
-
-      <div class="sim-card">
-        <div class="sim-card-hdr">🎯 Scenario — test your understanding</div>
-        <div class="sim-scenario">
-          A client calls to say they've paid three invoices with a single bank transfer of $4,750. The three invoices are: $1,800 (30 days old), $2,100 (15 days old), and $850 (5 days old). Your QBO shows all three as unpaid.
-        </div>
-        <div class="sim-question">What is the correct QBO action?</div>
-        <div class="sim-options" id="sim-1">
-          <div class="sim-opt" onclick="answerSim(1,0,0)"><div class="sim-opt-label">A</div>Receive Payment → select customer → tick all three invoices → enter $4,750 → deposit to bank</div>
-          <div class="sim-opt" onclick="answerSim(1,1,0)"><div class="sim-opt-label">B</div>Create three separate Receive Payment entries, one for each invoice amount</div>
-          <div class="sim-opt" onclick="answerSim(1,2,0)"><div class="sim-opt-label">C</div>Record a bank deposit of $4,750 and code to Accounts Receivable</div>
-          <div class="sim-opt" onclick="answerSim(1,3,0)"><div class="sim-opt-label">D</div>Mark each invoice as paid individually in the invoice list</div>
-        </div>
-        <div class="sim-explanation" id="sim-exp-1">
-          ✅ A is correct. QBO's Receive Payment screen allows you to apply a single payment across multiple invoices. This matches your bank statement (one deposit) while correctly closing all three AR balances. Creating three separate payments would inflate the bank by $4,750 × 3 = $14,250.
-        </div>
-      </div>
-
-      <div class="lesson-nav-btns">
-        <button class="btn btn-outline" onclick="showLesson(0)">← Previous</button>
-        <button class="btn btn-primary" onclick="nextLesson(1)">Next: Vendors & Expenses →</button>
-      </div>
-    </div>
-
-    <!-- LESSON 2: Vendors & Expenses -->
-    <div id="lesson-2" style="display:none">
-      <div class="lesson-header">
-        <div class="lesson-tag">Module 3</div>
-        <div class="lesson-title">Vendors & Expenses</div>
-        <div class="lesson-subtitle">Bills, expense payments, vendor credits, and accounts payable management</div>
-      </div>
-
-      <div class="content-card">
-        <h2>Bills vs Expenses in QBO</h2>
-        <p>This is one of the most common sources of error in QBO. The choice between a Bill and an Expense determines whether a transaction appears in Accounts Payable.</p>
-
-        <table class="compare-table">
-          <tr><th>Feature</th><th>Bill</th><th>Expense</th></tr>
-          <tr><td>Use when</td><td class="highlight">You'll pay later (on credit)</td><td>You pay immediately</td></tr>
-          <tr><td>Appears in AP?</td><td class="highlight">Yes — shows in AP ageing</td><td>No — paid immediately</td></tr>
-          <tr><td>Workflow</td><td>Enter bill → Pay bill later</td><td>One step — record &amp; done</td></tr>
-          <tr><td>Vendor tracking</td><td>Full vendor record</td><td>Can be vendor or ad-hoc</td></tr>
-        </table>
-
-        <div class="info-box">
-          <strong>Rule of thumb</strong>
-          If the vendor sends you a statement of what you owe, use Bills. If you hand over cash/card at point of purchase, use Expense. Using Expenses for credit purchases hides what you owe vendors and produces wrong AP reports.
-        </div>
-
-        <h3>Paying a bill</h3>
-        <ol>
-          <li>Go to <strong>Expenses → Vendors → select vendor</strong></li>
-          <li>Find the open bill and click <strong>Make Payment</strong></li>
-          <li>QBO records the payment, reduces the bank balance, and closes the bill</li>
-        </ol>
-        <p>Or use <strong>+ New → Pay Bills</strong> to pay multiple vendors in one session.</p>
-
-        <h3>Vendor credits</h3>
-        <p>When a supplier issues a credit note (for returns, overcharges, or disputes):</p>
-        <ol>
-          <li><strong>+ New → Vendor Credit</strong></li>
-          <li>Select the vendor and enter the credit amount and account</li>
-          <li>When paying future bills, QBO will offer to apply the credit — reducing the payment needed</li>
-        </ol>
-
-        <h3>Recording petty cash</h3>
-        <p>Petty cash purchases are recorded as Expenses in QBO, using the petty cash bank account as the payment account. Keep a physical log of petty cash receipts and reconcile the physical cash to QBO's petty cash balance monthly.</p>
-
-        <h3>1099 contractor tracking (US)</h3>
-        <p>For US businesses: if a contractor is paid $600 or more in a year, a 1099-NEC must be issued. In QBO:</p>
-        <ul>
-          <li>Set the vendor as a 1099 contractor in their vendor profile</li>
-          <li>QBO tracks all payments to that vendor throughout the year</li>
-          <li>Use the <strong>1099 Wizard</strong> at year-end to prepare and file forms</li>
-        </ul>
-      </div>
-
-      <div class="sim-card">
-        <div class="sim-card-hdr">🎯 Scenario — test your understanding</div>
-        <div class="sim-scenario">
-          Your client receives an electricity bill for $340, a $1,200 monthly rent invoice, and pays $45 cash from petty cash for office coffee. All three are entered as Expenses rather than the correct transaction types.
-        </div>
-        <div class="sim-question">Which of the three should be a Bill (not Expense), and what problem does this create?</div>
-        <div class="sim-options" id="sim-2">
-          <div class="sim-opt" onclick="answerSim(2,0,2)"><div class="sim-opt-label">A</div>The electricity bill ($340) and rent invoice ($1,200) should be Bills — entering them as Expenses means they don't appear in AP and the vendor balances show $0 owed when $1,540 is actually outstanding</div>
-          <div class="sim-opt" onclick="answerSim(2,1,2)"><div class="sim-opt-label">B</div>All three should be Bills — even petty cash purchases create AP obligations</div>
-          <div class="sim-opt" onclick="answerSim(2,2,2)"><div class="sim-opt-label">C</div>Only the rent invoice should be a Bill — electricity can be Expense because it's a utility</div>
-          <div class="sim-opt" onclick="answerSim(2,3,2)"><div class="sim-opt-label">D</div>None — Expense is correct for all three as cash is always paid eventually</div>
-        </div>
-        <div class="sim-explanation" id="sim-exp-2">
-          ✅ A is correct. The electricity bill and rent invoice are credit purchases — money is owed to the vendor. They should be Bills so they appear in AP ageing. The $45 petty cash is an immediate cash purchase — Expense is correct for that one.
-        </div>
-      </div>
-
-      <div class="lesson-nav-btns">
-        <button class="btn btn-outline" onclick="showLesson(1)">← Previous</button>
-        <button class="btn btn-primary" onclick="nextLesson(2)">Next: Bank Feeds →</button>
-      </div>
-    </div>
-
-    <!-- LESSON 3: Bank Feeds & Reconciliation -->
-    <div id="lesson-3" style="display:none">
-      <div class="lesson-header">
-        <div class="lesson-tag">Module 4</div>
-        <div class="lesson-title">Bank Feeds & Reconciliation</div>
-        <div class="lesson-subtitle">Connect bank feeds, categorise transactions, and reconcile accounts monthly</div>
-      </div>
-
-      <div class="content-card">
-        <h2>How QBO Bank Feeds Work</h2>
-        <p>When you connect a bank account to QBO, transactions import automatically into the <strong>For Review</strong> queue. QBO uses machine learning to suggest categories based on past behaviour — but every suggestion must be reviewed before it is accepted.</p>
-
-        <div class="info-box">
-          <strong>Critical point</strong>
-          Auto-accept without review creates miscoding errors. QBO's suggestions are pattern-based and frequently wrong for unusual or new transaction types. Review every transaction before clicking "Add" or "Match".
-        </div>
-
-        <h3>The three actions in For Review</h3>
-        <table class="compare-table">
-          <tr><th>Action</th><th>When to use</th><th>What it does</th></tr>
-          <tr><td class="highlight"><strong>Match</strong></td><td>A QBO record already exists for this transaction</td><td>Links the bank line to the existing record — no new entry</td></tr>
-          <tr><td><strong>Add</strong></td><td>No QBO record exists — new transaction</td><td>Creates a new transaction from the bank line</td></tr>
-          <tr><td><strong>Exclude</strong></td><td>Transaction is personal or irrelevant</td><td>Removes from feed without creating a record</td></tr>
-        </table>
-
-        <h3>The bank reconciliation process</h3>
-        <p>Reconciliation proves your QBO records match the bank statement exactly. Do this monthly — never let it slip more than 30 days.</p>
-        <ol>
-          <li>Go to <strong>Accounting → Reconcile</strong></li>
-          <li>Select the account and enter the statement closing date and closing balance</li>
-          <li>Match transactions in QBO to the bank statement line by line</li>
-          <li>The "Difference" must reach <strong>$0.00</strong> to complete reconciliation</li>
-          <li>Click Finish Now — QBO locks the reconciled transactions</li>
-        </ol>
-
-        <h3>Common reconciliation differences and causes</h3>
-        <ul>
-          <li><strong>Outstanding cheques</strong> — written in QBO but not yet cleared the bank (legitimate timing)</li>
-          <li><strong>Deposits in transit</strong> — recorded in QBO but not yet credited by the bank</li>
-          <li><strong>Bank fees not in QBO</strong> — add them directly from the reconciliation screen</li>
-          <li><strong>Duplicate transactions</strong> — entered manually AND imported via feed</li>
-          <li><strong>Wrong amounts</strong> — a common data-entry error; trace to the specific transaction</li>
-        </ul>
-
-        <div class="info-box teal">
-          <strong>Best practice</strong>
-          Always enter your opening bank balance correctly in QBO. Every reconciliation from then on builds on this foundation. A wrong opening balance creates a permanent difference that is hard to trace later.
-        </div>
-      </div>
-
-      <div class="sim-card">
-        <div class="sim-card-hdr">🎯 Scenario — test your understanding</div>
-        <div class="sim-scenario">
-          You're reconciling QBO for March. The bank statement shows a closing balance of $18,450. QBO's reconciliation screen shows a difference of -$240 after matching all visible transactions. You've checked all March transactions and they appear correct.
-        </div>
-        <div class="sim-question">What is the most likely cause and the correct next step?</div>
-        <div class="sim-options" id="sim-3">
-          <div class="sim-opt" onclick="answerSim(3,0,3)"><div class="sim-opt-label">A</div>A transaction of $240 was entered in QBO in March but hasn't cleared the bank yet (outstanding cheque or deposit in transit) — check the list of uncleared items in the reconciliation and verify if they appear on the April statement</div>
-          <div class="sim-opt" onclick="answerSim(3,1,3)"><div class="sim-opt-label">B</div>Post a $240 journal entry to a reconciliation difference account to force balance</div>
-          <div class="sim-opt" onclick="answerSim(3,2,3)"><div class="sim-opt-label">C</div>Click Finish Now — a small difference under $500 is acceptable</div>
-          <div class="sim-opt" onclick="answerSim(3,3,3)"><div class="sim-opt-label">D</div>Delete and re-import all March bank feed transactions</div>
-        </div>
-        <div class="sim-explanation" id="sim-exp-3">
-          ✅ A is correct. A consistent small difference is almost always an outstanding item — a cheque written but not yet presented, or a deposit not yet credited. Check the list of uncleared items. Posting a journal to force balance hides the real issue and creates a permanent record problem.
-        </div>
-      </div>
-
-      <div class="lesson-nav-btns">
-        <button class="btn btn-outline" onclick="showLesson(2)">← Previous</button>
-        <button class="btn btn-primary" onclick="nextLesson(3)">Next: Reporting →</button>
-      </div>
-    </div>
-
-    <!-- LESSON 4: Reporting -->
-    <div id="lesson-4" style="display:none">
-      <div class="lesson-header">
-        <div class="lesson-tag">Module 5</div>
-        <div class="lesson-title">Reporting & Analysis</div>
-        <div class="lesson-subtitle">Key QBO reports, what they tell you, and how to use them</div>
-      </div>
-
-      <div class="content-card">
-        <h2>The Core QBO Reports</h2>
-
-        <h3>Profit and Loss (Income Statement)</h3>
-        <p>Shows income minus expenses for a period. The most-used report for business owners. Key questions it answers: Did we make money? Where are our costs highest? Which products/services are most profitable?</p>
-
-        <div class="info-box">
-          <strong>Cash vs Accrual toggle</strong>
-          QBO lets you switch any report between cash and accrual basis. Cash basis shows money in/out only. Accrual includes unpaid invoices in income and unpaid bills in expenses — more accurate for business decisions.
-        </div>
-
-        <h3>Balance Sheet</h3>
-        <p>A snapshot of what the business owns (assets), owes (liabilities), and the owner's stake (equity) at a specific date. The equation must always balance: <strong>Assets = Liabilities + Equity</strong></p>
-        <p>Use it to monitor: cash position, debtor balances, outstanding loans, and net worth of the business.</p>
-
-        <h3>Accounts Receivable Ageing</h3>
-        <p>Shows all unpaid customer invoices grouped by age (current, 1-30 days, 31-60 days, 61-90 days, 90+ days). Your primary tool for managing debtors and prioritising collections.</p>
-
-        <h3>Accounts Payable Ageing</h3>
-        <p>Same concept for what you owe vendors. Helps manage cash flow by showing which bills are due soon and which are overdue — protecting your supplier relationships.</p>
-
-        <h3>Cash Flow Statement</h3>
-        <p>Shows cash in and out across three categories: operating activities (day-to-day business), investing (buying/selling assets), and financing (loans, equity). Explains why profit and cash don't always match.</p>
-
-        <h3>Report customisation in QBO</h3>
-        <ul>
-          <li>Filter by date range, customer, vendor, class, or location</li>
-          <li>Compare periods (this year vs last year, this month vs budget)</li>
-          <li>Drill down on any number to see the underlying transactions</li>
-          <li>Save customised reports to the Reports menu for quick access</li>
-          <li>Schedule automatic email delivery of reports to management</li>
-        </ul>
-
-        <table class="compare-table">
-          <tr><th>Business Question</th><th>QBO Report</th></tr>
-          <tr><td>Did we make a profit this month?</td><td>Profit and Loss</td></tr>
-          <tr><td>Which customers owe us money?</td><td>AR Ageing Detail</td></tr>
-          <tr><td>What do we owe suppliers?</td><td>AP Ageing Summary</td></tr>
-          <tr><td>How much cash do we have?</td><td>Balance Sheet / Bank Summary</td></tr>
-          <tr><td>Why is profit high but cash low?</td><td>Cash Flow Statement</td></tr>
-          <tr><td>Which product line is most profitable?</td><td>P&amp;L by Class</td></tr>
-        </table>
-      </div>
-
-      <div class="sim-card">
-        <div class="sim-card-hdr">🎯 Scenario — test your understanding</div>
-        <div class="sim-scenario">
-          A business owner runs the QBO Profit and Loss report for the year and sees net profit of $95,000. They are confused — their bank account only has $8,200 in it. They ask you: "Where did all the money go? Is something wrong?"
-        </div>
-        <div class="sim-question">What is the most accurate explanation?</div>
-        <div class="sim-options" id="sim-4">
-          <div class="sim-opt" onclick="answerSim(4,0,4)"><div class="sim-opt-label">A</div>Profit and cash are different things. The P&L includes income earned but not yet collected (debtors), and excludes loan repayments and capital spending that reduced the bank. Run the Cash Flow Statement and AR Ageing to explain the difference.</div>
-          <div class="sim-opt" onclick="answerSim(4,1,4)"><div class="sim-opt-label">B</div>QBO has a calculation error — the P&L and bank should always match at year-end</div>
-          <div class="sim-opt" onclick="answerSim(4,2,4)"><div class="sim-opt-label">C</div>The bank figure is wrong — re-import the bank feed for the full year</div>
-          <div class="sim-opt" onclick="answerSim(4,3,4)"><div class="sim-opt-label">D</div>The P&L is on accrual basis — switch to cash basis and the figures will align with the bank</div>
-        </div>
-        <div class="sim-explanation" id="sim-exp-4">
-          ✅ A is correct. Profit ≠ cash. Accrual P&L includes sales invoiced but not yet paid (in AR, not yet in the bank), and excludes loan repayments and owner drawings (which reduce cash but not profit). The Cash Flow Statement bridges the two figures.
-        </div>
-      </div>
-
-      <div class="lesson-nav-btns">
-        <button class="btn btn-outline" onclick="showLesson(3)">← Previous</button>
-        <button class="btn btn-primary" onclick="nextLesson(4)">Next: Tax & Compliance →</button>
-      </div>
-    </div>
-
-    <!-- LESSON 5: Tax & Compliance -->
-    <div id="lesson-5" style="display:none">
-      <div class="lesson-header">
-        <div class="lesson-tag">Module 6</div>
-        <div class="lesson-title">Tax & Compliance</div>
-        <div class="lesson-subtitle">Sales tax, payroll tax, GST/VAT, and 1099 reporting in QBO</div>
-      </div>
-
-      <div class="content-card">
-        <h2>Tax in QuickBooks Online</h2>
-        <p>QBO has a built-in Tax Centre that tracks tax collected and paid, and helps you prepare returns. The system is region-configurable — US users see sales tax and payroll tax; international users see GST or VAT.</p>
-
-        <h3>Sales Tax (US) / GST (AU/NZ/CA) / VAT (UK/EU)</h3>
-        <p>Regardless of region, the mechanism is similar:</p>
-        <ul>
-          <li>Set up your applicable tax rates in the Tax Centre</li>
-          <li>Apply the correct rate to each invoice or bill line item</li>
-          <li>QBO calculates and tracks: tax collected (liability) and tax paid on purchases (input credit)</li>
-          <li>At filing time, QBO produces a summary showing net tax owed or refundable</li>
-        </ul>
-
-        <div class="info-box">
-          <strong>Region note</strong>
-          Your LedgerLearn region setting determines the tax terminology and rates in your assessment. SA users see VAT at 15%, Australian users see GST at 10%, US users see state sales tax at variable rates.
-        </div>
-
-        <h3>Payroll tax compliance (US)</h3>
-        <p>QBO Payroll automatically calculates federal and state payroll taxes. Key taxes managed:</p>
-        <table class="compare-table">
-          <tr><th>Tax</th><th>Employer Pays</th><th>Employee Pays</th></tr>
-          <tr><td>Federal Income Tax</td><td>No</td><td>Yes (withheld)</td></tr>
-          <tr><td>Social Security (FICA)</td><td class="highlight">6.2% match</td><td>6.2%</td></tr>
-          <tr><td>Medicare</td><td class="highlight">1.45% match</td><td>1.45%</td></tr>
-          <tr><td>FUTA (Federal Unemployment)</td><td class="highlight">6% on first $7k</td><td>No</td></tr>
-          <tr><td>SUTA (State Unemployment)</td><td class="highlight">Varies by state</td><td>No</td></tr>
-        </table>
-
-        <h3>1099 reporting</h3>
-        <p>Any contractor (non-employee individual or LLC) paid $600 or more in a calendar year requires a 1099-NEC by January 31 of the following year. QBO's 1099 Wizard at year-end tracks all qualifying payments and prepares the forms.</p>
-
-        <h3>Year-end QBO checklist</h3>
-        <ul>
-          <li>✓ All bank accounts reconciled to year-end date</li>
-          <li>✓ All outstanding bills and invoices reviewed (delete or write off uncollectible ones)</li>
-          <li>✓ Payroll tax deposits confirmed as filed and paid</li>
-          <li>✓ Sales tax return filed for final period</li>
-          <li>✓ 1099s prepared for all qualifying contractors</li>
-          <li>✓ Fixed asset depreciation journals posted</li>
-          <li>✓ Prepayments and accruals reviewed</li>
-          <li>✓ Year-end lock date set in QBO</li>
-        </ul>
-      </div>
-
-      <div class="sim-card">
-        <div class="sim-card-hdr">🎯 Final scenario — putting it all together</div>
-        <div class="sim-scenario">
-          At year-end review you discover: (1) Three customer invoices totalling $12,000 have been outstanding for over 200 days with no payment activity. (2) A contractor was paid $4,800 over the year but was not set up as a 1099 vendor. (3) The petty cash account shows a $180 balance in QBO but physical cash is only $65.
-        </div>
-        <div class="sim-question">What are the three correct corrective actions in order of urgency?</div>
-        <div class="sim-options" id="sim-5">
-          <div class="sim-opt" onclick="answerSim(5,0,5)"><div class="sim-opt-label">A</div>(1) Write off the $12,000 as bad debt expense with credit memos; (2) Update the contractor to 1099 status immediately — even though under $600 threshold the record should be correct; (3) Post a $115 petty cash discrepancy to Shrinkage/Miscellaneous expense and investigate cause</div>
-          <div class="sim-opt" onclick="answerSim(5,1,5)"><div class="sim-opt-label">B</div>(1) Delete the old invoices to clean the AR; (2) No action needed — 1099 is only for $600+; (3) Top up petty cash with personal funds</div>
-          <div class="sim-opt" onclick="answerSim(5,2,5)"><div class="sim-opt-label">C</div>All three issues can wait until the external accountant reviews the file at year-end</div>
-          <div class="sim-opt" onclick="answerSim(5,3,5)"><div class="sim-opt-label">D</div>(1) Send payment reminder to customers; (2) Issue the 1099 immediately regardless of timing; (3) Accept the discrepancy</div>
-        </div>
-        <div class="sim-explanation" id="sim-exp-5">
-          ✅ A is correct. (1) Invoices over 200 days with no activity are likely bad debts — write off using credit memos to Bad Debt Expense. (2) The contractor is under $600 so no 1099 is legally required, but good record practice means keeping their vendor profile accurate. (3) The petty cash shortfall ($115) must be expensed and investigated — someone may need to account for it.
-        </div>
-      </div>
-
-      <!-- READY TO ASSESS -->
-      <div class="content-card" style="text-align:center;padding:36px">
-        <div style="font-size:40px;margin-bottom:12px">🎓</div>
-        <h2 style="border:none;text-align:center;margin-bottom:8px">Ready to certify?</h2>
-        <p style="color:var(--muted);max-width:440px;margin:0 auto 24px">You've completed all 6 QuickBooks L1 modules. Take the assessment to earn your L1 certificate — it's free.</p>
-        <button class="btn-test" onclick="startAssessment()">Start QB L1 Assessment →</button>
-      </div>
-
-      <div class="lesson-nav-btns">
-        <button class="btn btn-outline" onclick="showLesson(4)">← Previous</button>
-        <span></span>
-      </div>
-    </div>
-
-  </div><!-- /main -->
-</div><!-- /layout -->
+  <!-- L2 Paywall (shown when L1 passed but L2 not paid) -->
+  <div class="paywall-card" id="l2-paywall" style="display:none">
+    <h3>🎉 L1 Complete — Unlock QB Professional</h3>
+    <p>You've passed QB Associate. Upgrade to L2 for advanced payroll, inventory, classes, and advisory skills.</p>
+    <div class="price-tag">$49 <small>one-time · L2 + L3 (after L2 pass)</small></div>
+    <div id="paypal-qb-l2-container"></div>
+    <p style="font-size:.7rem;color:rgba(255,255,255,.25);margin-top:12px">Secure payment via PayPal · L3 unlocks free after passing L2</p>
+  </div>
+</main>
 
 <script>
-// ── STATE ──────────────────────────────────────────────────
-const TOTAL = 6;
-let progress = JSON.parse(localStorage.getItem('ll_qb_l1_progress') || '{"done":[]}');
+var ACTIVE_TRACK = 'QuickBooks';
 
-function saveProgress() {
-  localStorage.setItem('ll_qb_l1_progress', JSON.stringify(progress));
-}
+// ── AUTH GUARD + PAGE INIT ─────────────────────────────────
+document.addEventListener('DOMContentLoaded', async function() {
+  // Require login — redirect to /login?next=/quickbooks if not authenticated
+  var user = await window.LLAuth.require();
+  if (!user) return;
 
-// ── LESSON NAVIGATION ──────────────────────────────────────
-function showLesson(n) {
-  for (let i = 0; i < TOTAL; i++) {
-    const el = document.getElementById('lesson-' + i);
-    if (el) el.style.display = i === n ? 'block' : 'none';
-    const li = document.getElementById('li-' + i);
-    if (li) {
-      li.classList.remove('on');
-      if (progress.done.includes(i) && i !== n) li.classList.add('done');
-      else li.classList.remove('done');
+  // Load QB progress
+  var prog = {};
+  try { prog = JSON.parse(localStorage.getItem('ll_progress_qb') || '{}'); } catch(e) {}
+
+  var completed  = prog.completedLevels || [];
+  var passedL1   = completed.includes('l1') && prog.l1Score >= 70;
+  var passedL2   = completed.includes('l2') && prog.l2Score >= 70;
+  var paidL2     = !!prog.paid_qb_l2;
+  var isAdmin    = false;
+  try { isAdmin = JSON.parse(sessionStorage.getItem('ll_admin_token') || 'null') !== null; } catch(e) {}
+
+  // ── Update L1 card ──
+  if (passedL1) {
+    document.getElementById('badge-l1').textContent = '✓ Passed ' + (prog.l1Score || '') + '%';
+    document.getElementById('badge-l1').className = 'level-badge badge-free';
+    document.getElementById('btn-l1').textContent = 'View certificate →';
+  }
+
+  // ── Update L2 card ──
+  var accessL2 = (passedL1 && paidL2) || isAdmin;
+  var cardL2 = document.getElementById('card-l2');
+  var btnL2  = document.getElementById('btn-l2');
+  if (accessL2) {
+    cardL2.classList.add('active');
+    cardL2.classList.remove('locked');
+    document.getElementById('badge-l2').className = 'level-badge badge-free';
+    document.getElementById('badge-l2').textContent = '✓ Unlocked · L2';
+    btnL2.href = '/quickbooks-l2';
+    btnL2.className = 'btn-level btn-gold';
+    btnL2.textContent = 'Go to L2 →';
+    if (passedL2) {
+      document.getElementById('badge-l2').textContent = '✓ Passed ' + (prog.l2Score || '') + '%';
+      btnL2.textContent = 'View L2 →';
+    }
+  } else if (passedL1 && !paidL2) {
+    // L1 passed — show paywall
+    cardL2.classList.add('active');
+    btnL2.textContent = 'Unlock L2 — $49 →';
+    btnL2.className = 'btn-level btn-orange';
+    btnL2.href = '#l2-paywall';
+    btnL2.onclick = function(e) {
+      e.preventDefault();
+      document.getElementById('l2-paywall').style.display = 'block';
+      document.getElementById('l2-paywall').scrollIntoView({behavior:'smooth'});
+    };
+    document.getElementById('l2-paywall').style.display = 'block';
+  } else if (!passedL1) {
+    btnL2.textContent = 'Pass L1 first';
+  }
+
+  // ── Update L3 card ──
+  var accessL3 = passedL2 || isAdmin;
+  var cardL3 = document.getElementById('card-l3');
+  var btnL3  = document.getElementById('btn-l3');
+  if (accessL3) {
+    cardL3.classList.remove('locked');
+    cardL3.classList.add('active');
+    document.getElementById('badge-l3').className = 'level-badge badge-free';
+    document.getElementById('badge-l3').textContent = '✓ Unlocked · L3';
+    btnL3.outerHTML = '<a href="/quickbooks-l3" class="btn-level btn-gold" id="btn-l3">Go to L3 →</a>';
+  } else if (passedL1 && paidL2) {
+    document.getElementById('badge-l3').textContent = 'Free after L2 pass · L3';
+    cardL3.style.opacity = '.7';
+  }
+
+  // ── Module progress ──
+  var modProg = {};
+  try { modProg = JSON.parse(localStorage.getItem('ll_qb_l1_progress') || '{"done":[]}'); } catch(e) {}
+  var done = modProg.done || [];
+  done.forEach(function(i) {
+    var mn = document.getElementById('mn-'+i);
+    var ms = document.getElementById('ms-'+i);
+    var mr = document.getElementById('m-'+i);
+    if (mn) { mn.className = 'mod-num done'; mn.textContent = '✓'; }
+    if (ms) { ms.textContent = 'Complete'; ms.className = 'mod-status done'; }
+    if (mr) mr.classList.add('done');
+  });
+  // Highlight next module
+  var nextMod = [0,1,2,3,4,5].find(function(i){ return !done.includes(i); });
+  if (nextMod !== undefined) {
+    var mn = document.getElementById('mn-'+nextMod);
+    var ms = document.getElementById('ms-'+nextMod);
+    if (mn) mn.className = 'mod-num current';
+    if (ms) { ms.textContent = 'Start →'; ms.className = 'mod-status current'; }
+  }
+
+  // ── PayPal L2 QB payment ──
+  if (document.getElementById('l2-paywall').style.display !== 'none') {
+    var ppPlanQB = typeof PAYPAL_PLAN_QB_L2 !== 'undefined' ? PAYPAL_PLAN_QB_L2 : '';
+    if (ppPlanQB) {
+      paypal.Buttons({
+        style: { layout:'vertical', color:'blue', shape:'rect', label:'pay' },
+        createOrder: function(data, actions) {
+          return actions.order.create({ purchase_units: [{ amount: { value:'49.00' }, description: 'LedgerLearn QB L2' }] });
+        },
+        onApprove: function(data, actions) {
+          return actions.order.capture().then(function(details) {
+            // Verify with server
+            fetch('/.netlify/functions/verify-payment', {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({ orderId: details.id, level: 'qb-l2', track: 'QuickBooks' })
+            }).then(function(r){ return r.json(); }).then(function(d) {
+              if (d.ok) {
+                var p = {};
+                try { p = JSON.parse(localStorage.getItem('ll_progress_qb')||'{}'); } catch(e) {}
+                p.paid_qb_l2 = true;
+                localStorage.setItem('ll_progress_qb', JSON.stringify(p));
+                window.location.reload();
+              }
+            });
+          });
+        },
+        onError: function(err) { console.error('PayPal error:', err); }
+      }).render('#paypal-qb-l2-container');
+    } else {
+      document.getElementById('paypal-qb-l2-container').innerHTML =
+        '<a href="/level-up?track=qb" class="btn-level btn-gold" style="display:inline-block;margin:0 auto">Unlock QB L2 — $49 →</a>';
     }
   }
-  const cur = document.getElementById('li-' + n);
-  if (cur) { cur.classList.add('on'); cur.classList.remove('done'); }
-  updateProgress();
-  window.scrollTo(0, 0);
-}
-
-function nextLesson(current) {
-  if (!progress.done.includes(current)) {
-    progress.done.push(current);
-    saveProgress();
-  }
-  showLesson(current + 1);
-}
-
-function updateProgress() {
-  const pct = Math.round((progress.done.length / TOTAL) * 100);
-  const fill = document.getElementById('prog-fill');
-  const pctEl = document.getElementById('prog-pct');
-  if (fill) fill.style.width = pct + '%';
-  if (pctEl) pctEl.textContent = pct + '%';
-}
-
-// ── SCENARIO SIMS ──────────────────────────────────────────
-function answerSim(simId, chosenIdx, correctIdx) {
-  const opts = document.querySelectorAll('#sim-' + simId + ' .sim-opt');
-  opts.forEach(function(opt, i) {
-    opt.onclick = null;
-    if (i === correctIdx) opt.classList.add('correct');
-    else if (i === chosenIdx && chosenIdx !== correctIdx) opt.classList.add('wrong');
-  });
-  const exp = document.getElementById('sim-exp-' + simId);
-  if (exp) exp.style.display = 'block';
-}
-
-// ── MOBILE NAV ────────────────────────────────────────────
-function toggleNav() {
-  const nav = document.getElementById('lesson-nav');
-  nav.classList.toggle('open');
-}
-
-// ── ASSESSMENT ───────────────────────────────────────────
-function startAssessment() {
-  localStorage.setItem('ll_test_track', 'QuickBooks');
-  localStorage.setItem('ll_test_level', 'L1');
-  window.location.href = '/test';
-}
-
-// ── INIT ─────────────────────────────────────────────────
-showLesson(0);
-updateProgress();
+});
 </script>
 </body>
 </html>

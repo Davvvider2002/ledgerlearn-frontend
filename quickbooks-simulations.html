@@ -98,8 +98,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .qopt.no .olbl{background:#ef4444;color:#fff;border-color:#ef4444}
 @media(max-width:640px){.ql{flex-direction:column}.qs{width:100%}.qr{grid-template-columns:1fr}.main{padding:12px}}
 </style>
+<script src="/ll-auth.js"></script>
 </head>
 <body>
+<script>
+// ── AUTH GUARD ─────────────────────────────────────────────
+// All LedgerLearn pages require login — free or paid
+(async function() {
+  if (typeof window.LLAuth === 'undefined') {
+    // ll-auth.js not loaded yet — retry after DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', async function() {
+      if (window.LLAuth) {
+        var _user = await window.LLAuth.require();
+        if (!_user) return;
+        if (typeof loadDashboard === 'function') loadDashboard();
+        else if (typeof initPage === 'function') initPage();
+      }
+    });
+    return;
+  }
+  var _user = await window.LLAuth.require();
+  if (!_user) return;
+})();
+</script>
 <nav class="nav">
   <a href="/" class="nav-logo">Ledger<span>Learn</span></a>
   <div class="nl">
