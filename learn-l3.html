@@ -138,6 +138,14 @@ nav{background:rgba(11,31,58,0.98);height:62px;display:flex;align-items:center;j
 }
 @media(min-width:1001px){.mob-nav-toggle{display:none;}}
 @media(max-width:600px){.page{padding:1rem;}.sim-iframe{height:500px;}}
+
+/* ── Track switcher (Xero ↔ QuickBooks) ── */
+.nav-track-switcher{display:flex;align-items:center;gap:4px;margin-left:10px;padding-left:10px;border-left:1px solid rgba(255,255,255,.1);}
+.track-pill{font-size:.67rem;font-weight:700;padding:4px 11px;border-radius:100px;text-decoration:none;border:1px solid transparent;transition:all .15s;white-space:nowrap;letter-spacing:.02em;}
+.track-pill.xero{background:rgba(29,169,138,.1);color:#26c9a5;border-color:rgba(29,169,138,.25);}
+.track-pill.xero.on,.track-pill.xero:hover{background:rgba(29,169,138,.2);border-color:rgba(29,169,138,.5);}
+.track-pill.qb{background:rgba(234,88,12,.08);color:#fdba74;border-color:rgba(234,88,12,.2);}
+.track-pill.qb.on,.track-pill.qb:hover{background:rgba(234,88,12,.18);border-color:rgba(234,88,12,.45);}
 </style>
 <script>
 // ╔══════════════════════════════════════════════════════════════╗
@@ -271,6 +279,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     <li><a href="/dashboard">Dashboard</a></li>
     <li><span class="nav-level-badge">L3 Xero Advisor</span></li>
   </ul>
+    <div class="nav-track-switcher"><a href="/dashboard" class="track-pill xero on">Xero</a><a href="/quickbooks-dashboard" class="track-pill qb">QuickBooks</a></div>
 </nav>
 
 <!-- Level navigation banner -->

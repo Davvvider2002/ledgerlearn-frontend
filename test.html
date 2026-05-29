@@ -253,6 +253,14 @@ body { background: var(--off-white); }
 @media (max-width: 760px) {
   .page-wrap { grid-template-columns: 1fr; padding: 1rem; }
 }
+
+/* ── Track switcher (Xero ↔ QuickBooks) ── */
+.nav-track-switcher{display:flex;align-items:center;gap:4px;margin-left:10px;padding-left:10px;border-left:1px solid rgba(255,255,255,.1);}
+.track-pill{font-size:.67rem;font-weight:700;padding:4px 11px;border-radius:100px;text-decoration:none;border:1px solid transparent;transition:all .15s;white-space:nowrap;letter-spacing:.02em;}
+.track-pill.xero{background:rgba(29,169,138,.1);color:#26c9a5;border-color:rgba(29,169,138,.25);}
+.track-pill.xero.on,.track-pill.xero:hover{background:rgba(29,169,138,.2);border-color:rgba(29,169,138,.5);}
+.track-pill.qb{background:rgba(234,88,12,.08);color:#fdba74;border-color:rgba(234,88,12,.2);}
+.track-pill.qb.on,.track-pill.qb:hover{background:rgba(234,88,12,.18);border-color:rgba(234,88,12,.45);}
 </style>
 <script src="/ll-auth.js"></script>
 
@@ -272,6 +280,7 @@ body { background: var(--off-white); }
     <li><a href="/dashboard">Dashboard</a></li>
     <li><a href="/learn" class="ll-nav-cta">Start free →</a></li>
   </ul>
+    <div class="nav-track-switcher"><a href="/dashboard" class="track-pill xero on">Xero</a><a href="/quickbooks-dashboard" class="track-pill qb">QuickBooks</a></div>
 </nav>
 
 <!-- Level nav banner -->
@@ -401,7 +410,6 @@ body { background: var(--off-white); }
 <script src="/ll-shared.js?v=20260510"></script>
 <script src="/ll-api.js?v=20260510"></script>
 <script src="/ll-jobs.js?v=20260510"></script>
-<script src="/question-banks.js"></script>   
 <script src="/test-logic.js?v=091a4dae"></script>
 
 <script src="/certificate-engine-v2.js"></script>

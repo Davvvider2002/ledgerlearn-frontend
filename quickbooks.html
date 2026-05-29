@@ -60,11 +60,20 @@ h1{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;margin-bottom:
 .paywall-card p{font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:1.25rem;line-height:1.5;}
 .price-tag{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--gold);margin-bottom:1rem;}
 .price-tag small{font-size:.85rem;color:rgba(255,255,255,.4);font-family:'DM Sans',sans-serif;font-weight:400;}
+
+/* ── Track switcher (Xero ↔ QuickBooks) ── */
+.nav-track-switcher{display:flex;align-items:center;gap:4px;margin-left:10px;padding-left:10px;border-left:1px solid rgba(255,255,255,.1);}
+.track-pill{font-size:.67rem;font-weight:700;padding:4px 11px;border-radius:100px;text-decoration:none;border:1px solid transparent;transition:all .15s;white-space:nowrap;letter-spacing:.02em;}
+.track-pill.xero{background:rgba(29,169,138,.1);color:#26c9a5;border-color:rgba(29,169,138,.25);}
+.track-pill.xero.on,.track-pill.xero:hover{background:rgba(29,169,138,.2);border-color:rgba(29,169,138,.5);}
+.track-pill.qb{background:rgba(234,88,12,.08);color:#fdba74;border-color:rgba(234,88,12,.2);}
+.track-pill.qb.on,.track-pill.qb:hover{background:rgba(234,88,12,.18);border-color:rgba(234,88,12,.45);}
 </style>
 </head>
 <body>
 <nav>
   <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <div class="nav-track-switcher"><a href="/dashboard" class="track-pill xero">Xero</a><a href="/quickbooks-dashboard" class="track-pill qb on">QuickBooks</a></div>
   <div class="nav-right">
     <a href="/quickbooks-simulations">Practice</a>
     <a href="/test">Assessment</a>
