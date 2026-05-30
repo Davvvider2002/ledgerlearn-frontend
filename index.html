@@ -309,6 +309,29 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
 .academy-feat-icon{font-size:1.3rem;margin-bottom:.5rem;}
 .academy-feat-title{font-size:.85rem;font-weight:700;color:#fff;margin-bottom:.3rem;}
 .academy-feat-text{font-size:.75rem;color:rgba(255,255,255,.4);line-height:1.55;}
+
+/* ── Jobs section ─────────────────────────────────────────── */
+.jobs-section{background:var(--navy);padding:5rem 2rem;border-top:1px solid rgba(255,255,255,.06);}
+.jobs-inner{max-width:1100px;margin:0 auto;}
+.jobs-header{display:flex;align-items:flex-start;justify-content:space-between;gap:2rem;margin-bottom:2.5rem;flex-wrap:wrap;}
+.jobs-eyebrow{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);font-weight:700;margin-bottom:.5rem;}
+.jobs-h2{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#fff;margin-bottom:.6rem;line-height:1.2;}
+.jobs-sub{font-size:.88rem;color:rgba(255,255,255,.45);line-height:1.6;max-width:480px;}
+.jobs-cta-btn{background:var(--teal);color:#fff;padding:12px 24px;border-radius:9px;text-decoration:none;font-weight:700;font-size:.88rem;white-space:nowrap;align-self:flex-start;margin-top:.5rem;}
+.jobs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+@media(max-width:700px){.jobs-grid{grid-template-columns:1fr;}}
+.job-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.25rem;transition:border-color .15s;}
+.job-card:hover{border-color:rgba(29,169,138,.3);}
+.job-card-top{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;}
+.job-co-logo{width:36px;height:36px;border-radius:8px;background:rgba(212,168,67,.15);color:var(--gold);font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.job-title{font-size:.88rem;font-weight:700;color:#fff;}
+.job-co{font-size:.72rem;color:rgba(255,255,255,.4);}
+.job-badge{margin-left:auto;font-size:.62rem;font-weight:700;padding:3px 8px;border-radius:100px;background:rgba(29,169,138,.15);color:#26c9a5;border:1px solid rgba(29,169,138,.25);white-space:nowrap;}
+.job-tags{display:flex;gap:.4rem;flex-wrap:wrap;}
+.job-tag{font-size:.65rem;font-weight:600;padding:3px 8px;border-radius:100px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.45);}
+.job-tag.teal{background:rgba(29,169,138,.12);color:#26c9a5;}
+.jobs-browse-link{color:var(--teal);text-decoration:none;font-weight:700;font-size:.9rem;}
+
 </style>
 </head>
 <body>
@@ -322,6 +345,7 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
     <li><a href="/learn">Courses</a></li>
     <li><a href="/test">Certifications</a></li>
     <li><a href="/jobs">Jobs</a></li>
+    <li><a href="/marketplace">Marketplace <span style="font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:100px;background:#ea580c;color:#fff;vertical-align:middle;letter-spacing:.04em;">NEW</span></a></li>
     <li><a href="/partners">Partners</a></li>
     <li><a href="/faq">FAQ</a></li>
     <li><a href="#tracks">Pricing</a></li>
@@ -492,6 +516,51 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
 
 
 <!-- ── MARKETPLACE PREVIEW ────────────────────────────── -->
+
+  <!-- ── Jobs section ─────────────────────────────────── -->
+  <section class="jobs-section">
+    <div class="jobs-inner">
+      <div class="jobs-header">
+        <div>
+          <div class="jobs-eyebrow">Job Board &mdash; verified talent</div>
+          <h2 class="jobs-h2">Get hired as a <span class="gold">certified</span> accountant</h2>
+          <p class="jobs-sub">Employers post roles specifically for LedgerLearn-certified candidates. Every applicant is verified. No cold applications — your certificate speaks first.</p>
+        </div>
+        <a href="/jobs" class="jobs-cta-btn">Browse open roles &rarr;</a>
+      </div>
+      <div class="jobs-grid">
+        <div class="job-card">
+          <div class="job-card-top">
+            <div class="job-co-logo">ZNL</div>
+            <div><div class="job-title">Junior Accountant</div><div class="job-co">Zylo Nigeria Ltd &middot; Lagos</div></div>
+            <span class="job-badge">L1+</span>
+          </div>
+          <div class="job-tags"><span class="job-tag">Full-time</span><span class="job-tag">Xero</span><span class="job-tag teal">Matches your cert</span></div>
+        </div>
+        <div class="job-card">
+          <div class="job-card-top">
+            <div class="job-co-logo" style="background:#1a3a5c">BPL</div>
+            <div><div class="job-title">Cloud Accounting Specialist</div><div class="job-co">Bakkiego Pty Ltd &middot; Johannesburg</div></div>
+            <span class="job-badge">L1+</span>
+          </div>
+          <div class="job-tags"><span class="job-tag">Full-time</span><span class="job-tag">Xero</span><span class="job-tag">QuickBooks</span></div>
+        </div>
+        <div class="job-card">
+          <div class="job-card-top">
+            <div class="job-co-logo" style="background:#2d1b4e">AKE</div>
+            <div><div class="job-title">ERP Finance Consultant</div><div class="job-co">AK Elite Accounting &middot; Nigeria</div></div>
+            <span class="job-badge">L2+</span>
+          </div>
+          <div class="job-tags"><span class="job-tag">Contract</span><span class="job-tag">Remote</span><span class="job-tag">QuickBooks</span></div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:2rem">
+        <a href="/jobs" class="jobs-browse-link">View all open roles &rarr;</a>
+        <span style="display:block;margin-top:.5rem;font-size:.75rem;color:rgba(255,255,255,.3)">Hiring? <a href="/recruiter-register" style="color:var(--teal)">Post a role free for 30 days &rarr;</a></span>
+      </div>
+    </div>
+  </section>
+
 <section class="marketplace-section">
   <div class="marketplace-inner">
     <div class="marketplace-header">
