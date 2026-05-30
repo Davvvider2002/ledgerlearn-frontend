@@ -677,6 +677,21 @@ async function finishTest() {
           .then(function(res){
             if (res.ok) {
               console.log('[LedgerLearn] Certificate saved to database:', updated.certificate.certId);
+              // ── Brevo: add to L1 Completers list (triggers nurture automation) ──
+              if (_certEmail && (test.level === 'l1')) {
+                fetch('/.netlify/functions/subscribe', {
+                  method:  'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body:    JSON.stringify({
+                    action: 'add-to-list',
+                    email:  _certEmail,
+                    listId: (typeof ACTIVE_TRACK !== 'undefined' && ACTIVE_TRACK === 'QuickBooks') ? 6 : 6,
+                    source: 'l1-cert-' + ((typeof ACTIVE_TRACK !== 'undefined') ? ACTIVE_TRACK.toLowerCase() : 'xero'),
+                  })
+                }).then(function(r){ return r.json(); })
+                  .then(function(d){ console.log('[Brevo] L1 Completers add:', d.ok ? '✓' : '✗'); })
+                  .catch(function(e){ console.warn('[Brevo] L1 add failed:', e.message); });
+              }
               // Auto-update applicant_profiles with latest cert snapshot
               try {
                 var _apToken = '';
