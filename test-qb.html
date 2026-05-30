@@ -1,0 +1,426 @@
+<!-- LedgerLearn test.html v5.0 - 2026-05-11 - ZERO-INLINE-JS - BUILD:091a4dae -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="shortcut icon" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assessment — LedgerLearn Pro</title>
+<link rel="stylesheet" href="/ll-shared.css">
+<style>
+body { background: var(--off-white); }
+
+.page-wrap {
+  max-width: 1200px; margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.test-main { min-width: 0; }
+
+/* ── Level selector ── */
+.level-selector {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.level-selector-header {
+  background: var(--navy);
+  padding: 1.25rem 1.5rem;
+}
+
+.level-selector-title {
+  font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+  color: var(--white); margin-bottom: 0.2rem;
+}
+
+.level-selector-sub { font-size: 0.78rem; color: rgba(255,255,255,0.5); font-weight: 300; }
+
+.level-options { padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+
+.level-option {
+  display: flex; align-items: center; gap: 14px;
+  padding: 1rem 1.1rem; border-radius: 10px;
+  border: 2px solid var(--border);
+  cursor: pointer; transition: all 0.2s;
+  background: var(--white);
+}
+
+.level-option:hover:not(.locked-level) { border-color: var(--teal); background: var(--teal-pale); }
+.level-option.selected-level { border-color: var(--gold); background: var(--gold-pale); }
+.level-option.locked-level { opacity: 0.5; cursor: not-allowed; }
+
+.level-option-badge {
+  width: 40px; height: 40px; border-radius: 9px;
+  background: rgba(11,31,58,0.06);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700;
+  color: var(--navy); flex-shrink: 0;
+}
+
+.level-option.selected-level .level-option-badge { background: var(--gold); color: var(--navy); }
+
+.level-option-info { flex: 1; }
+.level-option-title { font-family: 'Syne', sans-serif; font-size: 0.875rem; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
+.level-option-desc  { font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; font-weight: 300; }
+
+.level-option-meta {
+  text-align: right; font-size: 0.68rem; color: var(--text-muted); flex-shrink: 0;
+}
+
+.level-start-wrap { padding: 0 1.5rem 1.5rem; }
+
+/* ── Test interface ── */
+.test-interface { display: none; }
+
+.test-header {
+  background: var(--navy); border-radius: 14px;
+  padding: 1.1rem 1.5rem; margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+
+.test-header-title {
+  font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700;
+  color: var(--white); flex: 1;
+}
+
+.test-timer {
+  font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800;
+  color: var(--gold); min-width: 70px; text-align: right;
+}
+
+.test-timer.warning { color: #ff6b6b; animation: ll-pulse 1s infinite; }
+
+.test-progress {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 9px; padding: 0.75rem 1.1rem;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.test-progress-label { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
+
+.test-progress-bar {
+  flex: 1; height: 6px;
+  background: rgba(11,31,58,0.07); border-radius: 3px; overflow: hidden;
+}
+
+.test-progress-fill {
+  height: 100%; background: var(--gold);
+  border-radius: 3px; transition: width 0.4s ease;
+}
+
+.test-q-count { font-size: 0.75rem; font-weight: 700; color: var(--gold); white-space: nowrap; }
+
+/* Question */
+.test-question-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden; margin-bottom: 1rem;
+}
+
+.test-q-header {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #0a3d2e, #0f5540);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.test-q-num {
+  font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--white);
+}
+
+.test-q-note { font-size: 0.65rem; color: rgba(255,255,255,0.45); }
+
+.test-q-body { padding: 1.5rem; }
+
+.test-context {
+  background: var(--off-white); border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 8px; padding: 0.9rem 1.1rem;
+  font-size: 0.85rem; color: var(--text-mid);
+  line-height: 1.65; margin-bottom: 1.1rem; font-weight: 300;
+}
+
+.test-q-text {
+  font-size: 0.95rem; font-weight: 600; color: var(--navy);
+  line-height: 1.5; margin-bottom: 1.1rem;
+}
+
+.test-options { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.test-option {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 14px; border-radius: 9px;
+  border: 2px solid var(--border);
+  cursor: pointer; transition: all 0.15s;
+  background: var(--white); text-align: left;
+  font-family: 'DM Sans', sans-serif; width: 100%;
+}
+
+.test-option:hover { border-color: var(--navy); background: rgba(11,31,58,0.03); }
+.test-option.selected { border-color: var(--gold); background: var(--gold-pale); }
+
+.test-opt-letter {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(11,31,58,0.07);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700; color: var(--text-mid);
+  flex-shrink: 0; margin-top: 1px;
+}
+
+.test-option.selected .test-opt-letter { background: var(--gold); color: var(--navy); }
+.test-opt-text { font-size: 0.875rem; color: var(--text-dark); line-height: 1.45; flex: 1; }
+
+.test-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 1rem; border-top: 1px solid var(--border);
+  margin-top: 1rem;
+}
+
+/* Answer dots */
+.answer-dots {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 1rem;
+}
+
+.answer-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(11,31,58,0.1);
+}
+
+.answer-dot.answered { background: var(--gold); }
+.answer-dot.current  { background: var(--navy); }
+
+/* Loading state */
+.test-loading {
+  padding: 3rem; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+}
+
+.test-loading-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid rgba(212,168,67,0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%; animation: ll-spin 0.7s linear infinite;
+}
+
+/* ── Results ── */
+.results-card {
+  background: var(--navy); border-radius: 14px;
+  padding: 2rem; text-align: center;
+  display: none; margin-bottom: 1.25rem;
+  position: relative; overflow: hidden;
+}
+
+.results-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(212,168,67,0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.results-inner { position: relative; z-index: 1; }
+
+.results-icon { font-size: 3.5rem; margin-bottom: 0.75rem; display: block; }
+
+.results-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 4px 12px; border-radius: 100px; margin-bottom: 1rem;
+}
+
+.results-badge.pass { background: rgba(29,169,138,0.2); color: var(--teal-light); border: 1px solid rgba(29,169,138,0.35); }
+.results-badge.fail { background: rgba(224,85,85,0.15); color: #ff8080; border: 1px solid rgba(224,85,85,0.3); }
+
+.results-h1 {
+  font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800;
+  color: var(--white); letter-spacing: -0.02em; margin-bottom: 0.5rem;
+}
+
+.results-score {
+  font-family: 'Syne', sans-serif; font-size: 3.5rem; font-weight: 800;
+  color: var(--gold); line-height: 1; margin-bottom: 0.25rem;
+}
+
+.results-score-label { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-bottom: 1.5rem; }
+
+.results-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }
+
+@media (max-width: 760px) {
+  .page-wrap { grid-template-columns: 1fr; padding: 1rem; }
+}
+
+/* ── Track switcher (Xero ↔ QuickBooks) ── */
+.nav-track-switcher{display:flex;align-items:center;gap:4px;margin-left:10px;padding-left:10px;border-left:1px solid rgba(255,255,255,.1);}
+.track-pill{font-size:.67rem;font-weight:700;padding:4px 11px;border-radius:100px;text-decoration:none;border:1px solid transparent;transition:all .15s;white-space:nowrap;letter-spacing:.02em;}
+.track-pill.xero{background:rgba(29,169,138,.1);color:#26c9a5;border-color:rgba(29,169,138,.25);}
+.track-pill.xero.on,.track-pill.xero:hover{background:rgba(29,169,138,.2);border-color:rgba(29,169,138,.5);}
+.track-pill.qb{background:rgba(234,88,12,.08);color:#fdba74;border-color:rgba(234,88,12,.2);}
+.track-pill.qb.on,.track-pill.qb:hover{background:rgba(234,88,12,.18);border-color:rgba(234,88,12,.45);}
+</style>
+<script src="/ll-auth.js"></script>
+
+
+</head>
+<body>
+
+<nav class="ll-nav">
+  <a href="/" class="ll-nav-logo">
+    <div class="ll-hex ll-hex-lg"></div>
+    <span class="ll-nav-brand">Ledger<span>Learn</span> Pro</span>
+  </a>
+  <ul class="ll-nav-links">
+    <li><a href="/learn" id="nav-learn-link">Learn</a></li>
+    <li><a href="/quickbooks-practice">Practice</a></li>
+    <li><a href="/test">Xero Assessment</a></li>
+    <li><a href="/test-qb" class="active" style="color:var(--orange)">QB Assessment</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><a href="/learn" class="ll-nav-cta">Start free →</a></li>
+  </ul>
+    <div class="nav-track-switcher" id="nav-track-sw">
+  <a href="/dashboard" class="track-pill xero" id="tp-xero">Xero</a>
+  <a href="/quickbooks-dashboard" class="track-pill qb on" id="tp-qb">QuickBooks</a>
+</div>
+
+</nav>
+
+<!-- Level nav banner -->
+<div id="ll-level-banner" style="background:#0B1F3A;border-bottom:1px solid rgba(255,255,255,0.08);padding:8px 2rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+  <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.3);font-weight:600;margin-right:4px;">Certification track:</span>
+  <span id="ll-track-l1" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;font-size:0.75rem;font-weight:600;background:#D4A843;color:#0B1F3A;">L1 QB Associate</span>
+  <span style="color:rgba(255,255,255,0.25);font-size:0.7rem;">›</span>
+  <span id="ll-track-l2" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;font-size:0.75rem;font-weight:600;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);">L2 QB Professional</span>
+  <span style="color:rgba(255,255,255,0.25);font-size:0.7rem;">›</span>
+  <span id="ll-track-l3" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;font-size:0.75rem;font-weight:600;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);">L3 QB Advisor</span>
+  <span id="ll-banner-status" style="margin-left:auto;font-size:0.72rem;color:rgba(255,255,255,0.4);"></span>
+</div>
+
+
+<div class="page-wrap">
+
+  <main class="test-main">
+
+    <!-- ── Level selector ── -->
+    <div class="level-selector" id="level-selector">
+      <div class="level-selector-header">
+        <div class="level-selector-title">QuickBooks Certification assessments</div>
+        <div class="level-selector-sub">Select the level you want to sit. Pass lower levels to unlock higher ones.</div>
+      </div>
+      <div class="level-options">
+        <div class="level-option selected-level" id="level-l1" onclick="selectLevel('l1')">
+          <div class="level-option-badge">L1</div>
+          <div class="level-option-info">
+            <div class="level-option-title">QB Associate</div>
+            <div class="level-option-desc">Chart of accounts, invoicing, bank feeds, reconciliation, customers &amp; vendors.</div>
+          </div>
+          <div class="level-option-meta">20 questions<br>40 min · 70%</div>
+        </div>
+        <div class="level-option locked-level" id="level-l2">
+          <div class="level-option-badge">🔒</div>
+          <div class="level-option-info">
+            <div class="level-option-title">QB Professional</div>
+            <div class="level-option-desc">Payroll, class tracking, projects, sales tax returns, advanced reporting.</div>
+          </div>
+          <div class="level-option-meta">25 questions<br>50 min · 70%</div>
+        </div>
+        <div class="level-option locked-level" id="level-l3">
+          <div class="level-option-badge">🔒</div>
+          <div class="level-option-info">
+            <div class="level-option-title">QB Advisor</div>
+            <div class="level-option-desc">Budgets, forecasts, multi-currency, integrations, advisory reporting.</div>
+          </div>
+          <div class="level-option-meta">30 questions<br>60 min · 75%</div>
+        </div>
+      </div>
+      <div class="level-start-wrap">
+        <button class="btn btn-gold btn-full" id="btn-start-test" onclick="startTest()">
+          Start L1 QB Associate assessment →
+        </button>
+        <p style="text-align:center;margin-top:0.75rem;">
+          <a href="/quickbooks-practice" style="font-size:0.78rem;color:var(--text-muted);">Not ready? Practise QB scenarios →</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- ── Test interface ── -->
+    <div class="test-interface" id="test-interface">
+
+      <div class="test-header">
+        <div class="test-header-title" id="test-title">QB Associate — Certification Test</div>
+        <div class="test-timer" id="test-timer">40:00</div>
+      </div>
+
+      <div class="test-progress">
+        <span class="test-progress-label" id="test-progress-label">Question 1 of 20</span>
+        <div class="test-progress-bar">
+          <div class="test-progress-fill" id="test-progress-fill" style="width:5%"></div>
+        </div>
+        <span class="test-q-count" id="test-answered-count">0 answered</span>
+      </div>
+
+      <div class="answer-dots" id="answer-dots"></div>
+
+      <div class="test-question-card">
+        <div class="test-q-header">
+          <div class="test-q-num" id="test-q-num">Question 1</div>
+          <div class="test-q-note">No feedback shown during test</div>
+        </div>
+        <div class="test-q-body" id="test-q-body">
+          <div class="test-loading">
+            <div class="test-loading-spinner"></div>
+            <div style="font-size:0.8rem;color:var(--text-muted)">Loading questions…</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Results ── -->
+    <div class="results-card" id="results-card">
+      <div class="results-inner">
+        <span class="results-icon" id="results-icon">🏆</span>
+        <div class="results-badge" id="results-badge">Assessment complete</div>
+        <div class="results-h1" id="results-h1">Well done!</div>
+        <div class="results-score" id="results-score">—</div>
+        <div class="results-score-label" id="results-score-label">Pass mark: 70%</div>
+        <p id="results-cert-text" style="font-size:0.875rem;color:rgba(255,255,255,0.6);max-width:420px;margin:0 auto;font-weight:300;line-height:1.65;"></p>
+        <div class="results-actions" id="results-actions"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Jobs sidebar -->
+  <aside id="ll-jobs-sidebar"></aside>
+
+</div>
+
+<footer class="ll-footer">
+  <div class="ll-footer-inner">
+    <div class="ll-footer-brand">Ledger<span>Learn</span> Pro</div>
+    <ul class="ll-footer-links">
+      <li><a href="/learn" id="nav-learn-link">Learn</a></li>
+      <li><a href="/quickbooks-practice">Practice</a></li>
+      <li><a href="/verify">Verify</a></li>
+      <li><a href="/dashboard">Dashboard</a></li>
+    </ul>
+    <div class="ll-footer-disclaimer">LedgerLearn Pro · Not affiliated with Intuit QuickBooks © 2025</div>
+  </div>
+</footer>
+
+<script src="/ll-shared.js?v=20260510"></script>
+<script src="/ll-api.js?v=20260510"></script>
+<script src="/ll-jobs.js?v=20260510"></script>
+
+<script>var ACTIVE_TRACK = 'QuickBooks';</script>
+<script src="/test-logic.js?v=091a4dae"></script>
+
+<script src="/certificate-engine-v2.js"></script>
+<script>window.LL_NO_CHATBOT = true;</script>
+<script src="/ll-chatbot.js"></script>
+</body>
+</html>
