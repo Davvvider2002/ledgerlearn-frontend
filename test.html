@@ -430,18 +430,16 @@ body { background: var(--off-white); }
 <script src="/ll-api.js?v=20260510"></script>
 <script src="/ll-jobs.js?v=20260510"></script>
 <script>
-// Read QB track flag set by QB pages before loading test-logic.js
-(function() {
-  var track = localStorage.getItem('ll_test_track') || 'Xero';
-  // Also check URL param ?track=QuickBooks
+// Set ACTIVE_TRACK BEFORE test-logic.js loads — must be a bare global var
+// test-logic.js checks: typeof ACTIVE_TRACK !== 'undefined'
+var _llTrack = (function() {
   try {
-    var urlTrack = new URLSearchParams(window.location.search).get('track');
-    if (urlTrack) track = urlTrack;
+    var u = new URLSearchParams(window.location.search).get('track');
+    if (u === 'QuickBooks' || u === 'Xero') return u;
   } catch(e) {}
-  window.ACTIVE_TRACK = track;
-  // Clear the flag so a direct /test visit defaults back to Xero next time
-  // (but don't clear here — clear AFTER the test completes in test-logic.js)
+  return localStorage.getItem('ll_test_track') || 'Xero';
 })();
+var ACTIVE_TRACK = _llTrack;
 </script>
 <script src="/test-logic.js?v=091a4dae"></script>
 
