@@ -280,7 +280,26 @@ body { background: var(--off-white); }
     <li><a href="/dashboard">Dashboard</a></li>
     <li><a href="/learn" class="ll-nav-cta">Start free →</a></li>
   </ul>
-    <div class="nav-track-switcher"><a href="/dashboard" class="track-pill xero on">Xero</a><a href="/quickbooks-dashboard" class="track-pill qb">QuickBooks</a></div>
+    <div class="nav-track-switcher" id="nav-track-sw">
+  <a href="/dashboard" class="track-pill xero" id="tp-xero">Xero</a>
+  <a href="/quickbooks-dashboard" class="track-pill qb" id="tp-qb">QuickBooks</a>
+</div>
+<script>
+// Highlight correct track pill based on ll_test_track
+(function(){
+  var t = localStorage.getItem('ll_test_track') || 'Xero';
+  try { var u=new URLSearchParams(window.location.search).get('track'); if(u) t=u; } catch(e){}
+  if (t === 'QuickBooks') {
+    var xp = document.getElementById('tp-xero');
+    var qp = document.getElementById('tp-qb');
+    if (xp) xp.className = 'track-pill xero';
+    if (qp) qp.className = 'track-pill qb on';
+  } else {
+    var xp = document.getElementById('tp-xero');
+    if (xp) xp.className = 'track-pill xero on';
+  }
+})();
+</script>
 </nav>
 
 <!-- Level nav banner -->
@@ -410,6 +429,20 @@ body { background: var(--off-white); }
 <script src="/ll-shared.js?v=20260510"></script>
 <script src="/ll-api.js?v=20260510"></script>
 <script src="/ll-jobs.js?v=20260510"></script>
+<script>
+// Read QB track flag set by QB pages before loading test-logic.js
+(function() {
+  var track = localStorage.getItem('ll_test_track') || 'Xero';
+  // Also check URL param ?track=QuickBooks
+  try {
+    var urlTrack = new URLSearchParams(window.location.search).get('track');
+    if (urlTrack) track = urlTrack;
+  } catch(e) {}
+  window.ACTIVE_TRACK = track;
+  // Clear the flag so a direct /test visit defaults back to Xero next time
+  // (but don't clear here — clear AFTER the test completes in test-logic.js)
+})();
+</script>
 <script src="/test-logic.js?v=091a4dae"></script>
 
 <script src="/certificate-engine-v2.js"></script>
