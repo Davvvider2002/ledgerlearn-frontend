@@ -12,6 +12,10 @@
  *   3 = Xero Signups
  *   4 = QB Waitlist
  *   5 = General
+ *   6 = L1 Completers  (fires nurture sequence → upsell to L2)
+ *   7 = L2 Purchasers  (stops L1 nurture sequence)
+ *
+ * action: 'add-to-list' uses the direct list endpoint for automation triggers
  */
 
 exports.handler = async function (event) {
@@ -44,7 +48,7 @@ exports.handler = async function (event) {
     return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: 'Invalid email' }) };
   }
 
-  if (![3, 4, 5].includes(listId)) {
+  if (![3, 4, 5, 6, 7].includes(listId)) {
     return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: 'Invalid list ID' }) };
   }
 
@@ -54,7 +58,32 @@ exports.handler = async function (event) {
     return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: 'Server config error' }) };
   }
 
-  const parts = name.split(' ');
+  // action='add-to-list' — uses Brevo's list endpoint which triggers automations
+  const action = JSON.parse(event.body || '{}').action || 'subscribe';
+  if (action === 'add-to-list') {
+    try {
+      const res = await fetch(
+        `https://api.brevo.com/v3/contacts/lists/${listId}/contacts/add`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'api-key': apiKey },
+          body: JSON.stringify({ emails: [email] }),
+        }
+      );
+      if (res.ok || res.status === 204) {
+        console.log(`[subscribe] ✓ add-to-list ${email} → list ${listId}`);
+        return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
+      }
+      const err = await res.json().catch(() => ({}));
+      console.error('[subscribe] add-to-list error:', res.status, err);
+      return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: 'Brevo list error' }) };
+    } catch(err) {
+      console.error('[subscribe] add-to-list network error:', err.message);
+      return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: 'Network error' }) };
+    }
+  }
+
+    const parts = name.split(' ');
   const payload = {
     email,
     listIds: [listId],

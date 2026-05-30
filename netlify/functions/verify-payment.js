@@ -142,6 +142,17 @@ async function storeAndReturn(email, level, orderId, verificationMethod) {
     console.error('[verify-payment] store error:', err.message);
   }
 
+  // ── Brevo: add to L2 Purchasers list (stops L1 nurture, fires L2 sequence) ──
+  const _isL2 = normLevel === 'l2' || normLevel === 'qb-l2';
+  if (_isL2 && email) {
+    fetch('https://api.brevo.com/v3/contacts/lists/7/contacts/add', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'api-key': process.env.BREVO_API_KEY || '' },
+      body:    JSON.stringify({ emails: [email] }),
+    }).then(function(r){ console.log('[Brevo] L2 Purchasers add status:', r.status); })
+      .catch(function(e){ console.warn('[Brevo] L2 add failed:', e.message); });
+  }
+
   return {
     statusCode: 200,
     headers: CORS,
