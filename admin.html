@@ -977,7 +977,7 @@ tr:hover td{background:#fafbfc;}
           <div style="display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap">
             <div>
               <label style="font-size:.72rem;color:rgba(255,255,255,.4);display:block;margin-bottom:4px">CSV file</label>
-              <input type="file" id="csv-file-input" accept=".csv"
+              <input type="file" id="csv-file-input" accept=".csv" onchange="previewCSV()"
                 style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;
                        padding:8px 12px;border-radius:7px;font-size:.8rem;font-family:inherit;cursor:pointer">
             </div>
