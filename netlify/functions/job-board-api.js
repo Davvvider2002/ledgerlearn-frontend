@@ -298,6 +298,79 @@ exports.handler = async function(event) {
     }
 
     // ── SUBMIT APPLICATION ───────────────────────────────────
+
+    // ── BULK IMPORT JOBS (admin only) ────────────────────────────────
+    if (action === 'bulk-import-jobs') {
+      // Verify admin token
+      const adminToken = (event.headers['x-admin-token'] || '').trim();
+      if (!adminToken) return json(401, { error: 'Admin token required' });
+      // Validate against ADMIN_SECRET env var
+      if (adminToken !== process.env.ADMIN_SECRET) {
+        return json(403, { error: 'Invalid admin token' });
+      }
+
+      const { jobs } = body;
+      if (!Array.isArray(jobs) || jobs.length === 0) {
+        return json(400, { error: 'jobs array required' });
+      }
+
+      const SYSTEM_RECRUITER_ID = '00000000-0000-0000-0000-000000000001';
+      const now = new Date().toISOString();
+      const results = { inserted: 0, skipped: 0, errors: [] };
+
+      for (const job of jobs) {
+        try {
+          // Skip if missing required fields
+          if (!job.title || !job.company) {
+            results.skipped++;
+            continue;
+          }
+
+          const row = {
+            recruiter_id:     SYSTEM_RECRUITER_ID,
+            title:            (job.title            || '').slice(0, 200),
+            company:          (job.company          || '').slice(0, 200),
+            location:         (job.location         || 'Not specified').slice(0, 200),
+            location_type:    ['onsite','remote','hybrid'].includes(job.location_type)
+                                ? job.location_type : 'onsite',
+            employment_type:  ['full-time','part-time','contract','freelance'].includes(job.employment_type)
+                                ? job.employment_type : 'full-time',
+            cert_level_required: ['any','l1','l2','l3'].includes(job.cert_level_required)
+                                ? job.cert_level_required : 'any',
+            description:      (job.description      || job.title).slice(0, 5000),
+            responsibilities: (job.responsibilities || null),
+            requirements:     (job.requirements     || null),
+            salary_min:       job.salary_min        ? parseFloat(job.salary_min)  : null,
+            salary_max:       job.salary_max        ? parseFloat(job.salary_max)  : null,
+            salary_currency:  (job.salary_currency  || 'USD').slice(0, 5),
+            salary_period:    ['hourly','daily','monthly','annual'].includes(job.salary_period)
+                                ? job.salary_period : 'monthly',
+            external_url:     (job.external_url     || job.url || job.apply_url || null),
+            apply_method:     (job.external_url || job.url || job.apply_url) ? 'external' : 'internal',
+            source:           'scraped',
+            source_label:     (job.source_label     || job.source || null),
+            status:           'active',
+            deadline:         job.deadline          || null,
+            published_at:     now,
+            expires_at:       job.expires_at        || null,
+            created_at:       now,
+            updated_at:       now,
+          };
+
+          const res = await supa('/rest/v1/job_postings', 'POST', row);
+          if (res && !res.error) {
+            results.inserted++;
+          } else {
+            results.errors.push({ title: job.title, error: (res && res.error) ? JSON.stringify(res.error) : 'insert failed' });
+          }
+        } catch(e) {
+          results.errors.push({ title: job.title, error: e.message });
+        }
+      }
+
+      return json(200, { ok: true, results });
+    }
+
     if (action === 'submit-application') {
       if (!userId) return json(401, { error: 'Sign in to apply for jobs' });
       const { jobId, coverNote, screeningAnswers } = body;
