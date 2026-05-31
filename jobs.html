@@ -224,6 +224,8 @@ nav{height:56px;background:var(--navy);border-bottom:2px solid var(--gold);displ
   <div class="modal-box">
     <h3 id="modal-job-title">Apply for role</h3>
     <p id="modal-job-co">Company · Location</p>
+    <p id="modal-source-badge" style="display:none;font-size:.7rem;background:rgba(234,88,12,.15);color:#fdba74;border:1px solid rgba(234,88,12,.3);padding:3px 10px;border-radius:100px;margin-bottom:.5rem;width:fit-content">External listing</p>
+    <a id="modal-ext-link" href="#" target="_blank" rel="noopener noreferrer" style="display:none;align-items:center;gap:6px;font-size:.78rem;color:var(--teal);text-decoration:none;margin-bottom:.75rem">↗ Also apply on original site</a>
     <div class="modal-cert" id="modal-cert">
       <span>✓</span> <span>Your LedgerLearn profile and certificates will be attached automatically.</span>
     </div>
@@ -462,8 +464,43 @@ function openApplyModal(jobId) {
   var job = ALL_JOBS.find(function(j){ return j.id === jobId; });
   if (!job) return;
   CURRENT_JOB = job;
+
+  // External-only jobs: redirect straight to apply URL
+  if (job.apply_method === 'external' && job.external_url) {
+    window.open(job.external_url, '_blank', 'noopener,noreferrer');
+    // Track click (fire-and-forget)
+    var tok = '';
+    try { tok = JSON.parse(localStorage.getItem('ll_session')||'{}').access_token||''; } catch(e) {}
+    fetch('/.netlify/functions/job-board-api', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+tok },
+      body: JSON.stringify({ action: 'track-view', jobId: jobId, event: 'apply-click' })
+    }).catch(function(){});
+    return;
+  }
+
+  // Internal or 'both': show modal
   document.getElementById('modal-job-title').textContent = job.title;
   document.getElementById('modal-job-co').textContent = job.company + ' · ' + job.location;
+
+  // For 'both' — show external link option inside modal
+  var extLink = document.getElementById('modal-ext-link');
+  if (extLink) {
+    if (job.apply_method === 'both' && job.external_url) {
+      extLink.href = job.external_url;
+      extLink.style.display = 'inline-flex';
+    } else {
+      extLink.style.display = 'none';
+    }
+  }
+
+  // Show source badge for scraped jobs
+  var srcBadge = document.getElementById('modal-source-badge');
+  if (srcBadge) {
+    srcBadge.textContent = job.source === 'scraped' ? 'External listing' : '';
+    srcBadge.style.display = job.source === 'scraped' ? 'block' : 'none';
+  }
+
   document.getElementById('apply-modal').style.display = 'flex';
 }
 function closeModal() {

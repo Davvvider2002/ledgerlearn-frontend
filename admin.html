@@ -962,6 +962,53 @@ tr:hover td{background:#fafbfc;}
       <div class="page-hdr">
         <div class="page-hdr-left"><div class="page-title">Job Listings</div><div class="page-sub">All postings &middot; Moderate &middot; Approve &middot; Close</div></div>
       </div>
+
+      <!-- ── CSV Bulk Import ─────────────────────────────── -->
+      <div class="table-card" style="margin-bottom:1.5rem">
+        <div class="table-hdr">
+          <div class="table-title">📥 Bulk Import Jobs from CSV</div>
+          <span class="badge" style="background:rgba(234,88,12,.15);color:#fdba74;border:1px solid rgba(234,88,12,.3)">Admin only</span>
+        </div>
+        <div style="padding:1.25rem">
+          <p style="font-size:.8rem;color:rgba(255,255,255,.45);margin-bottom:1rem;line-height:1.6">
+            Upload a CSV with columns: <code>title, company, location, location_type, employment_type, cert_level_required, description, external_url, salary_min, salary_max, salary_currency, deadline</code><br>
+            Only <code>title</code> and <code>company</code> are required. Jobs with an <code>external_url</code> will redirect applicants to that URL. Jobs without one capture applications in the system.
+          </p>
+          <div style="display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap">
+            <div>
+              <label style="font-size:.72rem;color:rgba(255,255,255,.4);display:block;margin-bottom:4px">CSV file</label>
+              <input type="file" id="csv-file-input" accept=".csv"
+                style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;
+                       padding:8px 12px;border-radius:7px;font-size:.8rem;font-family:inherit;cursor:pointer">
+            </div>
+            <button onclick="previewCSV()" class="btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.15)">
+              Preview
+            </button>
+            <button onclick="importCSV()" id="btn-import-csv" class="btn-sm btn-gold" disabled>
+              Import jobs
+            </button>
+            <span id="csv-import-status" style="font-size:.78rem;color:rgba(255,255,255,.4)"></span>
+          </div>
+
+          <!-- Preview table -->
+          <div id="csv-preview" style="display:none;margin-top:1.25rem">
+            <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:.5rem" id="csv-preview-count"></div>
+            <div style="overflow-x:auto;max-height:280px;overflow-y:auto">
+              <table id="csv-preview-table" style="width:100%;border-collapse:collapse;font-size:.76rem">
+                <thead id="csv-preview-head" style="position:sticky;top:0;background:#0B1F3A"></thead>
+                <tbody id="csv-preview-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Import results -->
+          <div id="csv-import-results" style="display:none;margin-top:1rem;padding:1rem;background:rgba(29,169,138,.08);border:1px solid rgba(29,169,138,.25);border-radius:8px">
+            <div style="font-size:.82rem;font-weight:700;color:#26c9a5;margin-bottom:.5rem" id="csv-results-summary"></div>
+            <div id="csv-results-errors" style="font-size:.72rem;color:rgba(255,100,100,.7)"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="table-card">
         <div class="table-hdr">
           <div class="table-title">All postings</div>
@@ -2716,6 +2763,125 @@ async function flagQuestion(id) {
     if (data.ok) { localStorage.removeItem('ll_pending_cert_save'); console.log('[Admin] Pending cert save succeeded:', certPayload.certId); }
   } catch(e) {}
 })();
+
+// ── CSV BULK IMPORT ──────────────────────────────────────────────
+var _csvParsed = [];
+
+function previewCSV() {
+  var file = document.getElementById('csv-file-input').files[0];
+  if (!file) { showStatus('csv-import-status', 'No file selected', 'warn'); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    _csvParsed = parseCSV(e.target.result);
+    if (!_csvParsed.length) {
+      showStatus('csv-import-status', 'No valid rows found in CSV', 'warn'); return;
+    }
+    // Build preview table
+    var keys = Object.keys(_csvParsed[0]);
+    var head = document.getElementById('csv-preview-head');
+    var body = document.getElementById('csv-preview-body');
+    head.innerHTML = '<tr>' + keys.map(function(k){
+      return '<th style="padding:6px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);font-size:.68rem;font-weight:600;white-space:nowrap">' + escHtml(k) + '</th>';
+    }).join('') + '</tr>';
+    body.innerHTML = _csvParsed.slice(0,10).map(function(row){
+      return '<tr>' + keys.map(function(k){
+        return '<td style="padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.7);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(String(row[k]||'')) + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+    document.getElementById('csv-preview').style.display = 'block';
+    document.getElementById('csv-preview-count').textContent = _csvParsed.length + ' rows found' + (_csvParsed.length > 10 ? ' (showing first 10)' : '');
+    document.getElementById('btn-import-csv').disabled = false;
+    showStatus('csv-import-status', _csvParsed.length + ' rows ready to import', 'ok');
+  };
+  reader.readAsText(file);
+}
+
+async function importCSV() {
+  if (!_csvParsed.length) { showStatus('csv-import-status','Preview first','warn'); return; }
+  var btn = document.getElementById('btn-import-csv');
+  btn.disabled = true; btn.textContent = 'Importing…';
+  showStatus('csv-import-status', 'Sending to server…', 'ok');
+
+  var tok = sessionStorage.getItem('ll_admin_token') || '';
+  try {
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method:  'POST',
+      headers: { 'Content-Type':'application/json', 'x-admin-token': tok },
+      body:    JSON.stringify({ action: 'bulk-import-jobs', jobs: _csvParsed })
+    });
+    var data = await res.json();
+    if (data.ok) {
+      var r = data.results;
+      document.getElementById('csv-results-summary').textContent =
+        '✓ Import complete — ' + r.inserted + ' inserted, ' + r.skipped + ' skipped';
+      if (r.errors && r.errors.length) {
+        document.getElementById('csv-results-errors').innerHTML =
+          r.errors.slice(0,5).map(function(e){ return '✗ ' + escHtml(e.title) + ': ' + escHtml(e.error); }).join('<br>');
+      } else {
+        document.getElementById('csv-results-errors').innerHTML = '';
+      }
+      document.getElementById('csv-import-results').style.display = 'block';
+      showStatus('csv-import-status', '✓ Done', 'ok');
+      // Refresh jobs table
+      if (typeof loadAdminJobs === 'function') loadAdminJobs();
+    } else {
+      showStatus('csv-import-status', data.error || 'Import failed', 'error');
+    }
+  } catch(e) {
+    showStatus('csv-import-status', 'Network error: ' + e.message, 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Import jobs';
+}
+
+function parseCSV(text) {
+  // Handles quoted fields, commas, newlines within quotes
+  var lines = [];
+  var cur = ''; var inQ = false;
+  for (var i=0; i<text.length; i++) {
+    var ch = text[i];
+    if (ch==='"') { inQ=!inQ; }
+    else if ((ch.charCodeAt(0)===10||ch.charCodeAt(0)===13) && !inQ) { if(cur.trim()) lines.push(cur); cur=''; }
+  }
+  if (cur.trim()) lines.push(cur);
+  if (lines.length < 2) return [];
+
+  var headers = splitCSVLine(lines[0]).map(function(h){ return h.trim().toLowerCase().replace(/\s+/g,'_'); });
+  var rows = [];
+  for (var r=1; r<lines.length; r++) {
+    var vals = splitCSVLine(lines[r]);
+    if (vals.every(function(v){ return !v.trim(); })) continue;
+    var obj = {};
+    headers.forEach(function(h,i){ obj[h] = (vals[i]||'').trim(); });
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function splitCSVLine(line) {
+  var result=[]; var cur=''; var inQ=false;
+  for (var i=0; i<line.length; i++) {
+    var ch=line[i];
+    if (ch==='"'&&!inQ) { inQ=true; }
+    else if (ch==='"'&&inQ&&line[i+1]==='"') { cur+='"'; i++; }
+    else if (ch==='"'&&inQ) { inQ=false; }
+    else if (ch===','&&!inQ) { result.push(cur); cur=''; }
+    else { cur+=ch; }
+  }
+  result.push(cur);
+  return result;
+}
+
+function showStatus(id, msg, type) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = type==='ok' ? '#26c9a5' : type==='warn' ? '#fbbf24' : '#f87171';
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 </script>
 </body>
 </html>
