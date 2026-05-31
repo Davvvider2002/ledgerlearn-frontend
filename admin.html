@@ -2834,25 +2834,24 @@ async function importCSV() {
 }
 
 function parseCSV(text) {
-  // Handles quoted fields, commas, newlines within quotes
-  var lines = [];
-  var cur = ''; var inQ = false;
-  for (var i=0; i<text.length; i++) {
-    var ch = text[i];
-    if (ch==='"') { inQ=!inQ; }
-    else if ((ch.charCodeAt(0)===10||ch.charCodeAt(0)===13) && !inQ) { if(cur.trim()) lines.push(cur); cur=''; }
-  }
-  if (cur.trim()) lines.push(cur);
-  if (lines.length < 2) return [];
-
-  var headers = splitCSVLine(lines[0]).map(function(h){ return h.trim().toLowerCase().replace(/\s+/g,'_'); });
+  // Split on line breaks first, then parse each line
+  var rawLines = text.split(/\r?\n/);
+  if (rawLines.length < 2) return [];
+  var headers = splitCSVLine(rawLines[0]).map(function(h) {
+    return h.trim().toLowerCase().replace(/\s+/g, '_');
+  });
+  if (!headers.length || !headers[0]) return [];
   var rows = [];
-  for (var r=1; r<lines.length; r++) {
-    var vals = splitCSVLine(lines[r]);
-    if (vals.every(function(v){ return !v.trim(); })) continue;
+  for (var r = 1; r < rawLines.length; r++) {
+    var line = rawLines[r];
+    if (!line.trim()) continue;
+    var vals = splitCSVLine(line);
     var obj = {};
-    headers.forEach(function(h,i){ obj[h] = (vals[i]||'').trim(); });
-    rows.push(obj);
+    headers.forEach(function(h, i) { obj[h] = (vals[i] || '').trim(); });
+    // Only include row if at least one meaningful field is populated
+    if (headers.some(function(h) { return obj[h] && obj[h].length > 0; })) {
+      rows.push(obj);
+    }
   }
   return rows;
 }
