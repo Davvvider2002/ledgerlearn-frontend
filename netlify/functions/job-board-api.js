@@ -301,12 +301,24 @@ exports.handler = async function(event) {
 
     // ── BULK IMPORT JOBS (admin only) ────────────────────────────────
     if (action === 'bulk-import-jobs') {
-      // Verify admin token
+      // Verify admin JWT token (format: base64payload.hmac_sha256)
       const adminToken = (event.headers['x-admin-token'] || '').trim();
       if (!adminToken) return json(401, { error: 'Admin token required' });
-      // Validate against ADMIN_SECRET env var
-      if (adminToken !== process.env.ADMIN_SECRET) {
-        return json(403, { error: 'Invalid admin token' });
+      try {
+        const ADMIN_SECRET = process.env.ADMIN_SECRET || 'ledgerlearn-admin-secret-change-this';
+        const dotIdx = adminToken.lastIndexOf('.');
+        if (dotIdx < 0) return json(403, { error: 'Invalid admin token format' });
+        const payloadB64 = adminToken.slice(0, dotIdx);
+        const sig        = adminToken.slice(dotIdx + 1);
+        const expected   = crypto.createHmac('sha256', ADMIN_SECRET).update(payloadB64).digest('hex');
+        if (sig !== expected) return json(403, { error: 'Invalid admin token' });
+        // Check expiry
+        const payload = JSON.parse(Buffer.from(payloadB64, 'base64').toString());
+        if (!payload.expires || Date.now() > payload.expires) {
+          return json(401, { error: 'Admin token expired — please log in again' });
+        }
+      } catch(e) {
+        return json(403, { error: 'Admin token verification failed' });
       }
 
       const { jobs } = body;
@@ -499,11 +511,30 @@ exports.handler = async function(event) {
     // ── GET MY APPLICATIONS (applicant) ─────────────────────
     if (action === 'get-my-applications') {
       if (!userId) return json(401, { error: 'Authentication required' });
+      // Use service key — applicant_id is verified from JWT so this is safe
+      // Fetch applications — service key bypasses RLS
       const apps = await supa(
-        `/rest/v1/job_applications?applicant_id=eq.${userId}&order=applied_at.desc&select=*,job_postings(title,company,location,status)`,
-        'GET', null, true
+        `/rest/v1/job_applications?applicant_id=eq.${encodeURIComponent(userId)}` +
+        `&order=applied_at.desc&limit=100` +
+        `&select=id,job_id,status,applied_at,cover_note,cert_snapshot`,
+        'GET'
       );
-      return json(200, { ok: true, data: Array.isArray(apps) ? apps : [] });
+      if (!Array.isArray(apps) || apps.length === 0) {
+        return json(200, { ok: true, data: [] });
+      }
+      // Fetch job details separately (avoids PostgREST join ambiguity)
+      const jobIds = [...new Set(apps.map(function(a){ return a.job_id; }).filter(Boolean))];
+      const jobRows = await supa(
+        `/rest/v1/job_postings?id=in.(${jobIds.map(encodeURIComponent).join(',')})` +
+        `&select=id,title,company,location,employment_type,status,external_url`,
+        'GET'
+      );
+      const jobMap = {};
+      if (Array.isArray(jobRows)) jobRows.forEach(function(j){ jobMap[j.id] = j; });
+      const enriched = apps.map(function(a) {
+        return Object.assign({}, a, { job_postings: jobMap[a.job_id] || {} });
+      });
+      return json(200, { ok: true, data: enriched });
     }
 
     // ── UPDATE APPLICATION STATUS (recruiter) ───────────────
