@@ -78,9 +78,10 @@ async function supa(path, method, body, useAnon) {
       body: body ? JSON.stringify(body) : undefined,
     });
     if (!res.ok) {
-      const err = await res.text();
-      console.error('[job-board-api] Supabase', res.status, path, err.slice(0, 200));
-      return null;
+      let errBody = {};
+      try { errBody = await res.json(); } catch(_) { errBody = { message: await res.text().catch(() => '') }; }
+      console.error('[job-board-api] Supabase', res.status, path, JSON.stringify(errBody).slice(0,200));
+      return { _supaError: true, status: res.status, error: errBody };
     }
     // 204 No Content — PATCH/DELETE with no Prefer header
     if (res.status === 204) return { ok: true };
@@ -214,12 +215,13 @@ exports.handler = async function(event) {
         + '&select=id,title,company,location,location_type,employment_type'
         + ',salary_min,salary_max,salary_currency,salary_period'
         + ',cert_level_required,description,view_count,application_count'
-        + ',deadline,published_at,recruiters(country)';
+        + ',deadline,published_at,apply_method,external_url,source'
+        + ',recruiters(country)';
 
       if (level && level !== 'any') path += `&cert_level_required=eq.${level}`;
       if (locationType) path += `&location_type=eq.${locationType}`;
 
-      const raw = await supa(path, 'GET', null, true); // anon key — public listing
+      const raw = await supa(path, 'GET'); // service key — bypasses RLS, jobs are public data
       if (!Array.isArray(raw)) return json(200, { ok: true, data: [] });
 
       // Normalise: map recruiters.country → region so frontend filter works
@@ -269,6 +271,9 @@ exports.handler = async function(event) {
             application_count:    j.application_count || 0,
             deadline:             j.deadline,
             published_at:         j.published_at,
+            apply_method:         j.apply_method  || 'internal',
+            external_url:         j.external_url  || null,
+            source:               j.source        || 'internal',
             region,
           };
         });
@@ -393,7 +398,8 @@ exports.handler = async function(event) {
       const existing = await supa(
         `/rest/v1/job_applications?job_id=eq.${encodeURIComponent(jobId)}&applicant_id=eq.${encodeURIComponent(userId)}&select=id&limit=1`
       );
-      if (Array.isArray(existing) && existing.length > 0) {
+      if ((Array.isArray(existing) && existing.length > 0) ||
+          (existing && existing._supaError && existing.status === 409)) {
         return json(409, { error: 'You have already applied for this job' });
       }
 
@@ -421,7 +427,19 @@ exports.handler = async function(event) {
         status_updated_at: new Date().toISOString(),
       });
 
-      if (!result) return json(500, { error: 'Could not submit application. Please try again.' });
+      if (!result || result._supaError) {
+        // Check for UNIQUE constraint violation = already applied
+        const errDetail = result && result.error
+          ? (result.error.message || result.error.details || result.error.hint || '')
+          : '';
+        if (errDetail.includes('unique') || errDetail.includes('duplicate') ||
+            (result && result.status === 409)) {
+          return json(409, { error: 'You have already applied for this job' });
+        }
+        const errMsg = errDetail || 'Could not submit application. Please try again.';
+        console.error('[submit-application] insert error:', errMsg);
+        return json(500, { error: errMsg });
+      }
 
       // Increment application_count (non-critical — fire and forget)
       supa(
@@ -435,7 +453,8 @@ exports.handler = async function(event) {
         }
       }).catch(function() {});
 
-      return json(200, { ok: true, application: Array.isArray(result) ? result[0] : result });
+      const appRow = Array.isArray(result) ? result[0] : (result && !result._supaError ? result : null);
+      return json(200, { ok: true, application: appRow });
     }
 
     // ── GET APPLICATIONS (recruiter inbox) ───────────────────
