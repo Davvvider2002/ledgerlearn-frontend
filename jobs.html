@@ -549,8 +549,8 @@ async function submitApplication() {
       data = await res.json();
     } else {
       var text = await res.text();
-      data = { ok: false, error: 'Server error (' + res.status + '). Please try again.' };
-      console.error('[jobs] Application submit non-JSON response:', text.slice(0, 200));
+      console.error('[jobs] Non-JSON response:', res.status, text.slice(0, 300));
+      data = { ok: false, error: 'Server error (' + res.status + '). Please try again in a moment.' };
     }
 
     if (data.ok) {
@@ -575,7 +575,12 @@ async function submitApplication() {
 
   } catch(e) {
     console.error('[jobs] submitApplication error:', e);
-    showToast('Connection error. Check your internet and try again.', 'error');
+    // Show the actual server error message if available
+    var msg = e.message || 'Connection error';
+    if (msg.includes('<!') || msg.includes('<HTML')) {
+      msg = 'Server error — please try again in a moment.';
+    }
+    showToast(msg, 'error');
     btn.disabled = false; btn.textContent = 'Submit application →';
   }
 }
