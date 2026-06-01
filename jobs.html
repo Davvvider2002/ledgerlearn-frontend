@@ -3,242 +3,224 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Accounting & Bookkeeping Jobs — LedgerLearn Pro</title>
-<link rel="icon" href="/favicon.svg">
+<title>Jobs — LedgerLearn Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--off:#f8f7f4;--border:rgba(11,31,58,0.12);--muted:#6b87a3;}
-body{font-family:'DM Sans',system-ui,sans-serif;background:var(--off);min-height:100vh;display:flex;flex-direction:column;}
-nav{height:56px;background:var(--navy);border-bottom:2px solid var(--gold);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;flex-shrink:0;}
-.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
-.hex{width:18px;height:18px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
-.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;color:#fff;}
-.brand span{color:var(--gold);}
-.nav-links-r{display:flex;align-items:center;gap:0.75rem;}
-.nav-link{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.82rem;}
-.btn-nav{background:var(--gold);color:var(--navy);border:none;border-radius:7px;padding:7px 16px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;}
-
-/* Hero strip */
-.jobs-hero{background:var(--navy);padding:2.5rem 2rem 2rem;}
-.jobs-hero-inner{max-width:1100px;margin:0 auto;}
-.hero-eyebrow{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--teal);font-weight:700;margin-bottom:0.5rem;}
-.hero-h1{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:#fff;margin-bottom:0.75rem;}
-.hero-h1 span{color:var(--gold);}
-.hero-sub{font-size:0.9rem;color:rgba(255,255,255,0.5);max-width:540px;line-height:1.6;margin-bottom:1.25rem;}
-
-/* Cert match bar */
-.cert-match{background:rgba(29,169,138,0.12);border:1px solid rgba(29,169,138,0.25);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;max-width:600px;}
-.cert-match-icon{font-size:1.2rem;flex-shrink:0;}
-.cert-match-text{font-size:0.82rem;color:rgba(255,255,255,0.75);line-height:1.5;}
-.cert-match-text strong{color:var(--teal);}
-
-/* Search + filters */
-.filters-bar{background:#fff;border-bottom:1px solid var(--border);padding:1rem 2rem;position:sticky;top:0;z-index:100;}
-.filters-inner{max-width:1100px;margin:0 auto;display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;}
-.search-wrap{flex:1;min-width:200px;position:relative;}
-.search-wrap input{width:100%;padding:9px 12px 9px 36px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;font-family:inherit;outline:none;background:var(--off);}
-.search-wrap input:focus{border-color:var(--gold);}
-.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:1rem;}
-.filter-select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.82rem;font-family:inherit;background:var(--off);color:var(--navy);outline:none;cursor:pointer;}
-.filter-select:focus{border-color:var(--gold);}
-.result-count{font-size:0.8rem;color:var(--muted);white-space:nowrap;margin-left:auto;}
-
-/* Layout */
-.main{max-width:1100px;margin:0 auto;width:100%;padding:1.5rem;display:grid;grid-template-columns:1fr 300px;gap:1.5rem;flex:1;}
-@media(max-width:768px){.main{grid-template-columns:1fr;}.sidebar-col{display:none;}}
-
-/* Job cards */
-.jobs-col{}
-.jobs-list{display:flex;flex-direction:column;gap:0.875rem;}
-.job-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;transition:all .2s;}
-.job-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 28px rgba(11,31,58,0.08);}
-.job-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;margin-bottom:0.75rem;}
-.job-logo{width:42px;height:42px;border-radius:10px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:var(--gold);flex-shrink:0;}
-.job-co{font-size:0.75rem;color:var(--muted);margin-bottom:3px;}
-.job-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);}
-.job-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.875rem;}
-.tag{font-size:0.68rem;font-weight:600;padding:3px 9px;border-radius:100px;}
-.tag-loc  {background:rgba(11,31,58,0.06);color:#3d5a7a;}
-.tag-type {background:rgba(11,31,58,0.04);color:var(--muted);}
-.tag-level{background:rgba(29,169,138,0.1);color:#0F6E56;}
-.tag-sal  {background:rgba(212,168,67,0.12);color:#7a5c00;}
-.tag-match{background:var(--teal);color:#fff;}
-.job-desc{font-size:0.82rem;color:#4a6070;line-height:1.6;margin-bottom:0.875rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.job-card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:0.875rem;border-top:1px solid var(--border);}
-.job-meta-row{display:flex;align-items:center;gap:1rem;}
-.job-views{font-size:0.72rem;color:var(--muted);}
-.job-date{font-size:0.72rem;color:var(--muted);}
-.btn-apply{background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 18px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;transition:background .15s;white-space:nowrap;}
-.btn-apply:hover{background:#f0c860;}
-.btn-apply.locked{background:#e2e8f0;color:var(--muted);cursor:default;}
-.btn-save{background:none;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:0.8rem;cursor:pointer;color:var(--muted);transition:all .15s;}
-.btn-save:hover{border-color:var(--gold);color:var(--gold);}
-
-/* Sidebar */
-.sidebar-col{display:flex;flex-direction:column;gap:1rem;}
-.side-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.25rem;}
-.side-card-title{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;color:var(--navy);margin-bottom:0.875rem;}
-.cert-level-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
-.cert-level-row:last-child{border-bottom:none;padding-bottom:0;}
-.cert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.cert-level-name{font-size:0.82rem;color:var(--navy);flex:1;}
-.cert-count{font-size:0.75rem;color:var(--muted);}
-.recruiter-strip{background:var(--navy);border-radius:12px;padding:1.25rem;}
-.recruiter-strip h3{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;color:#fff;margin-bottom:0.4rem;}
-.recruiter-strip p{font-size:0.78rem;color:rgba(255,255,255,0.5);line-height:1.5;margin-bottom:1rem;}
-.btn-recruiter{display:block;text-align:center;background:var(--gold);color:var(--navy);border-radius:8px;padding:10px;font-size:0.82rem;font-weight:700;text-decoration:none;}
-.btn-recruiter:hover{background:#f0c860;}
-
-/* Load more */
-.load-more-wrap{text-align:center;padding:1.5rem 0;}
-.btn-load-more{background:#fff;border:1.5px solid var(--border);border-radius:9px;padding:11px 28px;font-size:0.88rem;font-weight:600;cursor:pointer;font-family:inherit;color:var(--navy);}
-.btn-load-more:hover{border-color:var(--gold);}
-
-/* Apply modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(5,14,28,0.88);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;}
-.modal-box{background:#0d2044;border:1px solid rgba(212,168,67,0.3);border-radius:18px;padding:2rem;max-width:440px;width:100%;}
-.modal-box h3{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:0.4rem;}
-.modal-box p{font-size:0.82rem;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;line-height:1.6;}
-.modal-cert{background:rgba(29,169,138,0.1);border:1px solid rgba(29,169,138,0.25);border-radius:8px;padding:10px 14px;font-size:0.82rem;color:var(--teal);margin-bottom:1.25rem;display:flex;align-items:center;gap:8px;}
-.modal-field{margin-bottom:1rem;}
-.modal-field label{display:block;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.4);margin-bottom:5px;}
-.modal-field textarea{width:100%;padding:10px 12px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.85rem;font-family:inherit;outline:none;resize:none;height:80px;}
-.modal-field textarea:focus{border-color:#D4A843;}
-.modal-btns{display:flex;gap:0.75rem;}
-.modal-btn-apply{flex:1;padding:13px;background:#D4A843;color:#0B1F3A;border:none;border-radius:9px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;}
-.modal-btn-cancel{padding:13px 20px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);border-radius:9px;font-size:0.9rem;cursor:pointer;font-family:inherit;}
-</style>
 <script src="/ll-auth.js"></script>
+<style>
+:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--orange:#ea580c;--off-white:#f8f7f4;--text-muted:rgba(255,255,255,.45);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:#fff;min-height:100vh;}
+/* ── NAV ── */
+nav{height:60px;background:rgba(11,31,58,.97);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:100;gap:1rem;}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.nav-hex{width:24px;height:24px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.nav-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:#fff;}
+.nav-brand span{color:var(--teal);}
+.nav-links{display:flex;list-style:none;gap:.25rem;align-items:center;}
+.nav-links a{color:rgba(255,255,255,.55);text-decoration:none;font-size:.82rem;padding:5px 10px;border-radius:6px;transition:color .15s;}
+.nav-links a:hover,.nav-links a.active{color:#fff;}
+.nav-track-switcher{display:flex;align-items:center;gap:4px;}
+.track-pill{font-size:.67rem;font-weight:700;padding:3px 10px;border-radius:100px;text-decoration:none;border:1px solid transparent;transition:all .15s;}
+.track-pill.xero{background:rgba(29,169,138,.1);color:#26c9a5;border-color:rgba(29,169,138,.25);}
+.track-pill.xero.on{background:rgba(29,169,138,.2);border-color:rgba(29,169,138,.5);}
+.track-pill.qb{background:rgba(234,88,12,.08);color:#fdba74;border-color:rgba(234,88,12,.2);}
+.track-pill.qb.on{background:rgba(234,88,12,.18);border-color:rgba(234,88,12,.45);}
+#nav-user-slot{}
+/* ── LAYOUT ── */
+.page-wrap{max-width:1200px;margin:0 auto;padding:2rem 1.5rem;display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start;}
+@media(max-width:800px){.page-wrap{grid-template-columns:1fr;}}
+/* ── SEARCH BAR ── */
+.search-bar{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;}
+.search-row{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;}
+.search-input-wrap{flex:1;min-width:200px;position:relative;}
+.search-input-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.35;width:16px;}
+#search-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;padding:10px 12px 10px 36px;border-radius:9px;font-size:.85rem;font-family:inherit;outline:none;}
+#search-input::placeholder{color:rgba(255,255,255,.3);}
+select.filter-sel{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;padding:10px 14px;border-radius:9px;font-size:.82rem;font-family:inherit;outline:none;cursor:pointer;}
+select.filter-sel option{background:#0B1F3A;}
+.result-count{font-size:.8rem;color:var(--text-muted);margin-left:auto;white-space:nowrap;}
+/* ── CERT MATCH BANNER ── */
+#cert-banner{background:linear-gradient(135deg,rgba(29,169,138,.12),rgba(212,168,67,.06));border:1px solid rgba(29,169,138,.25);border-radius:12px;padding:.875rem 1.25rem;margin-bottom:1.25rem;display:none;font-size:.82rem;color:rgba(255,255,255,.7);gap:.75rem;align-items:center;}
+#cert-banner svg{flex-shrink:0;color:var(--teal);}
+/* ── JOB CARDS ── */
+.job-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.25rem;margin-bottom:1rem;transition:border-color .15s;}
+.job-card:hover{border-color:rgba(29,169,138,.3);}
+.job-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;}
+.job-co{font-size:.75rem;color:var(--text-muted);margin-bottom:.2rem;}
+.job-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;}
+.job-logo{width:42px;height:42px;border-radius:10px;background:rgba(212,168,67,.15);color:var(--gold);font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.job-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.75rem;}
+.tag{font-size:.68rem;font-weight:600;padding:3px 9px;border-radius:100px;}
+.tag-loc{background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);}
+.tag-type{background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);}
+.tag-level{background:rgba(212,168,67,.12);color:var(--gold);}
+.tag-sal{background:rgba(29,169,138,.1);color:#26c9a5;}
+.tag-match{background:rgba(29,169,138,.15);color:#26c9a5;border:1px solid rgba(29,169,138,.3);}
+.job-desc{font-size:.82rem;color:rgba(255,255,255,.55);line-height:1.6;margin-bottom:.875rem;}
+.job-card-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;}
+.job-meta-row{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;}
+.job-views{font-size:.73rem;color:rgba(255,255,255,.3);}
+.job-date{font-size:.73rem;color:rgba(255,255,255,.3);}
+/* ── GATED L2 CARDS ── */
+.job-card.gated{border-color:rgba(212,168,67,.15);}
+.job-card.gated .job-desc{filter:blur(4px);user-select:none;pointer-events:none;}
+.job-card.gated .job-meta-row{filter:blur(3px);user-select:none;}
+.gate-banner{background:linear-gradient(135deg,rgba(212,168,67,.1),rgba(124,58,237,.07));border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:.6rem 1rem;font-size:.76rem;color:rgba(255,255,255,.65);display:flex;align-items:center;gap:.5rem;margin:.5rem 0 .25rem;}
+.gate-banner strong{color:var(--gold);}
+/* ── APPLY BUTTONS ── */
+.btn-apply{background:var(--gold);color:var(--navy);border:none;padding:9px 18px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;transition:background .15s;}
+.btn-apply:hover{background:#e8bb4a;}
+.btn-apply.locked{background:rgba(255,255,255,.08);color:rgba(255,255,255,.35);cursor:not-allowed;border:1px solid rgba(255,255,255,.1);}
+.btn-apply.gate-lock{background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);cursor:not-allowed;border:1px solid rgba(255,255,255,.1);font-size:.78rem;}
+.btn-save{background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);padding:7px 10px;border-radius:7px;cursor:pointer;font-size:.8rem;transition:all .15s;}
+.btn-save:hover{border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.7);}
+/* ── LOAD MORE ── */
+#load-more-wrap{text-align:center;margin:1rem 0;}
+.btn-load-more{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:10px 24px;border-radius:9px;font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .15s;}
+.btn-load-more:hover{background:rgba(255,255,255,.1);color:#fff;}
+/* ── SIDEBAR ── */
+.sidebar{}
+.sidebar-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-title{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;margin-bottom:.75rem;}
+.sidebar-sub{font-size:.78rem;color:rgba(255,255,255,.5);line-height:1.55;margin-bottom:1rem;}
+.btn-sidebar{display:block;text-align:center;padding:11px;border-radius:9px;font-weight:700;font-size:.85rem;text-decoration:none;font-family:inherit;margin-bottom:.5rem;border:none;cursor:pointer;transition:all .15s;}
+.btn-sidebar.gold{background:var(--gold);color:var(--navy);}
+.btn-sidebar.navy{background:var(--navy);color:#fff;border:1px solid rgba(255,255,255,.15);}
+.btn-sidebar.gold:hover{background:#e8bb4a;}
+.cert-level-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.8rem;}
+.cert-level-row:last-child{border:none;}
+.cert-dot{width:9px;height:9px;border-radius:50%;margin-right:.5rem;flex-shrink:0;}
+.cert-level-name{display:flex;align-items:center;color:rgba(255,255,255,.7);}
+.cert-level-count{color:rgba(255,255,255,.35);font-size:.75rem;}
+/* ── MODAL ── */
+#apply-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:center;padding:1rem;}
+.modal-box{background:#132d52;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:2rem;max-width:500px;width:100%;}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:.4rem;}
+#modal-job-co{font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:.4rem;}
+#modal-source-badge{display:none;font-size:.7rem;background:rgba(234,88,12,.15);color:#fdba74;border:1px solid rgba(234,88,12,.3);padding:3px 10px;border-radius:100px;margin-bottom:.75rem;width:fit-content;}
+#modal-ext-link{display:none;align-items:center;gap:6px;font-size:.78rem;color:var(--teal);text-decoration:none;margin-bottom:.75rem;}
+.modal-cert-info{background:rgba(29,169,138,.1);border:1px solid rgba(29,169,138,.2);border-radius:8px;padding:.75rem 1rem;font-size:.8rem;color:rgba(255,255,255,.7);display:flex;align-items:flex-start;gap:.5rem;margin-bottom:1.25rem;}
+.modal-cert-info svg{flex-shrink:0;margin-top:1px;color:var(--teal);}
+.modal-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:.4rem;}
+#modal-note{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;padding:.875rem 1rem;border-radius:9px;font-size:.85rem;font-family:inherit;resize:vertical;min-height:100px;outline:none;margin-bottom:1.25rem;}
+#modal-note::placeholder{color:rgba(255,255,255,.3);}
+.modal-actions{display:flex;gap:.75rem;}
+#modal-cancel{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);padding:11px;border-radius:9px;font-size:.85rem;cursor:pointer;font-family:inherit;}
+#modal-apply-btn{flex:2;background:var(--gold);color:var(--navy);border:none;padding:11px;border-radius:9px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;}
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:.85rem;font-weight:600;display:none;z-index:2000;max-width:360px;line-height:1.4;}
+#toast.success{background:#1DA98A;color:#fff;}
+#toast.error{background:#e24b4a;color:#fff;}
+#toast.info{background:rgba(11,31,58,.97);color:#fff;border:1px solid rgba(255,255,255,.15);}
+</style>
 </head>
 <body>
 <nav>
-  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
-  <div class="nav-links-r">
-    <a href="/learn" class="nav-link">Courses</a>
-    <a href="/test" class="nav-link">Certifications</a>
-    <a href="/faq" class="nav-link">FAQ</a>
-    <button id="btn-post-job" class="btn-nav" onclick="handlePostJob()">Post a job</button>
-    <div id="nav-user-slot"></div>
+  <a href="/" class="nav-logo"><div class="nav-hex"></div><span class="nav-brand">Ledger<span>Learn</span> Pro</span></a>
+  <ul class="nav-links">
+    <li><a href="/learn">Learn</a></li>
+    <li><a href="/practice">Practice</a></li>
+    <li><a href="/test">Assessment</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><a href="/jobs" class="active">Jobs</a></li>
+  </ul>
+  <div class="nav-track-switcher">
+    <a href="/dashboard" class="track-pill xero on">Xero</a>
+    <a href="/quickbooks-dashboard" class="track-pill qb">QuickBooks</a>
   </div>
+  <div id="nav-user-slot"></div>
 </nav>
 
-<!-- Hero -->
-<div class="jobs-hero">
-  <div class="jobs-hero-inner">
-    <div class="hero-eyebrow">LedgerLearn certified jobs board</div>
-    <h1 class="hero-h1">Accounting &amp; bookkeeping roles<br>matched to your <span>certification</span></h1>
-    <p class="hero-sub">Every role is posted by a verified employer. Apply with your LedgerLearn profile — your certificate and score go with you automatically.</p>
-    <div class="cert-match" id="cert-match-bar" style="display:none;">
-      <div class="cert-match-icon">🎯</div>
-      <div class="cert-match-text" id="cert-match-text">Loading your matches…</div>
+<div id="cert-banner">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="9 11 12 14 22 4"/></svg>
+  <span id="cert-banner-text"></span>
+</div>
+
+<div style="padding:1.25rem 1.5rem 0">
+  <div class="search-bar">
+    <div class="search-row">
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="search-input" type="text" placeholder="Search job title, company, or skill..." oninput="renderJobs()">
+      </div>
+      <select class="filter-sel" id="filter-region" onchange="renderJobs()">
+        <option value="">All regions</option>
+        <option value="NG">Nigeria</option>
+        <option value="ZA">South Africa</option>
+        <option value="UK">United Kingdom</option>
+        <option value="AU">Australia</option>
+        <option value="US">United States</option>
+        <option value="remote">Remote</option>
+      </select>
+      <select class="filter-sel" id="filter-level" onchange="renderJobs()">
+        <option value="">Any cert level</option>
+        <option value="l1">L1+</option>
+        <option value="l2">L2+</option>
+        <option value="l3">L3</option>
+      </select>
+      <select class="filter-sel" id="filter-type" onchange="renderJobs()">
+        <option value="">Any type</option>
+        <option value="full-time">Full-time</option>
+        <option value="part-time">Part-time</option>
+        <option value="contract">Contract</option>
+        <option value="remote">Remote</option>
+      </select>
+      <span class="result-count" id="result-count">Loading…</span>
     </div>
   </div>
 </div>
 
-<!-- Filters -->
-<div class="filters-bar">
-  <div class="filters-inner">
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="search-input" placeholder="Search job title, company, or skill…" oninput="applyFilters()">
-    </div>
-    <select class="filter-select" id="filter-region" onchange="applyFilters()">
-      <option value="">All locations</option>
-      <option value="NG">Nigeria</option>
-      <option value="ZA">South Africa</option>
-      <option value="UK">United Kingdom</option>
-      <option value="AE">UAE</option>
-      <option value="AU">Australia</option>
-      <option value="remote">Remote</option>
-    </select>
-    <select class="filter-select" id="filter-level" onchange="applyFilters()">
-      <option value="">Any cert level</option>
-      <option value="l1">L1 Associate</option>
-      <option value="l2">L2 Professional</option>
-      <option value="l3">L3 Advisor</option>
-    </select>
-    <select class="filter-select" id="filter-type" onchange="applyFilters()">
-      <option value="">Any type</option>
-      <option value="full-time">Full-time</option>
-      <option value="part-time">Part-time</option>
-      <option value="contract">Contract</option>
-      <option value="remote">Remote</option>
-    </select>
-    <div class="result-count" id="result-count">Loading…</div>
-  </div>
-</div>
-
-<div class="main">
-  <!-- Jobs list -->
-  <div class="jobs-col">
-    <div class="jobs-list" id="jobs-list">
-      <div style="text-align:center;padding:3rem;color:var(--muted);">Loading jobs…</div>
-    </div>
-    <div class="load-more-wrap" id="load-more-wrap" style="display:none;">
-      <button class="btn-load-more" onclick="loadMore()">Load more roles →</button>
+<div class="page-wrap">
+  <div>
+    <div id="jobs-list"></div>
+    <div id="load-more-wrap" style="display:none">
+      <button class="btn-load-more" onclick="VISIBLE+=9;renderJobs()">Load more roles</button>
     </div>
   </div>
-
-  <!-- Sidebar -->
-  <div class="sidebar-col">
-    <div class="side-card">
-      <div class="side-card-title">Browse by cert level</div>
-      <div class="cert-level-row" style="cursor:pointer;" onclick="setLevelFilter('l1')">
-        <div class="cert-dot" style="background:var(--teal);"></div>
-        <div class="cert-level-name">L1 Xero Associate</div>
-        <div class="cert-count" id="count-l1">— roles</div>
-      </div>
-      <div class="cert-level-row" style="cursor:pointer;" onclick="setLevelFilter('l2')">
-        <div class="cert-dot" style="background:var(--gold);"></div>
-        <div class="cert-level-name">L2 Xero Professional</div>
-        <div class="cert-count" id="count-l2">— roles</div>
-      </div>
-      <div class="cert-level-row" style="cursor:pointer;" onclick="setLevelFilter('l3')">
-        <div class="cert-dot" style="background:#8b5cf6;"></div>
-        <div class="cert-level-name">L3 Xero Advisor</div>
-        <div class="cert-count" id="count-l3">— roles</div>
-      </div>
-      <div class="cert-level-row" style="cursor:pointer;" onclick="setLevelFilter('')">
-        <div class="cert-dot" style="background:var(--muted);"></div>
-        <div class="cert-level-name">Any level</div>
-        <div class="cert-count" id="count-any">— roles</div>
-      </div>
+  <div class="sidebar">
+    <div class="sidebar-card" style="background:linear-gradient(135deg,#0d2444,#132d52);border-color:rgba(212,168,67,.25)">
+      <div class="sidebar-title">Hiring bookkeepers?</div>
+      <div class="sidebar-sub">Post to LedgerLearn's verified talent pool. Every applicant has a confirmed certification level.</div>
+      <a href="/recruiter-register" class="btn-sidebar gold">Post a role — free trial →</a>
     </div>
-
-    <div class="recruiter-strip">
-      <h3>Hiring bookkeepers?</h3>
-      <p>Post to LedgerLearn's verified talent pool. Every applicant has a confirmed certification level.</p>
-      <a href="/recruiter-register" class="btn-recruiter">Post a role — free trial →</a>
+    <div class="sidebar-card">
+      <div class="sidebar-title">Your profile</div>
+      <div class="sidebar-sub">Apply with your verified LedgerLearn profile.</div>
+      <a href="/applicant-profile" class="btn-sidebar navy">Edit my profile →</a>
     </div>
-
-    <div class="side-card" id="profile-card" style="display:none;">
-      <div class="side-card-title">Your profile</div>
-      <div id="profile-status"></div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">Browse by cert level</div>
+      <div id="cert-level-counts">
+        <div class="cert-level-row"><span class="cert-level-name"><span class="cert-dot" style="background:var(--teal)"></span>L1 Xero Associate</span><span class="cert-level-count" id="count-l1">—</span></div>
+        <div class="cert-level-row"><span class="cert-level-name"><span class="cert-dot" style="background:var(--gold)"></span>L2 Xero Professional</span><span class="cert-level-count" id="count-l2">—</span></div>
+        <div class="cert-level-row"><span class="cert-level-name"><span class="cert-dot" style="background:var(--orange)"></span>L3 Xero Advisor</span><span class="cert-level-count" id="count-l3">—</span></div>
+        <div class="cert-level-row"><span class="cert-level-name"><span class="cert-dot" style="background:rgba(255,255,255,.3)"></span>Any level</span><span class="cert-level-count" id="count-any">—</span></div>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- Apply modal -->
-<div class="modal-overlay" id="apply-modal" style="display:none;">
+<div id="apply-modal">
   <div class="modal-box">
-    <h3 id="modal-job-title">Apply for role</h3>
+    <div class="modal-title" id="modal-job-title">Role title</div>
     <p id="modal-job-co">Company · Location</p>
-    <p id="modal-source-badge" style="display:none;font-size:.7rem;background:rgba(234,88,12,.15);color:#fdba74;border:1px solid rgba(234,88,12,.3);padding:3px 10px;border-radius:100px;margin-bottom:.5rem;width:fit-content">External listing</p>
-    <a id="modal-ext-link" href="#" target="_blank" rel="noopener noreferrer" style="display:none;align-items:center;gap:6px;font-size:.78rem;color:var(--teal);text-decoration:none;margin-bottom:.75rem">↗ Also apply on original site</a>
-    <div class="modal-cert" id="modal-cert">
-      <span>✓</span> <span>Your LedgerLearn profile and certificates will be attached automatically.</span>
+    <p id="modal-source-badge">External listing</p>
+    <a id="modal-ext-link" href="#" target="_blank" rel="noopener noreferrer">↗ Also apply on original site</a>
+    <div class="modal-cert-info">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Your LedgerLearn profile and certificates will be attached automatically.
     </div>
-    <div class="modal-field">
-      <label>Cover note (optional)</label>
-      <textarea id="modal-note" placeholder="A brief message to the employer — why are you a great fit?"></textarea>
-    </div>
-    <div class="modal-btns">
-      <button class="modal-btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="modal-btn-apply" id="modal-apply-btn" onclick="submitApplication()">Submit application →</button>
+    <div class="modal-label">Cover note (optional)</div>
+    <textarea id="modal-note" placeholder="A brief message to the employer — why are you a great fit?"></textarea>
+    <div class="modal-actions">
+      <button id="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button id="modal-apply-btn" onclick="submitApplication()">Submit application →</button>
     </div>
   </div>
 </div>
+
+<div id="toast"></div>
 
 <script>
 var ALL_JOBS = [];
@@ -246,115 +228,128 @@ var VISIBLE  = 9;
 var CURRENT_JOB = null;
 var USER     = null;
 var USER_PROGRESS = {};
-var USER_CERTS    = [];
 
-// ── Sample jobs (replaced by Supabase fetch in production) ────
 var SAMPLE_JOBS = [
-  { id:'j1', title:'Xero Bookkeeper — Remote', company:'KPMG Nigeria', location:'Lagos, Nigeria', location_type:'remote', employment_type:'full-time', cert_level_required:'l1', salary_min:180000, salary_max:240000, salary_currency:'₦', salary_period:'monthly', description:'Manage daily bookkeeping, bank reconciliation and VAT returns in Xero for 12 SME clients. Experience with Xero bank rules required. FIRS VAT filings included.', view_count:142, application_count:8, deadline:'2026-06-30', published_at:'2026-05-01', region:'NG' },
-  { id:'j2', title:'Cloud Accounting Specialist', company:'PwC South Africa', location:'Cape Town, SA', location_type:'onsite', employment_type:'full-time', cert_level_required:'l2', salary_min:35000, salary_max:50000, salary_currency:'R', salary_period:'monthly', description:'Lead cloud accounting implementations for mid-market clients. Xero Professional (L2) certification required. VAT under SARS, management accounts preparation.', view_count:89, application_count:4, deadline:'2026-07-15', published_at:'2026-05-03', region:'ZA' },
-  { id:'j3', title:'Management Accountant (Xero)', company:'Deloitte UK', location:'London, UK', location_type:'hybrid', employment_type:'full-time', cert_level_required:'l3', salary_min:42000, salary_max:55000, salary_currency:'£', salary_period:'annual', description:'Prepare management accounts, board packs and financial reports for advisory clients. Xero Advisor level preferred. MTD VAT filing experience under HMRC essential.', view_count:315, application_count:21, deadline:'2026-06-15', published_at:'2026-04-28', region:'UK' },
-  { id:'j4', title:'ERP Finance Consultant', company:'GTBank Nigeria', location:'Abuja, Nigeria', location_type:'onsite', employment_type:'full-time', cert_level_required:'l2', salary_min:350000, salary_max:500000, salary_currency:'₦', salary_period:'monthly', description:'Advise enterprise clients on ERP implementations and financial systems transformation. Xero L2 or above required. SAP experience a bonus.', view_count:207, application_count:12, deadline:'2026-07-01', published_at:'2026-05-05', region:'NG' },
-  { id:'j5', title:'Bookkeeper — Part-time Remote', company:'FinanceHub Global', location:'Remote / Global', location_type:'remote', employment_type:'part-time', cert_level_required:'l1', salary_min:15, salary_max:25, salary_currency:'$', salary_period:'hourly', description:'Part-time bookkeeping for 3–4 clients. Xero L1 minimum. Flexible hours, 15–20 hrs/week. Experience with reconciliation and invoicing required.', view_count:421, application_count:34, deadline:'2026-06-30', published_at:'2026-05-08', region:'GLOBAL' },
-  { id:'j6', title:'Accounts Assistant (Xero)', company:'Cape Town Startups', location:'Cape Town, SA', location_type:'onsite', employment_type:'full-time', cert_level_required:'l1', salary_min:18000, salary_max:25000, salary_currency:'R', salary_period:'monthly', description:'Entry-level accounts assistant for a growing startup. Daily bookkeeping in Xero, invoice management, and bank reconciliation. L1 certified preferred.', view_count:178, application_count:15, deadline:'2026-06-20', published_at:'2026-05-09', region:'ZA' },
+  { id:'j1', title:'Xero Bookkeeper — Remote', company:'KPMG Nigeria', location:'Lagos, Nigeria', location_type:'remote', employment_type:'full-time', cert_level_required:'l1', description:'Maintain client books using Xero. Reconcile bank statements monthly and produce management accounts.', view_count:18, application_count:3, salary_min:18000, salary_max:24000, salary_currency:'$', salary_period:'annual', deadline:null, published_at:null, region:'NG', apply_method:'internal', external_url:null, source:'internal' },
+  { id:'j2', title:'Cloud Accounting Specialist', company:'Bakkiego Pty Ltd', location:'Johannesburg, South Africa', location_type:'onsite', employment_type:'full-time', cert_level_required:'l1', description:'Cloud accounting specialist for growing client portfolio.', view_count:22, application_count:1, salary_min:null, salary_max:null, salary_currency:'R', salary_period:'monthly', deadline:null, published_at:null, region:'ZA', apply_method:'internal', external_url:null, source:'internal' },
 ];
 
-(async function init() {
-  // Try to get logged-in user
-  try {
-    var sess = JSON.parse(localStorage.getItem('ll_session') || '{}');
-    if (sess && sess.user) USER = sess.user;
-    USER_PROGRESS = JSON.parse(localStorage.getItem('ll_progress') || '{}');
-  } catch(e) {}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  // Show cert-match bar if logged in
-  if (USER) {
-    var completedLevels = USER_PROGRESS.completedLevels || [];
-    var matchBar = document.getElementById('cert-match-bar');
-    var matchText = document.getElementById('cert-match-text');
-    matchBar.style.display = 'flex';
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = type; t.style.display = 'block';
+  setTimeout(function(){ t.style.display = 'none'; }, 4000);
+}
 
-    var highestLevel = completedLevels.includes('l3') ? 'l3' : completedLevels.includes('l2') ? 'l2' : completedLevels.includes('l1') ? 'l1' : null;
-    if (highestLevel) {
-      var matchCount = SAMPLE_JOBS.filter(function(j) {
-        return j.cert_level_required === 'any' || j.cert_level_required === highestLevel ||
-          (highestLevel === 'l3') ||
-          (highestLevel === 'l2' && (j.cert_level_required === 'l1' || j.cert_level_required === 'l2')) ||
-          (highestLevel === 'l1' && j.cert_level_required === 'l1');
-      }).length;
-      matchText.innerHTML = '<strong>' + matchCount + ' roles match your ' + highestLevel.toUpperCase() + ' certification</strong> · ' +
-        'Your certificate and score auto-attach when you apply.';
-    } else {
-      matchText.innerHTML = 'Complete your <a href="/test" style="color:var(--teal);font-weight:600;">L1 assessment</a> to unlock cert-matched roles.';
-    }
+function closeModal() {
+  document.getElementById('apply-modal').style.display = 'none';
+  CURRENT_JOB = null;
+}
 
-    // Show profile card
-    var profileCard = document.getElementById('profile-card');
-    profileCard.style.display = 'block';
-    document.getElementById('profile-status').innerHTML =
-      '<p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.75rem;">Apply with your verified LedgerLearn profile.</p>' +
-      '<a href="/applicant-profile" style="display:block;text-align:center;background:var(--navy);color:var(--gold);border-radius:8px;padding:9px;font-size:0.8rem;font-weight:700;text-decoration:none;">Edit my profile →</a>';
+function openApplyModal(jobId) {
+  var job = ALL_JOBS.find(function(j){ return j.id === jobId; });
+  if (!job) return;
+  CURRENT_JOB = job;
+
+  // External jobs → redirect directly, no modal
+  if (job.apply_method === 'external' && job.external_url) {
+    window.open(job.external_url, '_blank', 'noopener,noreferrer');
+    var tok = '';
+    try { tok = JSON.parse(localStorage.getItem('ll_session')||'{}').access_token||''; } catch(e){}
+    fetch('/.netlify/functions/job-board-api',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({action:'track-view',jobId:jobId,event:'apply-click'})}).catch(function(){});
+    CURRENT_JOB = null;
+    return;
   }
 
-  // Show loading state while fetching real jobs
-  document.getElementById('jobs-list').innerHTML =
-    '<div style="text-align:center;padding:3rem;color:var(--muted);">'
-    + '<div style="font-size:1.5rem;margin-bottom:.5rem;">&#x23F3;</div>Loading live roles…</div>';
+  document.getElementById('modal-job-title').textContent = job.title;
+  document.getElementById('modal-job-co').textContent = job.company + ' · ' + job.location;
 
-  // Auto-detect region from user profile and pre-set filter
-  try {
-    var u = JSON.parse(localStorage.getItem('ll_user') || '{}');
-    if (u.region && u.region !== 'GLOBAL') {
-      document.getElementById('filter-region').value = u.region;
-    }
-  } catch(e) {}
+  var extLink = document.getElementById('modal-ext-link');
+  if (extLink) {
+    if (job.apply_method === 'both' && job.external_url) { extLink.href = job.external_url; extLink.style.display = 'inline-flex'; }
+    else { extLink.style.display = 'none'; }
+  }
+  var srcBadge = document.getElementById('modal-source-badge');
+  if (srcBadge) { srcBadge.style.display = job.source === 'scraped' ? 'block' : 'none'; }
 
-  // Load real jobs from Supabase, fall back to SAMPLE_JOBS if API fails
-  await loadLiveJobs();
-})();
+  document.getElementById('modal-note').value = '';
+  document.getElementById('apply-modal').style.display = 'flex';
+}
 
-// ── Load live jobs from Supabase ──────────────────────────────
-async function loadLiveJobs() {
-  var region = document.getElementById('filter-region').value || '';
-  var level  = document.getElementById('filter-level').value  || '';
-  var search = document.getElementById('search-input').value.trim() || '';
+async function submitApplication() {
+  if (!CURRENT_JOB) { showToast('No job selected.', 'error'); return; }
+  var token = '', userEmail = '';
+  try { var sess = JSON.parse(localStorage.getItem('ll_session')||'{}'); token = sess.access_token||''; userEmail = (sess.user&&sess.user.email)||''; } catch(e){}
+  if (!token) { closeModal(); showToast('Please sign in to apply.', 'error'); setTimeout(function(){ window.location.href='/login?next=/jobs'; },1500); return; }
+
+  var btn  = document.getElementById('modal-apply-btn');
+  var note = document.getElementById('modal-note').value.trim();
+  btn.disabled = true; btn.textContent = 'Submitting\u2026';
 
   try {
     var res = await fetch('/.netlify/functions/job-board-api', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ action: 'get-jobs', region: region, level: level, search: search }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ action: 'submit-application', jobId: CURRENT_JOB.id, coverNote: note }),
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    var data = await res.json();
+    var data;
+    var ct = res.headers.get('content-type') || '';
+    if (ct.includes('json')) { data = await res.json(); }
+    else { var text = await res.text(); console.error('[jobs] Non-JSON:', res.status, text.slice(0,200)); data = { ok:false, error:'Server error ('+res.status+'). Try again.' }; }
 
-    if (data.ok && Array.isArray(data.data) && data.data.length > 0) {
-      ALL_JOBS = data.data;
-      var badge = document.getElementById('jobs-live-badge');
-      if (badge) {
-        badge.textContent = data.data.length + ' live role' + (data.data.length !== 1 ? 's' : '');
-        badge.style.display = 'inline-block';
+    if (data.ok) {
+      var appliedJobId = CURRENT_JOB ? CURRENT_JOB.id : null;
+      closeModal();
+      btn.disabled = false; btn.textContent = 'Submit application \u2192';
+      showToast('\u2713 Application submitted! The recruiter will be in touch.', 'success');
+      if (appliedJobId) {
+        var card = document.getElementById('job-' + appliedJobId);
+        if (card) { var viewEl = card.querySelector('.job-views'); if (viewEl) viewEl.textContent = viewEl.textContent.replace(/\d+ applied/, function(m){ return (parseInt(m)+1)+' applied'; }); }
       }
+    } else if (data.error && (data.error.includes('already applied') || data.error.includes('duplicate'))) {
+      closeModal(); btn.disabled = false; btn.textContent = 'Submit application \u2192';
+      showToast('You have already applied for this role.', 'info');
     } else {
-      ALL_JOBS = SAMPLE_JOBS;
+      showToast(data.error || 'Could not submit. Please try again.', 'error');
+      btn.disabled = false; btn.textContent = 'Submit application \u2192';
     }
   } catch(e) {
-    console.warn('[jobs] API unavailable, using sample jobs:', e.message);
-    ALL_JOBS = SAMPLE_JOBS;
+    console.error('[jobs] submitApplication error:', e);
+    showToast(e.message && e.message.includes('<!') ? 'Server error — try again.' : (e.message || 'Connection error'), 'error');
+    btn.disabled = false; btn.textContent = 'Submit application \u2192';
   }
+}
 
-  VISIBLE = 9;
-  updateSidebarCounts();
-  renderJobs();
+function saveJob(jobId) {
+  var saved = JSON.parse(localStorage.getItem('ll_saved_jobs')||'[]');
+  if (!saved.includes(jobId)) { saved.push(jobId); localStorage.setItem('ll_saved_jobs', JSON.stringify(saved)); showToast('Job saved!', 'info'); }
+  else { showToast('Already saved.', 'info'); }
+}
+
+function userCanApply(jobLevel) {
+  if (!USER) return false;
+  var cp = USER_PROGRESS.completedLevels || [];
+  var userLevel = cp.includes('l3') ? 'l3' : cp.includes('l2') ? 'l2' : cp.includes('l1') ? 'l1' : null;
+  if (jobLevel === 'any') return true;
+  if (jobLevel === 'l1') return userLevel !== null;
+  if (jobLevel === 'l2') return userLevel === 'l2' || userLevel === 'l3';
+  if (jobLevel === 'l3') return userLevel === 'l3';
+  return false;
+}
+
+function isGated(j) {
+  return j.cert_level_required === 'l2' && !userCanApply('l2');
 }
 
 function renderJobs() {
-  var q       = document.getElementById('search-input').value.toLowerCase().trim();
-  var region  = document.getElementById('filter-region').value;
-  var level   = document.getElementById('filter-level').value;
-  var type    = document.getElementById('filter-type').value;
+  var q      = (document.getElementById('search-input').value||'').toLowerCase().trim();
+  var region = document.getElementById('filter-region').value;
+  var level  = document.getElementById('filter-level').value;
+  var type   = document.getElementById('filter-type').value;
 
   var filtered = ALL_JOBS.filter(function(j) {
-    if (q && !j.title.toLowerCase().includes(q) && !j.company.toLowerCase().includes(q) && !j.description.toLowerCase().includes(q)) return false;
+    if (q && !j.title.toLowerCase().includes(q) && !(j.company||'').toLowerCase().includes(q) && !(j.description||'').toLowerCase().includes(q)) return false;
     if (region && region !== 'remote' && j.region !== region && j.region !== 'GLOBAL') return false;
     if (region === 'remote' && j.location_type !== 'remote') return false;
     if (level && j.cert_level_required !== 'any' && j.cert_level_required !== level) return false;
@@ -364,301 +359,124 @@ function renderJobs() {
 
   document.getElementById('result-count').textContent = filtered.length + ' role' + (filtered.length !== 1 ? 's' : '') + ' found';
 
-  var userLevel = null;
-  var cp = USER_PROGRESS.completedLevels || [];
-  if (cp.includes('l3')) userLevel = 'l3';
-  else if (cp.includes('l2')) userLevel = 'l2';
-  else if (cp.includes('l1')) userLevel = 'l1';
+  // Update sidebar counts
+  ['l1','l2','l3','any'].forEach(function(lvl) {
+    var el = document.getElementById('count-' + lvl);
+    if (el) el.textContent = filtered.filter(function(j){ return j.cert_level_required === lvl; }).length + ' roles';
+  });
 
   var shown = filtered.slice(0, VISIBLE);
   var wrap  = document.getElementById('jobs-list');
-
   if (!shown.length) {
-    wrap.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted);"><div style="font-size:2rem;margin-bottom:0.75rem;">🔍</div>No roles match your filters.<br>Try broadening your search.</div>';
+    wrap.innerHTML = '<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.4)"><div style="font-size:2rem;margin-bottom:.75rem">&#x1F50D;</div>No roles match your filters.</div>';
     document.getElementById('load-more-wrap').style.display = 'none';
     return;
   }
 
-  var flags = {NG:'🇳🇬',ZA:'🇿🇦',UK:'🇬🇧',AE:'🇦🇪',AU:'🇦🇺',GH:'🇬🇭',US:'🇺🇸',GLOBAL:'🌍'};
-  var levelLabels = {any:'Any level',l1:'L1+',l2:'L2+',l3:'L3'};
-  var levelColors = {l1:'tag-level',l2:'tag-level',l3:'tag-level',any:'tag-type'};
-
-  function userCanApply(jobLevel) {
-    if (!USER) return false;
-    if (jobLevel === 'any') return true;
-    if (jobLevel === 'l1') return userLevel !== null;
-    if (jobLevel === 'l2') return userLevel === 'l2' || userLevel === 'l3';
-    if (jobLevel === 'l3') return userLevel === 'l3';
-    return false;
-  }
-
-  function isMatch(jobLevel) {
-    return userCanApply(jobLevel);
-  }
+  var flags  = {NG:'\uD83C\uDDF3\uD83C\uDDEC',ZA:'\uD83C\uDDFF\uD83C\uDDE6',UK:'\uD83C\uDDEC\uD83C\uDDE7',AE:'\uD83C\uDDE6\uD83C\uDDEA',AU:'\uD83C\uDDE6\uD83C\uDDFA',GH:'\uD83C\uDDEC\uD83C\uDDED',US:'\uD83C\uDDFA\uD83C\uDDF8',GLOBAL:'\uD83C\uDF0D'};
+  var labels = {any:'Any level',l1:'L1+',l2:'L2+',l3:'L3'};
+  var colors = {l1:'tag-level',l2:'tag-level',l3:'tag-level',any:'tag-type'};
 
   wrap.innerHTML = shown.map(function(j) {
     var canApply = userCanApply(j.cert_level_required);
-    var matchTag = isMatch(j.cert_level_required) ? '<span class="tag tag-match">✓ Matches your cert</span>' : '';
-    var sal = j.salary_min ? j.salary_currency + Math.round(j.salary_min/1000) + 'k–' + j.salary_currency + Math.round(j.salary_max/1000) + 'k/' + j.salary_period.replace('monthly','mo').replace('annual','yr').replace('hourly','hr') : '';
-    var logo = j.company.split(' ').map(function(w){return w[0];}).slice(0,3).join('');
+    var gated    = isGated(j);
+    var matchTag = (!gated && canApply) ? '<span class="tag tag-match">\u2713 Matches your cert</span>' : '';
+    var sal = (!gated && j.salary_min)
+      ? j.salary_currency + Math.round(j.salary_min/1000) + 'k\u2013' + j.salary_currency + Math.round(j.salary_max/1000) + 'k'
+      : '';
+    var logo = (j.company||'?').split(' ').map(function(w){return w[0]||'';}).slice(0,3).join('').toUpperCase();
+
+    var descHtml = gated
+      ? '<div class="job-desc" style="filter:blur(4px);user-select:none">' + esc((j.description||'').slice(0,120)) + '</div>'
+        + '<div class="gate-banner">\uD83D\uDD12 <span><strong>L2 required</strong> \u2014 Pass QB or Xero L2 to view full details and apply</span></div>'
+      : '<div class="job-desc">' + esc(j.description||'') + '</div>';
 
     var applyBtn = !USER
-      ? '<a href="/login?next=/jobs" class="btn-apply">Sign in to apply →</a>'
-      : canApply
-        ? '<button class="btn-apply" onclick="openApplyModal(\'' + j.id + '\')">Apply now →</button>'
-        : '<button class="btn-apply locked" title="Requires ' + j.cert_level_required.toUpperCase() + ' certification">Requires ' + j.cert_level_required.toUpperCase() + '</button>';
+      ? '<a href="/login?next=/jobs" class="btn-apply">Sign in \u2192</a>'
+      : gated
+        ? '<a href="/level-up" class="btn-apply gate-lock">\uD83D\uDD12 Unlock with L2</a>'
+        : canApply
+          ? '<button class="btn-apply" onclick="openApplyModal(\'' + esc(j.id) + '\')">' + (j.apply_method === 'external' ? 'View role \u2192' : 'Apply now \u2192') + '</button>'
+          : '<button class="btn-apply locked">Requires ' + esc((j.cert_level_required||'').toUpperCase()) + '</button>';
 
-    return '<div class="job-card" id="job-' + esc(j.id) + '">' +
-      '<div class="job-card-top">' +
-        '<div>' +
-          '<div class="job-co">' + esc(j.company) + '</div>' +
-          '<div class="job-title">' + esc(j.title) + '</div>' +
-        '</div>' +
-        '<div class="job-logo">' + esc(logo) + '</div>' +
-      '</div>' +
-      '<div class="job-tags">' +
-        '<span class="tag tag-loc">' + (flags[j.region]||'🌍') + ' ' + esc(j.location) + '</span>' +
-        '<span class="tag tag-type">' + esc(j.employment_type) + '</span>' +
-        '<span class="tag ' + levelColors[j.cert_level_required] + '">' + esc(levelLabels[j.cert_level_required]) + '</span>' +
-        (sal ? '<span class="tag tag-sal">' + esc(sal) + '</span>' : '') +
-        matchTag +
-      '</div>' +
-      '<div class="job-desc">' + esc(j.description) + '</div>' +
-      '<div class="job-card-footer">' +
-        '<div class="job-meta-row">' +
-          '<span class="job-views">👁 ' + j.view_count + ' views · ' + j.application_count + ' applied</span>' +
-          (j.deadline ? '<span class="job-date">Deadline: ' + esc(j.deadline) + '</span>' : '') +
-        '</div>' +
-        '<div style="display:flex;gap:0.5rem;align-items:center;">' +
-          '<button class="btn-save" onclick="saveJob(\'' + j.id + '\')" title="Save job">🔖</button>' +
-          applyBtn +
-        '</div>' +
-      '</div>' +
-    '</div>';
+    var footerMeta = gated
+      ? '<span class="job-views" style="filter:blur(3px)">\uD83D\uDC41 -- views &middot; -- applied</span>'
+      : '<span class="job-views">\uD83D\uDC41 ' + (j.view_count||0) + ' views &middot; ' + (j.application_count||0) + ' applied</span>'
+        + (j.deadline ? '<span class="job-date">Deadline: ' + esc(j.deadline) + '</span>' : '');
+
+    return '<div class="job-card' + (gated ? ' gated' : '') + '" id="job-' + esc(j.id) + '">'
+      + '<div class="job-card-top">'
+        + '<div><div class="job-co">' + esc(j.company) + '</div><div class="job-title">' + esc(j.title) + '</div></div>'
+        + '<div class="job-logo">' + esc(logo) + '</div>'
+      + '</div>'
+      + '<div class="job-tags">'
+        + '<span class="tag tag-loc">' + (flags[j.region]||'\uD83C\uDF0D') + ' ' + esc(j.location) + '</span>'
+        + '<span class="tag tag-type">' + esc(j.employment_type||'') + '</span>'
+        + '<span class="tag ' + (colors[j.cert_level_required]||'tag-type') + '">' + esc(labels[j.cert_level_required]||'Any') + '</span>'
+        + (sal ? '<span class="tag tag-sal">' + esc(sal) + '</span>' : '')
+        + matchTag
+      + '</div>'
+      + descHtml
+      + '<div class="job-card-footer">'
+        + '<div class="job-meta-row">' + footerMeta + '</div>'
+        + '<div style="display:flex;gap:.5rem;align-items:center;">'
+          + (gated ? '' : '<button class="btn-save" onclick="saveJob(\'' + esc(j.id) + '\')" title="Save">\uD83D\uDD16</button>')
+          + applyBtn
+        + '</div>'
+      + '</div>'
+    + '</div>';
   }).join('');
 
   document.getElementById('load-more-wrap').style.display = filtered.length > VISIBLE ? 'block' : 'none';
 }
 
-function updateSidebarCounts() {
-  ['l1','l2','l3'].forEach(function(level) {
-    var count = ALL_JOBS.filter(function(j){ return j.cert_level_required === level; }).length;
-    var el = document.getElementById('count-' + level);
-    if (el) el.textContent = count + ' role' + (count !== 1 ? 's' : '');
-  });
-  var anyEl = document.getElementById('count-any');
-  if (anyEl) anyEl.textContent = ALL_JOBS.length + ' roles';
-}
-
-async function applyFilters() {
-  VISIBLE = 9;
-  await loadLiveJobs();
-}
-function loadMore()     { VISIBLE += 9; renderJobs(); }
-function setLevelFilter(level) {
-  document.getElementById('filter-level').value = level;
-  applyFilters();
-}
-
-function openApplyModal(jobId) {
-  var job = ALL_JOBS.find(function(j){ return j.id === jobId; });
-  if (!job) return;
-  CURRENT_JOB = job;
-
-  // External-only jobs: redirect straight to apply URL
-  if (job.apply_method === 'external' && job.external_url) {
-    window.open(job.external_url, '_blank', 'noopener,noreferrer');
-    // Track click (fire-and-forget)
-    var tok = '';
-    try { tok = JSON.parse(localStorage.getItem('ll_session')||'{}').access_token||''; } catch(e) {}
-    fetch('/.netlify/functions/job-board-api', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+tok },
-      body: JSON.stringify({ action: 'track-view', jobId: jobId, event: 'apply-click' })
-    }).catch(function(){});
-    return;
-  }
-
-  // Internal or 'both': show modal
-  document.getElementById('modal-job-title').textContent = job.title;
-  document.getElementById('modal-job-co').textContent = job.company + ' · ' + job.location;
-
-  // For 'both' — show external link option inside modal
-  var extLink = document.getElementById('modal-ext-link');
-  if (extLink) {
-    if (job.apply_method === 'both' && job.external_url) {
-      extLink.href = job.external_url;
-      extLink.style.display = 'inline-flex';
-    } else {
-      extLink.style.display = 'none';
-    }
-  }
-
-  // Show source badge for scraped jobs
-  var srcBadge = document.getElementById('modal-source-badge');
-  if (srcBadge) {
-    srcBadge.textContent = job.source === 'scraped' ? 'External listing' : '';
-    srcBadge.style.display = job.source === 'scraped' ? 'block' : 'none';
-  }
-
-  document.getElementById('apply-modal').style.display = 'flex';
-}
-function closeModal() {
-  document.getElementById('apply-modal').style.display = 'none';
-  CURRENT_JOB = null;
-}
-
-async function submitApplication() {
-  if (!CURRENT_JOB) { showToast('No job selected.', 'error'); return; }
-
-  // Ensure user is signed in
-  var token = '';
-  var userEmail = '';
-  try {
-    var sess = JSON.parse(localStorage.getItem('ll_session') || '{}');
-    token     = sess.access_token || '';
-    userEmail = (sess.user && sess.user.email) || '';
-  } catch(e) {}
-
-  if (!token) {
-    closeModal();
-    showToast('Please sign in to apply for jobs.', 'error');
-    setTimeout(function(){ window.location.href = '/login?next=/jobs'; }, 1500);
-    return;
-  }
-
-  var btn  = document.getElementById('modal-apply-btn');
-  var note = document.getElementById('modal-note').value.trim();
-  btn.disabled = true; btn.textContent = 'Submitting…';
-
+async function loadJobs() {
+  var region = document.getElementById('filter-region').value;
+  var level  = document.getElementById('filter-level').value;
+  var search = document.getElementById('search-input').value.trim();
   try {
     var res = await fetch('/.netlify/functions/job-board-api', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body:    JSON.stringify({
-        action:    'submit-application',
-        jobId:     CURRENT_JOB.id,
-        coverNote: note,
-      }),
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'get-jobs', region:region, level:level, search:search }),
     });
-
-    // Handle non-JSON error responses (500 HTML pages etc.)
-    var data;
-    var ct = res.headers.get('content-type') || '';
-    if (ct.includes('json')) {
-      data = await res.json();
-    } else {
-      var text = await res.text();
-      console.error('[jobs] Non-JSON response:', res.status, text.slice(0, 300));
-      data = { ok: false, error: 'Server error (' + res.status + '). Please try again in a moment.' };
-    }
-
-    if (data.ok) {
-      // Capture job id BEFORE closeModal() nulls CURRENT_JOB
-      var appliedJobId = CURRENT_JOB ? CURRENT_JOB.id : null;
-      closeModal();
-      btn.disabled = false; btn.textContent = 'Submit application →';
-      showToast('✓ Application submitted! The recruiter will be in touch.', 'success');
-      if (appliedJobId) {
-        var card = document.getElementById('job-' + appliedJobId);
-        if (card) {
-          var viewEl = card.querySelector('.job-views');
-          if (viewEl) viewEl.textContent = viewEl.textContent.replace(/\d+ applied/, function(m){
-            return (parseInt(m) + 1) + ' applied';
-          });
-        }
-      }
-    } else if (data.error && (data.error.includes('already applied') || data.error.includes('duplicate'))) {
-      closeModal();
-      btn.disabled = false; btn.textContent = 'Submit application →';
-      showToast('You have already applied for this role.', 'info');
-    } else {
-      showToast(data.error || 'Could not submit. Please try again.', 'error');
-      btn.disabled = false; btn.textContent = 'Submit application →';
-    }
-
-  } catch(e) {
-    console.error('[jobs] submitApplication error:', e);
-    // Show the actual server error message if available
-    var msg = e.message || 'Connection error';
-    if (msg.includes('<!') || msg.includes('<HTML')) {
-      msg = 'Server error — please try again in a moment.';
-    }
-    showToast(msg, 'error');
-    btn.disabled = false; btn.textContent = 'Submit application →';
-  }
-}
-
-async function saveJob(id) {
-  if (!USER) { showToast('Sign in to save jobs.','info'); return; }
-  try {
-    var token = '';
-    try { token = JSON.parse(localStorage.getItem('ll_session')||'{}').access_token || ''; } catch(e) {}
-    var res = await fetch('/.netlify/functions/job-board-api', {
-      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body: JSON.stringify({ action:'save-job', jobId: id })
-    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     var data = await res.json();
-    showToast(data.ok ? 'Job saved to your bookmarks.' : (data.error||'Could not save.'), data.ok?'success':'error');
-  } catch(e) { showToast('Saved locally.','info'); }
-}
-
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-var _toast;
-function showToast(msg, type) {
-  if (_toast) _toast.remove();
-  _toast = document.createElement('div');
-  _toast.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:99999;background:' +
-    (type==='success'?'#1DA98A':type==='error'?'#e05555':'#0B1F3A') +
-    ';color:#fff;padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
-  _toast.textContent = msg;
-  document.body.appendChild(_toast);
-  setTimeout(function(){ if(_toast) _toast.remove(); }, 4000);
-}
-
-function handlePostJob() {
-  // Check if already logged in as recruiter
-  try {
-    var sess = JSON.parse(localStorage.getItem('ll_session') || 'null');
-    var user = sess && sess.user;
-    if (user && sess.expires_at > Date.now()) {
-      if (user.role === 'recruiter') {
-        // Logged in recruiter → go straight to post job
-        window.location.href = '/jobs-post';
-        return;
-      } else {
-        // Logged in as learner → ask them to use a recruiter account
-        var go = confirm(
-          'You are signed in as a learner (\'' + (user.email || 'your account') + '\').\n\n' +
-          'To post a job you need a recruiter account.\n\n' +
-          'Click OK to sign out and register as a recruiter, or Cancel to stay.'
-        );
-        if (go) {
-          window.LLAuth.logout();
-          // logout() clears session and redirects to /login
-          // We override by going to recruiter-register
-          setTimeout(function(){ window.location.href = '/recruiter-register'; }, 50);
-        }
-        return;
-      }
+    if (data.ok && Array.isArray(data.data) && data.data.length > 0) {
+      ALL_JOBS = data.data;
+    } else {
+      ALL_JOBS = SAMPLE_JOBS;
     }
-  } catch(e) {}
-  // Not logged in → recruiter register (new account flow)
-  window.location.href = '/recruiter-register';
+  } catch(e) {
+    console.warn('[jobs] API unavailable:', e.message);
+    ALL_JOBS = SAMPLE_JOBS;
+  }
+  VISIBLE = 9;
+  renderJobs();
 }
 
-
-document.addEventListener('DOMContentLoaded', function() {
-  // Show user info + sign out if already logged in
+// Init
+document.addEventListener('DOMContentLoaded', async function() {
+  // Load user session
   try {
-    var sess = JSON.parse(localStorage.getItem('ll_session') || 'null');
+    var sess = JSON.parse(localStorage.getItem('ll_session')||'null');
     if (sess && sess.user && sess.expires_at > Date.now()) {
-      if (window.LLAuth) window.LLAuth._updateNav(sess.user);
+      USER = sess.user;
+      // Load progress for cert matching
+      try { USER_PROGRESS = JSON.parse(localStorage.getItem('ll_progress')||'{}'); } catch(e){}
+      // Show cert match banner
+      var cp = USER_PROGRESS.completedLevels || [];
+      if (cp.length) {
+        var lvl = cp.includes('l3') ? 'L3 Advisor' : cp.includes('l2') ? 'L2 Professional' : 'L1 Associate';
+        var score = USER_PROGRESS.lastScore || USER_PROGRESS.l1Score || '';
+        document.getElementById('cert-banner').style.display = 'flex';
+        document.getElementById('cert-banner-text').textContent = (cp.length) + ' roles match your ' + lvl + ' certification' + (score ? ' · Score: ' + score + '%' : '') + ' · Your certificate and score auto-attach when you apply.';
+      }
+      // Update nav
+      if (window.LLAuth) window.LLAuth._updateNav(USER);
     }
-  } catch(e) {}
+  } catch(e){}
+  loadJobs();
 });
-
 </script>
 </body>
 </html>
