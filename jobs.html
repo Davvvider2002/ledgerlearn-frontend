@@ -554,22 +554,26 @@ async function submitApplication() {
     }
 
     if (data.ok) {
+      // Capture job id BEFORE closeModal() nulls CURRENT_JOB
+      var appliedJobId = CURRENT_JOB ? CURRENT_JOB.id : null;
       closeModal();
+      btn.disabled = false; btn.textContent = 'Submit application →';
       showToast('✓ Application submitted! The recruiter will be in touch.', 'success');
-      // Update local count display
-      var card = document.getElementById('job-' + CURRENT_JOB.id);
-      if (card) {
-        var viewEl = card.querySelector('.job-views');
-        if (viewEl) viewEl.textContent = viewEl.textContent.replace(/\d+ applied/, function(m){
-          return (parseInt(m) + 1) + ' applied';
-        });
+      if (appliedJobId) {
+        var card = document.getElementById('job-' + appliedJobId);
+        if (card) {
+          var viewEl = card.querySelector('.job-views');
+          if (viewEl) viewEl.textContent = viewEl.textContent.replace(/\d+ applied/, function(m){
+            return (parseInt(m) + 1) + ' applied';
+          });
+        }
       }
-      CURRENT_JOB = null;
-    } else if (data.error && data.error.includes('already applied')) {
+    } else if (data.error && (data.error.includes('already applied') || data.error.includes('duplicate'))) {
       closeModal();
+      btn.disabled = false; btn.textContent = 'Submit application →';
       showToast('You have already applied for this role.', 'info');
     } else {
-      showToast(data.error || 'Could not submit application. Please try again.', 'error');
+      showToast(data.error || 'Could not submit. Please try again.', 'error');
       btn.disabled = false; btn.textContent = 'Submit application →';
     }
 
