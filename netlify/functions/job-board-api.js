@@ -302,7 +302,8 @@ exports.handler = async function(event) {
     // ── BULK IMPORT JOBS (admin only) ────────────────────────────────
     if (action === 'bulk-import-jobs') {
       // Verify admin JWT token (format: base64payload.hmac_sha256)
-      const adminToken = (event.headers['x-admin-token'] || '').trim();
+      // Token in body (avoids CORS preflight from custom headers)
+      const adminToken = (body.adminToken || event.headers['x-admin-token'] || '').trim();
       if (!adminToken) return json(401, { error: 'Admin token required' });
       try {
         const ADMIN_SECRET = process.env.ADMIN_SECRET || 'ledgerlearn-admin-secret-change-this';
