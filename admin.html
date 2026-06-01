@@ -970,7 +970,7 @@ tr:hover td{background:#fafbfc;}
           <span class="badge" style="background:rgba(234,88,12,.15);color:#fdba74;border:1px solid rgba(234,88,12,.3)">Admin only</span>
         </div>
         <div style="padding:1.25rem">
-          <p style="font-size:.8rem;color:rgba(255,255,255,.45);margin-bottom:1rem;line-height:1.6">
+          <p style="font-size:.8rem;color:rgba(255,255,255,.7);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;line-height:1.6">
             Upload a CSV with columns: <code>title, company, location, location_type, employment_type, cert_level_required, description, external_url, salary_min, salary_max, salary_currency, deadline</code><br>
             Only <code>title</code> and <code>company</code> are required. Jobs with an <code>external_url</code> will redirect applicants to that URL. Jobs without one capture applications in the system.
           </p>
@@ -2806,8 +2806,8 @@ async function importCSV() {
   try {
     var res = await fetch('/.netlify/functions/job-board-api', {
       method:  'POST',
-      headers: { 'Content-Type':'application/json', 'x-admin-token': tok },
-      body:    JSON.stringify({ action: 'bulk-import-jobs', jobs: _csvParsed })
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'bulk-import-jobs', adminToken: tok, jobs: _csvParsed })
     });
     var data = await res.json();
     if (data.ok) {
