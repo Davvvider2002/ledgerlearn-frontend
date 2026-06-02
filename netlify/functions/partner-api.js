@@ -102,7 +102,7 @@ exports.handler = async function(event) {
     // Simple but secure: access code = referral_code (partner gets it on approval email)
     const validCode = partner.referral_code || '';
     if (!validCode || code.trim() !== validCode.trim()) {
-      return json(401, { error: 'Invalid access code. Use the referral code sent in your approval email.' });
+      return json(401, { error: 'Referral code incorrect. Your referral code looks like: firstname-XXXXX. Check your approval email or contact partners@ledgerlearn.pro.' });
     }
 
     // Fetch affiliate data for commission rates
