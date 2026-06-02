@@ -685,7 +685,8 @@ async function finishTest() {
                   body:    JSON.stringify({
                     action: 'add-to-list',
                     email:  _certEmail,
-                    listId: (typeof ACTIVE_TRACK !== 'undefined' && ACTIVE_TRACK === 'QuickBooks') ? 6 : 6,
+                    name:   updated.certificate.candidateName || '',
+                    listId: 6,
                     source: 'l1-cert-' + ((typeof ACTIVE_TRACK !== 'undefined') ? ACTIVE_TRACK.toLowerCase() : 'xero'),
                   })
                 }).then(function(r){ return r.json(); })
