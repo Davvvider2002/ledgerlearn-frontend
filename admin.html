@@ -2068,8 +2068,32 @@ async function loadPartners() {
       }).join('')
     + '</tbody></table>';
 }
-async function approvePartner(i){ if(!PARTNERS[i]) return; PARTNERS[i].status='approved'; if(PARTNERS[i].id) await adminFetch('approve-partner',{id:PARTNERS[i].id}); loadPartners(); inlineToast('Partner approved'); }
-async function rejectPartner(i){ if(!PARTNERS[i]) return; PARTNERS[i].status='rejected'; if(PARTNERS[i].id) await adminFetch('reject-partner',{id:PARTNERS[i].id}); loadPartners(); inlineToast('Partner rejected','info'); }
+async function approvePartner(i) {
+  var p = ALL_PARTNERS[i];
+  if (!p || !p.id) return;
+  var res = await adminFetch('approve-partner', { id: p.id });
+  if (res && res.ok) {
+    if (res.referral_code) {
+      inlineToast('✓ Partner approved — referral code: ' + res.referral_code);
+    } else {
+      inlineToast('✓ Partner approved');
+    }
+    loadPartners();
+  } else {
+    inlineToast('Approval failed: ' + (res && res.error ? res.error : 'unknown error'), 'error');
+  }
+}
+async function rejectPartner(i) {
+  var p = ALL_PARTNERS[i];
+  if (!p || !p.id) return;
+  var res = await adminFetch('reject-partner', { id: p.id });
+  if (res && res.ok) {
+    inlineToast('Partner rejected', 'info');
+    loadPartners();
+  } else {
+    inlineToast('Rejection failed', 'error');
+  }
+}
 
 // ── CERTIFICATES ─────────────────────────────────────────────
 var ALL_CERTS = [];
