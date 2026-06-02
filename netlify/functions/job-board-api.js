@@ -326,11 +326,19 @@ exports.handler = async function(event) {
         if (Array.isArray(appRows) && appRows[0]) {
           coverNote = appRows[0].cover_note || '';
           certSnap  = appRows[0].cert_snapshot || [];
-          // Verify recruiter owns this job
-          const jobCheck = await supa(
-            `/rest/v1/job_postings?id=eq.${encodeURIComponent(appRows[0].job_id)}&recruiter_id=eq.${encodeURIComponent(recruiterId)}&select=id&limit=1`
+          // Verify recruiter owns this job (or it's a system/scraped job)
+          const SYSTEM_RECRUITER = '00000000-0000-0000-0000-000000000001';
+          const jobRows = await supa(
+            `/rest/v1/job_postings?id=eq.${encodeURIComponent(appRows[0].job_id)}&select=id,recruiter_id&limit=1`
           );
-          if (!Array.isArray(jobCheck) || !jobCheck.length) {
+          const job = Array.isArray(jobRows) ? jobRows[0] : null;
+          if (!job) {
+            return json(404, { error: 'Job not found' });
+          }
+          // Allow if: recruiter owns the job OR job is a scraped/system job
+          const isOwner  = job.recruiter_id === recruiterId;
+          const isSystem = job.recruiter_id === SYSTEM_RECRUITER;
+          if (!isOwner && !isSystem) {
             return json(403, { error: 'Not authorised to view this application' });
           }
         }
