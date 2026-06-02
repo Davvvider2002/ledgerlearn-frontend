@@ -294,7 +294,7 @@ footer{background:#0B1F3A;padding:2.5rem 2rem;text-align:center;}
           <div class="form-field full"><label>Why do you want to partner with LedgerLearn?</label><textarea id="p-message" rows="3" placeholder="Tell us about your students, your goals, and how you plan to promote LedgerLearn…"></textarea></div>
         </div>
         <div id="p-err" style="color:#E24B4A;font-size:0.78rem;min-height:1em;margin-top:0.5rem;"></div>
-        <button class="submit-btn" onclick="submitPartnerApp()">Submit partner application →</button>
+        <button class="submit-btn" id="p-submit-btn" id="p-submit-btn" onclick="submitPartnerApp()">Submit partner application →</button>
         <div class="form-note">By submitting you agree to our partner terms. We review every application personally and respond within 2 business days.</div>
       </div>
       <div class="success-msg" id="partner-success">
@@ -320,64 +320,54 @@ function submitPartnerApp() {
   var inst    = document.getElementById('p-institution').value.trim();
   var name    = document.getElementById('p-name').value.trim();
   var email   = document.getElementById('p-email').value.trim();
-  var type    = document.getElementById('p-type').value;
+  var orgType = document.getElementById('p-type').value;
   var message = document.getElementById('p-message').value.trim();
   var errEl   = document.getElementById('p-err');
 
-  if (!inst)    { errEl.textContent = 'Please enter your institution name.'; return; }
+  if (!inst)    { errEl.textContent = 'Please enter your institution or company name.'; return; }
   if (!name || name.indexOf(' ') < 1) { errEl.textContent = 'Please enter your first and last name.'; return; }
   if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email.'; return; }
-  if (!type)    { errEl.textContent = 'Please select your organisation type.'; return; }
+  if (!orgType) { errEl.textContent = 'Please select your organisation type.'; return; }
   if (!message) { errEl.textContent = 'Please tell us why you want to partner with LedgerLearn.'; return; }
 
   errEl.textContent = '';
 
-  var app = {
-    institution: inst,
-    contact: name,
-    email: email,
-    phone: document.getElementById('p-phone').value.trim(),
-    type: type,
-    country: document.getElementById('p-country').value,
-    students: document.getElementById('p-students').value,
-    website: document.getElementById('p-website').value.trim(),
-    message: message,
-    status: 'pending',
-    ts: new Date().toISOString()
+  var payload = {
+    action:         'submit-partner',
+    institution:    inst,
+    contact_name:   name,
+    email:          email,
+    phone:          (document.getElementById('p-phone')    || {}).value || '',
+    org_type:       orgType,
+    country:        (document.getElementById('p-country')  || {}).value || '',
+    students_range: (document.getElementById('p-students') || {}).value || '',
+    website:        (document.getElementById('p-website')  || {}).value || '',
+    message:        message,
   };
 
-  // Save to Supabase via admin-data
-  var btn = document.querySelector('#partner-form button[type="submit"]') ||
-            document.querySelector('#partner-form .btn-submit');
+  var btn = document.getElementById('p-submit-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
 
-  fetch('/.netlify/functions/admin-data', {
+  fetch('/.netlify/functions/partner-api', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ action: 'submit-partner', data: app })
-  }).then(function(r){ return r.json(); })
+    body:    JSON.stringify(payload),
+  }).then(function(r) { return r.json(); })
     .then(function(d) {
-      if (btn) { btn.disabled = false; btn.textContent = 'Submit application'; }
-      // Also add to Brevo
-      fetch('/.netlify/functions/subscribe', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          email: email, name: name, listId: 5,
-          source: 'partner-application'
-        })
-      }).catch(function(){});
-      document.getElementById('partner-form').style.display = 'none';
-      document.getElementById('partner-success').style.display = 'block';
+      if (d.ok) {
+        document.getElementById('partner-form').style.display  = 'none';
+        document.getElementById('partner-success').style.display = 'block';
+      } else {
+        errEl.textContent = d.error || 'Submission failed. Please try again.';
+        if (btn) { btn.disabled = false; btn.textContent = 'Submit application'; }
+      }
     })
     .catch(function(e) {
+      errEl.textContent = 'Network error. Please check your connection and try again.';
       if (btn) { btn.disabled = false; btn.textContent = 'Submit application'; }
-      var errEl = document.getElementById('p-err');
-      if (errEl) errEl.textContent = 'Submission failed. Please try again.';
-      console.error('[partners] submit error:', e.message);
+      console.error('[partners]', e.message);
     });
 }
 </script>
-<script src="/ll-chatbot.js"></script>
 </body>
 </html>
