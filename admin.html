@@ -2039,34 +2039,39 @@ async function loadPartners() {
   ALL_PARTNERS = result.data; PARTNERS = ALL_PARTNERS;
   var el = document.getElementById('partners-table'); if (!el) return;
   if (!ALL_PARTNERS.length) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🏫</div><div class="empty-text">No partner applications yet.</div></div>';
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x1F3EB;</div><div class="empty-text">No partner applications yet.</div></div>';
     return;
   }
-  el.innerHTML = '<table style="font-size:.78rem"><thead><tr>'
-    + '<th>Organisation</th><th>Contact</th><th>Email</th>'
-    + '<th>Type</th><th>Country</th><th>Students</th>'
-    + '<th>Status</th><th>Ref Code</th><th>Actions</th>'
-    + '</tr></thead><tbody>'
-    + ALL_PARTNERS.map(function(p, i) {
-        var statusClass = p.status === 'approved' ? 'badge-green'
-                        : p.status === 'rejected' ? 'badge-red' : 'badge-gold';
-        return '<tr>'
-          + '<td><strong>' + esc(p.institution || '—')   + '</strong></td>'
-          + '<td>' + esc(p.contact_name  || '—') + '</td>'
-          + '<td>' + esc(p.email         || '—') + '</td>'
-          + '<td>' + esc(p.org_type      || '—') + '</td>'
-          + '<td>' + esc(p.country       || '—') + '</td>'
-          + '<td>' + esc(p.students_range|| '—') + '</td>'
-          + '<td><span class="badge ' + statusClass + '">' + esc(p.status || 'pending') + '</span></td>'
-          + '<td style="font-size:.7rem;color:var(--teal)">' + (p.referral_code ? esc(p.referral_code) : '—') + '</td>'
-          + '<td style="display:flex;gap:4px">'
-          +   (p.status !== 'approved' ? '<button class="act-btn" onclick="approvePartner(' + i + ')">Approve</button>' : '')
-          +   (p.status !== 'rejected' ? '<button class="act-btn act-btn-red" onclick="rejectPartner(' + i + ')">Reject</button>' : '')
-          +   '<button class="act-btn" onclick="viewPartnerMsg(' + i + ')" title="View message">💬</button>'
-          + '</td>'
-          + '</tr>';
-      }).join('')
-    + '</tbody></table>';
+  el.innerHTML = ALL_PARTNERS.map(function(p, i) {
+    var statusClass = p.status === 'approved' ? 'badge-green'
+                    : p.status === 'rejected' ? 'badge-red' : 'badge-gold';
+    var refLine = p.referral_code
+      ? '<div style="margin-top:4px;font-size:.72rem;color:var(--teal)">Ref link: <code>https://ledgerlearn.pro/?ref=' + esc(p.referral_code) + '</code></div>'
+      : '';
+    var approveBtn = p.status !== 'approved'
+      ? '<button class="act-btn btn-gold" onclick="approvePartner(' + i + ')" style="background:var(--gold);color:var(--navy);font-weight:700;min-width:80px">&#x2713; Approve</button>'
+      : '<span style="color:var(--teal);font-size:.78rem;font-weight:700">&#x2713; Approved</span>';
+    var rejectBtn = p.status !== 'rejected'
+      ? '<button class="act-btn act-btn-red" onclick="rejectPartner(' + i + ')" style="min-width:70px">&#x2715; Reject</button>'
+      : '';
+    return '<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap">'
+      + '<div style="flex:1;min-width:200px">'
+      +   '<div style="font-weight:700;color:var(--text);font-size:.88rem">' + esc(p.institution||'—') + '</div>'
+      +   '<div style="font-size:.78rem;color:var(--mid);margin-top:2px">' + esc(p.contact_name||'—') + ' &middot; ' + esc(p.email||'—') + '</div>'
+      +   '<div style="font-size:.75rem;color:var(--muted);margin-top:2px">'
+      +     esc(p.org_type||'—') + ' &middot; ' + esc(p.country||'—')
+      +     (p.students_range ? ' &middot; ' + esc(p.students_range) : '')
+      +   '</div>'
+      +   (p.message ? '<div style="font-size:.75rem;color:var(--muted);margin-top:4px;font-style:italic">&ldquo;' + esc(p.message.slice(0,120)) + (p.message.length>120?'&hellip;':'') + '&rdquo;</div>' : '')
+      +   refLine
+      + '</div>'
+      + '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:100px">'
+      +   '<span class="badge ' + statusClass + '" style="margin-bottom:4px">' + esc(p.status||'pending') + '</span>'
+      +   approveBtn
+      +   rejectBtn
+      + '</div>'
+      + '</div>';
+  }).join('');
 }
 async function approvePartner(i) {
   var p = ALL_PARTNERS[i];
