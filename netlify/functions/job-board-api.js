@@ -496,18 +496,20 @@ exports.handler = async function(event) {
       const applicantIds = [...new Set(apps.map(a => a.applicant_id).filter(Boolean))];
       let profileMap = {};
       if (applicantIds.length) {
+        // applicant_id in job_applications = auth.users.id = applicant_profiles.user_id
         const profiles = await supa(
-          `/rest/v1/applicant_profiles?id=in.(${applicantIds.map(encodeURIComponent).join(',')})` +
+          `/rest/v1/applicant_profiles?user_id=in.(${applicantIds.map(encodeURIComponent).join(',')})` +
           `&select=id,user_id,email,first_name,last_name,city,country`,
           'GET'
         );
         if (Array.isArray(profiles)) {
-          profiles.forEach(function(p){ profileMap[p.id] = p; });
+          // Key by user_id to match applicant_id in job_applications
+          profiles.forEach(function(p){ profileMap[p.user_id] = p; });
         }
       }
 
       const enriched = apps.map(function(a) {
-        const prof = profileMap[a.applicant_id] || {};
+        const prof = profileMap[a.applicant_id] || {};  // applicant_id = user_id
         const fullName = [prof.first_name, prof.last_name].filter(Boolean).join(' ') || '—';
         const region   = (prof.country || '').toUpperCase().slice(0, 2);
         return {
