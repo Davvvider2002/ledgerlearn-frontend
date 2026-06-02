@@ -23,9 +23,29 @@ const CORS = {
   'Content-Type': 'application/json',
 };
 
-// Levels per track — xero-l2, qb-l2, xero-l3, qb-l3
-const VALID_LEVELS    = ['l2', 'l3', 'qb-l2', 'qb-l3'];
-const EXPECTED_AMOUNTS = { 'l2': 49.00, 'l3': 0, 'qb-l2': 49.00, 'qb-l3': 0 };
+// Levels + products that generate commissions
+const VALID_LEVELS    = ['l2', 'l3', 'qb-l2', 'qb-l3', 'erp-saas'];
+const EXPECTED_AMOUNTS = { 'l2': 49.00, 'l3': 0, 'qb-l2': 49.00, 'qb-l3': 0, 'erp-saas': 29.00 };
+// Map level → affiliate product type key
+const PRODUCT_TYPE = { 'l2': 'l2_xero', 'qb-l2': 'l2_qb', 'erp-saas': 'erp_saas' };
+
+const SUPA_URL = process.env.SUPABASE_URL || '';
+const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+
+async function supaFetch(path, method, body) {
+  const res = await fetch(SUPA_URL + path, {
+    method: method || 'GET',
+    headers: {
+      'Content-Type':  'application/json',
+      'apikey':        SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      ...(method === 'POST' ? { 'Prefer': 'resolution=merge-duplicates,return=representation' } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (res.status === 204) return {};
+  return res.json().catch(() => ({}));
+}
 
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') {
@@ -48,6 +68,7 @@ exports.handler = async function(event) {
 
   // Accept both 'qb-l2' and passing track:'QuickBooks'+level:'l2'
   const normLevel = (body.track === 'QuickBooks' && !level.startsWith('qb')) ? 'qb-' + level : level;
+  const refCode   = (body.ref_code || event.queryStringParameters?.ref || '').trim();
   if (!VALID_LEVELS.includes(normLevel)) {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Invalid level: ' + normLevel }) };
   }
@@ -64,7 +85,7 @@ exports.handler = async function(event) {
     console.error('[verify-payment] PayPal credentials not set');
     // Graceful degradation: trust the client if PayPal creds not configured
     // Remove this in production once creds are set
-    return await storeAndReturn(email, normLevel || level, orderId || 'unverified', 'unverified');
+    return await storeAndReturn(email, normLevel || level, orderId || 'unverified', 'unverified', refCode);
   }
 
   try {
@@ -115,7 +136,7 @@ exports.handler = async function(event) {
       }
     }
 
-    return await storeAndReturn(email, normLevel, orderId, 'paypal-order-verified');
+    return await storeAndReturn(email, normLevel, orderId, 'paypal-order-verified', refCode);
 
   } catch(err) {
     console.error('[verify-payment]', err.message);
@@ -151,6 +172,45 @@ async function storeAndReturn(email, level, orderId, verificationMethod) {
       body:    JSON.stringify({ emails: [email] }),
     }).then(function(r){ console.log('[Brevo] L2 Purchasers add status:', r.status); })
       .catch(function(e){ console.warn('[Brevo] L2 add failed:', e.message); });
+  }
+
+  // ── Affiliate conversion tracking ──────────────────────────
+  const productType = PRODUCT_TYPE[level];
+  if (refCode && productType) {
+    try {
+      const saleAmount = EXPECTED_AMOUNTS[level] || 0;
+      // Look up affiliate by referral code
+      const affRows = await supaFetch(
+        `/rest/v1/affiliates?referral_code=eq.${encodeURIComponent(refCode)}&select=id,commission_rates,commission_pct&limit=1`
+      );
+      if (Array.isArray(affRows) && affRows.length > 0) {
+        const aff = affRows[0];
+        const rates = aff.commission_rates || {};
+        const pct   = rates[productType] || aff.commission_pct || 20;
+        const due   = parseFloat((saleAmount * pct / 100).toFixed(2));
+        // Record conversion
+        await supaFetch('/rest/v1/affiliate_conversions', 'POST', {
+          affiliate_id:   aff.id,
+          referral_code:  refCode,
+          product_type:   productType,
+          buyer_email:    email,
+          sale_amount:    saleAmount,
+          commission_pct: pct,
+          commission_due: due,
+          status:         'pending',
+          order_id:       orderId || null,
+        });
+        // Update affiliate totals (non-blocking)
+        supaFetch(`/rest/v1/affiliates?id=eq.${aff.id}`, 'PATCH', {
+          referrals:          1,
+          revenue_total:      saleAmount,
+          commission_pending: due,
+        }).catch(() => {});
+        console.log(`[verify-payment] ✓ Conversion: ${refCode} → ${email} ${productType} $${saleAmount} commission $${due}`);
+      }
+    } catch(e) {
+      console.warn('[verify-payment] Affiliate tracking error (non-fatal):', e.message);
+    }
   }
 
   return {

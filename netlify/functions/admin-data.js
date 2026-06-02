@@ -199,9 +199,95 @@ exports.handler = async function(event) {
         return json(200, { ok: true, data: Array.isArray(data) ? data : [] });
       }
 
+      case 'submit-partner': {
+        // Public endpoint — no admin auth required
+        const d = body.data || body;
+        if (!d.email || !d.institution || !d.contact) {
+          return json(400, { error: 'email, institution, contact required' });
+        }
+        const row = await supa('/rest/v1/partners', 'POST', {
+          institution:   d.institution,
+          contact_name:  d.contact,
+          email:         d.email,
+          phone:         d.phone         || null,
+          org_type:      d.type          || null,
+          country:       d.country       || null,
+          students_range:d.students      || null,
+          website:       d.website       || null,
+          message:       d.message       || null,
+          status:        'pending',
+          created_at:    new Date().toISOString(),
+          updated_at:    new Date().toISOString(),
+        });
+        if (row && !row.error) return json(200, { ok: true });
+        console.error('[admin-data] submit-partner error:', JSON.stringify(row));
+        return json(500, { error: 'Could not save application' });
+      }
+
       case 'affiliates': {
-        const data = await supa('/rest/v1/affiliates?select=*&order=created_at.desc');
-        return json(200, { ok: true, data: Array.isArray(data) ? data : [] });
+        // Use the summary view if available, fall back to table
+        const data = await supa('/rest/v1/affiliate_summary?order=total_revenue.desc');
+        if (Array.isArray(data) && data.length >= 0) {
+          return json(200, { ok: true, data });
+        }
+        const fallback = await supa('/rest/v1/affiliates?select=*&order=created_at.desc');
+        return json(200, { ok: true, data: Array.isArray(fallback) ? fallback : [] });
+      }
+
+      case 'create-affiliate': {
+        const { name, email, commissionL2Xero, commissionL2QB, commissionErpSaas } = body;
+        if (!name || !email) return json(400, { error: 'name and email required' });
+        // Generate a short readable referral code
+        const code = name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'') +
+                     '-' + Math.random().toString(36).slice(2,7).toUpperCase();
+        const rates = {
+          l2_xero:  parseInt(commissionL2Xero)  || 20,
+          l2_qb:    parseInt(commissionL2QB)    || 20,
+          erp_saas: parseInt(commissionErpSaas) || 30,
+        };
+        const row = await supa('/rest/v1/affiliates', 'POST', {
+          name, email,
+          referral_code:    code,
+          commission_pct:   rates.l2_xero,
+          commission_rates: rates,
+          status: 'active',
+        });
+        if (row && !row.error) {
+          await auditLog('create-affiliate', email);
+          return json(200, { ok: true, referral_code: code });
+        }
+        return json(500, { error: 'Could not create affiliate' });
+      }
+
+      case 'approve-partner': {
+        const { id } = body; if (!id) return json(400, { error: 'id required' });
+        // Get the partner data
+        const partners = await supa(`/rest/v1/partners?id=eq.${id}&select=*`);
+        const partner  = Array.isArray(partners) ? partners[0] : null;
+        if (!partner) return json(404, { error: 'Partner not found' });
+
+        // Generate affiliate record for approved partner
+        const code = (partner.contact_name||'partner').split(' ')[0].toLowerCase()
+                       .replace(/[^a-z]/g,'') + '-' + Math.random().toString(36).slice(2,7).toUpperCase();
+        const affRow = await supa('/rest/v1/affiliates', 'POST', {
+          name:             partner.contact_name || partner.institution,
+          email:            partner.email,
+          referral_code:    code,
+          commission_pct:   partner.commission_pct || 20,
+          commission_rates: { l2_xero: 20, l2_qb: 20, erp_saas: 30 },
+          status: 'active',
+        });
+        const affId = Array.isArray(affRow) ? affRow[0]?.id : null;
+
+        // Update partner status + link affiliate + store referral code
+        await supa(`/rest/v1/partners?id=eq.${id}`, 'PATCH', {
+          status:       'approved',
+          referral_code: code,
+          affiliate_id:  affId || null,
+          updated_at:    new Date().toISOString(),
+        });
+        await auditLog('approve-partner', id);
+        return json(200, { ok: true, referral_code: code });
       }
 
       case 'upgrades': {
