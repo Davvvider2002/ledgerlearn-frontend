@@ -204,7 +204,16 @@
       var role    = user.role    || stored.role    || 'applicant';
       var name    = user.name    || stored.name    || user.email || '';
       var company = user.company_name || stored.company || stored.company_name || '';
-      var display = role === 'recruiter' ? (company || name.split(' ')[0]) : name.split(' ')[0];
+      // Determine if this is a recruiter-context page
+      var _path = window.location.pathname;
+      var _isRecruiterPage = /\/(jobs-applications|recruiter-dashboard|job-post|recruiter)/.test(_path);
+      var _isLearnerPage   = /\/(learn|test|dashboard|practice|quickbooks|certificate)/.test(_path);
+      // On learner pages: always show learner name, never recruiter badge
+      // On recruiter pages: show company + RECRUITER badge
+      // On other pages (jobs, index): show name only, recruiter badge only if on recruiter page
+      var display = (_isRecruiterPage && role === 'recruiter')
+        ? (company || name.split(' ')[0])
+        : name.split(' ')[0];
       var initial = display.charAt(0).toUpperCase() || '?';
 
       // Update existing named elements
@@ -216,7 +225,9 @@
       // Inject a user-menu into .nav-user-slot if present (public pages)
       var slotEl = document.getElementById('nav-user-slot');
       if (slotEl && !slotEl.dataset.populated) {
-        var roleBadge = role === 'recruiter'
+        // Only show RECRUITER badge on recruiter-context pages
+        var _showRecruiterBadge = role === 'recruiter' && _isRecruiterPage;
+        var roleBadge = _showRecruiterBadge
           ? '<span style="font-size:.6rem;font-weight:700;padding:1px 7px;border-radius:100px;background:rgba(29,169,138,.2);color:#26c9a5;border:1px solid rgba(29,169,138,.25);text-transform:uppercase;letter-spacing:.06em;">Recruiter</span>'
           : '';
         // Build DOM nodes (avoids quote-escaping in innerHTML)
@@ -236,10 +247,10 @@
         soBtn.onmouseout  = function(){ this.style.borderColor='rgba(255,255,255,.15)';this.style.color='rgba(255,255,255,.45)'; };
         wrapper.appendChild(ava);
         wrapper.appendChild(nameSpan);
-        if (roleBadge) {
+        if (_showRecruiterBadge) {
           var rb = document.createElement('span');
           rb.style.cssText = 'font-size:.6rem;font-weight:700;padding:1px 7px;border-radius:100px;background:rgba(29,169,138,.2);color:#26c9a5;border:1px solid rgba(29,169,138,.25);text-transform:uppercase;letter-spacing:.06em;';
-          rb.textContent = role === 'recruiter' ? 'Recruiter' : role;
+          rb.textContent = 'Recruiter';
           wrapper.appendChild(rb);
         }
         wrapper.appendChild(soBtn);

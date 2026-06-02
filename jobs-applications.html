@@ -393,24 +393,69 @@ function openDetailIdx(idx) {
   if (app) openDetail(app);
 }
 
-function openDetail(app) {
+async function openDetail(app) {
   CURRENT_APP_ID = app.id;
-  var certs  = app.applicant_certs || [];
-  var initials = ((app.applicant_name||'?')[0] + (app.applicant_name||'? ').split(' ')[1]?.[0]||'').toUpperCase();
-  document.getElementById('det-av').textContent         = initials;
-  document.getElementById('det-name').textContent       = app.applicant_name || '—';
-  document.getElementById('det-sub').textContent        = app.applicant_email || '—';
-  document.getElementById('det-loc').textContent        = app.applicant_region || '—';
-  document.getElementById('det-date').textContent       = (app.applied_at||'').split('T')[0];
-  document.getElementById('det-job').textContent        = app.job_title || '—';
-  document.getElementById('det-status').textContent     = app.status || 'applied';
 
-  var certText = certs.length
-    ? certs.map(function(c){ return c.level.toUpperCase() + ' ✓ ' + c.score + '% · ID: ' + c.cert_id; }).join(' | ')
-    : 'No LedgerLearn certificate';
-  document.getElementById('det-cert-text').textContent = certText;
-
+  // Show overlay immediately with basic data while fetching full profile
+  var nameStr = app.applicant_name || '—';
+  var initials = (nameStr.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2)||'?').toUpperCase();
+  document.getElementById('det-av').textContent    = initials;
+  document.getElementById('det-name').textContent  = nameStr;
+  document.getElementById('det-sub').textContent   = app.applicant_email || '—';
+  document.getElementById('det-loc').textContent   = app.region || '—';
+  document.getElementById('det-date').textContent  = (app.applied_at||'').split('T')[0];
+  document.getElementById('det-job').textContent   = app.job_title || '—';
+  document.getElementById('det-status').textContent = app.status || 'applied';
+  document.getElementById('det-cert-text').textContent = 'Loading…';
   document.getElementById('detail-overlay').classList.add('open');
+
+  // Fetch full applicant profile
+  try {
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+getToken()},
+      body: JSON.stringify({ action: 'get-applicant-profile', applicantId: app.applicant_id, applicationId: app.id })
+    });
+    var data = await res.json();
+    var prof = data.profile || {};
+    var certSnap = data.cert_snapshot || app.cert_snapshot || [];
+
+    // Update all fields with full profile data
+    var fullName = [prof.first_name, prof.last_name].filter(Boolean).join(' ') || nameStr;
+    var initFull = (fullName.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2)||'?').toUpperCase();
+    document.getElementById('det-av').textContent   = initFull;
+    document.getElementById('det-name').textContent = fullName;
+    document.getElementById('det-sub').textContent  = prof.email || app.applicant_email || '—';
+    document.getElementById('det-loc').textContent  = [prof.city, prof.country].filter(Boolean).join(', ') || app.region || '—';
+
+    // Cert snapshot
+    var certs = Array.isArray(certSnap) ? certSnap : [];
+    document.getElementById('det-cert-text').textContent = certs.length
+      ? certs.map(function(c){ return (c.level||'L1').toUpperCase() + ' ✓ ' + (c.score||0) + '% · ID: ' + (c.certId||c.cert_id||''); }).join(' | ')
+      : 'No LedgerLearn certificate';
+
+    // Expand panel with full profile sections
+    var bodyEl = document.getElementById('det-body-extra');
+    if (bodyEl) {
+      var exp = Array.isArray(prof.work_experience) ? prof.work_experience : [];
+      var edu = Array.isArray(prof.education) ? prof.education : [];
+      var skills = (prof.core_skills||[]).concat(prof.systems||[]).filter(Boolean);
+      var summary = prof.professional_summary || '';
+      var coverNote = data.cover_note || app.cover_note || '';
+
+      bodyEl.innerHTML =
+        (coverNote ? '<div class="det-section"><div class="det-sec-label">Cover note</div><div class="det-sec-body">' + esc(coverNote) + '</div></div>' : '') +
+        (summary ? '<div class="det-section"><div class="det-sec-label">Professional summary</div><div class="det-sec-body">' + esc(summary) + '</div></div>' : '') +
+        (skills.length ? '<div class="det-section"><div class="det-sec-label">Skills &amp; systems</div><div class="det-sec-body">' + skills.map(function(s){ return '<span class="det-skill">' + esc(s) + '</span>'; }).join('') + '</div></div>' : '') +
+        (exp.length ? '<div class="det-section"><div class="det-sec-label">Experience</div>' + exp.map(function(e){ return '<div class="det-exp-row"><strong>' + esc(e.title||'') + '</strong> &mdash; ' + esc(e.company||e.sub||'') + '<span class="det-dates">' + esc(e.dates||e.start_date||'') + '</span></div>'; }).join('') + '</div>' : '') +
+        (edu.length ? '<div class="det-section"><div class="det-sec-label">Education</div>' + edu.map(function(e){ return '<div class="det-exp-row"><strong>' + esc(e.qualification||e.degree||'') + '</strong> &mdash; ' + esc(e.institution||e.sub||'') + '</div>'; }).join('') + '</div>' : '') +
+        (prof.availability ? '<div class="det-section"><div class="det-sec-label">Availability</div><div class="det-sec-body">' + esc(prof.availability) + '</div></div>' : '') +
+        (prof.salary_expectation ? '<div class="det-section"><div class="det-sec-label">Salary expectation</div><div class="det-sec-body">' + esc(prof.salary_expectation) + '</div></div>' : '');
+    }
+  } catch(e) {
+    document.getElementById('det-cert-text').textContent = 'Could not load full profile.';
+    console.error('[openDetail]', e.message);
+  }
 }
 function closeDetail() {
   document.getElementById('detail-overlay').classList.remove('open');
