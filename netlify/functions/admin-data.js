@@ -58,7 +58,10 @@ async function supa(path, method, body) {
     if (body) opts.body = JSON.stringify(body);
     const res = await fetch(SUPA_URL + path, opts);
     return res.json();
-  } catch(e) { return null; }
+  } catch(e) {
+    console.error('[admin-data] supa error:', method, path, e.message);
+    return null;
+  }
 }
 // Alias for backward compat
 const supaFetch = (path) => supa(path);
@@ -261,31 +264,53 @@ exports.handler = async function(event) {
 
       case 'approve-partner': {
         const { id } = body; if (!id) return json(400, { error: 'id required' });
-        // Get the partner data
-        const partners = await supa(`/rest/v1/partners?id=eq.${id}&select=*`);
-        const partner  = Array.isArray(partners) ? partners[0] : null;
+
+        // Get partner data
+        const partnerRows = await supa(`/rest/v1/partners?id=eq.${encodeURIComponent(id)}&select=*`);
+        const partner = Array.isArray(partnerRows) ? partnerRows[0] : null;
         if (!partner) return json(404, { error: 'Partner not found' });
 
-        // Generate affiliate record for approved partner
-        const code = (partner.contact_name||'partner').split(' ')[0].toLowerCase()
-                       .replace(/[^a-z]/g,'') + '-' + Math.random().toString(36).slice(2,7).toUpperCase();
-        const affRow = await supa('/rest/v1/affiliates', 'POST', {
-          name:             partner.contact_name || partner.institution,
-          email:            partner.email,
-          referral_code:    code,
-          commission_pct:   partner.commission_pct || 20,
-          commission_rates: { l2_xero: 20, l2_qb: 20, erp_saas: 30 },
-          status: 'active',
-        });
-        const affId = Array.isArray(affRow) ? affRow[0]?.id : null;
+        // Generate short readable referral code
+        const safeName = (partner.contact_name || partner.institution || 'partner')
+          .split(' ')[0].toLowerCase().replace(/[^a-z]/g, '') || 'partner';
+        const code = safeName + '-' + Math.random().toString(36).slice(2,7).toUpperCase();
 
-        // Update partner status + link affiliate + store referral code
-        await supa(`/rest/v1/partners?id=eq.${id}`, 'PATCH', {
-          status:       'approved',
+        // Step 1: Create affiliate row (best-effort — may fail if table not migrated yet)
+        let affId = null;
+        try {
+          const affPayload = {
+            name:          partner.contact_name || partner.institution,
+            email:         partner.email,
+            referral_code: code,
+            commission_pct: partner.commission_pct || 20,
+            status:        'active',
+          };
+          // Only include commission_rates if the column exists (added by affiliates_setup.sql)
+          try { affPayload.commission_rates = { l2_xero: 20, l2_qb: 20, erp_saas: 30 }; } catch(e) {}
+          const affRow = await supa('/rest/v1/affiliates', 'POST', affPayload);
+          if (Array.isArray(affRow) && affRow[0]) {
+            affId = affRow[0].id;
+          } else if (affRow && affRow.id) {
+            affId = affRow.id;
+          }
+          console.log('[admin-data] affiliate created:', code, 'id:', affId);
+        } catch(affErr) {
+          console.error('[admin-data] affiliate INSERT failed (non-fatal):', affErr.message);
+        }
+
+        // Step 2: Update partner — build patch without columns that may not exist yet
+        const patch = {
+          status:        'approved',
           referral_code: code,
-          affiliate_id:  affId || null,
           updated_at:    new Date().toISOString(),
-        });
+        };
+        if (affId) {
+          try { patch.affiliate_id = affId; } catch(e) {}
+        }
+
+        const patchRes = await supa(`/rest/v1/partners?id=eq.${encodeURIComponent(id)}`, 'PATCH', patch);
+        console.log('[admin-data] partner PATCH result:', JSON.stringify(patchRes));
+
         await auditLog('approve-partner', id);
         return json(200, { ok: true, referral_code: code });
       }
