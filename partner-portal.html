@@ -93,12 +93,16 @@ td{padding:10px 14px;border-top:1px solid rgba(255,255,255,.05);}
       <input type="email" id="login-email" placeholder="partner@example.com" onkeydown="if(event.key==='Enter')loginPartner()">
     </div>
     <div class="field">
-      <label>Access code</label>
-      <input type="password" id="login-code" placeholder="Your access code" onkeydown="if(event.key==='Enter')loginPartner()">
+      <label>Your referral Referral code <span style="font-size:.72rem;font-weight:400;color:rgba(255,255,255,.35)">(from your approval email)</span></label>
+      <input type="text" id="login-code" placeholder="e.g. deanna-AB3XY" onkeydown="if(event.key==='Enter')loginPartner()">
     </div>
     <button class="btn-login" onclick="loginPartner()">Sign in to portal →</button>
     <div class="login-err" id="login-err"></div>
     <div class="apply-link">Not a partner yet? <a href="/partners">Apply to the partner programme →</a></div>
+    <div style="margin-top:1rem;padding:.75rem 1rem;background:rgba(212,168,67,.07);border:1px solid rgba(212,168,67,.2);border-radius:8px;font-size:.78rem;color:rgba(255,255,255,.5);line-height:1.5">
+      <strong style="color:var(--gold)">Your referral code</strong> was sent to your email when your application was approved.
+      If you don't have it, contact <a href="mailto:partners@ledgerlearn.pro" style="color:var(--teal)">partners@ledgerlearn.pro</a>
+    </div>
   </div>
 </div>
 
