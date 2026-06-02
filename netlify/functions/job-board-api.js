@@ -304,6 +304,57 @@ exports.handler = async function(event) {
 
     // ── SUBMIT APPLICATION ───────────────────────────────────
 
+
+    // ── GET APPLICANT FULL PROFILE (recruiter view) ──────────────
+    if (action === 'get-applicant-profile') {
+      if (!userId) return json(401, { error: 'Authentication required' });
+      const { applicantId, applicationId } = body;
+      if (!applicantId) return json(400, { error: 'applicantId required' });
+
+      // Verify requester is a recruiter who owns a job this person applied to
+      const recruiterRows = await supa(`/rest/v1/recruiters?user_id=eq.${encodeURIComponent(userId)}&select=id&limit=1`);
+      const recruiterId = Array.isArray(recruiterRows) && recruiterRows[0] ? recruiterRows[0].id : null;
+      if (!recruiterId) return json(403, { error: 'Recruiter account required' });
+
+      // Get the application to verify recruiter owns the job
+      let coverNote = '';
+      let certSnap  = [];
+      if (applicationId) {
+        const appRows = await supa(
+          `/rest/v1/job_applications?id=eq.${encodeURIComponent(applicationId)}&select=cover_note,cert_snapshot,job_id&limit=1`
+        );
+        if (Array.isArray(appRows) && appRows[0]) {
+          coverNote = appRows[0].cover_note || '';
+          certSnap  = appRows[0].cert_snapshot || [];
+          // Verify recruiter owns this job
+          const jobCheck = await supa(
+            `/rest/v1/job_postings?id=eq.${encodeURIComponent(appRows[0].job_id)}&recruiter_id=eq.${encodeURIComponent(recruiterId)}&select=id&limit=1`
+          );
+          if (!Array.isArray(jobCheck) || !jobCheck.length) {
+            return json(403, { error: 'Not authorised to view this application' });
+          }
+        }
+      }
+
+      // Fetch full applicant profile — keyed by user_id = applicantId
+      const profiles = await supa(
+        `/rest/v1/applicant_profiles?user_id=eq.${encodeURIComponent(applicantId)}&select=*&limit=1`
+      );
+      const profile = Array.isArray(profiles) ? profiles[0] : null;
+
+      // Also fetch certificates from certificates table
+      if (profile && profile.email) {
+        const certs = await supa(
+          `/rest/v1/certificates?email=eq.${encodeURIComponent(profile.email)}&order=created_at.desc&select=cert_id,level,score,cert_title,issue_date`
+        );
+        if (Array.isArray(certs) && certs.length && !certSnap.length) {
+          certSnap = certs.map(function(c){ return { certId: c.cert_id, level: c.level, score: c.score, certTitle: c.cert_title, issueDate: c.issue_date }; });
+        }
+      }
+
+      return json(200, { ok: true, profile: profile || {}, cert_snapshot: certSnap, cover_note: coverNote });
+    }
+
     // ── BULK IMPORT JOBS (admin only) ────────────────────────────────
     if (action === 'bulk-import-jobs') {
       // Verify admin JWT token (format: base64payload.hmac_sha256)
