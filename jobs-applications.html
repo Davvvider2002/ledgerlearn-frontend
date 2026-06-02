@@ -353,11 +353,12 @@ function renderRecruiterTable(apps) {
     return '<span class="badge '+(cls[s]||'badge-grey')+'">'+s+'</span>';
   }
 
+  window._RECRUITER_APPS = apps;
   wrap.innerHTML = '<table><thead><tr><th>Candidate</th><th>Job</th><th>Cert</th><th>Region</th><th>Applied</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
-    apps.map(function(a) {
-      var certs  = a.applicant_certs || [];
+    apps.map(function(a, idx) {
+      var certs = Array.isArray(a.cert_snapshot) ? a.cert_snapshot : (Array.isArray(a.applicant_certs) ? a.applicant_certs : []);
       var certBadge = certs.length
-        ? '<span class="badge badge-teal">' + esc(certs[0].level.toUpperCase()) + ' ✓ ' + certs[0].score + '%</span>'
+        ? '<span class="badge badge-teal">' + esc((certs[0].level||'L1').toUpperCase()) + ' ✓ ' + (certs[0].score||'') + '%</span>'
         : '<span class="badge badge-grey">No cert</span>';
       return '<tr>' +
         '<td><strong>' + esc(a.applicant_name||'—') + '</strong><div style="font-size:0.72rem;color:var(--muted);">' + esc(a.applicant_email||'') + '</div></td>' +
@@ -367,7 +368,7 @@ function renderRecruiterTable(apps) {
         '<td style="font-size:0.75rem;color:var(--muted);">' + esc((a.applied_at||'').split('T')[0]) + '</td>' +
         '<td>' + statusBadge(a.status||'applied') + '</td>' +
         '<td><div class="action-row">' +
-          '<button class="act-btn" onclick="openDetail('+JSON.stringify(a)+')">View</button>' +
+          '<button class="act-btn" onclick="openDetailIdx('+idx+')">View</button>' +
           '<button class="act-btn green" onclick="quickStatus(\''+a.id+'\',\'shortlisted\')">Shortlist</button>' +
           '<button class="act-btn red" onclick="quickStatus(\''+a.id+'\',\'rejected\')">Reject</button>' +
         '</div></td>' +
@@ -385,6 +386,11 @@ function filterApps() {
     return nameMatch && statusMatch;
   });
   renderRecruiterTable(filtered);
+}
+
+function openDetailIdx(idx) {
+  var app = (window._RECRUITER_APPS || [])[idx];
+  if (app) openDetail(app);
 }
 
 function openDetail(app) {
@@ -417,17 +423,26 @@ async function updateStatus(status) {
   closeDetail();
 }
 
-async function quickStatus(appId, status) {
+async function quickStatus(appId, newStatus) {
   try {
-    await fetch('/.netlify/functions/job-board-api', {
-      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},
-      body: JSON.stringify({ action:'update-application-status', applicationId:appId, status })
+    var res = await fetch('/.netlify/functions/job-board-api', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},
+      body: JSON.stringify({ action:'update-application-status', applicationId:appId, status:newStatus })
     });
-    showToast('Status updated to "' + status + '"', 'success');
-    var app = ALL_APPS.find(function(a){ return a.id===appId; });
-    if (app) app.status = status;
-    renderRecruiterTable(ALL_APPS);
-  } catch(e) { showToast('Error updating status.','error'); }
+    var d = await res.json();
+    if (d.ok || res.ok) {
+      showToast('Status updated to "' + newStatus + '"', 'success');
+      var app = ALL_APPS.find(function(a){ return a.id===appId; });
+      if (app) app.status = newStatus;
+      renderRecruiterTable(ALL_APPS);
+    } else {
+      showToast(d.error || 'Error updating status.', 'error');
+    }
+  } catch(e) {
+    showToast('Network error updating status.', 'error');
+    console.error('[quickStatus]', e.message);
+  }
 }
 
 function getToken() {

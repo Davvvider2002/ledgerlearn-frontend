@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Partner Portal — LedgerLearn Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B1F3A;--gold:#D4A843;--teal:#1DA98A;--orange:#ea580c;--off-white:#f8f7f4;--muted:rgba(255,255,255,.45);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:#fff;min-height:100vh;}
+nav{height:64px;background:rgba(11,31,58,.97);border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.hex{width:26px;height:26px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;color:#fff;}
+.brand span{color:var(--orange);}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.nav-right a{color:var(--muted);text-decoration:none;font-size:.82rem;}
+#nav-partner-name{font-size:.82rem;color:var(--gold);font-weight:600;}
+.btn-sign-out{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.78rem;font-family:inherit;}
+.btn-sign-out:hover{background:rgba(255,255,255,.06);}
+
+/* Login gate */
+#login-gate{max-width:440px;margin:80px auto;padding:2rem;}
+.login-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:2.5rem;}
+.login-card h1{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;margin-bottom:.4rem;}
+.login-card p{color:var(--muted);font-size:.88rem;margin-bottom:2rem;line-height:1.6;}
+.field{margin-bottom:1.25rem;}
+.field label{display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.4rem;}
+.field input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;padding:10px 14px;border-radius:8px;font-size:.88rem;font-family:inherit;outline:none;transition:border .15s;}
+.field input:focus{border-color:var(--teal);}
+.btn-login{width:100%;background:var(--teal);color:#fff;border:none;padding:12px;border-radius:9px;font-size:.92rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;}
+.btn-login:hover{background:#1a9179;}
+.login-err{color:#f87171;font-size:.8rem;margin-top:.75rem;display:none;}
+.apply-link{text-align:center;margin-top:1.5rem;font-size:.8rem;color:var(--muted);}
+.apply-link a{color:var(--teal);}
+
+/* Dashboard */
+#portal-dashboard{display:none;max-width:1000px;margin:0 auto;padding:2rem;}
+.portal-header{margin-bottom:2.5rem;}
+.portal-eyebrow{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--orange);font-weight:700;margin-bottom:.5rem;}
+.portal-h1{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:.4rem;}
+.portal-sub{color:var(--muted);font-size:.88rem;}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2.5rem;}
+@media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.25rem;}
+.stat-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#fff;line-height:1;}
+.stat-num.gold{color:var(--gold);}
+.stat-num.teal{color:var(--teal);}
+.stat-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:.4rem;}
+.section-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;margin-bottom:1.5rem;}
+.section-hdr{padding:1rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;}
+.section-title{font-size:.88rem;font-weight:700;}
+.section-body{padding:1.5rem;}
+.ref-link-box{background:rgba(29,169,138,.08);border:1px solid rgba(29,169,138,.25);border-radius:10px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.ref-url{font-size:.82rem;color:var(--teal);word-break:break-all;flex:1;}
+.btn-copy{background:var(--teal);color:#fff;border:none;padding:8px 16px;border-radius:7px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.rates-row{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:1.25rem;}
+.rate-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:.75rem 1.25rem;text-align:center;}
+.rate-pct{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--gold);}
+.rate-label{font-size:.72rem;color:var(--muted);margin-top:.25rem;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.8rem;}
+thead tr{background:rgba(255,255,255,.04);}
+th{padding:10px 14px;text-align:left;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);white-space:nowrap;}
+td{padding:10px 14px;border-top:1px solid rgba(255,255,255,.05);}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;font-size:.68rem;font-weight:700;text-transform:uppercase;}
+.badge-green{background:rgba(29,169,138,.15);color:#26c9a5;border:1px solid rgba(29,169,138,.3);}
+.badge-gold{background:rgba(212,168,67,.15);color:var(--gold);border:1px solid rgba(212,168,67,.3);}
+.badge-grey{background:rgba(255,255,255,.07);color:rgba(255,255,255,.4);}
+.empty{text-align:center;padding:3rem;color:var(--muted);font-size:.88rem;}
+.payout-info{background:rgba(212,168,67,.07);border:1px solid rgba(212,168,67,.2);border-radius:10px;padding:1rem 1.25rem;font-size:.82rem;color:rgba(255,255,255,.6);line-height:1.6;}
+.payout-info strong{color:var(--gold);}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo"><div class="hex"></div><span class="brand">Ledger<span>Learn</span> Pro</span></a>
+  <div class="nav-right">
+    <span id="nav-partner-name"></span>
+    <button class="btn-sign-out" onclick="signOut()">Sign out</button>
+  </div>
+</nav>
+
+<!-- LOGIN GATE -->
+<div id="login-gate">
+  <div class="login-card">
+    <h1>Partner Portal</h1>
+    <p>Sign in with your partner email to view your referrals, commissions, and payout history.</p>
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="login-email" placeholder="partner@example.com" onkeydown="if(event.key==='Enter')loginPartner()">
+    </div>
+    <div class="field">
+      <label>Access code</label>
+      <input type="password" id="login-code" placeholder="Your access code" onkeydown="if(event.key==='Enter')loginPartner()">
+    </div>
+    <button class="btn-login" onclick="loginPartner()">Sign in to portal →</button>
+    <div class="login-err" id="login-err"></div>
+    <div class="apply-link">Not a partner yet? <a href="/partners">Apply to the partner programme →</a></div>
+  </div>
+</div>
+
+<!-- DASHBOARD (shown after login) -->
+<div id="portal-dashboard">
+  <div class="portal-header">
+    <div class="portal-eyebrow">Partner Portal</div>
+    <h1 class="portal-h1">Welcome, <span id="partner-display-name">Partner</span></h1>
+    <p class="portal-sub">Your referral performance, commissions, and payouts at a glance.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num teal" id="stat-clicks">—</div><div class="stat-label">Referral clicks</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-conversions">—</div><div class="stat-label">Conversions</div></div>
+    <div class="stat-card"><div class="stat-num gold" id="stat-revenue">—</div><div class="stat-label">Revenue generated</div></div>
+    <div class="stat-card"><div class="stat-num gold" id="stat-pending">—</div><div class="stat-label">Commission pending</div></div>
+  </div>
+
+  <!-- Referral link -->
+  <div class="section-card">
+    <div class="section-hdr"><div class="section-title">🔗 Your referral link</div></div>
+    <div class="section-body">
+      <div class="ref-link-box">
+        <div class="ref-url" id="ref-link-display">Loading…</div>
+        <button class="btn-copy" onclick="copyRefLink()">Copy link</button>
+      </div>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.75rem">
+        Share this link with your audience. Any learner who upgrades to L2 (Xero or QuickBooks) or joins ERP.SaaS through your link earns you a commission.
+      </p>
+      <div class="rates-row" id="commission-rates">
+        <div class="rate-item"><div class="rate-pct" id="rate-xero">20%</div><div class="rate-label">Xero L2</div></div>
+        <div class="rate-item"><div class="rate-pct" id="rate-qb">20%</div><div class="rate-label">QB L2</div></div>
+        <div class="rate-item"><div class="rate-pct" id="rate-erp">30%</div><div class="rate-label">ERP.SaaS</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversions table -->
+  <div class="section-card">
+    <div class="section-hdr">
+      <div class="section-title">💰 Conversions & commissions</div>
+      <span id="conversion-count" style="font-size:.78rem;color:var(--muted)"></span>
+    </div>
+    <div class="section-body" style="padding:0">
+      <div class="table-wrap" id="conversions-table">
+        <div class="empty">Loading conversions…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payout info -->
+  <div class="section-card">
+    <div class="section-hdr"><div class="section-title">🏦 Payout information</div></div>
+    <div class="section-body">
+      <div class="payout-info">
+        <strong>How payouts work:</strong> Commissions are approved monthly and paid via bank transfer or PayPal.
+        Minimum payout threshold is <strong>$50</strong>. Contact <a href="mailto:partners@ledgerlearn.pro" style="color:var(--teal)">partners@ledgerlearn.pro</a> with your payment details or to request a payout.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _PARTNER = null;
+
+// ── AUTH ──────────────────────────────────────────────────────
+async function loginPartner() {
+  var email = document.getElementById('login-email').value.trim().toLowerCase();
+  var code  = document.getElementById('login-code').value.trim();
+  var errEl = document.getElementById('login-err');
+  errEl.style.display = 'none';
+
+  if (!email || !code) { errEl.textContent = 'Email and access code required.'; errEl.style.display='block'; return; }
+
+  try {
+    var res  = await fetch('/.netlify/functions/partner-api', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'partner-login', email, code }),
+    });
+    var data = await res.json();
+    if (data.ok && data.partner) {
+      _PARTNER = data.partner;
+      sessionStorage.setItem('ll_partner_session', JSON.stringify(data.partner));
+      showDashboard();
+    } else {
+      errEl.textContent = data.error || 'Invalid email or access code.';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Network error. Please try again.';
+    errEl.style.display = 'block';
+  }
+}
+
+function signOut() {
+  sessionStorage.removeItem('ll_partner_session');
+  _PARTNER = null;
+  document.getElementById('portal-dashboard').style.display = 'none';
+  document.getElementById('login-gate').style.display = 'block';
+  document.getElementById('nav-partner-name').textContent = '';
+}
+
+async function showDashboard() {
+  document.getElementById('login-gate').style.display    = 'none';
+  document.getElementById('portal-dashboard').style.display = 'block';
+
+  var p = _PARTNER;
+  document.getElementById('partner-display-name').textContent = p.name || p.contact_name || 'Partner';
+  document.getElementById('nav-partner-name').textContent     = p.name || p.contact_name || '';
+
+  // Referral link
+  var refLink = p.referral_code ? 'https://ledgerlearn.pro/?ref=' + p.referral_code : '—';
+  document.getElementById('ref-link-display').textContent = refLink;
+
+  // Commission rates
+  var rates = p.commission_rates || {};
+  document.getElementById('rate-xero').textContent = (rates.l2_xero  || p.commission_pct || 20) + '%';
+  document.getElementById('rate-qb').textContent   = (rates.l2_qb    || p.commission_pct || 20) + '%';
+  document.getElementById('rate-erp').textContent  = (rates.erp_saas || 30) + '%';
+
+  // Load conversion stats
+  await loadConversions();
+}
+
+async function loadConversions() {
+  if (!_PARTNER || !_PARTNER.referral_code) {
+    document.getElementById('conversions-table').innerHTML = '<div class="empty">No referral code assigned yet. Contact partners@ledgerlearn.pro.</div>';
+    return;
+  }
+  try {
+    var res  = await fetch('/.netlify/functions/partner-api', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'get-conversions', referral_code: _PARTNER.referral_code }),
+    });
+    var data = await res.json();
+    var convs = data.data || [];
+
+    // Stats
+    var totalRev  = convs.reduce(function(s,c){ return s + parseFloat(c.sale_amount||0); }, 0);
+    var pendingC  = convs.reduce(function(s,c){ return s + (c.status==='pending' ? parseFloat(c.commission_due||0) : 0); }, 0);
+    var paidC     = convs.reduce(function(s,c){ return s + (c.status==='paid'    ? parseFloat(c.commission_due||0) : 0); }, 0);
+    document.getElementById('stat-clicks').textContent      = _PARTNER.clicks || '—';
+    document.getElementById('stat-conversions').textContent = convs.length;
+    document.getElementById('stat-revenue').textContent     = '$' + totalRev.toFixed(2);
+    document.getElementById('stat-pending').textContent     = '$' + pendingC.toFixed(2);
+    document.getElementById('conversion-count').textContent = convs.length + ' total · $' + paidC.toFixed(2) + ' paid';
+
+    if (!convs.length) {
+      document.getElementById('conversions-table').innerHTML = '<div class="empty">No conversions yet — start sharing your link!</div>';
+      return;
+    }
+
+    var productLabels = { l2_xero:'Xero L2', l2_qb:'QB L2', erp_saas:'ERP.SaaS' };
+    document.getElementById('conversions-table').innerHTML =
+      '<table><thead><tr><th>Date</th><th>Product</th><th>Sale</th><th>Rate</th><th>Commission</th><th>Status</th></tr></thead><tbody>' +
+      convs.map(function(c) {
+        var statusClass = c.status==='paid' ? 'badge-green' : c.status==='approved' ? 'badge-gold' : 'badge-grey';
+        return '<tr>' +
+          '<td>' + (c.created_at||'').split('T')[0] + '</td>' +
+          '<td>' + (productLabels[c.product_type] || c.product_type || '—') + '</td>' +
+          '<td>$' + parseFloat(c.sale_amount||0).toFixed(2) + '</td>' +
+          '<td>' + (c.commission_pct||0) + '%</td>' +
+          '<td style="color:var(--gold);font-weight:700">$' + parseFloat(c.commission_due||0).toFixed(2) + '</td>' +
+          '<td><span class="badge ' + statusClass + '">' + (c.status||'pending') + '</span></td>' +
+          '</tr>';
+      }).join('') +
+      '</tbody></table>';
+  } catch(e) {
+    document.getElementById('conversions-table').innerHTML = '<div class="empty">Could not load conversions.</div>';
+    console.error('[portal]', e.message);
+  }
+}
+
+function copyRefLink() {
+  var link = document.getElementById('ref-link-display').textContent;
+  if (link === '—') return;
+  navigator.clipboard.writeText(link).then(function() {
+    var btn = document.querySelector('.btn-copy');
+    btn.textContent = 'Copied!';
+    setTimeout(function(){ btn.textContent = 'Copy link'; }, 2000);
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  // Check for existing session
+  try {
+    var saved = JSON.parse(sessionStorage.getItem('ll_partner_session') || 'null');
+    if (saved && saved.referral_code) {
+      _PARTNER = saved;
+      showDashboard();
+      return;
+    }
+  } catch(e) {}
+
+  // Check URL ?ref= for auto-fill
+  try {
+    var email = new URLSearchParams(window.location.search).get('email');
+    if (email) document.getElementById('login-email').value = email;
+  } catch(e) {}
+});
+</script>
+</body>
+</html>

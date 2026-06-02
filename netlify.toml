@@ -291,6 +291,11 @@
   status = 200
 
 [[redirects]]
+  from   = "/partner-portal"
+  to     = "/partner-portal.html"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 404
