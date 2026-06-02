@@ -340,12 +340,32 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
     var ref = new URLSearchParams(window.location.search).get('ref');
     if (ref && ref.length > 2 && ref.length < 50) {
       localStorage.setItem('ll_ref_code', ref);
+      // Show welcome banner
+      document.addEventListener('DOMContentLoaded', function() {
+        var bar = document.getElementById('ref-welcome-bar');
+        if (bar) {
+          bar.style.display = 'block';
+          // Try to show partner name from ref code (e.g. "stayathomebookkeeper-K3SJO" → "Stayathomebookkeeper")
+          var partnerName = ref.split('-')[0].replace(/([a-z])([A-Z])/g,'$1 $2');
+          partnerName = partnerName.charAt(0).toUpperCase() + partnerName.slice(1);
+          var nameEl = document.getElementById('ref-partner-name');
+          if (nameEl) nameEl.textContent = 'Referred by: ' + partnerName;
+        }
+      });
     }
   } catch(e) {}
 })();
 </script>
 </head>
 <body>
+
+<!-- Referral welcome banner — shown when arriving via partner link -->
+<div id="ref-welcome-bar" style="display:none;background:linear-gradient(90deg,rgba(212,168,67,.15),rgba(29,169,138,.1));border-bottom:1px solid rgba(212,168,67,.25);padding:10px 2rem;text-align:center;font-size:.82rem;color:rgba(255,255,255,.8)">
+  <span id="ref-welcome-text">🎉 Welcome! You arrived via a partner link.</span>
+  <span style="color:var(--gold);font-weight:600;margin-left:8px" id="ref-partner-name"></span>
+  <span style="color:rgba(255,255,255,.4);margin-left:8px;font-size:.75rem">Your L1 certification is free — start today.</span>
+  <button onclick="document.getElementById('ref-welcome-bar').style.display='none'" style="margin-left:16px;background:transparent;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:1rem;line-height:1">×</button>
+</div>
 
 <nav>
   <a href="/" class="nav-logo">
