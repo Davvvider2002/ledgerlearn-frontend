@@ -431,6 +431,33 @@ tr:hover td{background:#fafbfc;}
       </div>
       <div class="table-card">
         <div class="table-hdr"><div class="table-title">Affiliate records</div></div>
+        <div class="table-card" style="margin-bottom:1.5rem">
+          <div class="table-hdr"><div class="table-title">➕ Create Affiliate / Partner Link</div></div>
+          <div style="padding:1.25rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end">
+            <div><label style="font-size:.7rem;color:var(--muted);font-weight:600;display:block;margin-bottom:3px">Name</label>
+              <input id="aff-new-name" placeholder="Full name" style="border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:.82rem;width:160px"></div>
+            <div><label style="font-size:.7rem;color:var(--muted);font-weight:600;display:block;margin-bottom:3px">Email</label>
+              <input id="aff-new-email" placeholder="email@example.com" style="border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:.82rem;width:200px"></div>
+            <div><label style="font-size:.7rem;color:var(--muted);font-weight:600;display:block;margin-bottom:3px">L2 Xero %</label>
+              <input id="aff-comm-xero" type="number" value="20" min="1" max="50" style="border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:.82rem;width:70px"></div>
+            <div><label style="font-size:.7rem;color:var(--muted);font-weight:600;display:block;margin-bottom:3px">L2 QB %</label>
+              <input id="aff-comm-qb" type="number" value="20" min="1" max="50" style="border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:.82rem;width:70px"></div>
+            <div><label style="font-size:.7rem;color:var(--muted);font-weight:600;display:block;margin-bottom:3px">ERP.SaaS %</label>
+              <input id="aff-comm-erp" type="number" value="30" min="1" max="50" style="border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:.82rem;width:70px"></div>
+            <button onclick="createAffiliate()" class="btn-sm btn-gold">Generate link</button>
+            <span id="aff-create-status" style="font-size:.78rem;color:var(--muted)"></span>
+          </div>
+          <div id="aff-link-result" style="display:none;padding:0 1.25rem 1.25rem">
+            <div style="background:var(--off);border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;font-size:.82rem">
+              <strong style="color:var(--text)">Affiliate referral link:</strong><br>
+              <code id="aff-link-display" style="color:var(--teal);word-break:break-all"></code>
+              <button onclick="copyAffLink()" style="margin-left:8px;font-size:.72rem;padding:2px 8px;border:1px solid var(--border);border-radius:4px;cursor:pointer;background:var(--white)">Copy</button>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:.4rem">
+                This single link tracks L2 Xero, L2 QB, and ERP.SaaS purchases — commissions apply per product rate set above.
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="tbl-wrap" id="affiliates-table"></div>
       </div>
     </div>
@@ -1984,8 +2011,23 @@ async function loadAffiliates() {
   var ap = document.getElementById('aff-pending'); if(ap) ap.textContent = '$'+pending.toFixed(0);
   var ac = document.getElementById('aff-count'); if(ac) ac.textContent = ALL_AFFILIATES.length;
   el.innerHTML = ALL_AFFILIATES.length
-    ? '<table><thead><tr><th>Name</th><th>Email</th><th>Commission</th><th>Paid</th><th>Pending</th></tr></thead><tbody>' +
-      ALL_AFFILIATES.map(function(a){ return '<tr><td>' + esc(a.name||'—') + '</td><td>' + esc(a.email||'—') + '</td><td>' + (a.commission||20) + '%</td><td>$' + (parseFloat(a.paid_amount)||0).toFixed(0) + '</td><td>$' + (parseFloat(a.pending_amount)||0).toFixed(0) + '</td></tr>'; }).join('') + '</tbody></table>'
+    ? '<table style="font-size:.78rem"><thead><tr><th>Name</th><th>Email</th><th>Referral Link</th><th>L2X%</th><th>QB%</th><th>ERP%</th><th>Conversions</th><th>Revenue</th><th>Commission</th></tr></thead><tbody>' +
+      ALL_AFFILIATES.map(function(a) {
+        var rates = a.commission_rates || {};
+        var link = 'https://ledgerlearn.pro/?ref=' + (a.referral_code||'');
+        return '<tr>'
+          + '<td><strong>' + esc(a.name||'—') + '</strong></td>'
+          + '<td>' + esc(a.email||'—') + '</td>'
+          + '<td><a href="' + link + '" target="_blank" style="color:var(--teal);font-size:.72rem">'
+          + esc(a.referral_code||'—') + '</a></td>'
+          + '<td>' + (rates.l2_xero||a.commission_pct||20) + '%</td>'
+          + '<td>' + (rates.l2_qb||20) + '%</td>'
+          + '<td>' + (rates.erp_saas||30) + '%</td>'
+          + '<td style="text-align:center">' + (a.total_conversions||0) + '</td>'
+          + '<td>$' + parseFloat(a.total_revenue||a.revenue_total||0).toFixed(0) + '</td>'
+          + '<td style="color:var(--teal);font-weight:700">$' + parseFloat(a.total_commission||a.commission_pending||0).toFixed(0) + '</td>'
+          + '</tr>';
+      }).join('') + '</tbody></table>'
     : '<div class="empty-state"><div class="empty-icon">🤝</div><div class="empty-text">No affiliates yet.</div></div>';
 }
 
@@ -2879,6 +2921,39 @@ function showStatus(id, msg, type) {
 
 function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+
+async function createAffiliate() {
+  var name  = document.getElementById('aff-new-name').value.trim();
+  var email = document.getElementById('aff-new-email').value.trim();
+  var xero  = document.getElementById('aff-comm-xero').value;
+  var qb    = document.getElementById('aff-comm-qb').value;
+  var erp   = document.getElementById('aff-comm-erp').value;
+  if (!name || !email) { document.getElementById('aff-create-status').textContent = 'Name and email required'; return; }
+  document.getElementById('aff-create-status').textContent = 'Creating…';
+  var res = await adminFetch('create-affiliate', {
+    name, email,
+    commissionL2Xero: xero, commissionL2QB: qb, commissionErpSaas: erp
+  });
+  if (res && res.ok) {
+    var code = res.referral_code;
+    var link = 'https://ledgerlearn.pro/?ref=' + code;
+    document.getElementById('aff-link-display').textContent = link;
+    document.getElementById('aff-link-result').style.display = 'block';
+    document.getElementById('aff-create-status').textContent = '✓ Created';
+    loadAffiliates();
+  } else {
+    document.getElementById('aff-create-status').textContent = (res && res.error) || 'Error creating affiliate';
+  }
+}
+
+function copyAffLink() {
+  var link = document.getElementById('aff-link-display').textContent;
+  navigator.clipboard.writeText(link).then(function(){
+    document.querySelector('#aff-link-result button').textContent = 'Copied!';
+    setTimeout(function(){ document.querySelector('#aff-link-result button').textContent = 'Copy'; }, 2000);
+  });
 }
 
 </script>

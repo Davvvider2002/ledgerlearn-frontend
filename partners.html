@@ -346,29 +346,38 @@ function submitPartnerApp() {
     ts: new Date().toISOString()
   };
 
-  // Save to localStorage (for admin panel to pick up)
-  try {
-    var existing = JSON.parse(localStorage.getItem('ll_admin_partners') || '[]');
-    existing.push(app);
-    localStorage.setItem('ll_admin_partners', JSON.stringify(existing));
-  } catch(e) {}
+  // Save to Supabase via admin-data
+  var btn = document.querySelector('#partner-form button[type="submit"]') ||
+            document.querySelector('#partner-form .btn-submit');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
 
-  // Send to Brevo via subscribe function
-  fetch('/.netlify/functions/subscribe', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      email: email,
-      name: name,
-      listId: 4,  // Partner list in Brevo
-      attributes: { INSTITUTION: inst, PARTNER_TYPE: type }
+  fetch('/.netlify/functions/admin-data', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ action: 'submit-partner', data: app })
+  }).then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Submit application'; }
+      // Also add to Brevo
+      fetch('/.netlify/functions/subscribe', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          email: email, name: name, listId: 5,
+          source: 'partner-application'
+        })
+      }).catch(function(){});
+      document.getElementById('partner-form').style.display = 'none';
+      document.getElementById('partner-success').style.display = 'block';
     })
-  }).catch(function(){});
-
-  // Show success
-  document.getElementById('partner-form').style.display = 'none';
-  document.getElementById('partner-success').style.display = 'block';
+    .catch(function(e) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Submit application'; }
+      var errEl = document.getElementById('p-err');
+      if (errEl) errEl.textContent = 'Submission failed. Please try again.';
+      console.error('[partners] submit error:', e.message);
+    });
 }
 </script>
+<script src="/ll-chatbot.js"></script>
 </body>
 </html>
