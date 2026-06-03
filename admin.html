@@ -860,12 +860,41 @@ tr:hover td{background:#fafbfc;}
             <input type="text" id="paypal-qb-l2" placeholder="Create in PayPal dashboard first"/>
           </div>
           <div class="form-field">
-            <label>PayPal plan ID &mdash; Academy membership</label>
-            <input type="text" id="paypal-academy" placeholder="Create in PayPal dashboard first"/>
+            <label>PayPal plan ID &mdash; Academy Monthly</label>
+            <input type="text" id="paypal-academy" placeholder="Monthly subscription plan ID"/>
+          </div>
+          <div class="form-field">
+            <label>PayPal plan ID &mdash; Academy Annual</label>
+            <input type="text" id="paypal-academy-annual" placeholder="Annual subscription plan ID"/>
           </div>
         </div>
-        <div class="form-actions">
-          <button class="btn-save" onclick="saveTrackConfig()">Save pricing config</button>
+
+        <!-- ERP Academy Live Pricing -->
+        <div class="config-section" style="margin-top:1.5rem">
+          <div class="config-section-title">ERP Academy Pricing (live — updates modal immediately)</div>
+          <div class="config-grid">
+            <div class="form-field">
+              <label>Monthly price ($)</label>
+              <input type="number" id="academy-price-monthly" value="29" min="1" step="0.01" style="width:120px"/>
+            </div>
+            <div class="form-field">
+              <label>Annual price ($)</label>
+              <input type="number" id="academy-price-annual" value="199" min="1" step="0.01" style="width:120px"/>
+            </div>
+            <div class="form-field">
+              <label>Monthly label (e.g. "Cancel anytime")</label>
+              <input type="text" id="academy-label-monthly" value="Cancel anytime" style="width:200px"/>
+            </div>
+            <div class="form-field">
+              <label>Annual label (e.g. "Save 43%")</label>
+              <input type="text" id="academy-label-annual" value="Save 43%" style="width:200px"/>
+            </div>
+          </div>
+          <div class="notice notice-teal" id="academy-price-saved" style="display:none;margin-top:.5rem">✓ Prices saved — ERP modal will show updated prices immediately.</div>
+        </div>
+
+        <div class="form-actions" style="margin-top:1.5rem">
+          <button class="btn-save" onclick="saveTrackConfig()">Save all pricing config</button>
         </div>
       </div>
     </div>
@@ -2546,18 +2575,26 @@ function toggleTrack(btn, track, level) {
   btn.className = btn.classList.contains('on') ? 'tog off' : 'tog on';
 }
 async function saveTrackConfig() {
-  var togVal = function(id){ var el=document.getElementById(id); return el ? el.classList.contains('on') : false; };
   var config = {
-    xero_l1_live: togVal('tog-xero-l1'), xero_l2_live: togVal('tog-xero-l2'), xero_l3_live: togVal('tog-xero-l3'),
-    qb_l1_live:   togVal('tog-qb-l1'),   qb_l2_live:   togVal('tog-qb-l2'),   qb_l3_live:   togVal('tog-qb-l3'),
-    sage_l1_live: togVal('tog-sage-l1'),  sage_l2_live: togVal('tog-sage-l2'),  sage_l3_live: togVal('tog-sage-l3'),
-    l2_price:     parseFloat(document.getElementById('l2-price-cfg').value)||49,
-    paypal_xero_l2: document.getElementById('paypal-xero-l2').value,
-    paypal_qb_l2:   document.getElementById('paypal-qb-l2').value,
-    paypal_academy: document.getElementById('paypal-academy').value,
+    paypal_plan_xero_l2:    (document.getElementById('paypal-xero-l2')        ||{}).value || '',
+    paypal_plan_qb_l2:      (document.getElementById('paypal-qb-l2')          ||{}).value || '',
+    paypal_plan_academy:    (document.getElementById('paypal-academy')         ||{}).value || '',
+    paypal_plan_academy_annual:(document.getElementById('paypal-academy-annual')||{}).value || '',
+    academy_price_monthly:  parseFloat((document.getElementById('academy-price-monthly')||{}).value) || 29,
+    academy_price_annual:   parseFloat((document.getElementById('academy-price-annual') ||{}).value) || 199,
+    academy_label_monthly:  (document.getElementById('academy-label-monthly') ||{}).value || 'Cancel anytime',
+    academy_label_annual:   (document.getElementById('academy-label-annual')  ||{}).value || 'Save 43%',
+    l2_price:               parseFloat((document.getElementById('l2-price-cfg')||{}).value) || 49,
   };
-  var result = await adminFetch('save-track-config', { config });
-  inlineToast(result ? 'Track config saved ✓' : 'Save failed', result ? 'success' : 'error');
+
+  var res = await adminFetch('update-config', { key: 'track_config', value: JSON.stringify(config) });
+  if (res && res.ok) {
+    var savedEl = document.getElementById('academy-price-saved');
+    if (savedEl) { savedEl.style.display='block'; setTimeout(function(){ savedEl.style.display='none'; }, 3000); }
+    inlineToast('✓ Pricing config saved');
+  } else {
+    inlineToast('Save failed: ' + ((res && res.error) || 'unknown error'), 'error');
+  }
 }
 
 // ── JOB BOARD ────────────────────────────────────────────────
