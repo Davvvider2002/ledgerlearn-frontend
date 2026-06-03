@@ -1715,6 +1715,10 @@ document.getElementById('admin-pass').addEventListener('keydown', function(e){ i
 // ── CORE FETCH ───────────────────────────────────────────────
 async function adminFetch(action, extra) {
   var token = _adminToken || sessionStorage.getItem('ll_admin_token') || '';
+  if (!token) {
+    inlineToast('Session expired — please log out and log in again', 'error');
+    return null;
+  }
   try {
     var res = await fetch('/.netlify/functions/admin-data', {
       method: 'POST',
@@ -1722,9 +1726,19 @@ async function adminFetch(action, extra) {
       body: JSON.stringify(Object.assign({ action: action }, extra || {})),
     });
     var data = await res.json();
-    if (!data.ok) { console.warn('[Admin]', action, data.error); return null; }
+    if (res.status === 401) {
+      inlineToast('Session expired — please log out and log in again', 'error');
+      return null;
+    }
+    if (!data.ok) {
+      console.error('[Admin]', action, res.status, data.error);
+      return { ok: false, error: data.error || 'Server error ' + res.status };
+    }
     return data;
-  } catch(e) { console.warn('[Admin] fetch failed:', action, e.message); return null; }
+  } catch(e) {
+    console.error('[Admin] fetch failed:', action, e.message);
+    return { ok: false, error: 'Network error: ' + e.message };
+  }
 }
 
 async function adminPost(action, payload) {
@@ -2639,7 +2653,7 @@ async function saveTrackConfig() {
     if (savedEl) { savedEl.style.display='block'; setTimeout(function(){ savedEl.style.display='none'; }, 3000); }
     inlineToast('✓ Pricing config saved');
   } else {
-    inlineToast('Save failed: ' + ((res && res.error) || 'unknown error'), 'error');
+    inlineToast('Save failed: ' + (res ? res.error : 'Session expired — log out and back in'), 'error');
   }
 }
 
@@ -2852,7 +2866,7 @@ async function saveAcademyPricing() {
     statusEl.style.color = 'var(--teal)';
     setTimeout(function(){ statusEl.textContent = ''; }, 3000);
   } else {
-    statusEl.textContent = (res && res.error) || 'Save failed';
+    statusEl.textContent = (res && res.error) ? res.error : 'Session expired — log out and back in';
     statusEl.style.color = 'var(--red)';
   }
 }
