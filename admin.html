@@ -2633,7 +2633,7 @@ async function saveTrackConfig() {
     l2_price:               parseFloat((document.getElementById('l2-price-cfg')||{}).value) || 49,
   };
 
-  var res = await adminFetch('update-config', { key: 'track_config', value: JSON.stringify(config) });
+  var res = await adminFetch('save-track-config', { config: config });
   if (res && res.ok) {
     var savedEl = document.getElementById('academy-price-saved');
     if (savedEl) { savedEl.style.display='block'; setTimeout(function(){ savedEl.style.display='none'; }, 3000); }
@@ -2842,7 +2842,11 @@ async function saveAcademyPricing() {
       paypal_plan_academy_annual: (document.getElementById('pp-academy-annual-plan')||{}).value || '',
     }
   };
-  var res = await adminFetch('update-config-merge', cfg);
+  // Fetch current config, merge new fields, save whole object
+  var curRes = await adminFetch('track-config');
+  var curCfg = (curRes && curRes.config) ? curRes.config : {};
+  var mergedCfg = Object.assign({}, curCfg, cfg.merge);
+  var res = await adminFetch('save-track-config', { config: mergedCfg });
   if (res && res.ok) {
     statusEl.textContent = '✓ Saved — modal updates immediately';
     statusEl.style.color = 'var(--teal)';
