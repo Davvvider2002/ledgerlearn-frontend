@@ -845,7 +845,24 @@ exports.handler = async function(event) {
         return json(200, { ok: true, value: gcVal });
       }
 
-      case 'update-config-merge': {
+      case 'update-config': {
+        const ucKey = body.key;
+        if (!ucKey) return json(400, { error: 'key required' });
+        const ucExist = await supa('/rest/v1/platform_config?key=eq.' + encodeURIComponent(ucKey) + '&select=key&limit=1');
+        if (Array.isArray(ucExist) && ucExist.length > 0) {
+          await supa('/rest/v1/platform_config?key=eq.' + encodeURIComponent(ucKey), 'PATCH', {
+            value: body.value, updated_at: new Date().toISOString()
+          });
+        } else {
+          await supa('/rest/v1/platform_config', 'POST', {
+            key: ucKey, value: body.value, updated_at: new Date().toISOString()
+          });
+        }
+        await auditLog('update-config', ucKey);
+        return json(200, { ok: true });
+      }
+
+     case 'update-config-merge': {
         const ucmKey = body.key; const ucmMerge = body.merge;
         if (!ucmKey || !ucmMerge) return json(400, { error: 'key and merge required' });
         const ucmRows = await supa('/rest/v1/platform_config?key=eq.' + encodeURIComponent(ucmKey) + '&select=value&limit=1');
