@@ -894,7 +894,7 @@ function handleStageClick(stage) {
 
 function openErpModal(refCode) {
   var existing = document.getElementById("erp-modal-overlay");
-  if (existing) { existing.style.display = "flex"; return; }
+  if (existing) { existing.style.display = "flex"; fetchErpPrices(); return; }
   var overlay = document.createElement("div");
   overlay.id = "erp-modal-overlay";
   overlay.style.cssText = "position:fixed;inset:0;background:rgba(11,31,58,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem";
@@ -918,6 +918,10 @@ function openErpModal(refCode) {
     "</div>";
   document.body.appendChild(overlay);
   // Fetch live prices
+  fetchErpPrices();
+}
+
+function fetchErpPrices() {
   fetch("/.netlify/functions/academy-api", {
     method:"POST", headers:{"Content-Type":"application/json"},
     body: JSON.stringify({ action:"get-status" })
@@ -935,8 +939,7 @@ function openErpModal(refCode) {
     if (la) la.textContent = d.labelAnnual  || "Save 43%";
     if (bm) bm.textContent = "Join Monthly \u2014 $" + (d.priceMonthly||29) + "/mo";
     if (ba) ba.textContent = "Join Annual \u2014 $"  + (d.priceAnnual||199)  + "/yr";
-    window._erpRefCode = refCode;
-  window._erpPlans = { monthly: d.paypalPlanId||"", annual: d.paypalPlanAnnualId||"" };
+    window._erpPlans  = { monthly: d.paypalPlanId||"", annual: d.paypalPlanAnnualId||"" };
     window._erpPrices = { monthly: d.priceMonthly||29, annual: d.priceAnnual||199 };
   }).catch(function(){});
 }
