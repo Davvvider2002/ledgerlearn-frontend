@@ -140,12 +140,12 @@ exports.handler = async function(event) {
     return json(200, {
       ok:                 true,
       academyLive:        academyLive,
-      paypalPlanId:       cfg.paypal_plan_academy        || paypalAcademyPlan || '',
-      paypalPlanAnnualId: cfg.paypal_plan_academy_annual || '',
+      paypalPlanId:       cfg.paypal_plan_academy        || cfg.paypal_academy || paypalAcademyPlan || 'P-0R916708HA5606900NHWLPPQ',
+      paypalPlanAnnualId: cfg.paypal_plan_academy_annual || 'P-3FY04151KC1394702NIQBYWI',
       priceMonthly:       cfg.academy_price_monthly      || 99,
       priceAnnual:        cfg.academy_price_annual       || 999,
       labelMonthly:       cfg.academy_label_monthly      || 'Cancel anytime',
-      labelAnnual:        cfg.academy_label_annual       || 'Save 43%',
+      labelAnnual:        cfg.academy_label_annual       || 'Save 16%',
     });
   }
 
