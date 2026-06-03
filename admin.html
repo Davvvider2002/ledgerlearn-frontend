@@ -875,11 +875,11 @@ tr:hover td{background:#fafbfc;}
           <div class="config-grid">
             <div class="form-field">
               <label>Monthly price ($)</label>
-              <input type="number" id="academy-price-monthly" value="29" min="1" step="0.01" style="width:120px"/>
+              <input type="number" id="academy-price-monthly" value="99" min="1" step="0.01" style="width:120px"/>
             </div>
             <div class="form-field">
               <label>Annual price ($)</label>
-              <input type="number" id="academy-price-annual" value="199" min="1" step="0.01" style="width:120px"/>
+              <input type="number" id="academy-price-annual" value="999" min="1" step="0.01" style="width:120px"/>
             </div>
             <div class="form-field">
               <label>Monthly label (e.g. "Cancel anytime")</label>
@@ -1293,7 +1293,7 @@ tr:hover td{background:#fafbfc;}
             <div class="settings-title" style="font-size:.78rem">Monthly plan</div>
             <div class="form-field">
               <label>Price ($)</label>
-              <input type="number" id="cfg-academy-price-monthly" value="29" min="1" step="0.01"/>
+              <input type="number" id="cfg-academy-price-monthly" value="99" min="1" step="0.01"/>
             </div>
             <div class="form-field">
               <label>Sublabel (e.g. "Cancel anytime")</label>
@@ -1304,7 +1304,7 @@ tr:hover td{background:#fafbfc;}
             <div class="settings-title" style="font-size:.78rem">Annual plan</div>
             <div class="form-field">
               <label>Price ($)</label>
-              <input type="number" id="cfg-academy-price-annual" value="199" min="1" step="0.01"/>
+              <input type="number" id="cfg-academy-price-annual" value="999" min="1" step="0.01"/>
             </div>
             <div class="form-field">
               <label>Sublabel (e.g. "Save 43%")</label>
@@ -1539,7 +1539,7 @@ tr:hover td{background:#fafbfc;}
     <div class="modal-title">Add Academy Member <button class="modal-close" onclick="closeModal('modal-member')">&#x2715;</button></div>
     <div class="form-field"><label>Email</label><input type="email" id="mem-email" placeholder="member@example.com"/></div>
     <div class="form-field"><label>Membership tier</label>
-      <select id="mem-tier"><option value="trial">Free trial (14 days)</option><option value="monthly">Paid monthly ($29)</option><option value="annual">Paid annual ($249)</option></select>
+      <select id="mem-tier"><option value="trial">Free trial (14 days)</option><option value="monthly">Paid monthly ($99)</option><option value="annual">Paid annual ($999)</option></select>
     </div>
     <div class="form-actions">
       <button class="btn-save" onclick="saveMember()">Add member</button>
@@ -2626,8 +2626,8 @@ async function saveTrackConfig() {
     paypal_plan_qb_l2:      (document.getElementById('paypal-qb-l2')          ||{}).value || '',
     paypal_plan_academy:    (document.getElementById('paypal-academy')         ||{}).value || '',
     paypal_plan_academy_annual:(document.getElementById('paypal-academy-annual')||{}).value || '',
-    academy_price_monthly:  parseFloat((document.getElementById('academy-price-monthly')||{}).value) || 29,
-    academy_price_annual:   parseFloat((document.getElementById('academy-price-annual') ||{}).value) || 199,
+    academy_price_monthly:  parseFloat((document.getElementById('academy-price-monthly')||{}).value) || 99,
+    academy_price_annual:   parseFloat((document.getElementById('academy-price-annual') ||{}).value) || 999,
     academy_label_monthly:  (document.getElementById('academy-label-monthly') ||{}).value || 'Cancel anytime',
     academy_label_annual:   (document.getElementById('academy-label-annual')  ||{}).value || 'Save 43%',
     l2_price:               parseFloat((document.getElementById('l2-price-cfg')||{}).value) || 49,
@@ -2834,8 +2834,8 @@ async function saveAcademyPricing() {
   var cfg = {
     key: 'track_config',
     merge: {
-      academy_price_monthly:  parseFloat(document.getElementById('cfg-academy-price-monthly').value) || 29,
-      academy_price_annual:   parseFloat(document.getElementById('cfg-academy-price-annual').value)  || 199,
+      academy_price_monthly:  parseFloat(document.getElementById('cfg-academy-price-monthly').value) || 99,
+      academy_price_annual:   parseFloat(document.getElementById('cfg-academy-price-annual').value)  || 999,
       academy_label_monthly:  document.getElementById('cfg-academy-label-monthly').value || 'Cancel anytime',
       academy_label_annual:   document.getElementById('cfg-academy-label-annual').value  || 'Save 43%',
       paypal_plan_academy:    (document.getElementById('pp-academy-monthly-plan')||{}).value || '',

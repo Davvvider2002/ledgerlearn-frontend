@@ -142,15 +142,15 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
       <h1 class="hero-title">Go beyond certification.<br><span>Become a respected<br>professional.</span></h1>
       <p class="hero-sub">Monthly live sessions, a growing resource library, ERP consulting project referrals, and the backing of a 130k+ accounting professional community.</p>
       <div class="hero-ctas">
-        <button class="btn-join" onclick="openJoinModal()">Join Academy &mdash; $29/mo &rarr;</button>
+        <button class="btn-join" onclick="openJoinModal()">Join Academy &mdash; <span id="acad-price-hero">$99</span>/mo &rarr;</button>
         <button class="btn-learn" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Learn more &#x2193;</button>
       </div>
       <div class="hero-note">Cancel anytime &middot; 14-day free trial &middot; All marketplace products included</div>
     </div>
     <div class="hero-card">
       <div class="hc-stat"><div class="hc-val">130k+</div><div class="hc-label">Community members</div></div>
-      <div class="hc-stat"><div class="hc-val">$29</div><div class="hc-label">/month</div></div>
-      <div class="hc-stat" style="margin-bottom:0;"><div class="hc-val">$249</div><div class="hc-label">/year (save 30%)</div></div>
+      <div class="hc-stat"><div class="hc-val"><span id="acad-price-monthly-card">$99</span></div><div class="hc-label">/month</div></div>
+      <div class="hc-stat" style="margin-bottom:0;"><div class="hc-val"><span id="acad-price-annual-card">$999</span></div><div class="hc-label" id="acad-label-annual-card">/year (save 30%)</div></div>
     </div>
   </div>
 </div>
@@ -217,7 +217,7 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
       <!-- Academy -->
       <div class="pricing-card featured">
         <div class="pc-tier purple">Academy membership</div>
-        <div class="pc-price">$29 <span class="period">/month &middot; or $249/year</span></div>
+        <div class="pc-price"><span id="acad-price-pc">$99</span> <span class="period" id="acad-price-pc-annual">/month &middot; or $999/year</span></div>
         <div class="pc-desc" style="color:rgba(255,255,255,.5);">Everything in Free, plus the full Academy suite.</div>
         <ul class="pc-features">
           <li><span class="check">&#x2713;</span> Everything in Free</li>
@@ -265,8 +265,8 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
     <div class="form-field">
       <label>Membership plan</label>
       <select id="join-tier">
-        <option value="monthly">Monthly &mdash; $29/month</option>
-        <option value="annual">Annual &mdash; $249/year (save 30%)</option>
+        <option value="monthly" id="acad-opt-monthly">Monthly &mdash; $99/month</option>
+        <option value="annual" id="acad-opt-annual">Annual &mdash; $999/year (save 17%)</option>
       </select>
     </div>
     <button class="btn-modal-join" id="join-btn" onclick="initiateJoin()">Continue to payment &rarr;</button>
@@ -284,7 +284,60 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
 window.addEventListener('DOMContentLoaded', function() {
   checkMembership();
   loadResourcePreview();
+  loadAcademyPricing();
+  applyUrlParams();
 });
+
+async function loadAcademyPricing() {
+  try {
+    var res = await fetch('/.netlify/functions/academy-api', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'get-status' })
+    });
+    var d = await res.json();
+    if (!d || !d.ok) return;
+    var pm = d.priceMonthly || 99;
+    var pa = d.priceAnnual  || 999;
+    var pctSave = Math.round((1 - pa/(pm*12))*100);
+    var la = d.labelAnnual || ('Save ' + pctSave + '%');
+
+    function setText(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+    setText('acad-price-hero',         '$' + pm);
+    setText('acad-price-monthly-card', '$' + pm);
+    setText('acad-price-annual-card',  '$' + pa);
+    setText('acad-price-pc',           '$' + pm);
+    setText('acad-price-pc-annual',    '/month · or $' + pa + '/year');
+    setText('acad-label-annual-card',  '/year (' + la + ')');
+
+    var optM = document.getElementById('acad-opt-monthly');
+    var optA = document.getElementById('acad-opt-annual');
+    if (optM) optM.textContent = 'Monthly — $' + pm + '/month';
+    if (optA) optA.textContent = 'Annual — $' + pa + '/year (' + la + ')';
+
+    // Update hero button
+    var heroBtn = document.querySelector('[onclick="openJoinModal()"]');
+    if (heroBtn) heroBtn.innerHTML = 'Join Academy — $' + pm + '/mo →';
+
+    window._academyPrices = {
+      monthly: pm, annual: pa,
+      planIdMonthly: d.paypalPlanId       || '',
+      planIdAnnual:  d.paypalPlanAnnualId || ''
+    };
+  } catch(e) { console.warn('[academy] pricing:', e.message); }
+}
+
+function applyUrlParams() {
+  try {
+    var p     = new URLSearchParams(window.location.search);
+    var email = p.get('email');
+    var tier  = p.get('tier');
+    var ref   = p.get('ref');
+    if (email) { var el=document.getElementById('join-email'); if(el) el.value=email; }
+    if (tier)  { var el=document.getElementById('join-tier');  if(el) el.value=tier;  }
+    if (ref)   localStorage.setItem('ll_ref_code', ref);
+    if (email && tier) setTimeout(openJoinModal, 600);
+  } catch(e) {}
+}
 
 function getUserEmail() {
   try { var u = JSON.parse(localStorage.getItem('ll_user')||'{}'); return u.email||''; } catch(e) { return ''; }
@@ -393,17 +446,24 @@ async function initiateJoin() {
       btn.disabled = false; return;
     }
 
-    if (!statusData.paypalPlanId) {
-      statusEl.textContent = 'Academy payment not yet configured. Email hello@ledgerlearn.pro to join.';
+    // Use tier-specific plan ID — prefer cached prices from loadAcademyPricing
+    var prices  = window._academyPrices || {};
+    var planId  = tier === 'annual'
+      ? (prices.planIdAnnual  || statusData.paypalPlanAnnualId || '')
+      : (prices.planIdMonthly || statusData.paypalPlanId       || '');
+
+    if (!planId) {
+      statusEl.textContent = 'Payment not yet configured. Email hello@ledgerlearn.pro to join.';
       statusEl.className = 'modal-status error'; btn.disabled = false; return;
     }
 
-    // Store pending subscription data
-    sessionStorage.setItem('ll_pending_academy', JSON.stringify({ email, tier }));
-    // PayPal subscription flow: open PayPal with plan ID
-    var ppUrl = 'https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=' + encodeURIComponent(statusData.paypalPlanId)
-      + '&redirect_uri=' + encodeURIComponent(window.location.origin + '/academy?confirm=1')
-      + '&cancel_uri=' + encodeURIComponent(window.location.origin + '/academy?cancel=1');
+    var refCode = localStorage.getItem('ll_ref_code') || '';
+    sessionStorage.setItem('ll_pending_erp', JSON.stringify({ email, tier, refCode }));
+
+    var ppUrl = 'https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=' + encodeURIComponent(planId)
+      + '&custom_id=' + encodeURIComponent(email + '|erp_saas|' + tier + '|' + refCode)
+      + '&return_url=' + encodeURIComponent(window.location.origin + '/academy-success')
+      + '&cancel_url=' + encodeURIComponent(window.location.origin + '/academy?cancel=1');
     statusEl.textContent = 'Redirecting to PayPal...';
     window.location.href = ppUrl;
   } catch(e) {

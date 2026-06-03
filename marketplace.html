@@ -216,7 +216,7 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
       <div class="au-sub">Academy members get access to the full content library &mdash; every marketplace product, template, and guide &mdash; included at no extra cost.</div>
     </div>
     <div class="au-right">
-      <div class="au-price">$29</div>
+      <div class="au-price" id="mkt-acad-price">$99</div>
       <div class="au-period">/month &middot; cancel anytime</div>
       <a class="au-btn" href="/academy">Join Academy &rarr;</a>
     </div>
@@ -282,6 +282,20 @@ var CAT_BTN    = { ai:'btn-ai', bookkeeping:'btn-book', erp:'btn-erp', firm:'btn
 window.addEventListener('DOMContentLoaded', function() {
   loadProducts();
   checkL2Status();
+
+  // Fetch live academy price
+  fetch('/.netlify/functions/academy-api', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'get-status' })
+  }).then(function(r){ return r.json(); }).then(function(d) {
+    if (!d || !d.ok) return;
+    var pm = d.priceMonthly || 99;
+    var el = document.getElementById('mkt-acad-price');
+    if (el) el.textContent = '$' + pm;
+    // Update join button text
+    var btn = document.querySelector('.au-btn');
+    if (btn && btn.textContent.includes('$')) btn.textContent = 'Join for $' + pm + '/mo →';
+  }).catch(function(){});
 });
 
 async function loadProducts() {

@@ -911,8 +911,8 @@ function openErpModal(refCode) {
     "<div style=\"margin-bottom:1rem\"><label style=\"font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;display:block;margin-bottom:.35rem\">Your email</label>" +
     "<input id=\"erp-modal-email\" type=\"email\" placeholder=\"you@example.com\" style=\"width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;font-size:.88rem;font-family:inherit;outline:none\"></div>" +
     "<div style=\"display:flex;gap:.75rem;margin-bottom:1rem\">" +
-    "<button id=\"erp-btn-monthly\" data-tier=\"monthly\" onclick=\"joinErpAcademy(this.dataset.tier)\" style=\"flex:1;background:var(--teal);color:#fff;border:none;padding:12px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit\">Join Monthly \u2014 $29/mo</button>" +
-    "<button id=\"erp-btn-annual\" data-tier=\"annual\" onclick=\"joinErpAcademy(this.dataset.tier)\" style=\"flex:1;background:var(--gold);color:var(--navy);border:none;padding:12px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit\">Join Annual \u2014 $199/yr</button>" +
+    "<button id=\"erp-btn-monthly\" data-tier=\"monthly\" onclick=\"joinErpAcademy(this.dataset.tier)\" style=\"flex:1;background:var(--teal);color:#fff;border:none;padding:12px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit\">Join Monthly \u2014 $99/mo</button>" +
+    "<button id=\"erp-btn-annual\" data-tier=\"annual\" onclick=\"joinErpAcademy(this.dataset.tier)\" style=\"flex:1;background:var(--gold);color:var(--navy);border:none;padding:12px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit\">Join Annual \u2014 $999/yr</button>" +
     "</div>" +
     "<div id=\"erp-modal-status\" style=\"font-size:.8rem;min-height:1.2rem\"></div>" +
     "</div>";
@@ -933,14 +933,14 @@ function fetchErpPrices() {
     var la = document.getElementById("erp-label-annual");
     var bm = document.getElementById("erp-btn-monthly");
     var ba = document.getElementById("erp-btn-annual");
-    if (pm) pm.innerHTML = "$" + (d.priceMonthly||29) + "<span style=\"font-size:.8rem;font-weight:400;color:#6b7280\">/mo</span>";
-    if (pa) pa.innerHTML = "$" + (d.priceAnnual||199)  + "<span style=\"font-size:.8rem;font-weight:400;color:rgba(255,255,255,.5)\">/yr</span>";
+    if (pm) pm.innerHTML = "$" + (d.priceMonthly||99) + "<span style=\"font-size:.8rem;font-weight:400;color:#6b7280\">/mo</span>";
+    if (pa) pa.innerHTML = "$" + (d.priceAnnual||999)  + "<span style=\"font-size:.8rem;font-weight:400;color:rgba(255,255,255,.5)\">/yr</span>";
     if (lm) lm.textContent = d.labelMonthly || "Cancel anytime";
     if (la) la.textContent = d.labelAnnual  || "Save 43%";
-    if (bm) bm.textContent = "Join Monthly \u2014 $" + (d.priceMonthly||29) + "/mo";
-    if (ba) ba.textContent = "Join Annual \u2014 $"  + (d.priceAnnual||199)  + "/yr";
+    if (bm) bm.textContent = "Join Monthly \u2014 $" + (d.priceMonthly||99) + "/mo";
+    if (ba) ba.textContent = "Join Annual \u2014 $"  + (d.priceAnnual||999)  + "/yr";
     window._erpPlans  = { monthly: d.paypalPlanId||"", annual: d.paypalPlanAnnualId||"" };
-    window._erpPrices = { monthly: d.priceMonthly||29, annual: d.priceAnnual||199 };
+    window._erpPrices = { monthly: d.priceMonthly||99, annual: d.priceAnnual||999 };
   }).catch(function(){});
 }
 
