@@ -125,6 +125,14 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .journey-step-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;color:var(--text-muted);}
 .journey-step-title{font-family:\'Syne\',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:0.5rem;}
 .journey-step-text{font-size:0.82rem;color:var(--text-muted);line-height:1.6;margin-bottom:1rem;}
+.journey-step{transition:box-shadow .15s,border-color .15s;}
+.journey-step:hover{box-shadow:0 4px 24px rgba(0,0,0,.08);border-color:rgba(29,169,138,.3);}
+.journey-step.active-stage{border-color:var(--teal);box-shadow:0 4px 24px rgba(29,169,138,.12);}
+.stage-warn{background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:.6rem .875rem;font-size:.8rem;color:var(--mid);margin-bottom:.5rem;line-height:1.5;}
+.journey-btn{display:inline-block;padding:9px 18px;border-radius:8px;font-size:.82rem;font-weight:700;text-decoration:none;font-family:inherit;text-align:center;}
+.journey-btn-teal{background:var(--teal);color:#fff;}
+.journey-btn-gold{background:var(--gold);color:var(--navy);}
+.journey-btn-navy{background:var(--navy);color:#fff;border:1px solid var(--teal);}
 .journey-step-tag{display:inline-block;font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:100px;}
 .tag-free{background:var(--teal-pale);color:var(--teal);}.tag-paid{background:var(--gold-pale);color:#8a6200;}.tag-erp{background:rgba(11,31,58,0.07);color:var(--navy);}
 .tracks-section{background:var(--navy);padding:6rem 2rem;}
@@ -693,33 +701,41 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);paddin
     <h2 class="section-h2">One system. Four stages.<br>A completely different career.</h2>
     <p class="section-sub">Whether you are starting from zero or already practising, LedgerLearn meets you where you are and takes you further than any other platform.</p>
     <div class="journey-track">
-      <div class="journey-step">
+      <div class="journey-step" id="jstep-1" style="cursor:pointer" onclick="handleStageClick(1)">
         <div class="journey-step-num j1">1</div>
         <div class="journey-step-label" style="color:var(--teal)">Stage 1</div>
         <div class="journey-step-title">Get software-certified</div>
         <div class="journey-step-text">Master Xero, QuickBooks, or Sage through guided walkthroughs and live simulations. Pass a timed assessment. Earn a verifiable certificate.</div>
         <span class="journey-step-tag tag-free">L1 Free</span>
+        <div class="journey-step-cta" id="jcta-1" style="display:none;margin-top:1rem">
+          <a href="/learn" class="journey-btn journey-btn-teal">Start L1 — free →</a>
+        </div>
       </div>
-      <div class="journey-step">
+      <div class="journey-step" id="jstep-2" style="cursor:pointer" onclick="handleStageClick(2)">
         <div class="journey-step-num j2">2</div>
         <div class="journey-step-label" style="color:var(--gold)">Stage 2</div>
         <div class="journey-step-title">Go professional</div>
         <div class="journey-step-text">Advance to VAT, payroll, bank rules, and financial reporting. The L2 assessment is what accountancy firms test for in interviews.</div>
         <span class="journey-step-tag tag-paid">L2 &middot; $49 one-time</span>
+        <div class="journey-step-cta" id="jcta-2" style="display:none;margin-top:1rem"></div>
       </div>
-      <div class="journey-step">
+      <div class="journey-step" id="jstep-3" style="cursor:pointer" onclick="handleStageClick(3)">
         <div class="journey-step-num j3">3</div>
         <div class="journey-step-label" style="color:var(--text-muted)">Stage 3</div>
         <div class="journey-step-title">Become an advisor</div>
         <div class="journey-step-text">Master management accounts, board packs, and multi-entity reporting. L3 is free once you pass L2 &mdash; the next level is yours to earn.</div>
         <span class="journey-step-tag tag-free">L3 Free after L2</span>
+        <div class="journey-step-cta" id="jcta-3" style="display:none;margin-top:1rem"></div>
       </div>
-      <div class="journey-step">
+      <div class="journey-step" id="jstep-4" style="cursor:pointer" onclick="handleStageClick(4)">
         <div class="journey-step-num j4">4</div>
         <div class="journey-step-label" style="color:var(--text-muted)">Stage 4</div>
         <div class="journey-step-title">Enter ERP consulting</div>
         <div class="journey-step-text">Transition into ERP implementations, systems advisory, and finance transformation projects. $5,000+ project fees. Work with enterprise clients.</div>
         <span class="journey-step-tag tag-erp">ERP Academy</span>
+        <div class="journey-step-cta" id="jcta-4" style="display:none;margin-top:1rem">
+          <a href="/academy" class="journey-btn journey-btn-gold">Join ERP Academy →</a>
+        </div>
       </div>
     </div>
   </div>
@@ -820,6 +836,210 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   } catch(e) {}
 });
+
+// ── REFERRAL AFFILIATE STAGE LOGIC ──────────────────────────
+function handleStageClick(stage) {
+  var prog = {};
+  try { prog = JSON.parse(localStorage.getItem("ll_progress") || "{}"); } catch(e) {}
+  var completed = prog.completedLevels || [];
+  var passedL1 = completed.includes("l1") && prog.l1Score >= 70;
+  var passedL2 = completed.includes("l2") && prog.l2Score >= 70;
+  var paidL2   = !!prog.paid_l2;
+  var refCode  = localStorage.getItem("ll_ref_code") || "";
+  var refQ     = refCode ? "?ref=" + refCode : "";
+
+  document.querySelectorAll(".journey-step").forEach(function(s){ s.classList.remove("active-stage"); });
+  document.querySelectorAll(".journey-step-cta").forEach(function(c){ c.style.display = "none"; });
+
+  var step = document.getElementById("jstep-" + stage);
+  var cta  = document.getElementById("jcta-" + stage);
+  if (step) step.classList.add("active-stage");
+  if (cta)  cta.style.display = "block";
+
+  if (stage === 1) {
+    if (cta) cta.innerHTML = "<a href=\"/learn" + refQ + "\" class=\"journey-btn journey-btn-teal\">Start L1 — free \u2192</a>";
+
+  } else if (stage === 2) {
+    if (!passedL1) {
+      if (cta) cta.innerHTML =
+        "<div class=\"stage-warn\">\u26a0\ufe0f Complete <strong>L1 first</strong> — it is free and takes about 2 hours.</div>" +
+        "<a href=\"/learn" + refQ + "\" class=\"journey-btn journey-btn-teal\">Start L1 first \u2192</a>";
+    } else if (!paidL2) {
+      if (cta) cta.innerHTML =
+        "<div style=\"font-size:.8rem;color:#15803d;margin-bottom:.5rem\">\u2713 L1 passed — you are eligible for L2.</div>" +
+        "<a href=\"/learn-l2" + refQ + "\" class=\"journey-btn journey-btn-gold\">Unlock L2 — $49 \u2192</a>";
+    } else {
+      if (cta) cta.innerHTML = "<a href=\"/learn-l2\" class=\"journey-btn journey-btn-teal\">Continue L2 \u2192</a>";
+    }
+
+  } else if (stage === 3) {
+    if (!passedL2) {
+      var msg, href;
+      if (!passedL1) { msg = "\u26a0\ufe0f Start with <strong>L1</strong> (free), then unlock L2 ($49) to access L3 free."; href = "/learn" + refQ; }
+      else if (!paidL2) { msg = "\u26a0\ufe0f Unlock <strong>L2 ($49)</strong> to access L3 for free after passing."; href = "/learn-l2" + refQ; }
+      else { msg = "\u26a0\ufe0f Pass <strong>L2</strong> to unlock L3 for free."; href = "/learn-l2" + refQ; }
+      if (cta) cta.innerHTML =
+        "<div class=\"stage-warn\">" + msg + "</div>" +
+        "<a href=\"" + href + "\" class=\"journey-btn journey-btn-teal\">Go \u2192</a>";
+    } else {
+      if (cta) cta.innerHTML = "<a href=\"/learn-l3\" class=\"journey-btn journey-btn-teal\">Continue L3 — free \u2192</a>";
+    }
+
+  } else if (stage === 4) {
+    openErpModal(refCode);
+    if (cta) cta.innerHTML = "<a href=\"/academy\" class=\"journey-btn journey-btn-gold\">View ERP Academy \u2192</a>";
+  }
+}
+
+
+function openErpModal(refCode) {
+  var existing = document.getElementById("erp-modal-overlay");
+  if (existing) { existing.style.display = "flex"; return; }
+  var overlay = document.createElement("div");
+  overlay.id = "erp-modal-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(11,31,58,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem";
+  overlay.innerHTML =
+    "<div style=\"background:#fff;border-radius:16px;max-width:520px;width:100%;padding:2.5rem;position:relative;color:var(--navy)\">" +
+    "<button onclick=\"document.getElementById('erp-modal-overlay').style.display='none'\" style=\"position:absolute;top:1rem;right:1rem;background:transparent;border:none;font-size:1.5rem;cursor:pointer;color:#6b7280\">\u00d7</button>" +
+    "<div style=\"font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);margin-bottom:.4rem\">Stage 4</div>" +
+    "<h2 style=\"font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:.5rem;color:var(--navy)\">ERP.SaaS Academy</h2>" +
+    "<p style=\"font-size:.88rem;color:#6b7280;line-height:1.6;margin-bottom:1.5rem\">Join ERP.SaaS Academy \u2014 live sessions, ERP implementation guides, and a community of finance consultants earning $5,000+ per project.</p>" +
+    "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem\">" +
+    "<div style=\"background:#f0f2f5;border-radius:8px;padding:.875rem\"><div style=\"font-weight:700;font-size:.88rem;margin-bottom:.25rem\">Monthly</div><div id=\"erp-price-monthly\" style=\"font-size:1.4rem;font-weight:800;color:var(--navy)\">$29<span style=\"font-size:.8rem;font-weight:400;color:#6b7280\">/mo</span></div><div id=\"erp-label-monthly\" style=\"font-size:.72rem;color:#6b7280;margin-top:.25rem\">Cancel anytime</div></div>" +
+    "<div style=\"background:var(--navy);border-radius:8px;padding:.875rem\"><div style=\"font-weight:700;font-size:.88rem;margin-bottom:.25rem;color:#fff\">Annual</div><div id=\"erp-price-annual\" style=\"font-size:1.4rem;font-weight:800;color:var(--gold)\">$199<span style=\"font-size:.8rem;font-weight:400;color:rgba(255,255,255,.5)\">/yr</span></div><div id=\"erp-label-annual\" style=\"font-size:.72rem;color:rgba(255,255,255,.5);margin-top:.25rem\">Save 43%</div></div>" +
+    "</div>" +
+    "<div style=\"margin-bottom:1rem\"><label style=\"font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;display:block;margin-bottom:.35rem\">Your email</label>" +
+    "<input id=\"erp-modal-email\" type=\"email\" placeholder=\"you@example.com\" style=\"width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;font-size:.88rem;font-family:inherit;outline:none\"></div>" +
+    "<div style=\"display:flex;gap:.75rem;margin-bottom:1rem\">" +
+    "<button id=\"erp-btn-monthly\" data-tier=\"monthly\" onclick=\"joinErpAcademy(this.dataset.tier)\" style=\"flex:1;background:var(--teal);color:#fff;border:none;padding:12px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit\">Join Monthly \u2014 $29/mo</button>" +
+    "<button id=\"erp-btn-annual\" data-tier=\"annual\" onclick=\"joinErpAcademy(this.dataset.tier)\" style=\"flex:1;background:var(--gold);color:var(--navy);border:none;padding:12px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit\">Join Annual \u2014 $199/yr</button>" +
+    "</div>" +
+    "<div id=\"erp-modal-status\" style=\"font-size:.8rem;min-height:1.2rem\"></div>" +
+    "</div>";
+  document.body.appendChild(overlay);
+  // Fetch live prices
+  fetch("/.netlify/functions/academy-api", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ action:"get-status" })
+  }).then(function(r){ return r.json(); }).then(function(d) {
+    if (!d || !d.ok) return;
+    var pm = document.getElementById("erp-price-monthly");
+    var pa = document.getElementById("erp-price-annual");
+    var lm = document.getElementById("erp-label-monthly");
+    var la = document.getElementById("erp-label-annual");
+    var bm = document.getElementById("erp-btn-monthly");
+    var ba = document.getElementById("erp-btn-annual");
+    if (pm) pm.innerHTML = "$" + (d.priceMonthly||29) + "<span style=\"font-size:.8rem;font-weight:400;color:#6b7280\">/mo</span>";
+    if (pa) pa.innerHTML = "$" + (d.priceAnnual||199)  + "<span style=\"font-size:.8rem;font-weight:400;color:rgba(255,255,255,.5)\">/yr</span>";
+    if (lm) lm.textContent = d.labelMonthly || "Cancel anytime";
+    if (la) la.textContent = d.labelAnnual  || "Save 43%";
+    if (bm) bm.textContent = "Join Monthly \u2014 $" + (d.priceMonthly||29) + "/mo";
+    if (ba) ba.textContent = "Join Annual \u2014 $"  + (d.priceAnnual||199)  + "/yr";
+    window._erpRefCode = refCode;
+  window._erpPlans = { monthly: d.paypalPlanId||"", annual: d.paypalPlanAnnualId||"" };
+    window._erpPrices = { monthly: d.priceMonthly||29, annual: d.priceAnnual||199 };
+  }).catch(function(){});
+}
+
+async function joinErpAcademy(tier) { var refCode = window._erpRefCode || localStorage.getItem("ll_ref_code") || "";
+  var emailEl = document.getElementById("erp-modal-email");
+  var email = emailEl ? emailEl.value.trim() : "";
+  var statusEl = document.getElementById("erp-modal-status");
+  if (!email || !email.includes("@")) {
+    if (statusEl) { statusEl.textContent = "Please enter your email address."; statusEl.style.color = "#dc2626"; }
+    return;
+  }
+  if (statusEl) { statusEl.textContent = "Setting up your membership\u2026"; statusEl.style.color = "#6b7280"; }
+  try {
+    var prices = window._erpPrices || { monthly:29, annual:199 };
+    var plans  = window._erpPlans  || {};
+    var planId = tier === "annual" ? plans.annual : plans.monthly;
+    if (!planId) {
+      // No plan ID — fetch from server
+      var res  = await fetch("/.netlify/functions/academy-api", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action:"get-status", email:email }) });
+      var data = await res.json();
+      planId = tier === "annual" ? data.paypalPlanAnnualId : data.paypalPlanId;
+      if (!planId) {
+        if (statusEl) statusEl.textContent = "Redirecting to Academy page\u2026";
+        setTimeout(function(){ window.location.href = "/academy?email=" + encodeURIComponent(email) + "&tier=" + tier + (refCode ? "&ref=" + refCode : ""); }, 800);
+        return;
+      }
+    }
+    sessionStorage.setItem("ll_pending_erp", JSON.stringify({ email:email, tier:tier, refCode:refCode||"" }));
+    var ppUrl = "https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=" + planId +
+      "&custom_id=" + encodeURIComponent(email + "|erp_saas|" + tier + "|" + (refCode||"")) +
+      "&return_url=" + encodeURIComponent(window.location.origin + "/academy-success") +
+      "&cancel_url=" + encodeURIComponent(window.location.origin + "/#journey");
+    window.location.href = ppUrl;
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = "Something went wrong. Please try /academy directly."; statusEl.style.color = "#dc2626"; }
+  }
+}
+
+// ── On page load: if ?ref= present, auto-scroll to journey and activate cards ──
+document.addEventListener('DOMContentLoaded', function() {
+  var ref = localStorage.getItem('ll_ref_code') || new URLSearchParams(window.location.search).get('ref') || '';
+  if (ref) {
+    // Scroll to journey section after a short delay
+    setTimeout(function() {
+      var journeyEl = document.getElementById('journey');
+      if (journeyEl) journeyEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 600);
+    // Highlight all cards as clickable
+    document.querySelectorAll('.journey-step').forEach(function(s) {
+      s.style.borderColor = 'rgba(29,169,138,.2)';
+    });
+    // Update welcome banner text
+    var textEl = document.getElementById('ref-welcome-text');
+    if (textEl) textEl.textContent = '🎉 Welcome! Select your stage below to get started.';
+  }
+});
+
 </script>
 </body>
 </html>
+
+async function joinErpAcademy(tier, refCode) {
+  var emailEl = document.getElementById("erp-modal-email");
+  var email = emailEl ? emailEl.value.trim() : "";
+  var statusEl = document.getElementById("erp-modal-status");
+  if (!email || !email.includes("@")) {
+    if (statusEl) { statusEl.textContent = "Please enter your email address."; statusEl.style.color = "#dc2626"; }
+    return;
+  }
+  if (statusEl) { statusEl.textContent = "Setting up your membership\u2026"; statusEl.style.color = "rgba(255,255,255,.5)"; }
+
+  try {
+    var res = await fetch("/.netlify/functions/academy-api", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "get-status", email: email })
+    });
+    var data = await res.json();
+    // Use cached plan IDs from modal load if available
+    var planId = (window._erpPlans && (tier === "annual" ? window._erpPlans.annual : window._erpPlans.monthly))
+      || (tier === "annual" ? data.paypalPlanAnnualId : data.paypalPlanId);
+
+    if (!planId) {
+      // Fallback — redirect to academy page
+      if (statusEl) statusEl.textContent = "Redirecting to Academy page\u2026";
+      setTimeout(function() {
+        window.location.href = "/academy?email=" + encodeURIComponent(email) + "&tier=" + tier + (refCode ? "&ref=" + refCode : "");
+      }, 800);
+      return;
+    }
+
+    // Store pending so academy-success.html can pick it up
+    sessionStorage.setItem("ll_pending_erp", JSON.stringify({ email: email, tier: tier, refCode: refCode || "" }));
+
+    var ppUrl = "https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=" + planId +
+      "&custom_id=" + encodeURIComponent(email + "|erp_saas|" + tier + "|" + (refCode || "")) +
+      "&return_url=" + encodeURIComponent(window.location.origin + "/academy-success") +
+      "&cancel_url=" + encodeURIComponent(window.location.origin + "/#journey");
+    window.location.href = ppUrl;
+
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = "Something went wrong. Please try /academy directly."; statusEl.style.color = "#dc2626"; }
+  }
+}
+
