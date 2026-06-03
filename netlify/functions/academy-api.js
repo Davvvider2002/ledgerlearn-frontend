@@ -133,7 +133,20 @@ exports.handler = async function(event) {
       if (Array.isArray(cfgRow) && cfgRow.length > 0)
         paypalAcademyPlan = JSON.parse(cfgRow[0].value || '{}').paypal_academy || '';
     } catch(e) {}
-    return json(200, { ok: true, academyLive, paypalAcademyPlan, monthlyPrice: 29, annualPrice: 249 });
+    // Parse config for live prices
+    let cfg = {};
+    try { cfg = JSON.parse(Array.isArray(cfgRow) && cfgRow.length ? cfgRow[0].value : '{}'); } catch(e) {}
+
+    return json(200, {
+      ok:                 true,
+      academyLive:        academyLive,
+      paypalPlanId:       cfg.paypal_plan_academy        || paypalAcademyPlan || '',
+      paypalPlanAnnualId: cfg.paypal_plan_academy_annual || '',
+      priceMonthly:       cfg.academy_price_monthly      || 29,
+      priceAnnual:        cfg.academy_price_annual       || 199,
+      labelMonthly:       cfg.academy_label_monthly      || 'Cancel anytime',
+      labelAnnual:        cfg.academy_label_annual       || 'Save 43%',
+    });
   }
 
   // ── CHECK MEMBERSHIP ─────────────────────────────────────
@@ -309,6 +322,88 @@ exports.handler = async function(event) {
       certs:  Array.isArray(certs)  ? certs  : [],
       orders: Array.isArray(orders) ? orders : [],
     });
+  }
+
+  
+  if (action === "confirm-registration") {
+    const { email, tier, subscriptionId, refCode } = body;
+    if (!email) return json(400, { error: "email required" });
+
+    const SUPA_URL = process.env.SUPABASE_URL || "";
+    const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || "";
+    const BREVO_KEY = process.env.BREVO_API_KEY || "";
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@ledgerlearn.pro";
+    const amount = tier === "annual" ? 199 : 29;
+
+    // 1. Save member to Supabase (academy_members table or progress)
+    try {
+      await fetch(SUPA_URL + "/rest/v1/academy_members", {
+        method: "POST",
+        headers: { "Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Prefer":"resolution=merge-duplicates" },
+        body: JSON.stringify({ email, tier, subscription_id:subscriptionId||null, status:"active", ref_code:refCode||null, joined_at:new Date().toISOString() })
+      });
+    } catch(e) { console.warn("[academy-api] Supabase insert:", e.message); }
+
+    // 2. Send confirmation email to member via Brevo
+    if (BREVO_KEY) {
+      try {
+        await fetch("https://api.brevo.com/v3/smtp/email", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json","api-key":BREVO_KEY },
+          body: JSON.stringify({
+            to:[{email}],
+            sender:{ name:"LedgerLearn Pro", email:"hello@ledgerlearn.pro" },
+            subject:"Welcome to ERP.SaaS Academy!",
+            htmlContent:"<h2>Welcome to ERP.SaaS Academy!</h2><p>Your " + tier + " membership is now active.</p><p><strong>Next steps:</strong></p><ul><li>Join our Facebook group: <a href='https://www.facebook.com/groups/virtualbookkeepers'>Virtual Bookkeepers</a></li><li>Access ERP.SaaS Academy on Skool: <a href='https://www.skool.com/erp-saas-academy'>ERP.SaaS Academy</a></li><li>Attend your first live session — schedule in the Skool community</li></ul><p>Questions? Email hello@ledgerlearn.pro</p><p>David<br>LedgerLearn Pro</p>"
+          })
+        });
+      } catch(e) { console.warn("[academy-api] Member email:", e.message); }
+
+      // 3. Admin notification
+      try {
+        await fetch("https://api.brevo.com/v3/smtp/email", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json","api-key":BREVO_KEY },
+          body: JSON.stringify({
+            to:[{email:ADMIN_EMAIL}],
+            sender:{ name:"LedgerLearn Pro", email:"hello@ledgerlearn.pro" },
+            subject:"New ERP Academy Member: " + email,
+            htmlContent:"<h3>New ERP.SaaS Academy Registration</h3><p><strong>Email:</strong> " + email + "</p><p><strong>Tier:</strong> " + tier + " ($" + amount + ")</p><p><strong>Subscription ID:</strong> " + (subscriptionId||"N/A") + "</p><p><strong>Referral code:</strong> " + (refCode||"Direct") + "</p>"
+          })
+        });
+      } catch(e) { console.warn("[academy-api] Admin email:", e.message); }
+
+      // 4. Add to Brevo ERP Academy list (list 6 = completers, use a dedicated list)
+      try {
+        await fetch("https://api.brevo.com/v3/contacts", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json","api-key":BREVO_KEY },
+          body: JSON.stringify({ email, listIds:[6], updateEnabled:true, attributes:{ SOURCE:"erp-academy-"+tier } })
+        });
+      } catch(e) { console.warn("[academy-api] Brevo:", e.message); }
+    }
+
+    // 5. Track affiliate conversion if ref code present
+    if (refCode) {
+      try {
+        const affRows = await (await fetch(SUPA_URL + "/rest/v1/affiliates?referral_code=eq." + encodeURIComponent(refCode) + "&select=id,commission_rates,commission_pct&limit=1", {
+          headers:{ "apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY }
+        })).json();
+        if (Array.isArray(affRows) && affRows.length) {
+          const aff = affRows[0];
+          const rates = aff.commission_rates || {};
+          const pct = rates.erp_saas || aff.commission_pct || 30;
+          const due = parseFloat((amount * pct / 100).toFixed(2));
+          await fetch(SUPA_URL + "/rest/v1/affiliate_conversions", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY },
+            body: JSON.stringify({ affiliate_id:aff.id, referral_code:refCode, product_type:"erp_saas", buyer_email:email, sale_amount:amount, commission_pct:pct, commission_due:due, status:"pending", order_id:subscriptionId||null })
+          });
+        }
+      } catch(e) { console.warn("[academy-api] Affiliate:", e.message); }
+    }
+
+    return json(200, { ok:true, name:email.split("@")[0] });
   }
 
   return json(400, { error: 'Unknown action: ' + action });
