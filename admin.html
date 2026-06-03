@@ -1269,7 +1269,52 @@ tr:hover td{background:#fafbfc;}
             <label>Recruiter monthly plan ID</label>
             <input type="text" id="pp-recruiter-plan" placeholder="Create in PayPal dashboard"/>
           </div>
-          <button class="btn-save" onclick="savePayPalConfig()">Save</button>
+          <div class="form-field">
+            <label>ERP Academy Monthly plan ID</label>
+            <input type="text" id="pp-academy-monthly-plan" placeholder="P-XXXX monthly subscription"/>
+          </div>
+          <div class="form-field">
+            <label>ERP Academy Annual plan ID</label>
+            <input type="text" id="pp-academy-annual-plan" placeholder="P-XXXX annual subscription"/>
+          </div>
+          <button class="btn-save" onclick="savePayPalConfig()">Save PayPal config</button>
+          <span id="paypal-config-status" style="margin-left:1rem;font-size:.78rem;color:var(--muted)"></span>
+        </div>
+      </div>
+
+      <!-- ERP Academy Pricing -->
+      <div class="settings-section" style="margin-top:1.25rem">
+        <div class="settings-title">🎓 ERP Academy Pricing</div>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:1rem;line-height:1.5">
+          These prices show live in the ERP Academy modal on the homepage. Update here and save — the modal reflects the new price within seconds, no deploy needed.
+        </p>
+        <div class="grid-2" style="gap:1rem">
+          <div class="settings-section" style="background:rgba(29,169,138,.04);border-color:rgba(29,169,138,.2)">
+            <div class="settings-title" style="font-size:.78rem">Monthly plan</div>
+            <div class="form-field">
+              <label>Price ($)</label>
+              <input type="number" id="cfg-academy-price-monthly" value="29" min="1" step="0.01"/>
+            </div>
+            <div class="form-field">
+              <label>Sublabel (e.g. "Cancel anytime")</label>
+              <input type="text" id="cfg-academy-label-monthly" value="Cancel anytime"/>
+            </div>
+          </div>
+          <div class="settings-section" style="background:rgba(212,168,67,.04);border-color:rgba(212,168,67,.2)">
+            <div class="settings-title" style="font-size:.78rem">Annual plan</div>
+            <div class="form-field">
+              <label>Price ($)</label>
+              <input type="number" id="cfg-academy-price-annual" value="199" min="1" step="0.01"/>
+            </div>
+            <div class="form-field">
+              <label>Sublabel (e.g. "Save 43%")</label>
+              <input type="text" id="cfg-academy-label-annual" value="Save 43%"/>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem">
+          <button class="btn-save" onclick="saveAcademyPricing()">Save Academy pricing</button>
+          <span id="academy-pricing-status" style="font-size:.78rem;color:var(--muted)"></span>
         </div>
       </div>
 
@@ -1720,6 +1765,7 @@ function nav(page, btnEl) {
   if (page === 'jb-applications')   loadJBApplications();
   if (page === 'email-campaigns')   loadEmailCampaigns();
   if (page === 'audit')             loadAudit();
+  if (page === 'settings')          loadPlatformConfig();
 }
 
 // ── XSS PROTECTION ───────────────────────────────────────────
@@ -2696,6 +2742,32 @@ async function sendNotification() {
 
 // ── AUDIT LOG ────────────────────────────────────────────────
 var ALL_AUDIT = [];
+
+async function loadPlatformConfig() {
+  // Load track_config (pricing + PayPal plan IDs)
+  var tcRes = await adminFetch('get-config', { key: 'track_config' });
+  var cfg = {};
+  try { cfg = JSON.parse((tcRes && tcRes.value) || '{}'); } catch(e) {}
+
+  function setV(id, val) {
+    var el = document.getElementById(id);
+    if (el && val != null) el.value = val;
+  }
+
+  // PayPal plan IDs (in Platform Config PayPal section)
+  setV('pp-xero-l2-plan',           cfg.paypal_plan_xero_l2         || 'P-3YS87947EY5558941NH5P3FY');
+  setV('pp-qb-l2-plan',             cfg.paypal_plan_qb_l2           || '');
+  setV('pp-recruiter-plan',         cfg.paypal_plan_recruiter        || '');
+  setV('pp-academy-monthly-plan',   cfg.paypal_plan_academy         || '');
+  setV('pp-academy-annual-plan',    cfg.paypal_plan_academy_annual  || '');
+
+  // ERP Academy Pricing
+  setV('cfg-academy-price-monthly', cfg.academy_price_monthly  != null ? cfg.academy_price_monthly : 29);
+  setV('cfg-academy-price-annual',  cfg.academy_price_annual   != null ? cfg.academy_price_annual  : 199);
+  setV('cfg-academy-label-monthly', cfg.academy_label_monthly || 'Cancel anytime');
+  setV('cfg-academy-label-annual',  cfg.academy_label_annual  || 'Save 43%');
+}
+
 async function loadAudit() {
   var result = await adminFetch('audit-log');
   if (!result || !Array.isArray(result.data)) { ALL_AUDIT = []; return; }
@@ -2756,6 +2828,31 @@ async function saveAnthropicConfig() {
   var s = document.getElementById('anthropic-status'); if(s) s.textContent = result ? '✓ Saved' : '✗ Failed';
   inlineToast(result ? 'Anthropic key saved' : 'Save failed', result ? 'success' : 'error');
 }
+async function saveAcademyPricing() {
+  var statusEl = document.getElementById('academy-pricing-status');
+  statusEl.textContent = 'Saving…';
+  var cfg = {
+    key: 'track_config',
+    merge: {
+      academy_price_monthly:  parseFloat(document.getElementById('cfg-academy-price-monthly').value) || 29,
+      academy_price_annual:   parseFloat(document.getElementById('cfg-academy-price-annual').value)  || 199,
+      academy_label_monthly:  document.getElementById('cfg-academy-label-monthly').value || 'Cancel anytime',
+      academy_label_annual:   document.getElementById('cfg-academy-label-annual').value  || 'Save 43%',
+      paypal_plan_academy:    (document.getElementById('pp-academy-monthly-plan')||{}).value || '',
+      paypal_plan_academy_annual: (document.getElementById('pp-academy-annual-plan')||{}).value || '',
+    }
+  };
+  var res = await adminFetch('update-config-merge', cfg);
+  if (res && res.ok) {
+    statusEl.textContent = '✓ Saved — modal updates immediately';
+    statusEl.style.color = 'var(--teal)';
+    setTimeout(function(){ statusEl.textContent = ''; }, 3000);
+  } else {
+    statusEl.textContent = (res && res.error) || 'Save failed';
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
 async function savePayPalConfig() {
   var data = {
     clientId:      document.getElementById('paypal-client-id').value.trim(),
