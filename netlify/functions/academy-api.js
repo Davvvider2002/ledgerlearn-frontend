@@ -142,8 +142,8 @@ exports.handler = async function(event) {
       academyLive:        academyLive,
       paypalPlanId:       cfg.paypal_plan_academy        || paypalAcademyPlan || '',
       paypalPlanAnnualId: cfg.paypal_plan_academy_annual || '',
-      priceMonthly:       cfg.academy_price_monthly      || 29,
-      priceAnnual:        cfg.academy_price_annual       || 199,
+      priceMonthly:       cfg.academy_price_monthly      || 99,
+      priceAnnual:        cfg.academy_price_annual       || 999,
       labelMonthly:       cfg.academy_label_monthly      || 'Cancel anytime',
       labelAnnual:        cfg.academy_label_annual       || 'Save 43%',
     });
@@ -222,7 +222,7 @@ exports.handler = async function(event) {
     return json(200, {
       ok: true,
       paypalPlanId: planId,
-      monthlyPrice: 29, annualPrice: 249,
+      monthlyPrice: 99, annualPrice: 999,
       message: 'Use PayPal subscription flow with this plan ID',
     });
   }
@@ -258,7 +258,7 @@ exports.handler = async function(event) {
     const firstName = fullName ? fullName.split(' ')[0] : '';
 
     const memberTier = (tier && ['monthly','annual'].includes(tier)) ? tier : 'monthly';
-    const mrr = memberTier === 'annual' ? 249/12 : 29;
+    const mrr = memberTier === 'annual' ? 999/12 : 99;
     const now = new Date();
     const renewalDate = memberTier === 'annual'
       ? new Date(now.getFullYear() + 1, now.getMonth(), now.getDate()).toISOString().split('T')[0]
@@ -333,7 +333,7 @@ exports.handler = async function(event) {
     const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || "";
     const BREVO_KEY = process.env.BREVO_API_KEY || "";
     const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@ledgerlearn.pro";
-    const amount = tier === "annual" ? 199 : 29;
+    const amount = tier === "annual" ? 999 : 99;
 
     // 1. Save member to Supabase (academy_members table or progress)
     try {
