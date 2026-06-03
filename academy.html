@@ -217,7 +217,7 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
       <!-- Academy -->
       <div class="pricing-card featured">
         <div class="pc-tier purple">Academy membership</div>
-        <div class="pc-price"><span id="acad-price-pc">$99</span> <span class="period" id="acad-price-pc-annual">/month &middot; or $999/year</span></div>
+        <div class="pc-price"><span id="acad-price-pc">$29</span> <span class="period" id="acad-price-pc-annual">/month &middot; or $999/year</span></div>
         <div class="pc-desc" style="color:rgba(255,255,255,.5);">Everything in Free, plus the full Academy suite.</div>
         <ul class="pc-features">
           <li><span class="check">&#x2713;</span> Everything in Free</li>
@@ -266,7 +266,7 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
       <label>Membership plan</label>
       <select id="join-tier">
         <option value="monthly" id="acad-opt-monthly">Monthly &mdash; $99/month</option>
-        <option value="annual" id="acad-opt-annual">Annual &mdash; $999/year (save 17%)</option>
+        <option value="annual" id="acad-opt-annual">Annual &mdash; $999/year (save 43%)</option>
       </select>
     </div>
     <button class="btn-modal-join" id="join-btn" onclick="initiateJoin()">Continue to payment &rarr;</button>
@@ -320,8 +320,8 @@ async function loadAcademyPricing() {
 
     window._academyPrices = {
       monthly: pm, annual: pa,
-      planIdMonthly: d.paypalPlanId       || '',
-      planIdAnnual:  d.paypalPlanAnnualId || ''
+      planIdMonthly: d.paypalPlanId       || 'P-0R916708HA5606900NHWLPPQ',
+      planIdAnnual:  d.paypalPlanAnnualId || 'P-3FY04151KC1394702NIQBYWI'
     };
   } catch(e) { console.warn('[academy] pricing:', e.message); }
 }
@@ -433,10 +433,16 @@ async function initiateJoin() {
     });
     var statusData = await statusRes.json();
 
-    if (!statusData.academyLive) {
+    // If academy is not live but plan IDs exist, still allow payment (test mode)
+    // Only block if no plan IDs configured at all
+    var prices  = window._academyPrices || {};
+    var planIdCheck = tier === 'annual'
+      ? (prices.planIdAnnual  || statusData.paypalPlanAnnualId || '')
+      : (prices.planIdMonthly || statusData.paypalPlanId       || '');
+
+    if (!statusData.academyLive && !planIdCheck) {
       statusEl.textContent = '&#x1F514; Academy is coming soon! We\'ll email you at ' + email + ' when we launch.';
       statusEl.className = 'modal-status success';
-      // Store lead in Brevo
       try {
         await fetch('/.netlify/functions/subscribe', {
           method:'POST', headers:{'Content-Type':'application/json'},
@@ -446,14 +452,11 @@ async function initiateJoin() {
       btn.disabled = false; return;
     }
 
-    // Use tier-specific plan ID — prefer cached prices from loadAcademyPricing
-    var prices  = window._academyPrices || {};
-    var planId  = tier === 'annual'
-      ? (prices.planIdAnnual  || statusData.paypalPlanAnnualId || '')
-      : (prices.planIdMonthly || statusData.paypalPlanId       || '');
+    // Use plan ID from the pre-check above or re-derive from statusData
+    var planId = planIdCheck;
 
     if (!planId) {
-      statusEl.textContent = 'Payment not yet configured. Email hello@ledgerlearn.pro to join.';
+      statusEl.innerHTML = 'PayPal plan ID not configured. <a href="mailto:hello@ledgerlearn.pro" style="color:var(--purple)">Email us to join</a> or set the plan ID in Admin → Platform Config.';
       statusEl.className = 'modal-status error'; btn.disabled = false; return;
     }
 

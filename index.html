@@ -906,7 +906,7 @@ function openErpModal(refCode) {
     "<p style=\"font-size:.88rem;color:#6b7280;line-height:1.6;margin-bottom:1.5rem\">Join ERP.SaaS Academy \u2014 live sessions, ERP implementation guides, and a community of finance consultants earning $5,000+ per project.</p>" +
     "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem\">" +
     "<div style=\"background:#f0f2f5;border-radius:8px;padding:.875rem\"><div style=\"font-weight:700;font-size:.88rem;margin-bottom:.25rem\">Monthly</div><div id=\"erp-price-monthly\" style=\"font-size:1.4rem;font-weight:800;color:var(--navy)\">$29<span style=\"font-size:.8rem;font-weight:400;color:#6b7280\">/mo</span></div><div id=\"erp-label-monthly\" style=\"font-size:.72rem;color:#6b7280;margin-top:.25rem\">Cancel anytime</div></div>" +
-    "<div style=\"background:var(--navy);border-radius:8px;padding:.875rem\"><div style=\"font-weight:700;font-size:.88rem;margin-bottom:.25rem;color:#fff\">Annual</div><div id=\"erp-price-annual\" style=\"font-size:1.4rem;font-weight:800;color:var(--gold)\">$199<span style=\"font-size:.8rem;font-weight:400;color:rgba(255,255,255,.5)\">/yr</span></div><div id=\"erp-label-annual\" style=\"font-size:.72rem;color:rgba(255,255,255,.5);margin-top:.25rem\">Save 43%</div></div>" +
+    "<div style=\"background:var(--navy);border-radius:8px;padding:.875rem\"><div style=\"font-weight:700;font-size:.88rem;margin-bottom:.25rem;color:#fff\">Annual</div><div id=\"erp-price-annual\" style=\"font-size:1.4rem;font-weight:800;color:var(--gold)\">$199<span style=\"font-size:.8rem;font-weight:400;color:rgba(255,255,255,.5)\">/yr</span></div><div id=\"erp-label-annual\" style=\"font-size:.72rem;color:rgba(255,255,255,.5);margin-top:.25rem\">Save 16%</div></div>" +
     "</div>" +
     "<div style=\"margin-bottom:1rem\"><label style=\"font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;display:block;margin-bottom:.35rem\">Your email</label>" +
     "<input id=\"erp-modal-email\" type=\"email\" placeholder=\"you@example.com\" style=\"width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;font-size:.88rem;font-family:inherit;outline:none\"></div>" +
@@ -936,10 +936,10 @@ function fetchErpPrices() {
     if (pm) pm.innerHTML = "$" + (d.priceMonthly||99) + "<span style=\"font-size:.8rem;font-weight:400;color:#6b7280\">/mo</span>";
     if (pa) pa.innerHTML = "$" + (d.priceAnnual||999)  + "<span style=\"font-size:.8rem;font-weight:400;color:rgba(255,255,255,.5)\">/yr</span>";
     if (lm) lm.textContent = d.labelMonthly || "Cancel anytime";
-    if (la) la.textContent = d.labelAnnual  || "Save 43%";
+    if (la) la.textContent = d.labelAnnual  || "Save 16%";
     if (bm) bm.textContent = "Join Monthly \u2014 $" + (d.priceMonthly||99) + "/mo";
     if (ba) ba.textContent = "Join Annual \u2014 $"  + (d.priceAnnual||999)  + "/yr";
-    window._erpPlans  = { monthly: d.paypalPlanId||"", annual: d.paypalPlanAnnualId||"" };
+    window._erpPlans  = { monthly: d.paypalPlanId||"P-0R916708HA5606900NHWLPPQ", annual: d.paypalPlanAnnualId||"P-3FY04151KC1394702NIQBYWI" };
     window._erpPrices = { monthly: d.priceMonthly||99, annual: d.priceAnnual||999 };
   }).catch(function(){});
 }
