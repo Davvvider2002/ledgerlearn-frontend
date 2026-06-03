@@ -52,7 +52,7 @@ async function supa(path, method, body) {
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY,
         'Content-Type': 'application/json',
-        'Prefer': method === 'POST' ? 'return=representation' : undefined,
+        'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=representation' : method === 'PATCH' ? 'return=representation' : undefined,
       },
     };
     if (body) opts.body = JSON.stringify(body);
@@ -852,7 +852,16 @@ exports.handler = async function(event) {
         let ucmCurrent = {};
         try { ucmCurrent = JSON.parse(Array.isArray(ucmRows) && ucmRows[0] ? ucmRows[0].value : '{}'); } catch(e) {}
         const ucmMerged = Object.assign({}, ucmCurrent, ucmMerge);
-        await supa('/rest/v1/platform_config', 'POST', { key: ucmKey, value: JSON.stringify(ucmMerged), updated_at: new Date().toISOString() });
+        // Use PATCH to update existing row; fall back to POST (insert) if row doesn't exist
+        if (Array.isArray(ucmRows) && ucmRows.length > 0) {
+          await supa('/rest/v1/platform_config?key=eq.' + encodeURIComponent(ucmKey), 'PATCH', {
+            value: JSON.stringify(ucmMerged), updated_at: new Date().toISOString()
+          });
+        } else {
+          await supa('/rest/v1/platform_config', 'POST', {
+            key: ucmKey, value: JSON.stringify(ucmMerged), updated_at: new Date().toISOString()
+          });
+        }
         return json(200, { ok: true });
       }
 
