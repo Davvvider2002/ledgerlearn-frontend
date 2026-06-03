@@ -837,7 +837,26 @@ exports.handler = async function(event) {
         return json(200, { ok:true });
       }
 
-      default:
+      case 'get-config': {
+        const gcKey = body.key;
+        if (!gcKey) return json(400, { error: 'key required' });
+        const gcRows = await supa('/rest/v1/platform_config?key=eq.' + encodeURIComponent(gcKey) + '&select=value&limit=1');
+        const gcVal = Array.isArray(gcRows) && gcRows[0] ? gcRows[0].value : null;
+        return json(200, { ok: true, value: gcVal });
+      }
+
+      case 'update-config-merge': {
+        const ucmKey = body.key; const ucmMerge = body.merge;
+        if (!ucmKey || !ucmMerge) return json(400, { error: 'key and merge required' });
+        const ucmRows = await supa('/rest/v1/platform_config?key=eq.' + encodeURIComponent(ucmKey) + '&select=value&limit=1');
+        let ucmCurrent = {};
+        try { ucmCurrent = JSON.parse(Array.isArray(ucmRows) && ucmRows[0] ? ucmRows[0].value : '{}'); } catch(e) {}
+        const ucmMerged = Object.assign({}, ucmCurrent, ucmMerge);
+        await supa('/rest/v1/platform_config', 'POST', { key: ucmKey, value: JSON.stringify(ucmMerged), updated_at: new Date().toISOString() });
+        return json(200, { ok: true });
+      }
+
+            default:
         return json(400, { error: 'Unknown action: ' + action });
     }
   } catch(e) {
