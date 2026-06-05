@@ -882,6 +882,25 @@ exports.handler = async function(event) {
         return json(200, { ok: true });
       }
 
+            case 'update-product': {
+        const { id, data } = body;
+        if (!id || !data) return json(400, { error: 'id and data required' });
+        const upData = {
+          name:         data.name,
+          price:        parseFloat(data.price) || 0,
+          status:       data.status,
+          category:     data.category,
+          description:  data.description,
+          unlock_rule:  data.unlock_rule || null,
+          download_url: data.download_url || null,
+          sort_order:   parseInt(data.sort_order) || 0,
+          updated_at:   new Date().toISOString(),
+        };
+        await supa('/rest/v1/marketplace_products?id=eq.' + encodeURIComponent(id), 'PATCH', upData);
+        await auditLog('update-product', id);
+        return json(200, { ok: true });
+      }
+
             default:
         return json(400, { error: 'Unknown action: ' + action });
     }

@@ -212,7 +212,8 @@ exports.handler = async function(event) {
     const product = await supa(`/rest/v1/marketplace_products?id=eq.${productId}&select=unlock_rule,name,download_url&limit=1`);
     const p = Array.isArray(product) && product.length > 0 ? product[0] : {};
     if (p.unlock_rule === 'l2_free') {
-      const certs = await supa(`/rest/v1/certificates?email=eq.${encodeURIComponent(cleanEmail)}&level=eq.l2&limit=1`);
+      // L2 certified OR bought the toolkit gets free access
+      const certs = await supa('/rest/v1/certificates?email=eq.' + encodeURIComponent(cleanEmail) + '&level=eq.l2&limit=1');
       if (Array.isArray(certs) && certs.length > 0) {
         return json(200, { ok: true, hasAccess: true, viaCertUnlock: true, downloadUrl: p.download_url, productName: p.name });
       }
@@ -371,6 +372,27 @@ exports.handler = async function(event) {
       await supaUpdate('marketplace_orders', `id=eq.${newOrderId}`, {
         download_sent: true, download_sent_at: new Date().toISOString(),
       });
+    }
+
+    // ── Unlock L2 access if user bought the AI Toolkit ──────────────
+    const TOOLKIT_ID = '22222222-0000-0000-0000-000000000002';
+    if (productId === TOOLKIT_ID && userId) {
+      // Set paid_toolkit flag in progress table so L2 gate opens
+      const progRows = await supa('/rest/v1/progress?user_id=eq.' + encodeURIComponent(userId) + '&select=id&limit=1');
+      if (Array.isArray(progRows) && progRows.length > 0) {
+        await supa('/rest/v1/progress?user_id=eq.' + encodeURIComponent(userId), 'PATCH', {
+          paid_toolkit: true, updated_at: new Date().toISOString()
+        });
+      }
+      // Also send Brevo to L2 Purchasers list (list 7)
+      const BREVO_KEY = process.env.BREVO_API_KEY || '';
+      if (BREVO_KEY) {
+        fetch('https://api.brevo.com/v3/contacts/lists/7/contacts/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'api-key': BREVO_KEY },
+          body: JSON.stringify({ emails: [cleanEmail] })
+        }).catch(() => {});
+      }
     }
 
     await auditLog('confirm-order', orderId + ':' + cleanEmail + ':$' + amount);
