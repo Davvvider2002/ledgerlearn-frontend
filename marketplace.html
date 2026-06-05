@@ -113,6 +113,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);}
 /* CHECKOUT MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:500;padding:1rem;}
 .modal-bg.open{display:flex;}
+.modal-box{background:var(--white);border-radius:16px;padding:2rem;max-width:480px;width:100%;position:relative;max-height:90vh;overflow-y:auto;}
 .modal{background:var(--white);border-radius:16px;padding:2rem;max-width:440px;width:100%;}
 .modal-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;}
 .modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);}
@@ -226,7 +227,7 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
 
 
   <!-- FREE DOWNLOAD MODAL -->
-  <div class="modal-overlay" id="modal-free-download">
+  <div class="modal-bg" id="modal-free-download">
     <div class="modal-box" style="max-width:480px">
       <button class="modal-close" onclick="closeFreeDownload()">&#x2715;</button>
       <div class="modal-header">
@@ -487,17 +488,27 @@ async function submitFreeDownload() {
     body: JSON.stringify({ action: 'track-free-download', productId: FREE_DOWNLOAD_PRODUCT.id, email: email, name: name })
   }).catch(function(){});
 
-  statEl.textContent = '✓ Downloading now…';
-  statEl.className   = 'modal-status success';
-  btn.textContent    = '✓ Downloading';
+  // Send download link by email (verifies genuine email, avoids missing-file errors)
+  fetch('/.netlify/functions/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'send-download-link',
+      email: email,
+      name: name,
+      productName: FREE_DOWNLOAD_PRODUCT.name,
+      downloadUrl: window.location.origin + '/ai-prompt-starter-pack',
+      listId: 3
+    })
+  }).catch(function(){});
 
-  var dlUrl = (FREE_DOWNLOAD_PRODUCT.download_url || '/downloads/ai-prompt-starter-pack.pdf');
-  var a = document.createElement('a');
-  a.href = dlUrl; a.download = 'AI-Prompt-Starter-Pack.pdf';
-  a.target = '_blank';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  statEl.textContent = '✓ Download link sent to ' + email + '! Check your inbox.';
+  statEl.className = 'modal-status success';
+  btn.textContent = '✓ Email sent';
 
-  setTimeout(function(){ closeFreeDownload(); }, 2500);
+  // Also open the resource directly now as immediate access
+  setTimeout(function(){ window.open('/ai-prompt-starter-pack', '_blank'); }, 600);
+  setTimeout(function(){ closeFreeDownload(); }, 4500);
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
