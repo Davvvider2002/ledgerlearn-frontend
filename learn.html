@@ -243,7 +243,9 @@ LL.progress = (function() {
 
     // ACCESS
     var accessL1 = true;
-    var accessL2 = (passedL1 && paidL2) || isAdmin;
+    // L2 unlocked by: paid L2 directly OR bought the AI Toolkit from marketplace
+var paidToolkit = !!prog.paid_toolkit;
+var accessL2 = (passedL1 && (paidL2 || paidToolkit)) || isAdmin;
     var accessL3 = passedL2 || isAdmin;
 
     // WORKING LEVEL — where the user currently is

@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   var passedL1   = completed.includes('l1') && prog.l1Score >= 70;
   var passedL2   = completed.includes('l2') && prog.l2Score >= 70;
   var paidL2     = !!prog.paid_qb_l2;
+  var paidToolkit = !!prog.paid_toolkit;
   var isAdmin    = false;
   try { isAdmin = JSON.parse(sessionStorage.getItem('ll_admin_token') || 'null') !== null; } catch(e) {}
 
@@ -163,7 +164,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   // ── Update L2 card ──
-  var accessL2 = (passedL1 && paidL2) || isAdmin;
+  var accessL2 = (passedL1 && (paidL2 || paidToolkit)) || isAdmin;
   var cardL2 = document.getElementById('card-l2');
   var btnL2  = document.getElementById('btn-l2');
   if (accessL2) {

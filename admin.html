@@ -639,6 +639,34 @@ tr:hover td{background:#fafbfc;}
           </div>
         </div>
         <div class="tbl-wrap" id="products-table"></div>
+
+      <!-- Product Edit Panel -->
+      <div id="product-edit-form" style="display:none;margin-top:1.5rem;background:var(--off);border:1px solid var(--border);border-radius:12px;padding:1.5rem">
+        <div style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between">
+          Edit product
+          <button onclick="document.getElementById('product-edit-form').style.display='none'" style="background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">×</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-field"><label>Name</label><input type="text" id="ep-name"/></div>
+          <div class="form-field"><label>Price ($)</label><input type="number" id="ep-price" min="0" step="0.01"/></div>
+          <div class="form-field"><label>Status</label>
+            <select id="ep-status"><option value="live">Live</option><option value="draft">Draft</option><option value="archived">Archived</option></select>
+          </div>
+          <div class="form-field"><label>Category</label>
+            <select id="ep-category"><option value="ai">AI</option><option value="bookkeeping">Bookkeeping</option><option value="erp">ERP</option><option value="firm">Firm</option></select>
+          </div>
+          <div class="form-field" style="grid-column:1/-1"><label>Description</label><textarea id="ep-description" rows="3" style="width:100%;resize:vertical"></textarea></div>
+          <div class="form-field"><label>Cert unlock rule</label>
+            <select id="ep-unlock"><option value="">None</option><option value="l2_free">L2 cert = free</option><option value="l3_discount_20">L3 cert = 20% off</option></select>
+          </div>
+          <div class="form-field"><label>Sort order</label><input type="number" id="ep-sort" min="0"/></div>
+          <div class="form-field" style="grid-column:1/-1"><label>Download URL</label><input type="text" id="ep-download" placeholder="/downloads/filename.pdf or https://..."/></div>
+        </div>
+        <div style="margin-top:1rem;display:flex;gap:.75rem">
+          <button class="btn-save" onclick="saveProduct()">Save product</button>
+          <button class="btn-sm" onclick="document.getElementById('product-edit-form').style.display='none'" style="background:var(--white);border:1px solid var(--border);color:var(--muted)">Cancel</button>
+        </div>
+      </div>
       </div>
     </div>
 
@@ -2351,6 +2379,7 @@ function exportPayouts(){ inlineToast('Payouts export coming soon','info'); }
 
 // ── MARKETPLACE OVERVIEW ─────────────────────────────────────
 var ALL_PRODUCTS = [];
+var EDIT_PRODUCT_ID = null;
 async function loadMktOverview() {
   var result = await adminFetch('mkt-overview');
   if (!result) return;

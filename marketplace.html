@@ -224,7 +224,38 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
 
 </main>
 
-<!-- CHECKOUT MODAL -->
+
+  <!-- FREE DOWNLOAD MODAL -->
+  <div class="modal-overlay" id="modal-free-download">
+    <div class="modal-box" style="max-width:480px">
+      <button class="modal-close" onclick="closeFreeDownload()">&#x2715;</button>
+      <div class="modal-header">
+        <div class="modal-icon" style="background:linear-gradient(135deg,var(--teal),#0d7a62)">&#x21E9;</div>
+        <div>
+          <div class="modal-eyebrow">Free download</div>
+          <div class="modal-title" id="fd-product-name">AI Prompt Starter Pack</div>
+        </div>
+      </div>
+      <div style="background:rgba(29,169,138,.07);border:1px solid rgba(29,169,138,.2);border-radius:10px;padding:.875rem 1.125rem;margin-bottom:1.25rem;font-size:.84rem;color:var(--mid);line-height:1.5">
+        🎁 <strong>100% free.</strong> Enter your email to download instantly. We'll also send you occasional tips on using AI in accounting practice.
+      </div>
+      <div class="form-group">
+        <label class="form-label">Your name</label>
+        <input type="text" id="fd-name" class="form-input" placeholder="First name"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email address <span style="color:var(--red)">*</span></label>
+        <input type="email" id="fd-email" class="form-input" placeholder="you@example.com"/>
+      </div>
+      <button class="btn-modal-primary" id="fd-submit-btn" onclick="submitFreeDownload()" style="background:var(--teal);margin-top:.5rem">
+        Get free download &#x2192;
+      </button>
+      <div class="modal-status" id="fd-status" style="margin-top:.75rem"></div>
+      <p style="font-size:.72rem;color:var(--muted);margin-top:.75rem;text-align:center">No spam. Unsubscribe anytime.</p>
+    </div>
+  </div>
+
+  <!-- CHECKOUT MODAL -->
 <div class="modal-bg" id="modal-checkout">
   <div class="modal">
     <div class="modal-title">
@@ -366,7 +397,9 @@ function renderComingSoon() {
 function renderProducts() {
   var filtered = ALL_PRODUCTS.filter(function(p) {
     var matchCat = !ACTIVE_FILTER || p.category === ACTIVE_FILTER;
-    var matchSearch = !ACTIVE_SEARCH || (p.name||'').toLowerCase().includes(ACTIVE_SEARCH) || (p.description||'').toLowerCase().includes(ACTIVE_SEARCH);
+    var matchSearch = !ACTIVE_SEARCH ||
+      (p.name||'').toLowerCase().includes(ACTIVE_SEARCH) ||
+      (p.description||'').toLowerCase().includes(ACTIVE_SEARCH);
     return matchCat && matchSearch;
   });
   var grid = document.getElementById('products-grid');
@@ -375,26 +408,96 @@ function renderProducts() {
     return;
   }
   grid.innerHTML = filtered.map(function(p) {
-    var icon = CAT_ICONS[p.category]||'&#x1F4E6;';
-    var label = CAT_LABELS[p.category]||p.category;
-    var badgeCls = 'badge-'+p.category;
-    if (!badgeCls.match(/ai|book|erp|firm/)) badgeCls = 'badge-book';
-    var isFree = p.unlock_rule === 'l2_free';
-    var btnCls = CAT_BTN[p.category]||'btn-firm';
-    var btnText = isFree ? 'Claim free (L2 cert)' : 'Buy now';
-    return '<div class="prod-card '+p.category+'" data-id="'+esc(p.id)+'">'
-      + '<div class="prod-icon-wrap"><div class="prod-icon">'+icon+'</div>'
-      + '<div class="prod-badges"><span class="prod-badge '+badgeCls+'">'+esc(label)+'</span>'
-      + (isFree ? '<span class="prod-badge badge-free">L2 free</span>' : '')
+    var icon      = CAT_ICONS[p.category]  || '&#x1F4E6;';
+    var label     = CAT_LABELS[p.category] || p.category;
+    var badgeCls  = 'badge-' + (p.category.match(/^(ai|book|erp|firm)$/) ? p.category : 'book');
+    var btnCls    = CAT_BTN[p.category]    || 'btn-firm';
+
+    var isFreeDownload = parseFloat(p.price) === 0;
+    var isL2Free       = p.unlock_rule === 'l2_free';
+
+    var priceDisplay = isFreeDownload ? 'FREE' : ('$' + parseFloat(p.price).toFixed(0));
+    var btnText = isFreeDownload ? '&#x21E9; Free download'
+                : isL2Free      ? 'Buy now · L2 cert = free'
+                : 'Buy now';
+    var btnOnClick = isFreeDownload
+      ? "openFreeDownload('" + esc(p.id) + "')"
+      : "openCheckout('"     + esc(p.id) + "')";
+
+    return '<div class="prod-card ' + p.category + (isFreeDownload ? ' prod-free' : '') + '">'
+      + '<div class="prod-icon-wrap"><div class="prod-icon">' + icon + '</div>'
+      + '<div class="prod-badges"><span class="prod-badge ' + badgeCls + '">' + esc(label) + '</span>'
+      + (isFreeDownload ? '<span class="prod-badge badge-free-dl">&#x1F381; Free</span>' : '')
+      + (isL2Free && !isFreeDownload ? '<span class="prod-badge badge-free">L2 free</span>' : '')
       + '</div></div>'
       + '<div class="prod-body">'
-      + '<div class="prod-name">'+esc(p.name)+'</div>'
-      + '<div class="prod-desc">'+esc(p.description||'')+'</div>'
+      + '<div class="prod-name">' + esc(p.name) + '</div>'
+      + '<div class="prod-desc">' + esc((p.description||'').slice(0,130)) + ((p.description||'').length > 130 ? '…' : '') + '</div>'
       + '<div class="prod-footer">'
-      + '<div class="prod-price '+(isFree?'prod-price-free':'')+'">$'+parseFloat(p.price).toFixed(0)+'</div>'
-      + '<button class="btn-buy '+btnCls+'" onclick="openCheckout(\''+esc(p.id)+'\')">'+btnText+'</button>'
+      + '<div class="prod-price' + (isFreeDownload ? ' prod-price-free' : '') + '">' + priceDisplay + '</div>'
+      + '<button class="btn-buy ' + btnCls + '" onclick="' + btnOnClick + '">' + btnText + '</button>'
       + '</div></div></div>';
   }).join('');
+}
+
+// ── FREE DOWNLOAD GATE ───────────────────────────────────────
+var FREE_DOWNLOAD_PRODUCT = null;
+
+function openFreeDownload(productId) {
+  var p = ALL_PRODUCTS.find(function(x){ return x.id === productId; });
+  if (!p) return;
+  FREE_DOWNLOAD_PRODUCT = p;
+  var nameEl  = document.getElementById('fd-product-name');
+  var emailEl = document.getElementById('fd-email');
+  var statEl  = document.getElementById('fd-status');
+  var btnEl   = document.getElementById('fd-submit-btn');
+  if (nameEl)  nameEl.textContent  = p.name;
+  if (emailEl) emailEl.value       = getUserEmail();
+  if (statEl)  statEl.textContent  = '';
+  if (statEl)  statEl.className    = 'modal-status';
+  if (btnEl)   { btnEl.disabled = false; btnEl.textContent = 'Get free download →'; }
+  document.getElementById('modal-free-download').classList.add('open');
+}
+
+function closeFreeDownload() {
+  document.getElementById('modal-free-download').classList.remove('open');
+  FREE_DOWNLOAD_PRODUCT = null;
+}
+
+async function submitFreeDownload() {
+  var email  = ((document.getElementById('fd-email')  || {}).value || '').trim();
+  var name   = ((document.getElementById('fd-name')   || {}).value || '').trim();
+  var statEl = document.getElementById('fd-status');
+  var btn    = document.getElementById('fd-submit-btn');
+  if (!email || !email.includes('@')) {
+    statEl.textContent = 'Please enter a valid email address.';
+    statEl.className   = 'modal-status error'; return;
+  }
+  btn.disabled = true; btn.textContent = 'Preparing download…';
+
+  // Subscribe to Brevo
+  fetch('/.netlify/functions/subscribe', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, name: name, listId: 3, source: 'marketplace-free-download' })
+  }).catch(function(){});
+
+  // Track download
+  fetch('/.netlify/functions/marketplace-api', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'track-free-download', productId: FREE_DOWNLOAD_PRODUCT.id, email: email, name: name })
+  }).catch(function(){});
+
+  statEl.textContent = '✓ Downloading now…';
+  statEl.className   = 'modal-status success';
+  btn.textContent    = '✓ Downloading';
+
+  var dlUrl = (FREE_DOWNLOAD_PRODUCT.download_url || '/downloads/ai-prompt-starter-pack.pdf');
+  var a = document.createElement('a');
+  a.href = dlUrl; a.download = 'AI-Prompt-Starter-Pack.pdf';
+  a.target = '_blank';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+
+  setTimeout(function(){ closeFreeDownload(); }, 2500);
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -535,6 +638,14 @@ async function confirmOrder(email, paypalOrderId, productId) {
       notice.innerHTML = '&#x2713; Payment confirmed! Download link sent to ' + esc(email);
       document.body.appendChild(notice);
       setTimeout(function(){ notice.remove(); }, 6000);
+      // If user bought the AI Toolkit — set paid_toolkit in localStorage for L2 access
+      if (CHECKOUT_PRODUCT && CHECKOUT_PRODUCT.id === '22222222-0000-0000-0000-000000000002') {
+        try {
+          var _prog = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+          _prog.paid_toolkit = true;
+          localStorage.setItem('ll_progress', JSON.stringify(_prog));
+        } catch(e) {}
+      }
     }
   } catch(e) {}
 }
