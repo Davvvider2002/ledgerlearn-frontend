@@ -479,7 +479,7 @@ async function submitFreeDownload() {
   // Subscribe to Brevo
   fetch('/.netlify/functions/subscribe', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email, name: name, listId: 3, source: 'marketplace-free-download' })
+    body: JSON.stringify({ email: email, name: name, listId: 11, source: 'marketplace-free-download' })
   }).catch(function(){});
 
   // Track download
@@ -498,7 +498,7 @@ async function submitFreeDownload() {
       name: name,
       productName: FREE_DOWNLOAD_PRODUCT.name,
       downloadUrl: window.location.origin + '/ai-prompt-starter-pack',
-      listId: 3
+      listId: 11
     })
   }).catch(function(){});
 
