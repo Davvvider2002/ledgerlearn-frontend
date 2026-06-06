@@ -35,20 +35,22 @@ async function supa(path, method, body) {
 }
 
 function verifyAdminToken(event) {
-  var auth = (event.headers || {}).authorization || '';
-  var tok  = auth.replace('Bearer ', '').trim();
-  if (!tok || tok.length < 20) return false;
+  var auth   = (event.headers || {}).authorization || '';
+  var token  = auth.replace('Bearer ', '').trim();
+  var secret = process.env.ADMIN_SECRET || '';
+  if (!token || !secret) return false;
   try {
-    var parts   = tok.split('.');
-    if (parts.length !== 2) return false;
-    var payload = JSON.parse(Buffer.from(parts[0], 'base64').toString('utf8'));
+    var dotIdx     = token.lastIndexOf('.');
+    if (dotIdx < 0) return false;
+    var payloadB64 = token.slice(0, dotIdx);
+    var sig        = token.slice(dotIdx + 1);
+    var payload    = JSON.parse(Buffer.from(payloadB64, 'base64').toString('utf8'));
     if (payload.role !== 'admin') return false;
-    var now     = Date.now();
-    if (payload.exp && payload.exp < now) return false;
-    var crypto  = require('crypto');
-    var secret  = process.env.ADMIN_SECRET || '';
-    var expected = crypto.createHmac('sha256', secret).update(parts[0]).digest('hex');
-    return expected === parts[1];
+    var now        = Date.now();
+    if (payload.expires && payload.expires < now) return false;
+    var crypto     = require('crypto');
+    var expected   = crypto.createHmac('sha256', secret).update(payloadB64).digest('hex');
+    return expected === sig;
   } catch(e) { return false; }
 }
 
