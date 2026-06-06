@@ -42,7 +42,109 @@ exports.handler = async function (event) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: 'Invalid email' }) };
   }
-  if (![3, 4, 5, 6, 7].includes(listId)) {
+  // send-download-link handles its own list assignment — exempt from listId gate
+  if (action === 'send-download-link') {
+    const { downloadUrl, productName } = body;
+    if (!email || !downloadUrl) {
+      return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: 'email and downloadUrl required' }) };
+    }
+
+    const apiKey2 = process.env.BREVO_API_KEY;
+    if (!apiKey2) {
+      return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: 'Server config error' }) };
+    }
+    const brevoHdrs = { 'Content-Type': 'application/json', 'api-key': apiKey2 };
+    const nameParts = name.split(' ');
+
+    // Add to Brevo list 8 (Marketplace Downloads) — create it in Brevo if not yet created
+    try {
+      await fetch('https://api.brevo.com/v3/contacts', {
+        method: 'POST',
+        headers: brevoHdrs,
+        body: JSON.stringify({
+          email,
+          listIds: [11],
+          updateEnabled: true,
+          attributes: {
+            FIRSTNAME: nameParts[0] || '',
+            LASTNAME:  nameParts.slice(1).join(' ') || '',
+            SOURCE:    'marketplace-free-download'
+          }
+        })
+      });
+    } catch(e) { console.warn('[subscribe] Brevo contact upsert:', e.message); }
+
+    // Send transactional email
+    const dlEmailBody = {
+      to: [{ email, name: name || email.split('@')[0] }],
+      sender: { name: 'LedgerLearn Pro', email: 'hello@ledgerlearn.pro' },
+      subject: 'Your free download is here — ' + (productName || 'AI Prompt Starter Pack'),
+      htmlContent: `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>
+        <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#ffffff;">
+          <div style="background:#0B1F3A;padding:28px 32px;text-align:center;">
+            <span style="font-size:22px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;">
+              Ledger<span style="color:#ea580c;">Learn</span> Pro
+            </span>
+          </div>
+          <div style="padding:32px;">
+            <h2 style="color:#0B1F3A;font-size:20px;margin:0 0 8px;">Here is your free resource!</h2>
+            <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
+              Hi ${name || 'there'},<br><br>
+              Thanks for downloading <strong>${productName || 'the AI Prompt Starter Pack for Accountants'}</strong>.
+              Click below to open it — bookmark it for easy access later.
+            </p>
+            <div style="text-align:center;margin:28px 0;">
+              <a href="${downloadUrl}"
+                style="display:inline-block;background:#1DA98A;color:#ffffff;padding:16px 36px;
+                       border-radius:10px;font-weight:700;font-size:16px;text-decoration:none;
+                       letter-spacing:-0.2px;">
+                &#x21E9;&nbsp; Open free resource
+              </a>
+            </div>
+            <div style="background:#f8f7f4;border-radius:10px;padding:20px 24px;margin:24px 0;">
+              <p style="color:#0B1F3A;font-size:14px;font-weight:700;margin:0 0 8px;">
+                Want 50+ more accounting AI prompts?
+              </p>
+              <p style="color:#6b7280;font-size:13px;line-height:1.5;margin:0 0 12px;">
+                The AI Accountant Toolkit v1 covers month-end close, tax prep, client communication,
+                reconciliation, report writing, advisory, marketing, and ERP — 50+ copy-paste prompts.
+              </p>
+              <a href="https://ledgerlearn.pro/marketplace"
+                style="color:#1DA98A;font-size:13px;font-weight:600;text-decoration:none;">
+                Get the full toolkit ($49) &rarr;
+              </a>
+            </div>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
+            <p style="color:#9ca3af;font-size:12px;line-height:1.5;margin:0;">
+              You received this because you requested a free download from
+              <a href="https://ledgerlearn.pro" style="color:#9ca3af;">ledgerlearn.pro</a>.
+              This is a one-time delivery email — we hate spam too.
+            </p>
+          </div>
+        </div>
+      </body></html>`
+    };
+
+    try {
+      const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: brevoHdrs,
+        body: JSON.stringify(dlEmailBody)
+      });
+      const emailData = await emailRes.json();
+      console.log('[subscribe] send-download-link email result:', emailRes.status, JSON.stringify(emailData));
+      if (emailRes.status >= 400) {
+        return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: 'Email send failed: ' + JSON.stringify(emailData) }) };
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, sent: true }) };
+    } catch(e) {
+      console.error('[subscribe] send-download-link email error:', e.message);
+      return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: e.message }) };
+    }
+  }
+
+  // listId required for all other actions
+  if (![3, 4, 5, 6, 7, 8, 11].includes(listId)) {
     return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: 'Invalid list ID' }) };
   }
 
@@ -128,73 +230,7 @@ exports.handler = async function (event) {
     console.error('[subscribe] Network error:', err.message);
   
   // ── SEND DOWNLOAD LINK (email verification + delivery) ──────────
-  if (action === 'send-download-link') {
-    const { downloadUrl, productName } = body;
-    if (!email || !downloadUrl) {
-      return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: 'email and downloadUrl required' }) };
-    }
 
-    // 1. Add contact to Brevo list (confirms email is real — double opt-in equivalent)
-    try {
-      await fetch('https://api.brevo.com/v3/contacts', {
-        method: 'POST',
-        headers: brevoHeaders,
-        body: JSON.stringify({
-          email,
-          listIds: [listId || 3],
-          updateEnabled: true,
-          attributes: { FIRSTNAME: parts[0]||'', LASTNAME: parts.slice(1).join(' ')||'', SOURCE: 'marketplace-free-download' }
-        })
-      });
-    } catch(e) {}
-
-    // 2. Send transactional email with the download link
-    const emailBody = {
-      to: [{ email, name: name || email.split('@')[0] }],
-      sender: { name: 'LedgerLearn Pro', email: 'hello@ledgerlearn.pro' },
-      subject: 'Your free download: ' + (productName || 'AI Prompt Starter Pack'),
-      htmlContent: `
-        <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:560px;margin:0 auto;background:#ffffff;">
-          <div style="background:#0B1F3A;padding:2rem;text-align:center;">
-            <span style="font-size:1.4rem;font-weight:900;color:#ffffff;">Ledger<span style="color:#ea580c;">Learn</span> Pro</span>
-          </div>
-          <div style="padding:2rem;">
-            <h2 style="color:#0B1F3A;font-size:1.3rem;margin-bottom:.5rem;">Here is your free download</h2>
-            <p style="color:#374151;font-size:.95rem;line-height:1.6;margin-bottom:1.5rem;">
-              Hi ${name || 'there'},<br><br>
-              Thanks for downloading the <strong>${productName || 'AI Prompt Starter Pack for Accountants'}</strong> from LedgerLearn Pro.
-              Click the button below to access your resource:
-            </p>
-            <div style="text-align:center;margin:2rem 0;">
-              <a href="${downloadUrl}" style="display:inline-block;background:#1DA98A;color:#ffffff;padding:14px 32px;border-radius:9px;font-weight:700;font-size:1rem;text-decoration:none;">
-                Open your free resource &rarr;
-              </a>
-            </div>
-            <p style="color:#6b7280;font-size:.82rem;line-height:1.5;">
-              The link above takes you directly to your resource online. Bookmark it for easy access.<br><br>
-              To get 50+ more accounting AI prompts, check out the <a href="https://ledgerlearn.pro/marketplace" style="color:#1DA98A;">AI Accountant Toolkit v1 ($49)</a> in our marketplace.
-            </p>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:1.5rem 0;">
-            <p style="color:#9ca3af;font-size:.75rem;">
-              You received this because you requested a free download from ledgerlearn.pro.
-              <a href="https://ledgerlearn.pro" style="color:#9ca3af;">Unsubscribe</a>
-            </p>
-          </div>
-        </div>
-      `
-    };
-
-    try {
-      await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: brevoHeaders,
-        body: JSON.stringify(emailBody)
-      });
-      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, sent: true }) };
-    } catch(e) {
-      return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: 'Email send failed' }) };
-    }
-  }
 
     return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: 'Network error' }) };
   }
