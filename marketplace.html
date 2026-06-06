@@ -18,20 +18,26 @@
 body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);}
 
 /* TAB SWITCHER */
-.tab-switcher{background:var(--navy);border-bottom:2px solid rgba(212,168,67,.2);position:sticky;top:56px;z-index:90;}
-.tab-inner{display:flex;max-width:1100px;margin:0 auto;padding:0 2rem;}
-.tab-btn{display:flex;align-items:center;gap:.6rem;padding:1rem 1.5rem;background:transparent;border:none;border-bottom:3px solid transparent;cursor:pointer;font-family:inherit;color:rgba(255,255,255,.5);font-size:.88rem;font-weight:600;margin-bottom:-2px;transition:all .15s;line-height:1;}
-.tab-btn:hover{color:rgba(255,255,255,.8);}
-.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
-.tab-desc{font-size:.7rem;font-weight:400;color:rgba(255,255,255,.3);margin-left:.25rem;}
-.tab-btn.active .tab-desc{color:rgba(212,168,67,.6);}
+.tab-switcher{background:linear-gradient(135deg,#0B1F3A 0%,#12284a 100%);border-bottom:0;position:sticky;top:56px;z-index:90;box-shadow:0 2px 12px rgba(0,0,0,.3);}
+.tab-inner{display:flex;max-width:1100px;margin:0 auto;padding:0 1.5rem;gap:.25rem;}
+.tab-btn{display:flex;align-items:center;gap:.75rem;padding:1rem 1.5rem;background:transparent;border:none;border-bottom:3px solid transparent;cursor:pointer;font-family:inherit;color:rgba(255,255,255,.45);font-size:.88rem;font-weight:600;margin-bottom:-1px;transition:all .18s;line-height:1;border-radius:0;}
+.tab-btn:hover{color:#fff;background:rgba(255,255,255,.04);}
+.tab-btn.active{color:#fff;border-bottom-color:var(--teal);background:rgba(29,169,138,.06);}
+.tab-btn#tab-softhub.active{color:#fff;border-bottom-color:#22d3a5;background:rgba(29,169,138,.08);}
+.tab-desc{font-size:.68rem;font-weight:400;color:rgba(255,255,255,.28);margin-left:.1rem;display:block;line-height:1.2;}
+.tab-btn.active .tab-desc{color:rgba(29,169,138,.7);}
+.tab-btn#tab-softhub.active .tab-desc{color:rgba(34,211,165,.75);}
+.tab-new-badge{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;background:linear-gradient(90deg,#22d3a5,#0ea5e9);color:#fff;padding:2px 7px;border-radius:100px;margin-left:.25rem;}
 
 /* SOFTHUB GRID */
 .softhub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;margin-bottom:2.5rem;}
-.sh-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow .2s,transform .2s;}
-.sh-card:hover{box-shadow:0 8px 30px rgba(11,31,58,.1);transform:translateY(-2px);}
-.sh-card.featured{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
-.sh-card-header{background:linear-gradient(135deg,var(--navy),#1a2f4a);padding:1.25rem;display:flex;align-items:center;gap:.875rem;position:relative;}
+.sh-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow .25s,transform .22s;position:relative;}
+.sh-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1DA98A,#0ea5e9);opacity:0;transition:opacity .2s;}
+.sh-card:hover::before{opacity:1;}
+.sh-card:hover{box-shadow:0 10px 36px rgba(11,31,58,.13);transform:translateY(-3px);border-color:rgba(29,169,138,.3);}
+.sh-card.featured{border-color:var(--gold);box-shadow:0 0 0 1.5px var(--gold);}
+.sh-card.featured::before{opacity:1;background:linear-gradient(90deg,var(--gold),#f59e0b);}
+.sh-card-header{background:linear-gradient(135deg,#0d2040,#0f3355 60%,#0a2d4a);padding:1.25rem;display:flex;align-items:center;gap:.875rem;position:relative;border-bottom:1px solid rgba(29,169,138,.2);}
 .sh-logo{width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;flex-shrink:0;overflow:hidden;}
 .sh-logo img{width:100%;height:100%;object-fit:contain;}
 .sh-header-text{flex:1;min-width:0;}
@@ -59,12 +65,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);}
 .sh-btn-site:hover{border-color:var(--teal);}
 
 /* LIST YOUR PRODUCT CTA */
-.softhub-list-cta{background:linear-gradient(135deg,#0B1F3A,#1a2f4a);border-radius:16px;padding:2.5rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;}
+.softhub-list-cta{background:linear-gradient(135deg,#0B1F3A 0%,#0f3355 50%,#0a2d40 100%);border-radius:16px;padding:2.5rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;border:1.5px solid rgba(29,169,138,.25);box-shadow:0 4px 24px rgba(29,169,138,.08);}
 .slc-eyebrow{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);font-weight:700;margin-bottom:.4rem;}
 .slc-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:.4rem;line-height:1.2;}
 .slc-sub{font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.6;max-width:500px;margin-bottom:.875rem;}
 .slc-pills{display:flex;flex-wrap:wrap;gap:.35rem;}
-.slc-pill{font-size:.72rem;background:rgba(29,169,138,.15);color:#26c9a5;border:1px solid rgba(29,169,138,.25);border-radius:100px;padding:3px 10px;}
+.slc-pill{font-size:.72rem;background:rgba(29,169,138,.18);color:#2ddbad;border:1px solid rgba(29,169,138,.4);border-radius:100px;padding:4px 12px;font-weight:600;}
 .slc-btn{background:var(--gold);color:var(--navy);border:none;padding:14px 28px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
 .slc-btn:hover{background:#c49a30;}
 
@@ -267,8 +273,9 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
       <span class="tab-desc">Digital products &amp; toolkits</span>
     </button>
     <button class="tab-btn" id="tab-softhub" onclick="switchTab('softhub')">
-      &#x1F50D; SoftHub
-      <span class="tab-desc">Software discovery for accountants</span>
+      <span style="font-size:1.1rem">🔍</span>
+      <span>SoftHub <span class="tab-new-badge">NEW</span></span>
+      <span class="tab-desc">Software discovery hub for practitioners</span>
     </button>
   </div>
 </div>
