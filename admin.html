@@ -3293,20 +3293,39 @@ var ALL_SH_REQUESTS = [];
 
 
 async function shFetch(action, extra) {
-  var tok = sessionStorage.getItem('ll_admin_token') || '';
-  var res = await fetch('/.netlify/functions/softhub-api', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
-    body: JSON.stringify(Object.assign({ action: action }, extra || {}))
-  });
-  return res.json();
+  var tok = _adminToken || sessionStorage.getItem('ll_admin_token') || '';
+  if (!tok) { inlineToast('Session expired — please log out and back in', 'error'); return { ok: false, data: [] }; }
+  try {
+    var res  = await fetch('/.netlify/functions/softhub-api', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+      body:    JSON.stringify(Object.assign({ action: action }, extra || {}))
+    });
+    var data = await res.json();
+    if (res.status === 401) {
+      inlineToast('Not authorised — session may have expired', 'error');
+      return { ok: false, data: [] };
+    }
+    if (!data.ok && data.error) {
+      console.error('[SoftHub]', action, data.error);
+    }
+    return data;
+  } catch(e) {
+    console.error('[SoftHub] fetch error:', action, e.message);
+    inlineToast('Network error loading SoftHub data', 'error');
+    return { ok: false, data: [] };
+  }
 }
 
 async function loadSHVendors() {
   var el = document.getElementById('sh-vendors-table');
   if (!el) return;
-  el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading&hellip;</div>';
+  el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading vendor listings&hellip;</div>';
   var data = await shFetch('admin-get-listings');
+  if (!data || !data.ok) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x26A0;&#xFE0F;</div>Failed to load vendors. Check Netlify logs.</div>';
+    return;
+  }
   ALL_SH_VENDORS = data.data || [];
   // Update pending badge
   var pendingCount = ALL_SH_VENDORS.filter(function(v){ return v.status === 'pending'; }).length;
@@ -3342,8 +3361,12 @@ function renderSHVendors() {
 async function loadSHPending() {
   var el = document.getElementById('sh-pending-list');
   if (!el) return;
-  el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading&hellip;</div>';
+  el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading pending applications&hellip;</div>';
   var data = await shFetch('admin-get-listings', { status: 'pending' });
+  if (!data || !data.ok) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x26A0;&#xFE0F;</div>Failed to load. Check your session and Netlify logs.</div>';
+    return;
+  }
   ALL_SH_PENDING = data.data || [];
   renderSHPending();
 }

@@ -237,14 +237,14 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .cta-reassure{display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;}
 .cta-check{font-size:0.78rem;color:rgba(255,255,255,0.35);display:flex;align-items:center;gap:5px;}
 .cta-check::before{content:"✓";color:var(--teal);font-weight:700;}
-footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);padding:2.5rem 2rem;}
-.footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;}
-.footer-logo{font-family:\'Syne\',sans-serif;font-weight:800;font-size:1rem;color:#fff;}
+footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.07);padding:3rem 2rem 2rem;}
+.footer-inner{max-width:860px;margin:0 auto;text-align:center;}
+.footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:1.5rem;display:block;}
 .footer-logo span{color:var(--gold);}
-.footer-links{display:flex;gap:1.5rem;list-style:none;flex-wrap:wrap;}
-.footer-links a{color:rgba(255,255,255,0.4);text-decoration:none;font-size:0.82rem;transition:color .15s;}
-.footer-links a:hover{color:rgba(255,255,255,0.8);}
-.footer-disclaimer{font-size:0.72rem;color:rgba(255,255,255,0.2);max-width:360px;line-height:1.5;text-align:right;}
+.footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem 1.75rem;list-style:none;margin-bottom:.75rem;}.footer-divider{width:100%;max-width:400px;margin:1.25rem auto;border:none;border-top:1px solid rgba(255,255,255,.07);}
+.footer-links a{color:rgba(255,255,255,.45);text-decoration:none;font-size:.82rem;transition:color .15s;}
+.footer-links a:hover{color:#fff;}
+.footer-disclaimer{font-size:.72rem;color:rgba(255,255,255,.25);line-height:1.65;text-align:center;}.footer-disclaimer a{color:rgba(255,255,255,.3);}.footer-disclaimer a:hover{color:rgba(255,255,255,.6);}
 
 /* ── Ecosystem pills ──────────────────────────────────── */
 .hero-ecosystem-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);font-weight:700;margin-bottom:.6rem;}
@@ -1002,28 +1002,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <footer>
   <div class="footer-inner">
-    <div>
-      <div class="footer-logo">Ledger<span>Learn</span> Pro</div>
-      <ul class="footer-links" style="margin-top:.75rem">
-        <li><a href="/">Home</a></li>
-        <li><a href="/learn">Certifications</a></li>
-        <li><a href="/marketplace">Marketplace</a></li>
-        <li><a href="/jobs">Jobs</a></li>
-        <li><a href="/academy">Academy</a></li>
-        <li><a href="/partners">Partners</a></li>
-        <li><a href="/faq">FAQ</a></li>
-      </ul>
-      <ul class="footer-links" style="margin-top:.5rem">
-        <li><a href="/privacy-policy">Privacy Policy</a></li>
-        <li><a href="/terms">Terms of Use</a></li>
-        <li><a href="mailto:hello@ledgerlearn.pro">Contact Us</a></li>
-        <li><a href="https://www.facebook.com/groups/virtualbookkeepers" target="_blank" rel="noopener">Facebook Community</a></li>
-      </ul>
-    </div>
+    <div class="footer-logo">Ledger<span>Learn</span> Pro</div>
+    <ul class="footer-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/learn">Certifications</a></li>
+      <li><a href="/marketplace">Marketplace</a></li>
+      <li><a href="/jobs">Jobs</a></li>
+      <li><a href="/academy">Academy</a></li>
+      <li><a href="/partners">Partners</a></li>
+      <li><a href="/faq">FAQ</a></li>
+      <li><a href="/pricing">Pricing</a></li>
+    </ul>
+    <ul class="footer-links">
+      <li><a href="/privacy-policy">Privacy Policy</a></li>
+      <li><a href="/terms">Terms of Use</a></li>
+      <li><a href="mailto:hello@ledgerlearn.pro">Contact Us</a></li>
+      <li><a href="https://www.facebook.com/groups/virtualbookkeepers" target="_blank" rel="noopener">&#x1F4D8; Facebook Community</a></li>
+    </ul>
+    <hr class="footer-divider">
     <div class="footer-disclaimer">
       &copy; 2026 LedgerLearn Pro &middot; Independent assessment platform, not affiliated with Xero, Intuit or Sage.<br>
       Certifications are issued by LedgerLearn Pro and do not constitute official vendor certification.<br>
-      <a href="mailto:hello@ledgerlearn.pro" style="color:rgba(255,255,255,.35)">hello@ledgerlearn.pro</a>
+      <a href="mailto:hello@ledgerlearn.pro">hello@ledgerlearn.pro</a>
     </div>
   </div>
 </footer>
