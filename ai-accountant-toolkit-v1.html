@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Accountant Toolkit v1 — LedgerLearn Pro</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#f8f7f4;color:#0B1F3A;line-height:1.65;}
+.page{max-width:760px;margin:0 auto;padding:3rem 2.5rem;}
+.cover{background:linear-gradient(135deg,#0B1F3A 0%,#1a2d4a 60%,#2d1b4e 100%);color:#fff;border-radius:16px;padding:3rem;margin-bottom:3rem;}
+.cover-badge{display:inline-block;background:rgba(212,168,67,.2);color:#D4A843;border:1px solid rgba(212,168,67,.3);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:4px 14px;border-radius:100px;margin-bottom:1rem;}
+.cover h1{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;margin-bottom:.4rem;line-height:1.1;}
+.cover h1 span{color:#D4A843;}
+.cover-sub{color:rgba(255,255,255,.55);font-size:.95rem;margin-bottom:2rem;max-width:520px;}
+.cover-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.cover-stat{background:rgba(255,255,255,.06);border-radius:10px;padding:.875rem;text-align:center;}
+.cover-stat-num{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#D4A843;}
+.cover-stat-label{font-size:.68rem;color:rgba(255,255,255,.4);margin-top:.2rem;}
+.branding{color:rgba(255,255,255,.25);font-size:.72rem;margin-top:1rem;}
+.branding a{color:rgba(255,255,255,.4);}
+.section-header{margin:2.5rem 0 1.25rem;}
+.section-header h2{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:.25rem;}
+.section-header p{color:#6b87a3;font-size:.84rem;}
+.section-num{display:inline-block;background:#7c3aed;color:#fff;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:4px;margin-right:.5rem;vertical-align:middle;}
+.prompt-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:1.5rem;margin-bottom:1rem;}
+.prompt-card h3{font-weight:700;font-size:.95rem;margin-bottom:.25rem;color:#0B1F3A;}
+.prompt-card .tagline{font-size:.78rem;color:#1DA98A;font-weight:600;margin-bottom:.75rem;}
+.prompt-box{background:#f8f7f4;border:1.5px solid #e2e8f0;border-radius:8px;padding:1rem 1.25rem;font-family:monospace;font-size:.78rem;color:#1e3a5f;line-height:1.65;white-space:pre-wrap;word-break:break-word;}
+.section-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#6b87a3;margin:.75rem 0 .35rem;}
+.tips-list{list-style:none;padding:0;}
+.tips-list li{padding:.3rem 0 .3rem 1.25rem;position:relative;font-size:.8rem;color:#374151;}
+.tips-list li::before{content:"→";position:absolute;left:0;color:#1DA98A;font-weight:700;}
+.workflow-badge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;}
+.wf-close{background:rgba(29,169,138,.1);color:#1DA98A;}
+.wf-tax{background:rgba(234,88,12,.1);color:#ea580c;}
+.wf-client{background:rgba(124,58,237,.1);color:#7c3aed;}
+.wf-recon{background:rgba(212,168,67,.1);color:#b45309;}
+.wf-report{background:rgba(11,31,58,.08);color:#374151;}
+.wf-advisory{background:rgba(29,169,138,.1);color:#1DA98A;}
+.wf-marketing{background:rgba(234,88,12,.1);color:#ea580c;}
+.wf-erp{background:rgba(124,58,237,.1);color:#7c3aed;}
+.toc{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:1.5rem;margin-bottom:2.5rem;}
+.toc h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1rem;}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.35rem;}
+.toc-item{font-size:.8rem;color:#374151;padding:.2rem 0 .2rem 1.1rem;position:relative;}
+.toc-item::before{content:"•";position:absolute;left:0;color:#7c3aed;}
+.footer-cert{background:linear-gradient(135deg,#0B1F3A,#1a2d4a);color:#fff;border-radius:12px;padding:1.5rem 2rem;margin-top:3rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.footer-cert p{font-size:.84rem;color:rgba(255,255,255,.55);max-width:400px;}
+.footer-cert a{background:#D4A843;color:#0B1F3A;padding:10px 20px;border-radius:8px;font-weight:700;font-size:.84rem;text-decoration:none;white-space:nowrap;}
+.page-break{page-break-before:always;margin-top:3rem;}
+@media print{body{background:#fff;}.page{padding:1rem;}.cover{border-radius:0;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-badge">LedgerLearn Pro · AI Toolkit Series</div>
+  <h1>AI Accountant<br><span>Toolkit v1</span></h1>
+  <p class="cover-sub">50+ ChatGPT prompts, automation workflows, and AI integration guides purpose-built for modern accountants and bookkeepers.</p>
+  <div class="cover-stats">
+    <div class="cover-stat"><div class="cover-stat-num">50+</div><div class="cover-stat-label">Prompts</div></div>
+    <div class="cover-stat"><div class="cover-stat-num">8</div><div class="cover-stat-label">Workflows</div></div>
+    <div class="cover-stat"><div class="cover-stat-num">10+</div><div class="cover-stat-label">hrs/week saved</div></div>
+    <div class="cover-stat"><div class="cover-stat-num">v1</div><div class="cover-stat-label">First edition</div></div>
+  </div>
+  <div class="branding">From <a href="https://ledgerlearn.pro">ledgerlearn.pro</a> · The certification platform for modern accountants</div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h3>What's inside — 8 workflow areas</h3>
+  <div class="toc-grid">
+    <div class="toc-item">Month-End Close (7 prompts)</div>
+    <div class="toc-item">Tax Preparation (6 prompts)</div>
+    <div class="toc-item">Client Communication (8 prompts)</div>
+    <div class="toc-item">Reconciliation (5 prompts)</div>
+    <div class="toc-item">Report Writing (7 prompts)</div>
+    <div class="toc-item">Business Advisory (6 prompts)</div>
+    <div class="toc-item">Practice Marketing (6 prompts)</div>
+    <div class="toc-item">ERP Implementation (6 prompts)</div>
+  </div>
+</div>
+
+<!-- SECTION 1: MONTH-END CLOSE -->
+<div class="section-header">
+  <h2><span class="section-num">01</span>Month-End Close</h2>
+  <p>Automate narrative writing, variance analysis, and client reporting.</p>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-close">Month-end</span>
+  <h3>1.1 Trial Balance Narrative Generator</h3>
+  <div class="tagline">Full month-end narrative from any trial balance in 60 seconds</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">You are a senior accountant preparing a month-end narrative for a client.
+
+I will give you a trial balance with current and prior month figures. Your job is to:
+1. Identify the 5 most significant variances (by % and absolute value)
+2. Write a plain-English explanation for each variance
+3. Flag items that need investigation
+4. Write a 3-paragraph executive summary for a business owner
+5. List 3 recommended actions for this month
+
+Trial balance: [PASTE TRIAL BALANCE]
+Industry: [INDUSTRY] | Size: [STAFF / REVENUE] | Key concerns: [CONCERNS]
+
+Output format: Executive Summary | Variance Table | Investigation Items | Actions</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-close">Month-end</span>
+  <h3>1.2 Management Accounts Commentary</h3>
+  <div class="tagline">Professional P&amp;L commentary for board packs and investor reports</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a professional management accounts commentary for a board pack.
+
+P&L data: [PASTE P&L — Revenue, GP, Operating costs, EBITDA, Net profit vs budget and prior year]
+Business: [COMPANY NAME] | Period: [MONTH/YEAR] | Audience: [Board / Investors / Owner]
+
+Write:
+1. Performance headline (2 sentences, lead with the most important number)
+2. Revenue commentary (drivers, mix, trends — 3 paragraphs)
+3. Cost commentary (key movements, one-offs — 2 paragraphs)
+4. Profitability summary (margins, EBITDA bridge — 1 paragraph)
+5. Outlook paragraph (forward-looking, 3 sentences)
+
+Tone: professional, confident, factual. Avoid jargon.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-close">Month-end</span>
+  <h3>1.3 Prepayments &amp; Accruals Calculation Helper</h3>
+  <div class="tagline">Calculate and journal prepayments and accruals from raw invoices</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">You are an accountant preparing month-end prepayments and accruals.
+
+I'll give you a list of invoices/expenses. For each one, determine:
+1. Whether it should be prepaid, accrued, or expensed in full this period
+2. The correct amount to recognise this month
+3. The journal entry (Dr/Cr with account names)
+4. The balance sheet treatment
+
+Today's date: [DATE] | Period end: [DATE] | Accounting basis: [Accruals]
+
+Expenses to process:
+[LIST YOUR INVOICES — Description, Amount, Period covered, Invoice date]
+
+Output as a table: Item | Treatment | This Month | Balance Sheet | Journal Dr | Journal Cr</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-close">Month-end</span>
+  <h3>1.4 Variance Explanation Generator</h3>
+  <div class="tagline">Turn unexplained variances into clear client explanations</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">I have the following budget variances that I need to explain to a client.
+For each variance, suggest the 3 most likely causes and write a plain-English explanation I can include in my report.
+
+Business: [INDUSTRY, SIZE]
+Variances:
+- [Account name]: Budget $[X], Actual $[Y], Variance $[Z] ([%])
+- [Repeat for each variance]
+
+For each one:
+1. Three most likely causes (ranked by probability)
+2. One-sentence client explanation
+3. Follow-up question to ask the client to confirm the cause</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-close">Month-end</span>
+  <h3>1.5 Cash Flow Forecast from P&amp;L</h3>
+  <div class="tagline">Convert an accrual P&L into a 13-week cash flow forecast</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Convert the following accrual P&L into a 13-week cash flow forecast.
+
+P&L: [PASTE P&L]
+Business info:
+- Debtor days: [X] | Creditor days: [Y] | Stock days: [Z if applicable]
+- Known large payments next 13 weeks: [LIST]
+- VAT/GST frequency: [Monthly/Quarterly]
+- Payroll frequency: [Weekly/Monthly]
+
+Output:
+1. Week-by-week cash flow table (Opening | Receipts | Payments | Closing balance)
+2. Key assumptions list
+3. Three cash flow risks to flag to the client</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-close">Month-end</span>
+  <h3>1.6 Balance Sheet Review Checklist</h3>
+  <div class="tagline">AI-generated review questions for every balance sheet line</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Review the following balance sheet and generate a complete review checklist.
+
+Balance sheet: [PASTE BALANCE SHEET]
+Period: [DATE] | Prior period: [DATE]
+
+For each significant line item, generate:
+1. What to check (specific question or calculation)
+2. What a warning sign looks like
+3. The journal to correct common errors on this line
+
+Focus on: Debtors age, creditor aging, stock provisioning, fixed asset register, intercompany, tax provisions, accruals adequacy.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-close">Month-end</span>
+  <h3>1.7 Month-End Checklist Generator</h3>
+  <div class="tagline">Custom month-end close checklist for any client type</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Generate a complete month-end close checklist for the following client.
+
+Client profile:
+- Industry: [INDUSTRY]
+- Software: [XERO / QUICKBOOKS / SAGE]
+- Team size: [SOLE TRADER / SMALL TEAM / MEDIUM BUSINESS]
+- VAT/GST registered: [YES/NO, FREQUENCY]
+- Payroll: [YES/NO, FREQUENCY]
+- Inventory: [YES/NO]
+- Multi-currency: [YES/NO]
+
+Generate a 30-item checklist grouped by: Pre-close prep | Transactions | Reconciliations | Review | Client sign-off | Filing
+Include: Owner, Deadline (day of month), Software screen/report to use</div>
+</div>
+
+<!-- SECTION 2: CLIENT COMMUNICATION -->
+<div class="section-header page-break">
+  <h2><span class="section-num">02</span>Client Communication</h2>
+  <p>Professional, consistent communication for every client interaction.</p>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-client">Client comms</span>
+  <h3>2.1 New Client Onboarding Package</h3>
+  <div class="tagline">Welcome email + checklist + meeting agenda from two inputs</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Generate a complete new-client onboarding package.
+Industry: [INDUSTRY] | Software: [XERO/QBO/SAGE]
+
+Generate: 1) Welcome email (200 words, warm, professional)
+2) Onboarding checklist (20 items: setup, info to collect, compliance, deliverables)
+3) First meeting agenda (45 min, 5 items)
+4) Month 1 communication schedule (week by week)</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-client">Client comms</span>
+  <h3>2.2 Overdue Invoice Chase Sequence</h3>
+  <div class="tagline">3-email sequence that gets invoices paid without damaging relationships</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a 3-email sequence to chase an overdue invoice.
+Client: [TYPE — good client / difficult client / new client]
+Invoice: $[AMOUNT] | Due: [DATE] | Now: [DAYS] overdue
+Relationship: [CLOSE / FORMAL / NEW]
+
+Email 1 (Day 1 overdue): Gentle reminder, assume oversight
+Email 2 (Day 7 overdue): Firmer, reference the invoice number, ask for payment date
+Email 3 (Day 14 overdue): Final notice before escalation, professional but firm
+
+Tone: professional, not aggressive. Never threaten legal action in Email 1 or 2.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-client">Client comms</span>
+  <h3>2.3 Bad News Delivery Script</h3>
+  <div class="tagline">How to deliver difficult financial news professionally</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a client email delivering difficult financial news.
+
+News to deliver: [e.g. "The business made a loss this quarter" / "Tax bill is larger than expected" / "Cash will run out in 8 weeks"]
+Client relationship: [LENGTH, TYPE]
+What caused it: [BRIEF EXPLANATION]
+What can be done: [ACTIONS AVAILABLE]
+
+Write an email that: 1) Leads with empathy, not numbers 2) States the situation clearly and factually 3) Explains what caused it (briefly) 4) Presents options and next steps 5) Ends with a clear call to action
+
+Tone: calm, professional, supportive. Never minimize the issue.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-client">Client comms</span>
+  <h3>2.4 Scope Expansion Proposal</h3>
+  <div class="tagline">Propose additional services and price increases professionally</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a proposal to expand services for an existing client.
+
+Current services: [LIST] at $[CURRENT MONTHLY FEE]
+Proposed additions: [LIST NEW SERVICES]
+New fee: $[NEW FEE]
+Reason for expansion: [e.g. Business has grown / New compliance requirements / Client needs identified]
+
+Write: 1) Context paragraph (reference their growth/needs) 2) What we're proposing (clear, benefit-led)
+3) Investment summary (old vs new fee, value delivered) 4) Next steps
+
+Tone: confident, value-focused. Never apologise for the fee.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-client">Client comms</span>
+  <h3>2.5 Quarterly Business Review Script</h3>
+  <div class="tagline">Structure a 60-minute advisory meeting that clients value</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Create a quarterly business review meeting script.
+
+Client: [INDUSTRY, SIZE, KEY GOALS]
+Quarter: [Q and YEAR]
+Key financials: [HEADLINE NUMBERS — revenue, profit, cash]
+Issues to discuss: [LIST]
+Goals for next quarter: [LIST]
+
+Generate: 1) Meeting agenda (60 min, with time allocations) 2) Opening questions to get client talking
+3) Financial review structure (what to show, what to say) 4) Advisory discussion prompts
+5) Action items template 6) Meeting summary email template</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-client">Client comms</span>
+  <h3>2.6 Reference Letter Generator</h3>
+  <div class="tagline">Professional reference letters for clients applying for finance</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a professional accountant's reference letter for a client.
+
+Purpose: [Mortgage / Business loan / Rental / Visa / General]
+Client: [LENGTH OF RELATIONSHIP, BUSINESS TYPE]
+Key facts to include: [INCOME, TRADING HISTORY, FINANCIAL HEALTH]
+
+Write a formal letter on accountant's letterhead that:
+1) States relationship and duration 2) Confirms financial standing factually
+3) Supports the application without making guarantees 4) Includes standard disclaimer
+
+Tone: formal, authoritative, factual.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-client">Client comms</span>
+  <h3>2.7 Meeting Notes to Action Points</h3>
+  <div class="tagline">Turn rough meeting notes into clean action items and follow-up emails</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Convert the following meeting notes into structured action items and a client follow-up email.
+
+Meeting notes: [PASTE YOUR RAW NOTES]
+Meeting type: [Discovery / Review / Advisory / Tax planning]
+Date: [DATE]
+
+Generate:
+1. Structured meeting summary (key discussion points, decisions made)
+2. Action items table: Who | What | By When
+3. Follow-up email to client (professional, concise, with action items listed)
+4. Internal to-do items for our team</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-client">Client comms</span>
+  <h3>2.8 Disengagement Letter</h3>
+  <div class="tagline">End a client relationship professionally and compliantly</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a professional disengagement letter to end a client relationship.
+
+Reason for disengagement: [Non-payment / Scope disagreement / Compliance concerns / Practice restructure / Mutual agreement] (do not disclose in letter unless appropriate)
+Outstanding items: [LIST ANY OPEN MATTERS]
+Handover needed: [YES/NO — what information to transfer]
+
+Write a letter that: 1) Clearly states the disengagement date 2) Lists outstanding obligations on both sides
+3) Covers data return and file handover 4) Ends the relationship professionally
+
+Tone: formal, neutral, no blame. Comply with professional body guidelines.</div>
+</div>
+
+<!-- SECTION 3: TAX PREPARATION -->
+<div class="section-header page-break">
+  <h2><span class="section-num">03</span>Tax Preparation</h2>
+  <p>Prompts to assist with tax planning, compliance, and client communication.</p>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-tax">Tax</span>
+  <h3>3.1 Year-End Tax Planning Checklist</h3>
+  <div class="tagline">Custom year-end tax planning checklist from client profile</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Generate a year-end tax planning checklist for this client.
+
+Client: [SOLE TRADER / COMPANY / PARTNERSHIP / TRUST]
+Country: [UK / AUS / SA / US / NZ]
+Industry: [INDUSTRY]
+Estimated taxable profit: $[AMOUNT]
+Known issues: [LIST ANY — e.g. asset purchase planned, director loan, large dividend]
+
+Generate: 1) Top 5 tax-saving opportunities before year-end 2) Information needed from client
+3) Key deadlines 4) Decisions to make before [YEAR-END DATE] 5) Risks to flag</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-tax">Tax</span>
+  <h3>3.2 Tax Provision Calculator Prompt</h3>
+  <div class="tagline">Calculate and explain a tax provision for management accounts</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Calculate the tax provision for a company's management accounts.
+
+Accounting profit: $[AMOUNT]
+Jurisdiction: [COUNTRY/STATE]
+Tax rate: [%]
+Known adjustments:
+- Non-deductible expenses: $[AMOUNT] (describe: [WHAT])
+- Capital allowances claimed: $[AMOUNT]
+- Losses available: $[AMOUNT]
+- R&D credits: $[AMOUNT if applicable]
+
+Calculate: 1) Taxable profit 2) Tax provision 3) Effective tax rate 4) Deferred tax items
+5) Journal entry for the provision 6) Disclosure note for accounts</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-tax">Tax</span>
+  <h3>3.3 VAT / GST Return Review</h3>
+  <div class="tagline">Pre-submission review of a VAT/GST return with risk flags</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Review the following VAT/GST return before submission.
+
+Return period: [DATES] | Jurisdiction: [UK VAT / AUS GST / SA VAT / NZ GST]
+Output tax: $[AMOUNT] | Input tax: $[AMOUNT] | Net payable/refund: $[AMOUNT]
+Revenue for period: $[AMOUNT]
+
+Check for:
+1. Output tax rate — does VAT/GST as % of revenue look reasonable? Flag if outside [X-Y]%
+2. Large input tax claims — list any over $[THRESHOLD] and ask if supporting docs exist
+3. Partial exemption issues (if applicable)
+4. Missing/late invoices that should be in this period
+5. Common errors for this industry: [INDUSTRY]
+
+Output: Risk rating (Low/Medium/High) | Issues found | Questions to ask client</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-tax">Tax</span>
+  <h3>3.4 Dividend vs Salary Calculator Prompt</h3>
+  <div class="tagline">Model the optimal director remuneration structure</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Model the optimal salary vs dividend structure for a company director.
+
+Company profit before director remuneration: $[AMOUNT]
+Director's personal tax situation: [SINGLE / MARRIED, OTHER INCOME: $AMOUNT]
+Jurisdiction: [COUNTRY]
+Current structure: Salary $[AMOUNT], Dividends $[AMOUNT]
+
+Calculate and compare 3 scenarios:
+1. Current structure
+2. Minimum salary (threshold) + maximum dividends
+3. Higher salary + lower dividends
+
+For each: Company tax | Director income tax | NI/PRSI/Payroll tax | Total tax | Take-home pay
+
+Recommend the most tax-efficient structure with a one-paragraph explanation.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-tax">Tax</span>
+  <h3>3.5 Capital Gains Tax Summary</h3>
+  <div class="tagline">Prepare a CGT summary from disposal information</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Prepare a capital gains tax summary for the following disposals.
+
+Taxpayer: [INDIVIDUAL / COMPANY / TRUST]
+Jurisdiction: [COUNTRY]
+Disposals this year:
+- Asset: [NAME] | Acquired: [DATE, COST] | Disposed: [DATE, PROCEEDS] | Costs: $[AMOUNT]
+- [Repeat for each disposal]
+
+Reliefs/exemptions to consider: [Annual exemption / Business asset disposal relief / Rollover relief / Principal residence]
+Losses available: $[AMOUNT]
+
+Calculate: Gross gains | Allowable losses | Reliefs | Taxable gain | Tax at [RATE]%
+Flag any planning opportunities for next year.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-tax">Tax</span>
+  <h3>3.6 Payroll Compliance Checklist</h3>
+  <div class="tagline">End-of-year payroll checklist for any jurisdiction</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Generate an end-of-year payroll compliance checklist.
+
+Jurisdiction: [COUNTRY/STATE]
+Software: [XERO PAYROLL / QUICKBOOKS PAYROLL / SAGE / OTHER]
+Number of employees: [NUMBER]
+Benefits provided: [LIST — e.g. company car, health insurance, share options]
+
+Generate: 1) Year-end payroll close steps (in order, with dates)
+2) P60/PAYG/IRP5 (country-appropriate) preparation checklist
+3) Benefits-in-kind reporting requirements
+4) Common errors to check before filing 5) Employee communication template</div>
+</div>
+
+<!-- SECTION 4: RECONCILIATION -->
+<div class="section-header page-break">
+  <h2><span class="section-num">04</span>Reconciliation</h2>
+  <p>Faster, more thorough reconciliations with AI assistance.</p>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-recon">Reconciliation</span>
+  <h3>4.1 Bank Reconciliation Exception Analysis</h3>
+  <div class="tagline">Identify and explain bank rec exceptions automatically</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Analyse the following bank reconciliation exceptions.
+
+Unreconciled items: [PASTE LIST — Date, Description, Amount, Days outstanding]
+Account: [BANK ACCOUNT NAME] | Period: [DATE]
+
+For each item:
+1. Categorise (timing difference / error / missing transaction / duplicate / fraud risk)
+2. Suggested action (post journal / chase payment / request bank statement / escalate)
+3. Priority (High/Medium/Low)
+
+Flag any items over 30 days or over $[THRESHOLD] as high priority.
+Output as a table with a summary paragraph of total unreconciled and risk rating.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-recon">Reconciliation</span>
+  <h3>4.2 Intercompany Reconciliation Template</h3>
+  <div class="tagline">Identify discrepancies in intercompany balances</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Reconcile the following intercompany balances between group entities.
+
+Entity A balance: [PASTE — Date, Description, Amount, Reference]
+Entity B balance (mirror account): [PASTE — Date, Description, Amount, Reference]
+
+Identify:
+1. Matched transactions (amount + reference agree)
+2. Timing differences (one side posted, other not yet)
+3. Genuine discrepancies (different amounts, missing transactions)
+4. Suggested journals to resolve discrepancies
+
+Output: Reconciliation table | Unmatched items | Journals required | Closing balance after adjustment</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-recon">Reconciliation</span>
+  <h3>4.3 Debtor Age Analysis &amp; Action Plan</h3>
+  <div class="tagline">Prioritised collection plan from aged debtors report</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Analyse the following aged debtors report and create a collection action plan.
+
+Aged debtors: [PASTE — Customer, Current, 30 days, 60 days, 90 days, 90+ days, Total]
+Business context: [AVERAGE PAYMENT TERMS, INDUSTRY, TOP 3 CUSTOMERS %]
+
+Generate:
+1. Summary: Total outstanding, % over 60 days, collection risk rating
+2. Priority list: Top 10 customers to chase (by amount + days overdue)
+3. Action plan: For each priority customer — email template + escalation trigger
+4. Provision recommendation: Suggest bad debt provision amount and basis
+5. DSO calculation and comparison to payment terms</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-recon">Reconciliation</span>
+  <h3>4.4 Payroll Reconciliation Checker</h3>
+  <div class="tagline">Reconcile payroll journals to control accounts</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Check the following payroll reconciliation for errors.
+
+Payroll summary: [PASTE — Gross pay, Employee deductions, Employer contributions, Net pay, Total cost]
+GL postings: [PASTE — Dr/Cr entries from accounting system]
+Bank payment: $[NET AMOUNT PAID]
+
+Check:
+1. Does the bank payment equal net pay? Flag discrepancy if not.
+2. Do employer contributions reconcile to payroll vs GL?
+3. Are PAYE/tax withholding control accounts correct?
+4. Flag any amounts that look unusual (calculate % of gross and compare to expectations)
+Output: Pass/Fail for each check | Discrepancies found | Journals to correct</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-recon">Reconciliation</span>
+  <h3>4.5 Suspense Account Clearance</h3>
+  <div class="tagline">Identify and resolve suspense account items systematically</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Help me clear the following suspense account items.
+
+Suspense account balance: $[AMOUNT] | Account code: [CODE]
+Items in suspense: [PASTE — Date, Description, Amount, Original entry]
+
+For each item:
+1. Determine the most likely correct account based on description
+2. Suggest the journal to clear it (Dr/Cr with account names)
+3. Flag any items that need more information before posting
+4. Identify any items that might be errors vs intentional suspense
+
+Output: Item | Likely account | Journal | Confidence (High/Med/Low) | Action needed</div>
+</div>
+
+<!-- SECTION 5: REPORT WRITING -->
+<div class="section-header page-break">
+  <h2><span class="section-num">05</span>Report Writing</h2>
+  <p>Produce professional financial reports faster than ever.</p>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-report">Reporting</span>
+  <h3>5.1 Annual Accounts Narrative</h3>
+  <div class="tagline">Director's report and strategic review from financial data</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write the narrative sections of annual accounts.
+
+Company: [NAME] | Year ended: [DATE] | Jurisdiction: [COUNTRY]
+Key financials: Revenue $[X], GP $[Y] ([%]), Net profit $[Z], Cash $[A], Net assets $[B]
+YoY change: Revenue [+/-%], Profit [+/-%]
+Key events this year: [LIST — e.g. new product, staff hire, location change, major contract]
+
+Write: 1) Directors' Report (300 words — business review, principal activities, results, dividends, future outlook)
+2) Strategic Review (200 words — principal risks, KPIs, going concern statement)
+3) Basis of preparation note (50 words)</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-report">Reporting</span>
+  <h3>5.2 KPI Dashboard Interpretation</h3>
+  <div class="tagline">Turn a dashboard of numbers into an insight-led narrative</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Interpret the following business KPIs and write an insight narrative.
+
+KPIs (current vs target vs prior period):
+[PASTE YOUR KPI TABLE — Metric, Current, Target, Prior, Trend]
+
+Industry benchmarks (if known): [PASTE OR SKIP]
+
+Write: 1) Green flags (what's working — 3 points) 2) Red flags (concerns — 3 points)
+3) Leading indicators (what these numbers predict for next quarter)
+4) Three recommended management actions
+5) One KPI that should be added to improve visibility
+
+Tone: direct, insight-led, action-oriented. Avoid stating the obvious.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-report">Reporting</span>
+  <h3>5.3 Board Pack Executive Summary</h3>
+  <div class="tagline">One-page board pack summary from full board pack data</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a one-page executive summary for a board pack.
+
+Meeting: [MONTH/YEAR] Board Meeting | Company: [NAME]
+Financial highlights: [PASTE KEY NUMBERS]
+Agenda items: [LIST]
+Decisions required: [LIST]
+Key risks: [LIST]
+
+Write a one-page executive summary (500 words max) covering:
+1. Month in review (performance headline — 2 sentences)
+2. Financial summary (5 key metrics, vs budget and prior year)
+3. Operational highlights (top 3 achievements)
+4. Issues requiring board attention (top 2–3)
+5. Decisions required today (numbered list)
+6. Looking ahead (outlook for next month — 2 sentences)</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-report">Reporting</span>
+  <h3>5.4 Financial Health Score Report</h3>
+  <div class="tagline">Structured financial health assessment for SME clients</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Produce a financial health score report for an SME client.
+
+Financial data: [PASTE P&L AND BALANCE SHEET — last 2 years]
+Industry: [INDUSTRY] | Size: [REVENUE, STAFF]
+
+Calculate and score (1–10) the following:
+- Profitability (gross margin, net margin, ROE)
+- Liquidity (current ratio, quick ratio, cash days)
+- Solvency (debt/equity, interest cover, gearing)
+- Efficiency (debtor days, creditor days, stock turn)
+- Growth (revenue growth, profit growth)
+
+Overall score: [WEIGHTED AVERAGE]
+Output: Score table | Traffic light rating per area | Top 3 strengths | Top 3 risks | Action plan (5 steps)</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-report">Reporting</span>
+  <h3>5.5 Competitor Benchmarking Summary</h3>
+  <div class="tagline">Compare client performance to industry benchmarks</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Compare this client's performance to industry benchmarks.
+
+Client financials: [PASTE KEY RATIOS OR P&L SUMMARY]
+Industry: [INDUSTRY] | Country: [COUNTRY] | Revenue band: $[X–Y]
+
+Industry benchmarks (provide if known, or ask AI to estimate):
+- Gross margin: [X%] | Net margin: [Y%] | Current ratio: [Z] | Debtor days: [D]
+
+Write: 1) Comparison table (Client vs Industry — Green/Amber/Red)
+2) Where client outperforms (top 3)
+3) Where client underperforms (top 3 — with explanation of why it matters)
+4) Three specific actions to close the performance gap</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-report">Reporting</span>
+  <h3>5.6 Due Diligence Report Summary</h3>
+  <div class="tagline">Financial due diligence summary for acquisitions</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a financial due diligence summary for a business acquisition.
+
+Target business: [INDUSTRY, SIZE, ASKING PRICE]
+Financial data reviewed: [PASTE 3-YEAR P&L AND BALANCE SHEET SUMMARY]
+Issues identified: [LIST ANY RED FLAGS FOUND]
+
+Write an executive summary covering:
+1. Financial performance quality (sustainable vs one-off earnings)
+2. Balance sheet quality (asset values, contingent liabilities)
+3. Working capital analysis (normalised working capital requirement)
+4. Key risks (top 5, with financial impact estimate)
+5. Recommendation (Proceed / Proceed with conditions / Do not proceed)
+6. Suggested price adjustment based on findings</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-report">Reporting</span>
+  <h3>5.7 Grant Application Financial Section</h3>
+  <div class="tagline">Write the financial section of a grant application</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write the financial section of a grant application.
+
+Grant: [GRANT NAME, AMOUNT APPLYING FOR, PURPOSE]
+Applicant: [BUSINESS NAME, INDUSTRY, YEARS TRADING]
+Current financials: Revenue $[X], Profit $[Y], Staff [N], Cash $[Z]
+Project budget: [PASTE COST BREAKDOWN]
+Match funding: [AMOUNT AND SOURCE]
+
+Write: 1) Financial viability statement (200 words — shows the business can deliver the project)
+2) Budget justification (explains each cost line)
+3) Financial sustainability statement (shows the project outcomes will continue post-grant)
+4) Risk mitigation (financial risks and how they'll be managed)</div>
+</div>
+
+<!-- SECTION 6: BUSINESS ADVISORY -->
+<div class="section-header page-break">
+  <h2><span class="section-num">06</span>Business Advisory</h2>
+  <p>Deliver genuine advisory value — not just compliance.</p>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-advisory">Advisory</span>
+  <h3>6.1 Business Valuation Estimate</h3>
+  <div class="tagline">Multiple-method valuation for SMEs</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Estimate the value of this business using multiple methods.
+
+Business: [INDUSTRY, YEARS TRADING, LOCATION]
+Financials (last 3 years): [REVENUE, EBITDA, NET PROFIT — each year]
+Assets: [NET ASSETS VALUE]
+Growth rate: [PAST / PROJECTED %] | Owner-dependence: [HIGH/MED/LOW]
+Comparable sale evidence: [IF KNOWN]
+
+Calculate using: 1) Earnings multiple (EBITDA × sector multiple)
+2) Discounted cash flow (5-year projection at [X]% discount rate)
+3) Net asset value (plus goodwill estimate) 4) Revenue multiple (sector-appropriate)
+
+Output: Valuation range | Most likely value | Key value drivers | What would increase the value by 20%</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-advisory">Advisory</span>
+  <h3>6.2 Pricing Strategy Review</h3>
+  <div class="tagline">Assess whether a client is charging enough</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Review this business's pricing strategy.
+
+Business: [INDUSTRY, PRODUCTS/SERVICES, TARGET MARKET]
+Current pricing: [LIST PRODUCTS/SERVICES AND PRICES]
+Gross margin: [%] | Competitor pricing: [IF KNOWN]
+Volume: [UNITS/CLIENTS PER MONTH] | Fixed costs: $[AMOUNT/MONTH]
+
+Analyse:
+1. Is the current gross margin healthy for this industry? (compare to benchmark [X–Y]%)
+2. Break-even analysis — how many units/clients needed to cover fixed costs?
+3. Price sensitivity estimate — what % volume loss would offset a 10% price increase?
+4. Recommended pricing changes (with financial impact calculation)
+5. Value-based pricing opportunity — what outcomes does the client deliver, and could they charge for those?</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-advisory">Advisory</span>
+  <h3>6.3 Business Plan Financial Model</h3>
+  <div class="tagline">3-year financial projections from assumptions</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Build a 3-year financial model for a business plan.
+
+Business: [INDUSTRY, STAGE — startup/growth/established]
+Revenue model: [HOW THE BUSINESS EARNS — e.g. monthly subscriptions, project fees, product sales]
+Year 1 assumptions: Revenue $[X] | Gross margin [%] | Fixed costs $[Y/month] | Staff: [N]
+Growth assumptions: Revenue growth [Y1→Y2: %], [Y2→Y3: %]
+Funding: [SELF-FUNDED / LOAN $X / INVESTMENT $Y]
+
+Output:
+1. 3-year P&L (Revenue, GP, Overheads, EBITDA, Net profit — annual)
+2. Cash flow summary (monthly for Year 1, annual for Y2–3)
+3. Break-even point (monthly revenue needed)
+4. Key assumptions and sensitivity analysis (what if revenue is 20% below forecast?)
+5. Funding requirement (if any)</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-advisory">Advisory</span>
+  <h3>6.4 Cost Reduction Analysis</h3>
+  <div class="tagline">Identify cost-cutting opportunities without harming the business</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Analyse this P&L for cost reduction opportunities.
+
+P&L: [PASTE DETAILED P&L WITH COST LINES]
+Business context: [INDUSTRY, STAFF COUNT, REVENUE TREND]
+Constraints: [THINGS THAT CANNOT BE CUT — e.g. key staff, lease commitments]
+Target: Reduce costs by $[AMOUNT] or [%] within [TIMEFRAME]
+
+Analyse:
+1. Each cost line as % of revenue — flag any that exceed industry benchmarks
+2. Fixed vs variable costs — what could flex if revenue drops?
+3. Top 5 cost reduction opportunities (ranked by impact and ease)
+4. Risks of each reduction (e.g. staff morale, quality, compliance)
+5. Implementation timeline and one-time costs of changes</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-advisory">Advisory</span>
+  <h3>6.5 Succession Planning Memo</h3>
+  <div class="tagline">Help a business owner plan their exit</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a succession planning memo for a business owner.
+
+Business: [INDUSTRY, AGE OF BUSINESS, REVENUE]
+Owner profile: [AGE, HEALTH, TIMELINE — wants to exit in X years]
+Exit options to consider: [TRADE SALE / MBO / FAMILY / WIND DOWN / IPO — which apply]
+Current business readiness: [OWNER-DEPENDENT? DOCUMENTED SYSTEMS? KEY STAFF?]
+
+Write a memo covering:
+1. Exit options analysis (pros/cons/proceeds estimate for each)
+2. Value gap (current value vs target exit value — what needs to change)
+3. Readiness assessment (what would make the business more saleable)
+4. 3-year action plan to maximise exit value
+5. Tax considerations for each exit route</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-advisory">Advisory</span>
+  <h3>6.6 Investment Appraisal</h3>
+  <div class="tagline">Should the client make this investment? Full appraisal.</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Appraise the following investment for a client.
+
+Investment: [DESCRIPTION] | Cost: $[AMOUNT]
+Expected returns: $[X/year] for [Y years]
+Funding: [Cash / Loan at X% / Lease]
+Tax: [Capital allowances available? Y/N] | Alternative use of funds: [DESCRIPTION]
+
+Calculate:
+1. Payback period 2. Net Present Value (at [X]% discount rate)
+3. Internal Rate of Return 4. Accounting Rate of Return
+5. Comparison: Buy vs lease vs do nothing
+Recommendation: Proceed / Defer / Do not proceed — with one-paragraph justification.</div>
+</div>
+
+<!-- SECTION 7: PRACTICE MARKETING -->
+<div class="section-header page-break">
+  <h2><span class="section-num">07</span>Practice Marketing</h2>
+  <p>Grow your accounting practice with AI-powered content.</p>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-marketing">Marketing</span>
+  <h3>7.1 LinkedIn Post from Client Win</h3>
+  <div class="tagline">Turn a client success into a compelling LinkedIn post</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a LinkedIn post about a client win (anonymised).
+
+What happened: [DESCRIBE THE SITUATION — what the problem was, what we did, what the result was]
+Key metric: [e.g. Saved client $X in tax / Identified $Y error / Helped client raise $Z funding]
+Your role: [BRIEF DESCRIPTION]
+Audience: [SMALL BUSINESS OWNERS / FELLOW ACCOUNTANTS / BOTH]
+
+Write a LinkedIn post (150–200 words) that:
+1. Leads with the outcome, not the story
+2. Uses the problem→solution→result structure
+3. Includes one practical lesson other accountants or business owners can use
+4. Has a clear but soft CTA (not "DM me for a quote" — something more valuable)
+5. Ends with 3–5 relevant hashtags
+
+Tone: professional but human. Real, not salesy.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-marketing">Marketing</span>
+  <h3>7.2 Niche Service Page Copy</h3>
+  <div class="tagline">Website copy for a specialist accounting service</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write website copy for an accounting service page.
+
+Service: [SERVICE NAME — e.g. E-commerce bookkeeping / Construction accounting / Restaurant accounts]
+Target client: [DESCRIBE IDEAL CLIENT]
+Their pain points: [LIST 3 — what keeps them up at night financially]
+What we offer: [LIST KEY DELIVERABLES]
+Why us: [DIFFERENTIATORS — e.g. industry experience, software expertise, turnaround time]
+Desired action: [BOOK A CALL / GET A QUOTE / DOWNLOAD GUIDE]
+
+Write: 1) Headline (problem-led, 10 words max) 2) Sub-headline (solution + outcome, 20 words)
+3) Pain section (empathise with 3 problems — 150 words)
+4) Solution section (what we do and why it works — 150 words)
+5) Social proof placeholder (where to add testimonials)
+6) CTA section (50 words)</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-marketing">Marketing</span>
+  <h3>7.3 Email Newsletter for Clients</h3>
+  <div class="tagline">Monthly newsletter that positions you as a trusted advisor</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a monthly client newsletter.
+
+Month: [MONTH/YEAR] | Practice name: [NAME]
+Key topics (2–3): [LIST — e.g. "R&D tax credit deadline", "New payroll changes", "Cash flow tips for Q4"]
+Tone: [FORMAL / APPROACHABLE / TECHNICAL]
+CTA for this month: [WHAT DO YOU WANT CLIENTS TO DO? — e.g. book a review call, send documents]
+
+Write a 500-word newsletter:
+1. Subject line (open-rate focused)
+2. Opening (warm, personal, references the season/month)
+3. Main article (practical tip or update — 250 words)
+4. Quick tips section (3 bullet points — actionable)
+5. CTA (clear, low-friction, benefit-led)
+6. Sign-off</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-marketing">Marketing</span>
+  <h3>7.4 Proposal Template</h3>
+  <div class="tagline">Winning proposal for a new client prospect</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a proposal for a new accounting client.
+
+Prospect: [BUSINESS NAME, INDUSTRY, SIZE, KEY ISSUES DISCUSSED]
+Services proposed: [LIST with pricing]
+Key differentiators vs competitors: [LIST]
+Pain points identified in discovery: [LIST]
+Decision maker: [TITLE, WHAT THEY CARE ABOUT]
+
+Write a 5-section proposal:
+1. Executive summary (why we're the right choice — 150 words, no fluff)
+2. Understanding of your needs (mirror back their problems — 150 words)
+3. Our recommended approach (services + how we work — 200 words)
+4. Investment summary (fee table, payment terms, what's included/excluded)
+5. Why us (3 proof points — case study format, 150 words)
+6. Next steps (simple, low-friction)
+
+Tone: confident, client-focused, no jargon.</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-marketing">Marketing</span>
+  <h3>7.5 Referral Partner Outreach</h3>
+  <div class="tagline">Email to establish a referral relationship with a complementary business</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write an outreach email to establish a referral partnership.
+
+My practice: [NAME, SPECIALITY, LOCATION, IDEAL CLIENT]
+Target partner: [TYPE OF BUSINESS — e.g. business broker, financial planner, solicitor, mortgage broker]
+How we complement each other: [EXPLAIN THE MUTUAL REFERRAL OPPORTUNITY]
+What I'm offering: [REFERRAL FEE / RECIPROCAL REFERRALS / CO-MARKETING]
+
+Write an email that:
+1. Opens with a specific compliment or observation about their work (personalise the template here)
+2. Makes the mutual value clear in one sentence
+3. Proposes a specific, low-commitment next step (15-min call)
+4. Does NOT mention referral fees in the first email
+5. Is 150 words maximum
+
+Subject line options: 3 alternatives</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-marketing">Marketing</span>
+  <h3>7.6 Google Review Request Email</h3>
+  <div class="tagline">Get more 5-star Google reviews from happy clients</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write an email asking a happy client to leave a Google review.
+
+Client: [TYPE — long-standing / recent win / after a positive milestone]
+Recent positive: [e.g. Saved $X in tax / Filed accounts early / Resolved payroll issue]
+Google review link: [YOUR LINK]
+
+Write an email that:
+1. Acknowledges the recent positive outcome (make it personal)
+2. Explains briefly why reviews matter to a small practice (honest, not begging)
+3. Makes the ask feel like a favour, not a transaction
+4. Gives them 2–3 prompts to help them know what to write
+5. Is under 120 words
+
+Also write: 3 alternative subject lines | A follow-up version (10 days later if no response)</div>
+</div>
+
+<!-- SECTION 8: ERP IMPLEMENTATION -->
+<div class="section-header page-break">
+  <h2><span class="section-num">08</span>ERP Implementation</h2>
+  <p>Prompts for ERP consultants and implementation specialists.</p>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-erp">ERP</span>
+  <h3>8.1 Requirements Gathering Interview</h3>
+  <div class="tagline">Complete requirements document from a client discovery call</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Generate an ERP requirements document from the following discovery notes.
+
+Client: [INDUSTRY, SIZE, CURRENT SYSTEM]
+Pain points: [LIST FROM DISCOVERY CALL]
+Key processes: [LIST — e.g. AR, AP, Payroll, Inventory, Projects, Reporting]
+Integration needs: [LIST SYSTEMS TO CONNECT — e.g. CRM, payroll, e-commerce]
+Budget: $[RANGE] | Timeline: [TARGET GO-LIVE DATE]
+
+Generate:
+1. Functional requirements list (grouped by module — 30+ items)
+2. Non-functional requirements (security, access, reporting, integrations)
+3. Must-have vs nice-to-have prioritisation
+4. Questions to clarify before proposal (top 10)
+5. Red flags identified (risks to project success)</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-erp">ERP</span>
+  <h3>8.2 Data Migration Checklist</h3>
+  <div class="tagline">Complete data migration plan for an ERP go-live</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Generate a data migration checklist for an ERP implementation.
+
+Source system: [CURRENT SOFTWARE] → Target: [NEW ERP]
+Data to migrate: [LIST — e.g. Chart of accounts, Customers, Suppliers, Open invoices, Fixed assets, Opening balances, Historical transactions (Y/N)]
+Go-live date: [DATE] | Cut-over approach: [HARD CUT-OFF / PARALLEL RUN]
+
+Generate:
+1. Data extraction checklist (what to pull from old system, format required)
+2. Data cleansing tasks (before migration — duplicates, inactive records, formatting)
+3. Data validation steps (after load — row counts, balance checks, spot checks)
+4. Reconciliation checklist (ensure old system = new system at cut-over)
+5. Rollback plan (if migration fails)</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-erp">ERP</span>
+  <h3>8.3 User Training Plan</h3>
+  <div class="tagline">Role-based ERP training plan for go-live</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Create a role-based ERP training plan.
+
+ERP system: [XERO / QUICKBOOKS / SAGE / OTHER]
+User groups: [LIST — e.g. Finance team (5), Managers (3), Operations (10), Executives (2)]
+Go-live date: [DATE] | Training budget: [HOURS AVAILABLE]
+Delivery method: [IN-PERSON / VIDEO / SELF-PACED / MIXED]
+
+Generate for each user group:
+1. Core competencies required (what they must be able to do on Day 1)
+2. Training content list (topics in order)
+3. Assessment method (how to check they're ready)
+4. Training schedule (sessions, duration, timing before go-live)
+5. Post-go-live support plan (who to call, where to find help)</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-erp">ERP</span>
+  <h3>8.4 Go-Live Communication Plan</h3>
+  <div class="tagline">Stakeholder communications for ERP go-live week</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a go-live communication plan for an ERP implementation.
+
+Go-live date: [DATE] | Business: [NAME, INDUSTRY]
+Stakeholders: [LIST — staff, management, customers, suppliers, IT team]
+Key concerns from stakeholders: [LIST]
+What changes for each group: [DESCRIBE]
+
+Generate:
+1. T-minus communication schedule (6 weeks before → 2 weeks after go-live)
+2. For each stakeholder group: message, sender, channel, timing
+3. Go-live day announcement email (to all staff)
+4. Customer/supplier communication (if their processes change)
+5. Management dashboard (what to monitor in Week 1)</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-erp">ERP</span>
+  <h3>8.5 Post-Implementation Review</h3>
+  <div class="tagline">Structured review 3 months after ERP go-live</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Write a post-implementation review report for an ERP project.
+
+Project: [ERP NAME] at [CLIENT] | Go-live: [DATE] | Review date: [3 MONTHS LATER]
+Original scope: [SUMMARY]
+Budget: Original $[X] / Actual $[Y]
+Timeline: Original [DATE] / Actual [DATE]
+Known issues since go-live: [LIST]
+User satisfaction: [SURVEY RESULTS OR ANECDOTAL]
+
+Write:
+1. Executive summary (delivered on time/budget/scope — RAG rating)
+2. Achievements (what worked well — 5 points)
+3. Issues and resolution status (table: Issue | Severity | Status | Owner)
+4. Lessons learned (top 5 for future projects)
+5. Recommendations (outstanding optimisations — prioritised)
+6. Client sign-off request</div>
+</div>
+
+<div class="prompt-card">
+  <span class="workflow-badge wf-erp">ERP</span>
+  <h3>8.6 ERP Vendor Comparison Matrix</h3>
+  <div class="tagline">Objective vendor comparison for an ERP selection decision</div>
+  <div class="section-label">Prompt</div>
+  <div class="prompt-box">Create a vendor comparison matrix for an ERP selection.
+
+Client: [INDUSTRY, SIZE, KEY REQUIREMENTS]
+Vendors to compare: [LIST 3–4 — e.g. Xero, QuickBooks, Sage, NetSuite]
+Key requirements (from requirements document): [LIST TOP 10]
+Budget: $[RANGE] | Must integrate with: [LIST]
+
+For each vendor, score 1–5 on:
+- Functional fit | Ease of use | Integration capability | Reporting | Mobile | Support | Price | Scalability | Industry fit | Implementation risk
+
+Output: Comparison table | Weighted score (assign weights based on client priorities) | Recommendation with justification | Top 3 questions to ask each vendor in demo</div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer-cert">
+  <div>
+    <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#fff;margin-bottom:.25rem">Want to go deeper?</div>
+    <p>Get certified in Xero, QuickBooks, or Sage — LedgerLearn L1 is free. L2 certified users get the next version of this toolkit free.</p>
+  </div>
+  <a href="https://ledgerlearn.pro">Get certified free →</a>
+</div>
+
+</div>
+</body>
+</html>

@@ -301,6 +301,16 @@
   status = 200
 
 [[redirects]]
+  from   = "/ai-prompt-starter-pack"
+  to     = "/ai-prompt-starter-pack.html"
+  status = 200
+
+[[redirects]]
+  from   = "/ai-accountant-toolkit-v1"
+  to     = "/ai-accountant-toolkit-v1.html"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 404
