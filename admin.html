@@ -1742,12 +1742,19 @@ var _adminToken = '';
 var _SUPA_URL = '', _SUPA_ANON = '';
 async function getSupaConfig() {
   try {
-    var r = await fetch('/.netlify/functions/admin-config', {
-      headers: { 'Authorization': 'Bearer ' + (ADMIN_TOKEN || sessionStorage.getItem('ll_admin_token') || '') }
+    var tok = _adminToken || sessionStorage.getItem('ll_admin_token') || '';
+    var r   = await fetch('/.netlify/functions/admin-config', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok }
     });
     var d = await r.json();
-    if (d.ok) { _SUPA_URL = d.supaUrl || ''; _SUPA_ANON = d.supaAnon || ''; }
-  } catch(e) {}
+    if (d && d.ok) {
+      _SUPA_URL  = d.supaUrl  || '';
+      _SUPA_ANON = d.supaAnon || '';
+    } else {
+      console.warn('[admin] getSupaConfig failed:', d && d.error);
+    }
+  } catch(e) { console.warn('[admin] getSupaConfig error:', e.message); }
 }
 
 // ── AUTH ────────────────────────────────────────────────────
