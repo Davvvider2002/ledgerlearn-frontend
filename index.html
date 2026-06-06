@@ -237,14 +237,26 @@ h1.hero-h1 .teal{color:var(--teal-light);}
 .cta-reassure{display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;}
 .cta-check{font-size:0.78rem;color:rgba(255,255,255,0.35);display:flex;align-items:center;gap:5px;}
 .cta-check::before{content:"✓";color:var(--teal);font-weight:700;}
-footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.07);padding:3rem 2rem 2rem;}
-.footer-inner{max-width:860px;margin:0 auto;text-align:center;}
-.footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:1.5rem;display:block;}
-.footer-logo span{color:var(--gold);}
-.footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem 1.75rem;list-style:none;margin-bottom:.75rem;}.footer-divider{width:100%;max-width:400px;margin:1.25rem auto;border:none;border-top:1px solid rgba(255,255,255,.07);}
-.footer-links a{color:rgba(255,255,255,.45);text-decoration:none;font-size:.82rem;transition:color .15s;}
-.footer-links a:hover{color:#fff;}
-.footer-disclaimer{font-size:.72rem;color:rgba(255,255,255,.25);line-height:1.65;text-align:center;}.footer-disclaimer a{color:rgba(255,255,255,.3);}.footer-disclaimer a:hover{color:rgba(255,255,255,.6);}
+footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.08);padding:3.5rem 2rem 2rem;}
+.footer-inner{max-width:1100px;margin:0 auto;}
+.footer-top{display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr;gap:2.5rem;margin-bottom:2.5rem;}
+@media(max-width:768px){.footer-top{grid-template-columns:1fr 1fr;gap:2rem;}}
+@media(max-width:480px){.footer-top{grid-template-columns:1fr;}}
+.footer-brand .footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;display:block;margin-bottom:.875rem;}
+.footer-brand .footer-logo span{color:var(--gold);}
+.footer-brand p{font-size:.8rem;color:rgba(255,255,255,.35);line-height:1.65;max-width:220px;}
+.footer-col-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:1rem;}
+.footer-col ul{list-style:none;}
+.footer-col ul li{margin-bottom:.55rem;}
+.footer-col ul li a{color:rgba(255,255,255,.5);text-decoration:none;font-size:.82rem;transition:color .15s;}
+.footer-col ul li a:hover{color:#fff;}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.07);padding-top:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.footer-copy{font-size:.72rem;color:rgba(255,255,255,.25);line-height:1.6;}
+.footer-copy a{color:rgba(255,255,255,.3);}
+.footer-copy a:hover{color:rgba(255,255,255,.6);}
+.footer-social{display:flex;gap:.75rem;}
+.footer-social a{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.45);text-decoration:none;font-size:.85rem;transition:all .15s;}
+.footer-social a:hover{background:rgba(255,255,255,.14);color:#fff;}
 
 /* ── Ecosystem pills ──────────────────────────────────── */
 .hero-ecosystem-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);font-weight:700;margin-bottom:.6rem;}
@@ -1002,28 +1014,67 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <footer>
   <div class="footer-inner">
-    <div class="footer-logo">Ledger<span>Learn</span> Pro</div>
-    <ul class="footer-links">
-      <li><a href="/">Home</a></li>
-      <li><a href="/learn">Certifications</a></li>
-      <li><a href="/marketplace">Marketplace</a></li>
-      <li><a href="/jobs">Jobs</a></li>
-      <li><a href="/academy">Academy</a></li>
-      <li><a href="/partners">Partners</a></li>
-      <li><a href="/faq">FAQ</a></li>
-      <li><a href="/pricing">Pricing</a></li>
-    </ul>
-    <ul class="footer-links">
-      <li><a href="/privacy-policy">Privacy Policy</a></li>
-      <li><a href="/terms">Terms of Use</a></li>
-      <li><a href="mailto:hello@ledgerlearn.pro">Contact Us</a></li>
-      <li><a href="https://www.facebook.com/groups/virtualbookkeepers" target="_blank" rel="noopener">&#x1F4D8; Facebook Community</a></li>
-    </ul>
-    <hr class="footer-divider">
-    <div class="footer-disclaimer">
-      &copy; 2026 LedgerLearn Pro &middot; Independent assessment platform, not affiliated with Xero, Intuit or Sage.<br>
-      Certifications are issued by LedgerLearn Pro and do not constitute official vendor certification.<br>
-      <a href="mailto:hello@ledgerlearn.pro">hello@ledgerlearn.pro</a>
+    <div class="footer-top">
+
+      <!-- Brand column -->
+      <div class="footer-brand">
+        <span class="footer-logo">Ledger<span>Learn</span> Pro</span>
+        <p>The certification and software discovery platform for modern accounting professionals. 135,000+ community members worldwide.</p>
+        <div class="footer-social" style="margin-top:1rem">
+          <a href="https://www.facebook.com/groups/virtualbookkeepers" target="_blank" rel="noopener" title="Facebook">&#x1F426;</a>
+          <a href="https://www.linkedin.com" target="_blank" rel="noopener" title="LinkedIn">in</a>
+          <a href="mailto:hello@ledgerlearn.pro" title="Email">&#x2709;</a>
+        </div>
+      </div>
+
+      <!-- Platform column -->
+      <div class="footer-col">
+        <div class="footer-col-title">Platform</div>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/learn">Certifications</a></li>
+          <li><a href="/marketplace">Marketplace</a></li>
+          <li><a href="/marketplace?tab=softhub">SoftHub</a></li>
+          <li><a href="/jobs">Jobs Board</a></li>
+          <li><a href="/academy">ERP Academy</a></li>
+        </ul>
+      </div>
+
+      <!-- Resources column -->
+      <div class="footer-col">
+        <div class="footer-col-title">Resources</div>
+        <ul>
+          <li><a href="/faq">FAQ</a></li>
+          <li><a href="/pricing">Pricing</a></li>
+          <li><a href="/partners">Partners</a></li>
+          <li><a href="/dashboard">My Dashboard</a></li>
+          <li><a href="/marketplace">AI Toolkits</a></li>
+        </ul>
+      </div>
+
+      <!-- Legal column -->
+      <div class="footer-col">
+        <div class="footer-col-title">Legal &amp; Contact</div>
+        <ul>
+          <li><a href="/privacy-policy">Privacy Policy</a></li>
+          <li><a href="/terms">Terms of Use</a></li>
+          <li><a href="mailto:hello@ledgerlearn.pro">Contact Us</a></li>
+          <li><a href="https://www.facebook.com/groups/virtualbookkeepers" target="_blank" rel="noopener">Facebook Community</a></li>
+        </ul>
+      </div>
+
+    </div><!-- /footer-top -->
+
+    <div class="footer-bottom">
+      <div class="footer-copy">
+        &copy; 2026 LedgerLearn Pro &middot; Independent assessment platform, not affiliated with Xero, Intuit or Sage.<br>
+        Certifications are issued by LedgerLearn Pro and do not constitute official vendor certification. &middot;
+        <a href="mailto:hello@ledgerlearn.pro">hello@ledgerlearn.pro</a>
+      </div>
+      <div class="footer-social">
+        <a href="https://www.facebook.com/groups/virtualbookkeepers" target="_blank" rel="noopener" title="Facebook Community">&#x1F426;</a>
+        <a href="mailto:hello@ledgerlearn.pro" title="Email us">&#x2709;</a>
+      </div>
     </div>
   </div>
 </footer>
