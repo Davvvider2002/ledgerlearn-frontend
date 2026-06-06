@@ -75,7 +75,7 @@ async function sendWelcomeEmail(email, firstName, tier) {
       method: 'POST',
       headers: { 'api-key': BREVO_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        sender: { name: 'LedgerLearn Pro', email: 'hello@ledgerlearn.pro' },
+        sender: { name: 'LedgerLearn Pro', email: 'godigitsall@gmail.com' },
         to: [{ email }],
         subject: `Welcome to ERP.SaaS Academy — ${tierLabel}`,
         htmlContent: `
@@ -352,7 +352,7 @@ exports.handler = async function(event) {
           headers:{ "Content-Type":"application/json","api-key":BREVO_KEY },
           body: JSON.stringify({
             to:[{email}],
-            sender:{ name:"LedgerLearn Pro", email:"hello@ledgerlearn.pro" },
+            sender:{ name:"LedgerLearn Pro", email:"godigitsall@gmail.com" },
             subject:"Welcome to ERP.SaaS Academy!",
             htmlContent:"<h2>Welcome to ERP.SaaS Academy!</h2><p>Your " + tier + " membership is now active.</p><p><strong>Next steps:</strong></p><ul><li>Join our Facebook group: <a href='https://www.facebook.com/groups/virtualbookkeepers'>Virtual Bookkeepers</a></li><li>Access ERP.SaaS Academy on Skool: <a href='https://www.skool.com/erp-saas-academy'>ERP.SaaS Academy</a></li><li>Attend your first live session — schedule in the Skool community</li></ul><p>Questions? Email hello@ledgerlearn.pro</p><p>David<br>LedgerLearn Pro</p>"
           })
@@ -366,7 +366,7 @@ exports.handler = async function(event) {
           headers:{ "Content-Type":"application/json","api-key":BREVO_KEY },
           body: JSON.stringify({
             to:[{email:ADMIN_EMAIL}],
-            sender:{ name:"LedgerLearn Pro", email:"hello@ledgerlearn.pro" },
+            sender:{ name:"LedgerLearn Pro", email:"godigitsall@gmail.com" },
             subject:"New ERP Academy Member: " + email,
             htmlContent:"<h3>New ERP.SaaS Academy Registration</h3><p><strong>Email:</strong> " + email + "</p><p><strong>Tier:</strong> " + tier + " ($" + amount + ")</p><p><strong>Subscription ID:</strong> " + (subscriptionId||"N/A") + "</p><p><strong>Referral code:</strong> " + (refCode||"Direct") + "</p>"
           })

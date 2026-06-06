@@ -124,7 +124,7 @@ exports.handler = async function (event) {
 
     var emailPayload = {
       to:          [{ email: email, name: name || email.split('@')[0] }],
-      sender:      { name: 'LedgerLearn Pro', email: 'hello@ledgerlearn.pro' },
+      sender:      { name: 'LedgerLearn Pro', email: 'godigitsall@gmail.com' },
       subject:     subjectLine,
       htmlContent: emailHtml
     };
