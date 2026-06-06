@@ -17,6 +17,83 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);}
 
+/* TAB SWITCHER */
+.tab-switcher{background:var(--navy);border-bottom:2px solid rgba(212,168,67,.2);position:sticky;top:56px;z-index:90;}
+.tab-inner{display:flex;max-width:1100px;margin:0 auto;padding:0 2rem;}
+.tab-btn{display:flex;align-items:center;gap:.6rem;padding:1rem 1.5rem;background:transparent;border:none;border-bottom:3px solid transparent;cursor:pointer;font-family:inherit;color:rgba(255,255,255,.5);font-size:.88rem;font-weight:600;margin-bottom:-2px;transition:all .15s;line-height:1;}
+.tab-btn:hover{color:rgba(255,255,255,.8);}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab-desc{font-size:.7rem;font-weight:400;color:rgba(255,255,255,.3);margin-left:.25rem;}
+.tab-btn.active .tab-desc{color:rgba(212,168,67,.6);}
+
+/* SOFTHUB GRID */
+.softhub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;margin-bottom:2.5rem;}
+.sh-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow .2s,transform .2s;}
+.sh-card:hover{box-shadow:0 8px 30px rgba(11,31,58,.1);transform:translateY(-2px);}
+.sh-card.featured{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
+.sh-card-header{background:linear-gradient(135deg,var(--navy),#1a2f4a);padding:1.25rem;display:flex;align-items:center;gap:.875rem;position:relative;}
+.sh-logo{width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;flex-shrink:0;overflow:hidden;}
+.sh-logo img{width:100%;height:100%;object-fit:contain;}
+.sh-header-text{flex:1;min-width:0;}
+.sh-product-name{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sh-company{font-size:.75rem;color:rgba(255,255,255,.5);margin-top:1px;}
+.sh-badges{display:flex;gap:.35rem;position:absolute;top:.75rem;right:.75rem;flex-wrap:wrap;justify-content:flex-end;}
+.sh-badge{font-size:.62rem;padding:2px 7px;border-radius:100px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.sh-badge-verified{background:rgba(29,169,138,.25);color:#26c9a5;border:1px solid rgba(29,169,138,.3);}
+.sh-badge-featured{background:rgba(212,168,67,.25);color:var(--gold);border:1px solid rgba(212,168,67,.3);}
+.sh-badge-pick{background:rgba(124,58,237,.25);color:#c4b5fd;border:1px solid rgba(124,58,237,.3);}
+.sh-card-body{padding:1.125rem;}
+.sh-cat-pill{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:100px;margin-bottom:.625rem;text-transform:uppercase;letter-spacing:.04em;background:var(--off);color:var(--muted);}
+.sh-tagline{font-size:.85rem;color:var(--text);font-weight:600;margin-bottom:.35rem;line-height:1.35;}
+.sh-desc{font-size:.78rem;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.sh-card-footer{padding:.875rem 1.125rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:.5rem;}
+.sh-plan{font-size:.7rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.sh-plan.growth{color:var(--teal);}
+.sh-plan.pro{color:var(--purple);}
+.sh-plan.enterprise{color:var(--gold);}
+.sh-actions{display:flex;gap:.4rem;}
+.sh-btn-demo{background:var(--teal);color:#fff;border:none;padding:6px 14px;border-radius:7px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.sh-btn-demo:hover{background:#1a9179;}
+.sh-btn-demo:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
+.sh-btn-site{background:transparent;color:var(--text);border:1.5px solid var(--border);padding:6px 12px;border-radius:7px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:.25rem;}
+.sh-btn-site:hover{border-color:var(--teal);}
+
+/* LIST YOUR PRODUCT CTA */
+.softhub-list-cta{background:linear-gradient(135deg,#0B1F3A,#1a2f4a);border-radius:16px;padding:2.5rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;}
+.slc-eyebrow{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);font-weight:700;margin-bottom:.4rem;}
+.slc-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:.4rem;line-height:1.2;}
+.slc-sub{font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.6;max-width:500px;margin-bottom:.875rem;}
+.slc-pills{display:flex;flex-wrap:wrap;gap:.35rem;}
+.slc-pill{font-size:.72rem;background:rgba(29,169,138,.15);color:#26c9a5;border:1px solid rgba(29,169,138,.25);border-radius:100px;padding:3px 10px;}
+.slc-btn{background:var(--gold);color:var(--navy);border:none;padding:14px 28px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+.slc-btn:hover{background:#c49a30;}
+
+/* VENDOR APPLY MODAL */
+.sh-modal-overlay{position:fixed;inset:0;background:rgba(11,31,58,.75);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+.sh-modal-overlay.open{display:flex;}
+.sh-modal{background:var(--white);border-radius:16px;width:100%;max-width:600px;padding:2rem;margin:auto;}
+.sh-modal-title{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;color:var(--navy);margin-bottom:.25rem;}
+.sh-modal-sub{font-size:.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.5;}
+.sh-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;}
+@media(max-width:560px){.sh-form-grid{grid-template-columns:1fr;}}
+.sh-form-field{display:flex;flex-direction:column;gap:.3rem;}
+.sh-form-field.full{grid-column:1/-1;}
+.sh-form-field label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.sh-form-field input,.sh-form-field select,.sh-form-field textarea{border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:.85rem;font-family:inherit;color:var(--text);background:var(--white);outline:none;transition:border .15s;}
+.sh-form-field input:focus,.sh-form-field select:focus,.sh-form-field textarea:focus{border-color:var(--teal);}
+.sh-form-field textarea{resize:vertical;min-height:80px;}
+.sh-apply-btn{width:100%;background:var(--teal);color:#fff;border:none;padding:13px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:1rem;}
+.sh-apply-btn:hover{background:#1a9179;}
+.sh-apply-status{font-size:.82rem;margin-top:.75rem;padding:.75rem 1rem;border-radius:8px;display:none;}
+.sh-apply-status.success{background:rgba(29,169,138,.1);color:var(--teal);border:1px solid rgba(29,169,138,.25);}
+.sh-apply-status.error{background:rgba(234,88,12,.08);color:var(--orange);border:1px solid rgba(234,88,12,.2);}
+
+/* DEMO REQUEST MODAL */
+.sh-demo-modal-overlay{position:fixed;inset:0;background:rgba(11,31,58,.75);z-index:1001;display:none;align-items:center;justify-content:center;padding:1rem;}
+.sh-demo-modal-overlay.open{display:flex;}
+.sh-demo-modal{background:var(--white);border-radius:16px;width:100%;max-width:480px;padding:1.75rem;}
+
+/* NAV */
 /* NAV */
 .nav{background:var(--navy);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(212,168,67,0.2);}
 .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
@@ -167,13 +244,13 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
   </div>
 </nav>
 
-<!-- HERO -->
-<div class="hero">
+<!-- HERO (dynamic per tab) -->
+<div class="hero" id="mp-hero">
   <div class="hero-inner">
-    <div class="hero-eyebrow">Digital products</div>
-    <h1 class="hero-title">Tools that make you<br>a better accountant.</h1>
-    <p class="hero-sub">Templates, AI workflows, ERP kits, and firm growth packs. Download and deploy immediately.</p>
-    <div class="hero-pills">
+    <div class="hero-eyebrow" id="mp-hero-eyebrow">Digital products</div>
+    <h1 class="hero-title" id="mp-hero-title">Tools that make you<br>a better accountant.</h1>
+    <p class="hero-sub" id="mp-hero-sub">Templates, AI workflows, ERP kits, and firm growth packs. Download and deploy immediately.</p>
+    <div class="hero-pills" id="mp-hero-pills">
       <span class="hero-pill pill-ai">&#x1F916; AI Toolkits</span>
       <span class="hero-pill pill-book">&#x1F4CB; Bookkeeping Kits</span>
       <span class="hero-pill pill-erp">&#x2699;&#xFE0F; ERP Kits</span>
@@ -182,46 +259,103 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
   </div>
 </div>
 
+<!-- TAB SWITCHER -->
+<div class="tab-switcher">
+  <div class="tab-inner">
+    <button class="tab-btn active" id="tab-resources" onclick="switchTab('resources')">
+      &#x1F4E6; Resources
+      <span class="tab-desc">Digital products &amp; toolkits</span>
+    </button>
+    <button class="tab-btn" id="tab-softhub" onclick="switchTab('softhub')">
+      &#x1F50D; SoftHub
+      <span class="tab-desc">Software discovery for accountants</span>
+    </button>
+  </div>
+</div>
+
 <!-- MAIN -->
 <main class="main">
 
-  <!-- L2 UNLOCK STRIP -->
-  <div class="unlock-strip" id="l2-unlock-strip" style="display:none;">
-    <div class="unlock-strip-text">
-      <strong>&#x1F3C6; You're Xero L2 Certified</strong> &mdash; claim your free Xero Starter Pack below.
-    </div>
-    <a class="unlock-link" href="#" onclick="claimL2Free(event)">Claim free kit &rarr;</a>
-  </div>
+  <!-- ══════════ TAB: RESOURCES ══════════ -->
+  <div id="pane-resources">
 
-  <!-- FILTERS -->
-  <div class="filter-bar">
-    <span class="filter-label">Filter:</span>
-    <button class="filter-chip on" data-cat="" onclick="setFilter('',this)">All products</button>
-    <button class="filter-chip cat-ai" data-cat="ai" onclick="setFilter('ai',this)">&#x1F916; AI Toolkits</button>
-    <button class="filter-chip cat-book" data-cat="bookkeeping" onclick="setFilter('bookkeeping',this)">&#x1F4CB; Bookkeeping</button>
-    <button class="filter-chip cat-erp" data-cat="erp" onclick="setFilter('erp',this)">&#x2699;&#xFE0F; ERP Kits</button>
-    <button class="filter-chip cat-firm" data-cat="firm" onclick="setFilter('firm',this)">&#x1F4C8; Firm Growth</button>
-    <input class="filter-search" placeholder="Search products&hellip;" oninput="searchProducts(this.value)"/>
-  </div>
-
-  <!-- PRODUCTS -->
-  <div class="products-grid" id="products-grid">
-    <div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading products&hellip;</div>
-  </div>
-
-  <!-- ACADEMY UPSELL -->
-  <div class="academy-upsell">
-    <div class="au-left">
-      <div class="au-eyebrow">ERP.SaaS Academy</div>
-      <div class="au-title">Get every product free as a member.</div>
-      <div class="au-sub">Academy members get access to the full content library &mdash; every marketplace product, template, and guide &mdash; included at no extra cost.</div>
+    <!-- L2 UNLOCK STRIP -->
+    <div class="unlock-strip" id="l2-unlock-strip" style="display:none;">
+      <div class="unlock-strip-text">
+        <strong>&#x1F3C6; You are Xero L2 Certified</strong> &mdash; claim your free Xero Starter Pack below.
+      </div>
+      <a class="unlock-link" href="#" onclick="claimL2Free(event)">Claim free kit &rarr;</a>
     </div>
-    <div class="au-right">
-      <div class="au-price" id="mkt-acad-price">$99</div>
-      <div class="au-period">/month &middot; cancel anytime</div>
-      <a class="au-btn" href="/academy">Join Academy &rarr;</a>
+
+    <!-- FILTERS -->
+    <div class="filter-bar">
+      <span class="filter-label">Filter:</span>
+      <button class="filter-chip on" data-cat="" onclick="setFilter('',this)">All products</button>
+      <button class="filter-chip cat-ai" data-cat="ai" onclick="setFilter('ai',this)">&#x1F916; AI Toolkits</button>
+      <button class="filter-chip cat-book" data-cat="bookkeeping" onclick="setFilter('bookkeeping',this)">&#x1F4CB; Bookkeeping</button>
+      <button class="filter-chip cat-erp" data-cat="erp" onclick="setFilter('erp',this)">&#x2699;&#xFE0F; ERP Kits</button>
+      <button class="filter-chip cat-firm" data-cat="firm" onclick="setFilter('firm',this)">&#x1F4C8; Firm Growth</button>
+      <input class="filter-search" placeholder="Search products&hellip;" oninput="searchProducts(this.value)"/>
     </div>
-  </div>
+
+    <!-- PRODUCTS GRID -->
+    <div class="products-grid" id="products-grid">
+      <div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading products&hellip;</div>
+    </div>
+
+    <!-- ACADEMY UPSELL -->
+    <div class="academy-upsell">
+      <div class="au-left">
+        <div class="au-eyebrow">ERP.SaaS Academy</div>
+        <div class="au-title">Get every product free as a member.</div>
+        <div class="au-sub">Academy members get access to the full content library &mdash; every marketplace product, template, and guide &mdash; included at no extra cost.</div>
+      </div>
+      <div class="au-right">
+        <div class="au-price" id="mkt-acad-price">$99</div>
+        <div class="au-period">/month &middot; cancel anytime</div>
+        <a class="au-btn" href="/academy">Join Academy &rarr;</a>
+      </div>
+    </div>
+
+  </div><!-- /pane-resources -->
+
+  <!-- ══════════ TAB: SOFTHUB ══════════ -->
+  <div id="pane-softhub" style="display:none">
+
+    <!-- SOFTHUB FILTER BAR -->
+    <div class="filter-bar">
+      <span class="filter-label">Category:</span>
+      <button class="filter-chip on" data-cat="" onclick="setSoftHubFilter('',this)">All software</button>
+      <button class="filter-chip cat-erp"  data-cat="erp"      onclick="setSoftHubFilter('erp',this)">&#x2699;&#xFE0F; ERP</button>
+      <button class="filter-chip cat-ai"   data-cat="saas"     onclick="setSoftHubFilter('saas',this)">&#x2601;&#xFE0F; SaaS</button>
+      <button class="filter-chip cat-firm" data-cat="payroll"  onclick="setSoftHubFilter('payroll',this)">&#x1F4B0; Payroll</button>
+      <button class="filter-chip cat-book" data-cat="practice" onclick="setSoftHubFilter('practice',this)">&#x1F4CB; Practice mgmt</button>
+      <button class="filter-chip cat-erp"  data-cat="ai-tools" onclick="setSoftHubFilter('ai-tools',this)">&#x1F916; AI tools</button>
+      <input class="filter-search" placeholder="Search software&hellip;" oninput="searchSoftHub(this.value)"/>
+    </div>
+
+    <!-- LISTINGS GRID -->
+    <div class="softhub-grid" id="softhub-grid">
+      <div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading listings&hellip;</div>
+    </div>
+
+    <!-- LIST YOUR PRODUCT CTA -->
+    <div class="softhub-list-cta">
+      <div class="slc-left">
+        <div class="slc-eyebrow">For software vendors</div>
+        <div class="slc-title">Reach 135,000+ certified accounting professionals.</div>
+        <div class="slc-sub">List your ERP, SaaS, or accounting tool for free. Paid plans add demo requests, lead forwarding, and featured placement.</div>
+        <div class="slc-pills">
+          <span class="slc-pill">&#x2713; Free listing</span>
+          <span class="slc-pill">&#x2713; Verified Vendor badge</span>
+          <span class="slc-pill">&#x2713; Demo request leads</span>
+          <span class="slc-pill">&#x2713; Newsletter features</span>
+        </div>
+      </div>
+      <button class="slc-btn" onclick="openVendorApply()">List your product &rarr;</button>
+    </div>
+
+  </div><!-- /pane-softhub -->
 
 </main>
 
@@ -660,6 +794,434 @@ async function confirmOrder(email, paypalOrderId, productId) {
     }
   } catch(e) {}
 }
+
+// ══════════════════════════════════════════════
+// SOFTHUB — Tab switching + Vendor directory
+// ══════════════════════════════════════════════
+
+var ACTIVE_TAB       = 'resources';
+var ALL_LISTINGS     = [];
+var SH_FILTER        = '';
+var SH_SEARCH        = '';
+var DEMO_VENDOR_ID   = null;
+
+var SH_CATEGORY_LABELS = {
+  erp:      'ERP System',
+  saas:     'Cloud SaaS',
+  payroll:  'Payroll',
+  practice: 'Practice mgmt',
+  'ai-tools': 'AI Tools',
+  reporting:'Reporting',
+  other:    'Other'
+};
+
+// ── URL param: ?tab=softhub opens SoftHub directly ────────
+document.addEventListener('DOMContentLoaded', function() {
+  var tab = new URLSearchParams(window.location.search).get('tab');
+  if (tab === 'softhub') switchTab('softhub');
+  else loadSoftHubListings(); // preload in background
+});
+
+function switchTab(tab) {
+  ACTIVE_TAB = tab;
+  var isResources = tab === 'resources';
+
+  document.getElementById('pane-resources').style.display = isResources ? '' : 'none';
+  document.getElementById('pane-softhub').style.display   = isResources ? 'none' : '';
+  document.getElementById('tab-resources').classList.toggle('active', isResources);
+  document.getElementById('tab-softhub').classList.toggle('active', !isResources);
+
+  // Update hero content
+  if (isResources) {
+    document.getElementById('mp-hero-eyebrow').textContent = 'Digital products';
+    document.getElementById('mp-hero-title').innerHTML    = 'Tools that make you<br>a better accountant.';
+    document.getElementById('mp-hero-sub').textContent    = 'Templates, AI workflows, ERP kits, and firm growth packs. Download and deploy immediately.';
+    document.getElementById('mp-hero-pills').style.display = '';
+  } else {
+    document.getElementById('mp-hero-eyebrow').textContent = 'LedgerLearn SoftHub';
+    document.getElementById('mp-hero-title').innerHTML    = 'Discover software tools<br>recommended by certified accountants.';
+    document.getElementById('mp-hero-sub').textContent    = '135,000+ verified practitioners use and recommend these ERP, SaaS, payroll, and practice management tools.';
+    document.getElementById('mp-hero-pills').style.display = 'none';
+    loadSoftHubListings();
+  }
+
+  // Update URL
+  try {
+    var url = new URL(window.location.href);
+    if (tab === 'softhub') url.searchParams.set('tab','softhub');
+    else url.searchParams.delete('tab');
+    history.replaceState(null,'',url.toString());
+  } catch(e) {}
+}
+
+// ── Load vendor listings ───────────────────────────────────
+async function loadSoftHubListings() {
+  var grid = document.getElementById('softhub-grid');
+  if (!grid) return;
+  if (ALL_LISTINGS.length) { renderListings(); return; }
+
+  grid.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading listings&hellip;</div>';
+  try {
+    var res  = await fetch('/.netlify/functions/softhub-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get-listings', category: SH_FILTER || undefined })
+    });
+    var data = await res.json();
+    ALL_LISTINGS = data.data || [];
+    renderListings();
+  } catch(e) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x26A0;&#xFE0F;</div>Could not load listings. Please try again.</div>';
+  }
+}
+
+function setSoftHubFilter(cat, btn) {
+  SH_FILTER = cat;
+  document.querySelectorAll('#pane-softhub .filter-chip').forEach(function(b){ b.classList.remove('on'); });
+  if (btn) btn.classList.add('on');
+  ALL_LISTINGS = []; // force reload with new filter
+  loadSoftHubListings();
+}
+
+function searchSoftHub(q) {
+  SH_SEARCH = q.toLowerCase().trim();
+  renderListings();
+}
+
+function renderListings() {
+  var grid = document.getElementById('softhub-grid');
+  if (!grid) return;
+
+  var filtered = ALL_LISTINGS.filter(function(l) {
+    if (!SH_SEARCH) return true;
+    return (l.product_name||'').toLowerCase().includes(SH_SEARCH) ||
+           (l.company_name||'').toLowerCase().includes(SH_SEARCH) ||
+           (l.description||'').toLowerCase().includes(SH_SEARCH) ||
+           (l.tagline||'').toLowerCase().includes(SH_SEARCH);
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = ALL_LISTINGS.length
+      ? '<div class="empty-state"><div class="empty-icon">&#x1F50D;</div>No listings match your search.</div>'
+      : '<div class="empty-state"><div class="empty-icon">&#x1F6D2;</div><div>No listings yet. <button class="sh-apply-btn" style="display:inline-block;width:auto;padding:8px 16px;margin-top:.75rem" onclick="openVendorApply()">Be the first to list &rarr;</button></div></div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(function(l) {
+    var catLabel   = SH_CATEGORY_LABELS[l.category] || l.category;
+    var planClass  = l.plan_id === 'pro' ? 'pro' : l.plan_id === 'growth' ? 'growth' : l.plan_id === 'enterprise' ? 'enterprise' : '';
+    var planText   = l.plan_id === 'pro' ? '&#x2B50; Pro listing' : l.plan_id === 'enterprise' ? '&#x1F3E2; Enterprise' : l.plan_id === 'growth' ? '&#x1F4C8; Growth' : 'Free listing';
+    var canDemo    = l.plan_id === 'growth' || l.plan_id === 'pro' || l.plan_id === 'enterprise';
+    var logoHtml   = l.logo_url
+      ? '<img src="' + esc(l.logo_url) + '" alt="' + esc(l.company_name) + ' logo" onerror="this.style.display=\'none\'">'
+      : '&#x1F4E6;';
+
+    return '<div class="sh-card' + (l.featured ? ' featured' : '') + '">' +
+      '<div class="sh-card-header">' +
+        '<div class="sh-logo">' + logoHtml + '</div>' +
+        '<div class="sh-header-text">' +
+          '<div class="sh-product-name">' + esc(l.product_name) + '</div>' +
+          '<div class="sh-company">' + esc(l.company_name) + '</div>' +
+        '</div>' +
+        '<div class="sh-badges">' +
+          (l.verified_badge ? '<span class="sh-badge sh-badge-verified">&#x2713; Verified</span>' : '') +
+          (l.featured       ? '<span class="sh-badge sh-badge-featured">&#x2B50; Featured</span>' : '') +
+          (l.editors_pick   ? '<span class="sh-badge sh-badge-pick">Editor pick</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="sh-card-body">' +
+        '<div class="sh-cat-pill">' + catLabel + '</div>' +
+        '<div class="sh-tagline">' + esc(l.tagline || l.product_name) + '</div>' +
+        '<div class="sh-desc">' + esc(l.description || '') + '</div>' +
+      '</div>' +
+      '<div class="sh-card-footer">' +
+        '<span class="sh-plan ' + planClass + '">' + planText + '</span>' +
+        '<div class="sh-actions">' +
+          '<a class="sh-btn-site" href="' + esc(l.website_url||'#') + '" target="_blank" rel="noopener">Visit &#x2197;</a>' +
+          (canDemo
+            ? '<button class="sh-btn-demo" onclick="openDemoRequest(\'' + l.id + '\',\'' + esc(l.product_name) + '\',\'' + esc(l.company_name) + '\')">Request demo</button>'
+            : '<button class="sh-btn-demo" disabled title="Upgrade to Growth plan to receive demo requests">Demo</button>'
+          ) +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Vendor Apply Modal ─────────────────────────────────────
+function openVendorApply() {
+  document.getElementById('sh-apply-overlay').classList.add('open');
+  document.getElementById('va-status').style.display = 'none';
+  var btn = document.getElementById('va-submit-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Submit application →'; }
+}
+
+function closeVendorApply() {
+  document.getElementById('sh-apply-overlay').classList.remove('open');
+}
+
+async function submitVendorApply() {
+  var fields = {
+    company_name:   document.getElementById('va-company').value.trim(),
+    product_name:   document.getElementById('va-product').value.trim(),
+    category:       document.getElementById('va-category').value,
+    website_url:    document.getElementById('va-website').value.trim(),
+    contact_name:   document.getElementById('va-contact-name').value.trim(),
+    contact_email:  document.getElementById('va-contact-email').value.trim(),
+    contact_phone:  document.getElementById('va-phone').value.trim(),
+    demo_url:       document.getElementById('va-demo-url').value.trim(),
+    tagline:        document.getElementById('va-tagline').value.trim(),
+    description:    document.getElementById('va-description').value.trim(),
+    logo_url:       document.getElementById('va-logo').value.trim(),
+  };
+
+  var statusEl = document.getElementById('va-status');
+  var btn      = document.getElementById('va-submit-btn');
+
+  var missing = ['company_name','product_name','category','website_url','contact_name','contact_email','description'].filter(function(k){ return !fields[k]; });
+  if (missing.length) {
+    statusEl.textContent  = 'Please fill in all required fields: ' + missing.join(', ').replace(/_/g,' ');
+    statusEl.className    = 'sh-apply-status error';
+    statusEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  statusEl.style.display = 'none';
+
+  try {
+    var res  = await fetch('/.netlify/functions/softhub-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ action: 'apply-vendor' }, fields))
+    });
+    var data = await res.json();
+    if (data.ok) {
+      statusEl.textContent   = '✓ Application submitted! We will review and respond within 2 business days.';
+      statusEl.className     = 'sh-apply-status success';
+      statusEl.style.display = 'block';
+      btn.textContent        = '✓ Submitted';
+      // Clear form
+      ['va-company','va-product','va-category','va-website','va-contact-name','va-contact-email','va-phone','va-demo-url','va-tagline','va-description','va-logo'].forEach(function(id){
+        var el = document.getElementById(id); if (el) el.value = '';
+      });
+    } else {
+      statusEl.textContent   = data.error || 'Submission failed. Please try again.';
+      statusEl.className     = 'sh-apply-status error';
+      statusEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Submit application →';
+    }
+  } catch(e) {
+    statusEl.textContent   = 'Network error. Please try again.';
+    statusEl.className     = 'sh-apply-status error';
+    statusEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Submit application →';
+  }
+}
+
+// ── Demo Request Modal ─────────────────────────────────────
+function openDemoRequest(vendorId, productName, companyName) {
+  DEMO_VENDOR_ID = vendorId;
+  document.getElementById('demo-vendor-name').textContent = productName + ' — ' + companyName;
+  document.getElementById('sh-demo-overlay').classList.add('open');
+  document.getElementById('dr-status').style.display = 'none';
+
+  // Pre-fill from logged-in user
+  try {
+    var user = JSON.parse(localStorage.getItem('ll_user') || 'null');
+    var prog = JSON.parse(localStorage.getItem('ll_progress') || '{}');
+    if (user) {
+      var nameEl  = document.getElementById('dr-name');
+      var emailEl = document.getElementById('dr-email');
+      if (nameEl  && !nameEl.value)  nameEl.value  = (user.first_name||'') + (user.last_name ? ' '+user.last_name : '');
+      if (emailEl && !emailEl.value) emailEl.value = user.email || '';
+    }
+    // Store cert info for submission
+    window._demoUserCert    = prog.cert_level || null;
+    window._demoUserSpecial = prog.track      || null;
+    window._demoUserId      = user ? user.id  : null;
+    window._demoUserCountry = user ? user.country : null;
+  } catch(e) {}
+}
+
+function closeDemoRequest() {
+  document.getElementById('sh-demo-overlay').classList.remove('open');
+  DEMO_VENDOR_ID = null;
+}
+
+async function submitDemoRequest() {
+  if (!DEMO_VENDOR_ID) return;
+  var name    = document.getElementById('dr-name').value.trim();
+  var email   = document.getElementById('dr-email').value.trim();
+  var phone   = document.getElementById('dr-phone').value.trim();
+  var company = document.getElementById('dr-company').value.trim();
+  var message = document.getElementById('dr-message').value.trim();
+
+  var statusEl = document.getElementById('dr-status');
+  var btn      = document.getElementById('dr-submit-btn');
+
+  if (!name || !email) {
+    statusEl.textContent   = 'Name and email are required.';
+    statusEl.className     = 'sh-apply-status error';
+    statusEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Sending…';
+  statusEl.style.display = 'none';
+
+  try {
+    var payload = {
+      action:          'request-demo',
+      vendor_id:       DEMO_VENDOR_ID,
+      requester_name:  name,
+      requester_email: email,
+      requester_phone: phone   || undefined,
+      company_name:    company || undefined,
+      message:         message || undefined,
+      cert_level:      window._demoUserCert    || undefined,
+      cert_specialty:  window._demoUserSpecial || undefined,
+      country:         window._demoUserCountry || undefined,
+      user_id:         window._demoUserId      || undefined,
+    };
+    var res  = await fetch('/.netlify/functions/softhub-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    var data = await res.json();
+    if (data.ok) {
+      statusEl.textContent   = '✓ Demo request sent! The vendor will be in touch within 24 hours.';
+      statusEl.className     = 'sh-apply-status success';
+      statusEl.style.display = 'block';
+      btn.textContent        = '✓ Sent';
+      setTimeout(function(){ closeDemoRequest(); }, 3000);
+    } else {
+      statusEl.textContent   = data.error || 'Submission failed. Please try again.';
+      statusEl.className     = 'sh-apply-status error';
+      statusEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Send demo request →';
+    }
+  } catch(e) {
+    statusEl.textContent   = 'Network error. Please try again.';
+    statusEl.className     = 'sh-apply-status error';
+    statusEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Send demo request →';
+  }
+}
 </script>
+
+  <!-- VENDOR APPLY MODAL -->
+  <div class="sh-modal-overlay" id="sh-apply-overlay">
+    <div class="sh-modal">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem">
+        <div>
+          <div class="sh-modal-title">List your software on SoftHub</div>
+          <div class="sh-modal-sub">Free to start &mdash; paid plans unlock demo requests and lead forwarding to 135,000+ certified practitioners.</div>
+        </div>
+        <button onclick="closeVendorApply()" style="background:transparent;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);padding:0 0 0 1rem;line-height:1">&times;</button>
+      </div>
+      <div class="sh-form-grid">
+        <div class="sh-form-field">
+          <label>Company name *</label>
+          <input type="text" id="va-company" placeholder="Acme ERP Ltd"/>
+        </div>
+        <div class="sh-form-field">
+          <label>Product name *</label>
+          <input type="text" id="va-product" placeholder="Acme ERP Pro"/>
+        </div>
+        <div class="sh-form-field">
+          <label>Category *</label>
+          <select id="va-category">
+            <option value="">Select category</option>
+            <option value="erp">ERP System</option>
+            <option value="saas">Cloud SaaS / Add-on</option>
+            <option value="payroll">Payroll Software</option>
+            <option value="practice">Practice Management</option>
+            <option value="ai-tools">AI Accounting Tools</option>
+            <option value="reporting">Reporting &amp; Analytics</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="sh-form-field">
+          <label>Website URL *</label>
+          <input type="url" id="va-website" placeholder="https://yourproduct.com"/>
+        </div>
+        <div class="sh-form-field">
+          <label>Contact name *</label>
+          <input type="text" id="va-contact-name" placeholder="Jane Smith"/>
+        </div>
+        <div class="sh-form-field">
+          <label>Contact email *</label>
+          <input type="email" id="va-contact-email" placeholder="jane@yourcompany.com"/>
+        </div>
+        <div class="sh-form-field">
+          <label>Phone (optional)</label>
+          <input type="tel" id="va-phone" placeholder="+1 555 000 0000"/>
+        </div>
+        <div class="sh-form-field">
+          <label>Demo URL (optional)</label>
+          <input type="url" id="va-demo-url" placeholder="https://demo.yourproduct.com"/>
+        </div>
+        <div class="sh-form-field full">
+          <label>One-line tagline</label>
+          <input type="text" id="va-tagline" placeholder="e.g. The ERP built for African SMEs" maxlength="120"/>
+        </div>
+        <div class="sh-form-field full">
+          <label>Product description * (what it does, who it's for)</label>
+          <textarea id="va-description" rows="4" placeholder="Describe your product in 2-4 sentences. What problem does it solve? Who are your ideal users?"></textarea>
+        </div>
+        <div class="sh-form-field full">
+          <label>Logo URL (optional &mdash; paste a direct image link)</label>
+          <input type="url" id="va-logo" placeholder="https://yoursite.com/logo.png"/>
+        </div>
+      </div>
+      <div style="background:rgba(29,169,138,.06);border:1px solid rgba(29,169,138,.2);border-radius:8px;padding:.75rem 1rem;margin-top:1rem;font-size:.78rem;color:var(--muted);line-height:1.5">
+        &#x1F512; By applying you agree that your listing will be reviewed manually before going live (1-2 business days). Your contact details will not be shared until you upgrade to a paid plan with lead forwarding.
+      </div>
+      <button class="sh-apply-btn" id="va-submit-btn" onclick="submitVendorApply()">Submit application &rarr;</button>
+      <div class="sh-apply-status" id="va-status"></div>
+    </div>
+  </div>
+
+  <!-- DEMO REQUEST MODAL -->
+  <div class="sh-demo-modal-overlay" id="sh-demo-overlay">
+    <div class="sh-demo-modal">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--navy)">Request a demo</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:2px" id="demo-vendor-name">Loading&hellip;</div>
+        </div>
+        <button onclick="closeDemoRequest()" style="background:transparent;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);padding:0 0 0 1rem;line-height:1">&times;</button>
+      </div>
+      <div style="font-size:.78rem;background:rgba(29,169,138,.06);border:1px solid rgba(29,169,138,.2);border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;color:var(--muted);line-height:1.5">
+        &#x1F512; Your certification level and professional details will be included in this request &mdash; vendors value verified practitioners highly. By submitting, you consent to your contact details being forwarded to the vendor.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        <div class="sh-form-field">
+          <label>Your name *</label>
+          <input type="text" id="dr-name" placeholder="Your full name"/>
+        </div>
+        <div class="sh-form-field">
+          <label>Your email *</label>
+          <input type="email" id="dr-email" placeholder="you@example.com"/>
+        </div>
+        <div class="sh-form-field">
+          <label>Phone (optional)</label>
+          <input type="tel" id="dr-phone" placeholder="+1 555 000 0000"/>
+        </div>
+        <div class="sh-form-field">
+          <label>Your company / practice name</label>
+          <input type="text" id="dr-company" placeholder="Your practice or employer"/>
+        </div>
+        <div class="sh-form-field">
+          <label>Message (optional &mdash; describe your specific needs)</label>
+          <textarea id="dr-message" rows="3" placeholder="e.g. Looking for a payroll integration for 3 SME clients on Xero..."></textarea>
+        </div>
+      </div>
+      <button class="sh-apply-btn" id="dr-submit-btn" onclick="submitDemoRequest()">Send demo request &rarr;</button>
+      <div class="sh-apply-status" id="dr-status" style="margin-top:.75rem"></div>
+    </div>
+  </div>
 </body>
 </html>

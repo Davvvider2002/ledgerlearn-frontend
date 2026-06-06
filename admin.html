@@ -261,6 +261,11 @@ tr:hover td{background:#fafbfc;}
       <button class="sb-item" onclick="nav('track-mgr',this)"><span class="icon">&#x2699;&#xFE0F;</span> Track Manager <span class="sb-badge sb-new">NEW</span></button>
       <button class="sb-item" onclick="nav('question-bank',this)"><span class="icon">&#x2753;</span> Question Bank <span class="sb-badge sb-new">NEW</span></button>
 
+      <div class="sb-section">SoftHub</div>
+      <button class="sb-item" onclick="nav('sh-vendors',this)"><span class="icon">&#x1F4CB;</span> Vendor Listings <span class="sb-badge sb-new">NEW</span></button>
+      <button class="sb-item" onclick="nav('sh-pending',this)"><span class="icon">&#x23F3;</span> Pending Approval <span class="sb-badge sb-new" id="sh-pending-badge" style="display:none">0</span></button>
+      <button class="sb-item" onclick="nav('sh-requests',this)"><span class="icon">&#x1F4E8;</span> Demo Requests <span class="sb-badge sb-new">NEW</span></button>
+
       <div class="sb-section">Job Board</div>
       <button class="sb-item" onclick="nav('jb-overview',this)"><span class="icon">&#x1F4CC;</span> JB Overview</button>
       <button class="sb-item" onclick="nav('jb-jobs',this)"><span class="icon">&#x1F4BC;</span> Job Listings</button>
@@ -1410,6 +1415,58 @@ tr:hover td{background:#fafbfc;}
           <div class="empty-state"><div class="empty-icon">&#x1F4DC;</div><div class="empty-text">Audit log is empty. Admin actions will appear here.</div></div>
         </div>
       </div>
+
+
+    <!-- ═══════════════════════════════════════════════
+         SOFTHUB — Vendor Listings
+         ═══════════════════════════════════════════════ -->
+    <div class="page-view" id="view-sh-vendors">
+      <div class="page-hdr">
+        <div class="page-hdr-left">
+          <div class="page-title">SoftHub — Vendor Listings</div>
+          <div class="page-sub">All approved and pending vendor listings</div>
+        </div>
+        <div class="page-hdr-btns">
+          <button class="btn-sm btn-ghost-sm" onclick="loadSHVendors()">&#8635; Refresh</button>
+        </div>
+      </div>
+      <div class="tbl-wrap" id="sh-vendors-table">
+        <div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading vendors&hellip;</div>
+      </div>
+    </div>
+
+    <!-- SOFTHUB — Pending Approval -->
+    <div class="page-view" id="view-sh-pending">
+      <div class="page-hdr">
+        <div class="page-hdr-left">
+          <div class="page-title">Pending Vendor Applications</div>
+          <div class="page-sub">Review and approve or reject vendor listing applications</div>
+        </div>
+        <div class="page-hdr-btns">
+          <button class="btn-sm btn-ghost-sm" onclick="loadSHPending()">&#8635; Refresh</button>
+        </div>
+      </div>
+      <div id="sh-pending-list">
+        <div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading&hellip;</div>
+      </div>
+    </div>
+
+    <!-- SOFTHUB — Demo Requests -->
+    <div class="page-view" id="view-sh-requests">
+      <div class="page-hdr">
+        <div class="page-hdr-left">
+          <div class="page-title">SoftHub — Demo Requests</div>
+          <div class="page-sub">All demo / lead requests submitted through SoftHub</div>
+        </div>
+        <div class="page-hdr-btns">
+          <button class="btn-sm btn-ghost-sm" onclick="loadSHRequests()">&#8635; Refresh</button>
+        </div>
+      </div>
+      <div class="tbl-wrap" id="sh-requests-table">
+        <div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading requests&hellip;</div>
+      </div>
+    </div>
+
     </div>
 
   </div><!-- /main -->
@@ -3221,6 +3278,156 @@ function viewPartnerMsg(i) {
   alert((p.institution||p.contact_name||'Partner') + ':\n\n' + (p.message || 'No message'));
 }
 
+
+// ══════════════════════════════════════════════
+// SOFTHUB ADMIN
+// ══════════════════════════════════════════════
+
+var ALL_SH_VENDORS  = [];
+var ALL_SH_PENDING  = [];
+var ALL_SH_REQUESTS = [];
+
+// Wire nav
+var _origNav = typeof nav === 'function' ? nav : null;
+function nav(page, el) {
+  document.querySelectorAll('.page-view').forEach(function(v){ v.classList.remove('active'); });
+  document.querySelectorAll('.sb-item').forEach(function(b){ b.classList.remove('active'); });
+  var view = document.getElementById('view-' + page);
+  if (view) view.classList.add('active');
+  if (el) el.classList.add('active');
+  if (page === 'sh-vendors')  loadSHVendors();
+  if (page === 'sh-pending')  loadSHPending();
+  if (page === 'sh-requests') loadSHRequests();
+}
+
+async function shFetch(action, extra) {
+  var tok = sessionStorage.getItem('ll_admin_token') || '';
+  var res = await fetch('/.netlify/functions/softhub-api', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+    body: JSON.stringify(Object.assign({ action: action }, extra || {}))
+  });
+  return res.json();
+}
+
+async function loadSHVendors() {
+  var el = document.getElementById('sh-vendors-table');
+  if (!el) return;
+  el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading&hellip;</div>';
+  var data = await shFetch('admin-get-listings');
+  ALL_SH_VENDORS = data.data || [];
+  // Update pending badge
+  var pendingCount = ALL_SH_VENDORS.filter(function(v){ return v.status === 'pending'; }).length;
+  var badge = document.getElementById('sh-pending-badge');
+  if (badge) { badge.textContent = pendingCount; badge.style.display = pendingCount ? '' : 'none'; }
+  renderSHVendors();
+}
+
+function renderSHVendors() {
+  var el = document.getElementById('sh-vendors-table');
+  if (!el) return;
+  if (!ALL_SH_VENDORS.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x1F4CB;</div>No vendor listings yet.</div>'; return; }
+  var statusColors = { approved:'badge-green', pending:'badge-gold', rejected:'badge-grey', suspended:'badge-orange' };
+  el.innerHTML = '<table><thead><tr><th>Product</th><th>Company</th><th>Category</th><th>Plan</th><th>Status</th><th>Leads</th><th>Applied</th><th>Actions</th></tr></thead><tbody>' +
+    ALL_SH_VENDORS.map(function(v) {
+      return '<tr>' +
+        '<td><strong>' + esc(v.product_name||'') + '</strong></td>' +
+        '<td>' + esc(v.company_name||'') + '</td>' +
+        '<td><span class="badge badge-grey">' + esc(v.category||'') + '</span></td>' +
+        '<td><span class="badge ' + (v.plan_id==='pro'?'badge-purple':v.plan_id==='growth'?'badge-green':'badge-grey') + '">' + esc(v.plan_id||'free') + '</span></td>' +
+        '<td><span class="badge ' + (statusColors[v.status]||'badge-grey') + '">' + esc(v.status||'') + '</span></td>' +
+        '<td>' + (v.leads_used||0) + '</td>' +
+        '<td style="font-size:.75rem;color:var(--muted)">' + (v.created_at||'').split('T')[0] + '</td>' +
+        '<td style="display:flex;gap:4px">' +
+          (v.status==='pending' ? '<button class="act-btn" style="background:#1DA98A;color:#fff" onclick="shApprove(\'' + v.id + '\')">Approve</button><button class="act-btn act-btn-red" onclick="shReject(\'' + v.id + '\')">Reject</button>' : '') +
+          (v.status==='approved' ? '<button class="act-btn" onclick="shToggleFeatured(\'' + v.id + '\',' + !v.featured + ')">' + (v.featured?'Unfeature':'Feature') + '</button>' : '') +
+          '<button class="act-btn" onclick="shSuspend(\'' + v.id + '\')">Suspend</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('') + '</tbody></table>';
+}
+
+async function loadSHPending() {
+  var el = document.getElementById('sh-pending-list');
+  if (!el) return;
+  el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading&hellip;</div>';
+  var data = await shFetch('admin-get-listings', { status: 'pending' });
+  ALL_SH_PENDING = data.data || [];
+  renderSHPending();
+}
+
+function renderSHPending() {
+  var el = document.getElementById('sh-pending-list');
+  if (!el) return;
+  if (!ALL_SH_PENDING.length) { el.innerHTML = '<div class="empty-state" style="padding:3rem"><div class="empty-icon">&#x2705;</div><div class="empty-text">No pending applications. All caught up!</div></div>'; return; }
+  el.innerHTML = ALL_SH_PENDING.map(function(v) {
+    return '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1rem">' +
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">' +
+        '<div>' +
+          '<div style="font-size:1rem;font-weight:700;color:var(--text)">' + esc(v.product_name||'') + '</div>' +
+          '<div style="font-size:.82rem;color:var(--muted);margin-top:2px">' + esc(v.company_name||'') + ' &mdash; ' + esc(v.category||'') + '</div>' +
+          '<div style="font-size:.78rem;color:var(--muted);margin-top:.35rem">Contact: <strong>' + esc(v.contact_name||'') + '</strong> &lt;<a href="mailto:' + esc(v.contact_email||'') + '">' + esc(v.contact_email||'') + '</a>&gt;</div>' +
+          (v.website_url ? '<div style="font-size:.78rem;margin-top:.2rem"><a href="' + esc(v.website_url) + '" target="_blank" style="color:var(--teal)">' + esc(v.website_url) + ' &#x2197;</a></div>' : '') +
+          '<div style="font-size:.82rem;color:var(--text);margin-top:.75rem;line-height:1.55;max-width:500px">' + esc(v.description||'') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:.5rem;flex-shrink:0">' +
+          '<button class="btn-sm" style="background:#1DA98A;color:#fff;border:none" onclick="shApprove(\'' + v.id + '\')">&#x2713; Approve</button>' +
+          '<button class="btn-sm" style="background:#ef4444;color:#fff;border:none" onclick="shReject(\'' + v.id + '\')">&#x2715; Reject</button>' +
+        '</div>' +
+      '</div>' +
+      '<div style="font-size:.72rem;color:var(--muted);margin-top:.75rem">Applied: ' + (v.created_at||'').replace('T',' ').split('.')[0] + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function shApprove(id) {
+  if (!confirm('Approve this listing? The vendor will receive a confirmation email.')) return;
+  var res = await shFetch('admin-approve', { id: id });
+  if (res.ok) { inlineToast('Listing approved and vendor notified'); loadSHVendors(); loadSHPending(); }
+  else inlineToast(res.error || 'Approval failed', 'error');
+}
+
+async function shReject(id) {
+  var reason = prompt('Rejection reason (optional — will not be sent to vendor):');
+  var res = await shFetch('admin-reject', { id: id, reason: reason || '' });
+  if (res.ok) { inlineToast('Listing rejected'); loadSHVendors(); loadSHPending(); }
+  else inlineToast(res.error || 'Rejection failed', 'error');
+}
+
+async function shToggleFeatured(id, featured) {
+  var res = await shFetch('admin-update', { id: id, featured: featured });
+  if (res.ok) { inlineToast('Featured status updated'); loadSHVendors(); }
+  else inlineToast(res.error || 'Update failed', 'error');
+}
+
+async function shSuspend(id) {
+  if (!confirm('Suspend this listing? It will be hidden from the directory.')) return;
+  var res = await shFetch('admin-update', { id: id, status: 'suspended' });
+  if (res.ok) { inlineToast('Listing suspended'); loadSHVendors(); }
+  else inlineToast(res.error || 'Suspend failed', 'error');
+}
+
+async function loadSHRequests() {
+  var el = document.getElementById('sh-requests-table');
+  if (!el) return;
+  el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x23F3;</div>Loading&hellip;</div>';
+  var data = await shFetch('admin-get-requests');
+  ALL_SH_REQUESTS = data.data || [];
+  if (!ALL_SH_REQUESTS.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x1F4E8;</div>No demo requests yet.</div>'; return; }
+  var statusColors = { new:'badge-gold', forwarded:'badge-green', responded:'badge-green', closed:'badge-grey' };
+  el.innerHTML = '<table><thead><tr><th>Requester</th><th>Email</th><th>Cert</th><th>Country</th><th>Vendor ID</th><th>Status</th><th>Date</th></tr></thead><tbody>' +
+    ALL_SH_REQUESTS.map(function(r) {
+      return '<tr>' +
+        '<td><strong>' + esc(r.requester_name||'') + '</strong>' + (r.company_name ? '<div style="font-size:.72rem;color:var(--muted)">' + esc(r.company_name) + '</div>' : '') + '</td>' +
+        '<td><a href="mailto:' + esc(r.requester_email||'') + '" style="color:var(--teal)">' + esc(r.requester_email||'') + '</a></td>' +
+        '<td>' + (r.cert_level ? '<span class="badge badge-green">' + esc(r.cert_level) + '</span>' : '<span class="badge badge-grey">None</span>') + '</td>' +
+        '<td>' + esc(r.country||'—') + '</td>' +
+        '<td style="font-size:.72rem;color:var(--muted)">' + (r.vendor_id||'').slice(0,8) + '&hellip;</td>' +
+        '<td><span class="badge ' + (statusColors[r.status]||'badge-grey') + '">' + esc(r.status||'') + '</span></td>' +
+        '<td style="font-size:.75rem;color:var(--muted)">' + (r.created_at||'').split('T')[0] + '</td>' +
+      '</tr>';
+    }).join('') + '</tbody></table>';
+}
 </script>
 </body>
 </html>
