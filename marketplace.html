@@ -61,6 +61,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);}
 .sh-btn-demo{background:var(--teal);color:#fff;border:none;padding:6px 14px;border-radius:7px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;}
 .sh-btn-demo:hover{background:#1a9179;}
 .sh-btn-demo:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
+.sh-btn-demo-soft{background:transparent;color:var(--teal);border:1.5px solid var(--teal);padding:5px 13px;}
+.sh-btn-demo-soft:hover{background:rgba(29,169,138,.08);}
+.sh-btn-reveal{background:var(--navy);color:#fff;border:none;padding:6px 14px;border-radius:7px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.sh-btn-reveal:hover{background:#1a2f4a;}
+.sh-desc-panel{border-top:1px solid var(--border);padding:.875rem 1.125rem;background:var(--off);}
+.sh-desc-full{font-size:.82rem;color:var(--text);line-height:1.6;margin-bottom:.5rem;}
+.sh-upgrade-nudge{font-size:.75rem;color:var(--muted);line-height:1.5;padding:.625rem .75rem;background:rgba(29,169,138,.06);border-radius:7px;border:1px solid rgba(29,169,138,.15);}
+.sh-upgrade-nudge strong{color:var(--teal);}
 .sh-btn-site{background:transparent;color:var(--text);border:1.5px solid var(--border);padding:6px 12px;border-radius:7px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:.25rem;}
 .sh-btn-site:hover{border-color:var(--teal);}
 
@@ -944,15 +952,34 @@ function renderListings() {
       '<div class="sh-card-footer">' +
         '<span class="sh-plan ' + planClass + '">' + planText + '</span>' +
         '<div class="sh-actions">' +
-          '<a class="sh-btn-site" href="' + esc(l.website_url||'#') + '" target="_blank" rel="noopener">Visit &#x2197;</a>' +
-          (canDemo
-            ? '<button class="sh-btn-demo" onclick="openDemoRequest(\'' + l.id + '\',\'' + esc(l.product_name) + '\',\'' + esc(l.company_name) + '\')">Request demo</button>'
-            : '<button class="sh-btn-demo" disabled title="Upgrade to Growth plan to receive demo requests">Demo</button>'
+          (l.plan_id === 'free'
+            ? '<button class="sh-btn-reveal" onclick="toggleDescription(\'' + l.id + '\', this)">See what it does</button>'
+            : '<a class="sh-btn-site" href="' + esc(l.website_url||'#') + '" target="_blank" rel="noopener">Visit &#x2197;</a>'
+          ) +
+          (l.plan_id === 'free'
+            ? '<button class="sh-btn-demo sh-btn-demo-soft" onclick="openDemoRequest(\'' + l.id + '\',\'' + esc(l.product_name) + '\',\'' + esc(l.company_name) + '\')">Request demo</button>'
+            : '<button class="sh-btn-demo" onclick="openDemoRequest(\'' + l.id + '\',\'' + esc(l.product_name) + '\',\'' + esc(l.company_name) + '\')">Request demo</button>'
           ) +
         '</div>' +
       '</div>' +
+      '<div class="sh-desc-panel" id="desc-' + l.id + '" style="display:none">' +
+        '<div class="sh-desc-full">' + esc(l.description || '') + '</div>' +
+        (l.plan_id === 'free'
+          ? '<div class="sh-upgrade-nudge">&#x1F4AC; Interested? Submit a demo request and we will connect you with this vendor. <strong>Vendors on our Growth plan respond within 24 hours.</strong></div>'
+          : ''
+        ) +
+      '</div>' +
     '</div>';
   }).join('');
+}
+
+// ── Toggle description panel (free listings) ─────────────
+function toggleDescription(id, btn) {
+  var panel = document.getElementById('desc-' + id);
+  if (!panel) return;
+  var open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? 'See what it does' : 'Hide description';
 }
 
 // ── Vendor Apply Modal ─────────────────────────────────────

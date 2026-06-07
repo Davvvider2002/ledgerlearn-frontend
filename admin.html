@@ -3428,6 +3428,28 @@ async function shSuspend(id) {
   else inlineToast(res.error || 'Suspend failed', 'error');
 }
 
+async function shNotifyVendor(vendor_id, count) {
+  if (!confirm('Send upgrade email to this vendor? Email will show they have ' + count + ' held lead' + (count===1?'':'s') + '.')) return;
+  var res = await shFetch('admin-notify-vendor', { vendor_id: vendor_id });
+  if (res.ok) {
+    inlineToast('Upgrade email sent to vendor — ' + res.held_count + ' lead' + (res.held_count===1?'':'s') + ' mentioned');
+    loadSHRequests();
+  } else {
+    inlineToast(res.error || 'Failed to send email', 'error');
+  }
+}
+
+async function shForwardHeld(vendor_id) {
+  if (!confirm('Forward all held leads for this vendor? Vendor must be on a paid plan.')) return;
+  var res = await shFetch('admin-forward-held', { vendor_id: vendor_id });
+  if (res.ok) {
+    inlineToast('Forwarded ' + res.forwarded + ' lead' + (res.forwarded===1?'':'s') + ' to vendor');
+    loadSHRequests();
+  } else {
+    inlineToast(res.error || 'Failed to forward', 'error');
+  }
+}
+
 async function loadSHRequests() {
   var el = document.getElementById('sh-requests-table');
   if (!el) return;
@@ -3435,16 +3457,46 @@ async function loadSHRequests() {
   var data = await shFetch('admin-get-requests');
   ALL_SH_REQUESTS = data.data || [];
   if (!ALL_SH_REQUESTS.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x1F4E8;</div>No demo requests yet.</div>'; return; }
-  var statusColors = { new:'badge-gold', forwarded:'badge-green', responded:'badge-green', closed:'badge-grey' };
-  el.innerHTML = '<table><thead><tr><th>Requester</th><th>Email</th><th>Cert</th><th>Country</th><th>Vendor ID</th><th>Status</th><th>Date</th></tr></thead><tbody>' +
+  var statusColors = { new:'badge-gold', forwarded:'badge-green', responded:'badge-green', held:'badge-orange', closed:'badge-grey' };
+
+  // Group held leads by vendor for the notify button
+  var heldByVendor = {};
+  ALL_SH_REQUESTS.forEach(function(r) {
+    if (r.status === 'held') {
+      heldByVendor[r.vendor_id] = (heldByVendor[r.vendor_id] || 0) + 1;
+    }
+  });
+
+  // Show held leads summary if any
+  var heldTotal = ALL_SH_REQUESTS.filter(function(r){ return r.status === 'held'; }).length;
+  var summaryHtml = '';
+  if (heldTotal > 0) {
+    var vendorIds = Object.keys(heldByVendor);
+    summaryHtml = '<div style="background:#fff8ed;border:1.5px solid #FAC775;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem">' +
+      '<div style="font-size:.85rem;font-weight:700;color:#854F0B;margin-bottom:.5rem">&#x26A0;&#xFE0F; ' + heldTotal + ' held lead' + (heldTotal===1?'':'s') + ' — vendors on free plan not yet notified</div>' +
+      vendorIds.map(function(vid) {
+        var c = heldByVendor[vid];
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-top:1px solid rgba(250,199,117,.3)">' +
+          '<span style="font-size:.82rem;color:#633806">' + c + ' lead' + (c===1?'':'s') + ' for vendor <code style="font-size:.75rem">' + vid.slice(0,8) + '...</code></span>' +
+          '<div style="display:flex;gap:.5rem">' +
+            '<button class="act-btn" style="background:#BA7517;color:#fff" onclick="shNotifyVendor(\'' + vid + '\', ' + c + ')">&#x2709; Notify vendor (' + c + ' lead' + (c===1?'':'s') + ')</button>' +
+            '<button class="act-btn" onclick="shForwardHeld(\'' + vid + '\')">Forward all held</button>' +
+          '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+
+  el.innerHTML = summaryHtml + '<table><thead><tr><th>Requester</th><th>Email</th><th>Cert</th><th>Company</th><th>Status</th><th>Message</th><th>Date</th></tr></thead><tbody>' +
     ALL_SH_REQUESTS.map(function(r) {
-      return '<tr>' +
-        '<td><strong>' + esc(r.requester_name||'') + '</strong>' + (r.company_name ? '<div style="font-size:.72rem;color:var(--muted)">' + esc(r.company_name) + '</div>' : '') + '</td>' +
-        '<td><a href="mailto:' + esc(r.requester_email||'') + '" style="color:var(--teal)">' + esc(r.requester_email||'') + '</a></td>' +
-        '<td>' + (r.cert_level ? '<span class="badge badge-green">' + esc(r.cert_level) + '</span>' : '<span class="badge badge-grey">None</span>') + '</td>' +
-        '<td>' + esc(r.country||'—') + '</td>' +
-        '<td style="font-size:.72rem;color:var(--muted)">' + (r.vendor_id||'').slice(0,8) + '&hellip;</td>' +
-        '<td><span class="badge ' + (statusColors[r.status]||'badge-grey') + '">' + esc(r.status||'') + '</span></td>' +
+      var isHeld = r.status === 'held';
+      return '<tr' + (isHeld ? ' style="background:rgba(250,199,117,.08)"' : '') + '>' +
+        '<td><strong>' + esc(r.requester_name||'') + '</strong>' + (r.country ? '<div style="font-size:.72rem;color:var(--muted)">' + esc(r.country) + '</div>' : '') + '</td>' +
+        '<td><a href="mailto:' + esc(r.requester_email||'') + '" style="color:var(--teal);font-size:.82rem">' + esc(r.requester_email||'') + '</a></td>' +
+        '<td>' + (r.cert_level ? '<span class="badge badge-green">' + esc(r.cert_level) + '</span>' : '<span style="color:var(--muted);font-size:.75rem">—</span>') + '</td>' +
+        '<td style="font-size:.8rem;color:var(--muted)">' + esc(r.company_name||'—') + '</td>' +
+        '<td><span class="badge ' + (statusColors[r.status]||'badge-grey') + '">' + esc(r.status||'') + '</span>' + (isHeld ? '<div style="font-size:.65rem;color:#BA7517;margin-top:2px">Not forwarded to vendor</div>' : '') + '</td>' +
+        '<td style="font-size:.78rem;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(r.message||'—') + '</td>' +
         '<td style="font-size:.75rem;color:var(--muted)">' + (r.created_at||'').split('T')[0] + '</td>' +
       '</tr>';
     }).join('') + '</tbody></table>';
