@@ -163,13 +163,10 @@ exports.handler = async function(event) {
     var vendor  = Array.isArray(vendors) ? vendors[0] : null;
     if (!vendor) return json(404, { error: 'Vendor listing not found or not active' });
 
-    // Check lead quota for non-enterprise plans
-    var plan = vendor.plan_id;
-    if (plan === 'free') {
-      return json(403, { error: 'This vendor is on the free plan and cannot receive demo requests. Please visit their website directly.' });
-    }
+    // FREE plan: accept demo request but hold it — don't forward to vendor
+    var isFree = (vendor.plan_id === 'free');
 
-    // Insert demo request
+    // Insert demo request — held for free, new for paid
     var req = {
       vendor_id:       body.vendor_id,
       user_id:         body.user_id || null,
@@ -181,7 +178,7 @@ exports.handler = async function(event) {
       cert_specialty:  body.cert_specialty || null,
       country:         body.country        || null,
       message:         (body.message || '').trim() || null,
-      status:          'new',
+      status:          isFree ? 'held' : 'new',
       lead_fee:        0,
       created_at:      new Date().toISOString(),
     };
@@ -194,9 +191,23 @@ exports.handler = async function(event) {
       updated_at: new Date().toISOString(),
     });
 
-    // Forward lead to vendor
+    // Notify admin always; only forward to vendor on paid plans
     var BREVO2 = process.env.BREVO_API_KEY || '';
-    if (BREVO2 && vendor.contact_email) {
+    if (BREVO2) {
+      // Always notify admin
+      fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'api-key': BREVO2 },
+        body: JSON.stringify({
+          to: [{ email: process.env.ADMIN_EMAIL || 'godigitsall@gmail.com' }],
+          sender: { name: 'LedgerLearn SoftHub', email: 'godigitsall@gmail.com' },
+          subject: 'New demo request: ' + vendor.product_name + (isFree ? ' [HELD — free plan]' : ''),
+          htmlContent: '<p><strong>' + body.requester_name + '</strong> (' + reqEmail + ') requested a demo of <strong>' + vendor.product_name + '</strong>.' + (isFree ? ' <strong style="color:#ea580c">Lead is HELD — vendor is on free plan.</strong> Notify them to upgrade.' : '') + '</p>'
+        })
+      }).catch(function(){});
+    }
+
+    if (BREVO2 && vendor.contact_email && !isFree) {
       fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'api-key': BREVO2 },
@@ -234,7 +245,12 @@ exports.handler = async function(event) {
       }
     }
 
-    return json(200, { ok: true, message: 'Demo request submitted. The vendor will be in touch within 24 hours.' });
+    return json(200, { ok: true,
+      held: isFree,
+      message: isFree
+        ? 'Demo request received. We will connect you with the vendor — this may take 1-2 business days.'
+        : 'Demo request sent. The vendor will be in touch within 24 hours.'
+    });
   }
 
   // ── ADMIN ACTIONS (JWT required) ──────────────────────────
@@ -294,8 +310,135 @@ exports.handler = async function(event) {
   if (action === 'admin-get-requests') {
     var qs2 = '/rest/v1/demo_requests?select=*&order=created_at.desc&limit=200';
     if (body.vendor_id) qs2 += '&vendor_id=eq.' + encodeURIComponent(body.vendor_id);
+    if (body.status)    qs2 += '&status=eq.' + encodeURIComponent(body.status);
     var rows2 = await supa(qs2);
     return json(200, { ok: true, data: Array.isArray(rows2) ? rows2 : [] });
+  }
+
+  // ── NOTIFY VENDOR TO UPGRADE (admin only) ─────────────
+  if (action === 'admin-notify-vendor') {
+    if (!body.vendor_id) return json(400, { error: 'vendor_id required' });
+
+    // Fetch vendor
+    var nVendors = await supa('/rest/v1/vendor_listings?id=eq.' + encodeURIComponent(body.vendor_id) + '&select=id,company_name,product_name,contact_email,contact_name,plan_id&limit=1');
+    var nVendor  = Array.isArray(nVendors) ? nVendors[0] : null;
+    if (!nVendor) return json(404, { error: 'Vendor not found' });
+    if (nVendor.plan_id !== 'free') return json(400, { error: 'Vendor is not on free plan' });
+
+    // Count held leads
+    var heldRows = await supa('/rest/v1/demo_requests?vendor_id=eq.' + encodeURIComponent(body.vendor_id) + '&status=eq.held&select=id');
+    var heldCount = Array.isArray(heldRows) ? heldRows.length : 0;
+
+    if (heldCount === 0) return json(400, { error: 'No held leads for this vendor' });
+
+    var plural  = heldCount === 1 ? '' : 's';
+    var BREVO3  = process.env.BREVO_API_KEY || '';
+    if (!BREVO3) return json(500, { error: 'Email service not configured' });
+
+    var upgradeUrl = 'https://ledgerlearn.pro/marketplace?tab=softhub';
+    var emailHtml = [
+      '<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">',
+      '<div style="background:#0B1F3A;padding:20px 28px">',
+      '<span style="font-size:18px;font-weight:900;color:#fff">Ledger<span style="color:#ea580c">Learn</span> SoftHub</span>',
+      '</div>',
+      '<div style="padding:28px">',
+      '<h2 style="color:#0B1F3A;font-size:20px;margin:0 0 8px">',
+      heldCount + ' practitioner' + plural + ' want' + (heldCount===1?'s':'') + ' to demo ' + nVendor.product_name,
+      '</h2>',
+      '<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:0 0 20px">',
+      'Hi ' + nVendor.contact_name + ',<br><br>',
+      '<strong>' + heldCount + ' certified accounting professional' + plural + '</strong> from our community of 135,000+ practitioners ',
+      'requested a demo of <strong>' + nVendor.product_name + '</strong> on LedgerLearn SoftHub.<br><br>',
+      'We have their name, email, certification level, and specific requirements. ',
+      'They are ready to talk — but your current free listing does not include lead forwarding.',
+      '</p>',
+      '<div style="background:#f0fdf8;border:1px solid #9FE1CB;border-radius:10px;padding:16px 20px;margin-bottom:24px">',
+      '<p style="font-size:14px;color:#0F6E56;font-weight:600;margin:0 0 4px">',
+      'Upgrade to Growth ($79/month) to receive your ' + heldCount + ' lead' + plural + ' immediately.',
+      '</p>',
+      '<p style="font-size:13px;color:#374151;margin:0">',
+      'Once you upgrade, all ' + heldCount + ' held request' + plural + ' are forwarded to you right away. No leads are lost.',
+      '</p>',
+      '</div>',
+      '<div style="text-align:center;margin:24px 0">',
+      '<a href="' + upgradeUrl + '" style="display:inline-block;background:#1DA98A;color:#fff;padding:14px 32px;border-radius:9px;font-weight:700;font-size:15px;text-decoration:none">',
+      'Upgrade and receive ' + heldCount + ' lead' + plural + ' now &rarr;',
+      '</a>',
+      '</div>',
+      '<p style="font-size:12px;color:#9ca3af;line-height:1.5">',
+      'Growth plan includes up to 20 leads/month, verified vendor badge, and full listing with website link. ',
+      'Questions? Reply to this email.',
+      '</p>',
+      '</div></div>',
+    ].join('');
+
+    try {
+      var emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'api-key': BREVO3 },
+        body: JSON.stringify({
+          to: [{ email: nVendor.contact_email, name: nVendor.contact_name }],
+          sender: { name: 'LedgerLearn SoftHub', email: 'godigitsall@gmail.com' },
+          subject: heldCount + ' practitioner' + plural + ' requested a demo of ' + nVendor.product_name,
+          htmlContent: emailHtml
+        })
+      });
+      var emailData = await emailRes.json();
+      if (emailRes.status >= 400) return json(500, { error: 'Email failed', detail: emailData });
+    } catch(e) { return json(500, { error: e.message }); }
+
+    return json(200, { ok: true, held_count: heldCount, notified: nVendor.contact_email });
+  }
+
+  // ── FORWARD HELD LEADS (after vendor upgrades) ─────────
+  if (action === 'admin-forward-held') {
+    if (!body.vendor_id) return json(400, { error: 'vendor_id required' });
+
+    var fVendors = await supa('/rest/v1/vendor_listings?id=eq.' + encodeURIComponent(body.vendor_id) + '&select=*&limit=1');
+    var fVendor  = Array.isArray(fVendors) ? fVendors[0] : null;
+    if (!fVendor) return json(404, { error: 'Vendor not found' });
+    if (fVendor.plan_id === 'free') return json(400, { error: 'Vendor is still on free plan' });
+
+    var heldLeads = await supa('/rest/v1/demo_requests?vendor_id=eq.' + encodeURIComponent(body.vendor_id) + '&status=eq.held&select=*');
+    if (!Array.isArray(heldLeads) || !heldLeads.length) return json(200, { ok:true, forwarded:0, message:'No held leads' });
+
+    var BREVO4   = process.env.BREVO_API_KEY || '';
+    var fwdCount = 0;
+    for (var li = 0; li < heldLeads.length; li++) {
+      var lead = heldLeads[li];
+      if (BREVO4 && fVendor.contact_email) {
+        fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'api-key': BREVO4 },
+          body: JSON.stringify({
+            to: [{ email: fVendor.contact_email, name: fVendor.contact_name }],
+            sender: { name: 'LedgerLearn SoftHub', email: 'godigitsall@gmail.com' },
+            subject: 'Demo request from ' + lead.requester_name + ' — LedgerLearn SoftHub',
+            htmlContent: [
+              '<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">',
+              '<div style="background:#0B1F3A;padding:20px 28px"><span style="font-size:18px;font-weight:900;color:#fff">Ledger<span style="color:#ea580c">Learn</span> SoftHub</span></div>',
+              '<div style="padding:24px">',
+              '<h2 style="color:#0B1F3A">Demo request</h2>',
+              '<table style="width:100%;border-collapse:collapse;font-size:14px">',
+              '<tr><td style="padding:8px 0;color:#6b7280;width:140px">Name</td><td style="padding:8px 0;font-weight:600">' + lead.requester_name + '</td></tr>',
+              '<tr><td style="padding:8px 0;color:#6b7280">Email</td><td style="padding:8px 0"><a href="mailto:' + lead.requester_email + '" style="color:#1DA98A">' + lead.requester_email + '</a></td></tr>',
+              (lead.company_name   ? '<tr><td style="padding:8px 0;color:#6b7280">Company</td><td style="padding:8px 0">' + lead.company_name + '</td></tr>' : ''),
+              (lead.cert_level     ? '<tr><td style="padding:8px 0;color:#6b7280">Cert level</td><td style="padding:8px 0"><strong style="color:#1DA98A">' + lead.cert_level + '</strong></td></tr>' : ''),
+              (lead.cert_specialty ? '<tr><td style="padding:8px 0;color:#6b7280">Specialty</td><td style="padding:8px 0">' + lead.cert_specialty + '</td></tr>' : ''),
+              (lead.country        ? '<tr><td style="padding:8px 0;color:#6b7280">Country</td><td style="padding:8px 0">' + lead.country + '</td></tr>' : ''),
+              (lead.message        ? '<div style="background:#f8f7f4;border-radius:8px;padding:14px;margin-top:16px"><p style="font-size:13px;color:#6b7280;margin-bottom:4px">Message</p><p style="font-size:14px;color:#1e3a5f">' + lead.message + '</p></div>' : ''),
+              '</table>',
+              '</div></div>',
+            ].join('')
+          })
+        }).catch(function(){});
+      }
+      await supa('/rest/v1/demo_requests?id=eq.' + encodeURIComponent(lead.id), 'PATCH', {
+        status: 'forwarded', forwarded_at: new Date().toISOString()
+      });
+      fwdCount++;
+    }
+    return json(200, { ok: true, forwarded: fwdCount });
   }
 
   return json(400, { error: 'Unknown action: ' + action });
