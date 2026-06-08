@@ -54,6 +54,25 @@ function verifyAdminToken(event) {
   } catch(e) { return false; }
 }
 
+
+// ── Description contact guard (server-side) ──────────────
+var GUARD_PATTERNS = [
+  { key: 'email',    label: 'email address',             re: /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g },
+  { key: 'phone',    label: 'phone number',               re: /(\+\d[\d\s\-().]{7,}\d|\b0\d{2}[\s\-]?\d{3}[\s\-]?\d{4}\b)/g },
+  { key: 'address',  label: 'physical address',           re: /\b(\d{1,5}\s+[A-Z][a-z]+(\s+[A-Z][a-z]+)?\s+(Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Close|Crescent|Way|Place|Park|Square))\b|\b(P\.?O\.?\s*Box\s+\d+)\b/gi },
+  { key: 'whatsapp', label: 'WhatsApp contact',           re: /whatsapp|wa\.me\//gi },
+  { key: 'direct',   label: 'direct contact instruction', re: /(contact|email|call|ring|text|message|reach)\s+us\s+(at|on\s+\+|via\s+\+|at\s+\+)/gi },
+];
+function guardField(text) {
+  if (!text) return [];
+  var violations = [];
+  GUARD_PATTERNS.forEach(function(p) {
+    var m = text.match(p.re);
+    if (m) violations.push(p.label);
+  });
+  return violations;
+}
+
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS, body: '' };
   if (event.httpMethod !== 'POST') return json(405, { error: 'POST only' });
@@ -64,20 +83,55 @@ exports.handler = async function(event) {
   var action = body.action || '';
 
   // ── GET LISTINGS (public) ──────────────────────────────────
+  // ── Rate limiting for public endpoints ──────────────────
+  var publicActions = ['get-listings','get-listing','apply-vendor','request-demo'];
+  if (publicActions.indexOf(action) > -1) {
+    var clientIp = (event.headers['x-forwarded-for'] || event.headers['x-nf-client-connection-ip'] || 'unknown').split(',')[0].trim();
+    var rlKey    = clientIp + ':' + action;
+    var rlStore  = global._rl = global._rl || {};
+    var now2     = Date.now();
+    var window2  = action === 'apply-vendor' ? 3600000 : 60000; // apply: 1/hr; others: 30/min
+    var maxReqs2 = action === 'apply-vendor' ? 3 : 30;
+    rlStore[rlKey] = (rlStore[rlKey] || []).filter(function(t){ return now2 - t < window2; });
+    if (rlStore[rlKey].length >= maxReqs2) {
+      return json(429, { error: 'Too many requests. Please wait before trying again.' });
+    }
+    rlStore[rlKey].push(now2);
+  }
+
   if (action === 'get-listings') {
     var qs = '/rest/v1/vendor_listings?status=eq.approved&select=id,company_name,product_name,tagline,description,category,logo_url,website_url,plan_id,featured,editors_pick,verified_badge,created_at&order=featured.desc,created_at.desc';
     if (body.category) qs += '&category=eq.' + encodeURIComponent(body.category);
     var rows = await supa(qs);
-    return json(200, { ok: true, data: Array.isArray(rows) ? rows : [] });
+    // Strip website_url from free-tier listings — UI hides it but we also strip server-side
+    var safeRows = (Array.isArray(rows) ? rows : []).map(function(r) {
+      if (r.plan_id === 'free') {
+        var s = Object.assign({}, r);
+        delete s.website_url;
+        return s;
+      }
+      return r;
+    });
+    return json(200, { ok: true, data: safeRows });
   }
 
   // ── GET SINGLE LISTING (public) ───────────────────────────
   if (action === 'get-listing') {
     if (!body.id) return json(400, { error: 'id required' });
-    var rows = await supa('/rest/v1/vendor_listings?id=eq.' + encodeURIComponent(body.id) + '&status=eq.approved&select=*&limit=1');
+    var rows = await supa('/rest/v1/vendor_listings?id=eq.' + encodeURIComponent(body.id) + '&status=eq.approved&select=id,company_name,product_name,tagline,description,category,logo_url,website_url,demo_url,plan_id,featured,editors_pick,verified_badge,created_at&limit=1');
     var listing = Array.isArray(rows) ? rows[0] : null;
     if (!listing) return json(404, { error: 'Listing not found' });
-    return json(200, { ok: true, data: listing });
+    // Strip private fields by plan tier — server enforces regardless of select clause
+    var isPaid = listing.plan_id === 'growth' || listing.plan_id === 'pro' || listing.plan_id === 'enterprise';
+    var safe = {
+      id: listing.id, company_name: listing.company_name, product_name: listing.product_name,
+      tagline: listing.tagline, description: listing.description, category: listing.category,
+      logo_url: listing.logo_url, plan_id: listing.plan_id, featured: listing.featured,
+      editors_pick: listing.editors_pick, verified_badge: listing.verified_badge,
+      created_at: listing.created_at,
+    };
+    if (isPaid) { safe.website_url = listing.website_url; }
+    return json(200, { ok: true, data: safe });
   }
 
   // ── APPLY VENDOR (public) ─────────────────────────────────
@@ -89,10 +143,37 @@ exports.handler = async function(event) {
     var email = body.contact_email.toLowerCase().trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(400, { error: 'Invalid contact email' });
 
+    // Server-side description guard — cannot be bypassed by frontend manipulation
+    var descGuard = guardField(body.description);
+    if (descGuard.length) {
+      return json(400, { error: 'Description contains contact information (' + descGuard.join(', ') + '). Remove it and use the demo request system instead.' });
+    }
+    if (body.tagline) {
+      var tagGuard = guardField(body.tagline);
+      if (tagGuard.length) {
+        return json(400, { error: 'Tagline contains contact information (' + tagGuard.join(', ') + '). Remove it.' });
+      }
+    }
+
     // Check duplicate
     var exists = await supa('/rest/v1/vendor_listings?contact_email=eq.' + encodeURIComponent(email) + '&company_name=eq.' + encodeURIComponent(body.company_name) + '&select=id,status&limit=1');
     if (Array.isArray(exists) && exists.length) {
       return json(409, { error: 'A listing for this company already exists. Status: ' + exists[0].status });
+    }
+
+    // Validate logo_url if provided
+    var logoUrl = (body.logo_url || '').trim();
+    if (logoUrl) {
+      try {
+        var lu = new URL(logoUrl);
+        if (lu.protocol !== 'https:') return json(400, { error: 'Logo URL must use HTTPS' });
+        if (!/\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$/i.test(lu.pathname)) {
+          return json(400, { error: 'Logo URL must point to an image file (.png .jpg .gif .webp .svg)' });
+        }
+      } catch(e) { return json(400, { error: 'Invalid logo URL format' }); }
+    }
+    if (logoUrl && logoUrl.startsWith('data:')) {
+      return json(400, { error: 'Data URI logos are not allowed' });
     }
 
     var listing = {
