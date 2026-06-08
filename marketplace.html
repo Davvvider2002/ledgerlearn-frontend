@@ -458,6 +458,7 @@ var _GUARD_PATTERNS = [
   { key: 'address',  label: 'physical address',          re: /\b(\d{1,5}\s+[A-Z][a-z]+(\s+[A-Z][a-z]+)?\s+(Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Close|Crescent|Way|Place|Park|Square))\b|\b(P\.?O\.?\s*Box\s+\d+)\b/gi },
   { key: 'whatsapp', label: 'WhatsApp contact',          re: /whatsapp|wa\.me\//gi },
   { key: 'direct',   label: 'direct contact instruction', re: /(contact|email|call|ring|text|message|reach)\s+us\s+(at|on\s+\+|via\s+\+|at\s+\+)/gi },
+  { key: 'url',      label: 'website URL or domain',     re: /(?:https?:\/\/|www\.)[^\s]+|[\w\-]+\.(com|co\.za|co\.uk|io|ng|net|org|app|dev|tech|africa|ai)(?:\/[^\s]*)?/gi },
 ];
 function _guardDescription(text) {
   var violations = [];

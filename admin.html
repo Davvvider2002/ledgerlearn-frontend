@@ -1776,7 +1776,7 @@ function adminLogin() {
     document.getElementById('login-overlay').style.display = 'none';
     document.getElementById('app').classList.add('app-visible');
     getSupaConfig().then(function() {
-      loadDashboard(); loadUsers(); loadCerts();
+      loadDashboard(); loadUsers(); loadCerts(); initPendingBadge();
     });
     loadPayments(); loadAffiliates(); loadPartners();
   })
@@ -3321,6 +3321,20 @@ async function shFetch(action, extra) {
     inlineToast('Network error loading SoftHub data', 'error');
     return { ok: false, data: [] };
   }
+}
+
+async function initPendingBadge() {
+  // Called on page load — fetches pending count without activating any view
+  try {
+    var data = await shFetch('admin-get-listings', { status: 'pending' });
+    if (!data || !data.ok) return;
+    var count = (data.data || []).length;
+    var badge = document.getElementById('sh-pending-badge');
+    if (badge) {
+      badge.textContent   = count;
+      badge.style.display = count ? '' : 'none';
+    }
+  } catch(e) {}
 }
 
 async function loadSHVendors() {
