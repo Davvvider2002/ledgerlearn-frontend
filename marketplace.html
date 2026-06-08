@@ -449,6 +449,31 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
 </footer>
 
 <script>
+// ── Description contact guard ─────────────────────────────
+// Blocks emails, phone numbers, physical addresses, WhatsApp,
+// and direct contact instructions from vendor description fields.
+var _GUARD_PATTERNS = [
+  { key: 'email',    label: 'email address',            re: /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g },
+  { key: 'phone',    label: 'phone number',              re: /(\+\d[\d\s\-().]{7,}\d|\b0\d{2}[\s\-]?\d{3}[\s\-]?\d{4}\b)/g },
+  { key: 'address',  label: 'physical address',          re: /\b(\d{1,5}\s+[A-Z][a-z]+(\s+[A-Z][a-z]+)?\s+(Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Close|Crescent|Way|Place|Park|Square))\b|\b(P\.?O\.?\s*Box\s+\d+)\b/gi },
+  { key: 'whatsapp', label: 'WhatsApp contact',          re: /whatsapp|wa\.me\//gi },
+  { key: 'direct',   label: 'direct contact instruction', re: /(contact|email|call|ring|text|message|reach)\s+us\s+(at|on\s+\+|via\s+\+|at\s+\+)/gi },
+];
+function _guardDescription(text) {
+  var violations = [];
+  _GUARD_PATTERNS.forEach(function(p) {
+    var m = text.match(p.re);
+    if (m) violations.push({ type: p.key, label: p.label, sample: m[0] });
+  });
+  return violations;
+}
+function _guardMessage(violations) {
+  return 'Description cannot contain contact information (' +
+    violations.map(function(v){ return v.label; }).join(', ') +
+    '). Use the demo request system to connect with practitioners.';
+}
+
+
 var ALL_PRODUCTS = [];
 var ACTIVE_FILTER = '';
 var ACTIVE_SEARCH = '';
@@ -947,7 +972,10 @@ function renderListings() {
       '<div class="sh-card-body">' +
         '<div class="sh-cat-pill">' + catLabel + '</div>' +
         '<div class="sh-tagline">' + esc(l.tagline || l.product_name) + '</div>' +
-        '<div class="sh-desc">' + esc(l.description || '') + '</div>' +
+        (l.plan_id === 'free'
+          ? ''  // description hidden until toggle — not in DOM at all for free
+          : '<div class="sh-desc">' + esc(l.description || '') + '</div>'
+        ) +
       '</div>' +
       '<div class="sh-card-footer">' +
         '<span class="sh-plan ' + planClass + '">' + planText + '</span>' +
@@ -994,6 +1022,39 @@ function closeVendorApply() {
   document.getElementById('sh-apply-overlay').classList.remove('open');
 }
 
+function _validateLogoUrl(el) {
+  var warn = document.getElementById('va-logo-warn');
+  if (!warn) return;
+  var url = el.value.trim();
+  if (!url) { warn.style.display='none'; el.style.borderColor=''; return; }
+  var err = null;
+  if (url.startsWith('data:'))     err = 'Data URIs are not allowed as logo URLs.';
+  else if (!url.startsWith('https://')) err = 'Logo URL must start with https://';
+  else if (!/\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$/i.test(url)) err = 'URL must point to an image file (.png .jpg .gif .webp .svg)';
+  if (err) {
+    warn.textContent = err;
+    warn.style.display = 'block';
+    el.style.borderColor = '#D85A30';
+  } else {
+    warn.style.display = 'none';
+    el.style.borderColor = '';
+  }
+}
+
+function _liveGuardDesc(el) {
+  var warn = document.getElementById('va-desc-warn');
+  if (!warn) return;
+  var v = _guardDescription(el.value);
+  if (v.length) {
+    warn.textContent = 'Remove contact info: ' + v.map(function(x){return x.label;}).join(', ');
+    warn.style.display = 'block';
+    el.style.borderColor = '#D85A30';
+  } else {
+    warn.style.display = 'none';
+    el.style.borderColor = '';
+  }
+}
+
 async function submitVendorApply() {
   var fields = {
     company_name:   document.getElementById('va-company').value.trim(),
@@ -1018,6 +1079,40 @@ async function submitVendorApply() {
     statusEl.className    = 'sh-apply-status error';
     statusEl.style.display = 'block';
     return;
+  }
+
+  // Guard: block contact info in description
+  var descViolations = _guardDescription(fields.description);
+  if (descViolations.length) {
+    statusEl.textContent   = _guardMessage(descViolations);
+    statusEl.className     = 'sh-apply-status error';
+    statusEl.style.display = 'block';
+    return;
+  }
+
+  // Validate logo URL
+  if (fields.logo_url) {
+    var logoErr = null;
+    if (fields.logo_url.startsWith('data:')) logoErr = 'Data URI logos are not allowed.';
+    else if (!fields.logo_url.startsWith('https://')) logoErr = 'Logo URL must start with https://';
+    else if (!/\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$/i.test(fields.logo_url)) logoErr = 'Logo URL must point to an image file.';
+    if (logoErr) {
+      statusEl.textContent = logoErr;
+      statusEl.className = 'sh-apply-status error';
+      statusEl.style.display = 'block';
+      return;
+    }
+  }
+
+  // Guard: block contact info in tagline
+  if (fields.tagline) {
+    var tagViolations = _guardDescription(fields.tagline);
+    if (tagViolations.length) {
+      statusEl.textContent   = 'Tagline cannot contain contact information (' + tagViolations.map(function(v){return v.label;}).join(', ') + ').';
+      statusEl.className     = 'sh-apply-status error';
+      statusEl.style.display = 'block';
+      return;
+    }
   }
 
   btn.disabled = true; btn.textContent = 'Submitting…';
@@ -1203,11 +1298,13 @@ async function submitDemoRequest() {
         </div>
         <div class="sh-form-field full">
           <label>Product description * (what it does, who it's for)</label>
-          <textarea id="va-description" rows="4" placeholder="Describe your product in 2-4 sentences. What problem does it solve? Who are your ideal users?"></textarea>
+          <textarea id="va-description" rows="4" placeholder="Describe your product in 2-4 sentences. What problem does it solve? Who are your ideal users?" oninput="_liveGuardDesc(this)"></textarea>
+        <div id="va-desc-warn" style="display:none;font-size:.72rem;color:#993C1D;margin-top:.35rem;line-height:1.45;padding:.4rem .6rem;background:#FAECE7;border-radius:6px;border:1px solid #F0997B"></div>
         </div>
         <div class="sh-form-field full">
-          <label>Logo URL (optional &mdash; paste a direct image link)</label>
-          <input type="url" id="va-logo" placeholder="https://yoursite.com/logo.png"/>
+          <label>Logo URL (optional &mdash; must be a direct HTTPS image link .png .jpg .gif .webp .svg)</label>
+          <input type="url" id="va-logo" placeholder="https://yoursite.com/logo.png" oninput="_validateLogoUrl(this)"/>
+          <div id="va-logo-warn" style="display:none;font-size:.72rem;color:#993C1D;margin-top:.35rem;line-height:1.45;padding:.4rem .6rem;background:#FAECE7;border-radius:6px;border:1px solid #F0997B"></div>
         </div>
       </div>
       <div style="background:rgba(29,169,138,.06);border:1px solid rgba(29,169,138,.2);border-radius:8px;padding:.75rem 1rem;margin-top:1rem;font-size:.78rem;color:var(--muted);line-height:1.5">
