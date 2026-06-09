@@ -261,6 +261,24 @@ body { background: var(--off-white); }
 .track-pill.xero.on,.track-pill.xero:hover{background:rgba(29,169,138,.2);border-color:rgba(29,169,138,.5);}
 .track-pill.qb{background:rgba(234,88,12,.08);color:#fdba74;border-color:rgba(234,88,12,.2);}
 .track-pill.qb.on,.track-pill.qb:hover{background:rgba(234,88,12,.18);border-color:rgba(234,88,12,.45);}
+.breakdown-section{margin:1.25rem 0;display:none;}
+.breakdown-wrap{text-align:left;}
+.breakdown-summary{display:flex;gap:.75rem;margin-bottom:.875rem;flex-wrap:wrap;}
+.bd-stat{font-size:.8rem;font-weight:600;padding:5px 14px;border-radius:100px;}
+.bd-pass{background:rgba(29,169,138,.15);color:#0F6E56;}
+.bd-fail{background:rgba(234,88,12,.1);color:#c2410c;}
+.breakdown-list{display:flex;flex-direction:column;gap:.4rem;}
+.bd-row{display:flex;gap:.75rem;align-items:flex-start;padding:.625rem .75rem;border-radius:8px;}
+.bd-row-pass{background:rgba(29,169,138,.06);border:1px solid rgba(29,169,138,.2);}
+.bd-row-fail{background:rgba(234,88,12,.05);border:1px solid rgba(234,88,12,.2);}
+.bd-icon{font-size:.9rem;flex-shrink:0;margin-top:1px;font-weight:700;}
+.bd-row-pass .bd-icon{color:#1DA98A;}
+.bd-row-fail .bd-icon{color:#ea580c;}
+.bd-content{flex:1;min-width:0;}
+.bd-topic{font-size:.83rem;font-weight:500;color:#fff;line-height:1.3;}
+.bd-label{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:1px;}
+.bd-row-fail .bd-label{color:rgba(234,88,12,.8);}
+.bd-tip{margin-top:.875rem;padding:.75rem 1rem;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);border-radius:8px;font-size:.78rem;color:rgba(255,255,255,.7);line-height:1.5;}
 </style>
 <script src="/ll-auth.js"></script>
 
@@ -402,7 +420,8 @@ body { background: var(--off-white); }
         <div class="results-score" id="results-score">—</div>
         <div class="results-score-label" id="results-score-label">Pass mark: 70%</div>
         <p id="results-cert-text" style="font-size:0.875rem;color:rgba(255,255,255,0.6);max-width:420px;margin:0 auto;font-weight:300;line-height:1.65;"></p>
-        <div class="results-actions" id="results-actions"></div>
+        <div class="results-actions" id="results-breakdown" class="breakdown-section" style="display:none"></div>
+        <div id="results-actions"></div>
       </div>
     </div>
 

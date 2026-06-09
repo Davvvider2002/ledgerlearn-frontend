@@ -535,6 +535,68 @@ function formatTime(secs) {
 }
 
 // ── Finish test ───────────────────────────────────────────
+async // ── Assessment breakdown (Option C: topic + pass/fail, no correct answer) ──
+function buildBreakdown() {
+  var breakdown = [];
+  test.questions.forEach(function(q, i) {
+    var selected = test.answers[i];
+    var correct  = (selected !== undefined) ? (selected === q.correct_index) : false;
+    breakdown.push({
+      n:       i + 1,
+      topic:   q.topic || q.category || ('Question ' + (i + 1)),
+      result:  correct ? 'pass' : 'fail',
+      answered: selected !== undefined,
+    });
+  });
+  return breakdown;
+}
+
+// ── Save breakdown to localStorage + Supabase ─────────────
+function saveBreakdown(breakdown, certId, level, score) {
+  try {
+    var key  = 'll_breakdown_' + level;
+    var data = { certId: certId, level: level, score: score,
+                 date: new Date().toISOString(), questions: breakdown };
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch(e) {}
+}
+
+// ── Render breakdown panel ────────────────────────────────
+function renderBreakdown(breakdown, score, passScore) {
+  var passed = score >= passScore;
+  var failCount = breakdown.filter(function(q){ return q.result === 'fail'; }).length;
+  var passCount = breakdown.filter(function(q){ return q.result === 'pass'; }).length;
+
+  var html = '<div class="breakdown-wrap">';
+  html += '<div class="breakdown-summary">';
+  html += '<span class="bd-stat bd-pass">&#x2713; ' + passCount + ' correct</span>';
+  html += '<span class="bd-stat bd-fail">&#x2715; ' + failCount + ' to review</span>';
+  html += '</div>';
+  html += '<div class="breakdown-list">';
+
+  breakdown.forEach(function(q) {
+    var icon  = q.result === 'pass' ? '&#x2713;' : '&#x2715;';
+    var cls   = q.result === 'pass' ? 'bd-row-pass' : 'bd-row-fail';
+    var label = q.result === 'pass' ? 'Correct' : 'Review this topic';
+    html += '<div class="bd-row ' + cls + '">';
+    html += '<span class="bd-icon">' + icon + '</span>';
+    html += '<div class="bd-content">';
+    html += '<div class="bd-topic">' + q.topic + '</div>';
+    html += '<div class="bd-label">' + label + '</div>';
+    html += '</div></div>';
+  });
+
+  if (failCount > 0) {
+    html += '<div class="bd-tip">&#x1F4DA; Focus your revision on the ' + failCount +
+            ' topic' + (failCount === 1 ? '' : 's') + ' marked above before attempting Level 2.</div>';
+  } else {
+    html += '<div class="bd-tip">&#x1F3C6; Perfect score on all topics — you are ready for Level 2!</div>';
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
 async function finishTest() {
   if (test.finished) return;
   test.finished = true;
@@ -547,9 +609,12 @@ async function finishTest() {
     if (test.answers[i] === q.correct_index) correct++;
   });
 
-  const answered = Object.keys(test.answers).length || cfg.questions;
-  const score    = Math.round((correct / cfg.questions) * 100);
-  const passed   = score >= cfg.pass;
+  const answered  = Object.keys(test.answers).length || cfg.questions;
+  const score     = Math.round((correct / cfg.questions) * 100);
+  const passed    = score >= cfg.pass;
+
+  // Build breakdown immediately — while test.questions and test.answers are in memory
+  const breakdown = buildBreakdown();
 
   // Show results
   document.getElementById('test-interface').style.display = 'none';
@@ -622,6 +687,10 @@ async function finishTest() {
     }
     localStorage.setItem('ll_progress', JSON.stringify(updated));
     if (passed && updated.certificate) { window._certData = updated.certificate; }
+
+    // Save breakdown for all attempts (pass and fail) so learners can review
+    saveBreakdown(breakdown, certId, test.level, score);
+    window._breakdown = breakdown;
 
     // Save to Supabase via LLAuth.saveProgress
     try {
@@ -774,6 +843,13 @@ async function finishTest() {
   document.getElementById('results-cert-text').textContent = certText;
 
   // Action buttons
+  // Inject breakdown panel
+  var bdEl = document.getElementById('results-breakdown');
+  if (bdEl) {
+    bdEl.innerHTML = renderBreakdown(breakdown, score, cfg.pass);
+    bdEl.style.display = 'block';
+  }
+
   const actionsEl = document.getElementById('results-actions');
   if (passed) {
     actionsEl.innerHTML = `
