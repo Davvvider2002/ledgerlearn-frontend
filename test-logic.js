@@ -730,7 +730,7 @@ async function finishTest() {
           try { _certEmail = localStorage.getItem('ll_user_email') || ''; } catch(e) {}
         }
 
-        var _certPayload = Object.assign({ level: test.level }, updated.certificate);
+        var _certPayload = Object.assign({ level: test.level }, updated.certificate, { breakdown: window._breakdown || null });
 
         if (_certEmail) {
           fetch('/.netlify/functions/supabase-progress', {

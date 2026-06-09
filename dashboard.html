@@ -1343,7 +1343,81 @@ document.addEventListener('DOMContentLoaded', async function() {
   init();
 
   // ── Dynamic lesson list ───────────────────────────────────
-  function renderDashboardLessons() {
+  // ── Assessment breakdown modal ───────────────────────────
+function openBreakdown(level) {
+  var key  = 'll_breakdown_' + level;
+  var data = null;
+  try { data = JSON.parse(localStorage.getItem(key) || 'null'); } catch(e) {}
+
+  var modal = document.getElementById('breakdown-modal');
+  var body  = document.getElementById('breakdown-modal-body');
+  var title = document.getElementById('breakdown-modal-title');
+  if (!modal || !body) return;
+
+  var trackLabel = (level.indexOf('qb') > -1) ? 'QuickBooks' : 'Xero';
+  var lvlLabel   = level.replace('qb_','').replace('l1','Level 1').replace('l2','Level 2').replace('l3','Level 3');
+  if (title) title.textContent = trackLabel + ' ' + lvlLabel + ' — Assessment breakdown';
+
+  if (!data) {
+    body.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">No breakdown data found for this level. Breakdown is saved when you complete an assessment.</div>';
+    modal.style.display = 'flex';
+    return;
+  }
+
+  var passes    = data.questions.filter(function(q){ return q.result === 'pass'; }).length;
+  var fails     = data.questions.filter(function(q){ return q.result === 'fail'; }).length;
+  var failTopics = [];
+  data.questions.forEach(function(q) {
+    if (q.result === 'fail' && failTopics.indexOf(q.topic) === -1) failTopics.push(q.topic);
+  });
+  var dateStr = '';
+  try { dateStr = new Date(data.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); } catch(e) {}
+
+  var html = '';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">';
+  html += '<div style="display:flex;gap:.5rem">';
+  html += '<span style="font-size:.78rem;font-weight:600;padding:4px 12px;border-radius:100px;background:rgba(29,169,138,.12);color:#0F6E56">✓ ' + passes + ' correct</span>';
+  html += '<span style="font-size:.78rem;font-weight:600;padding:4px 12px;border-radius:100px;background:rgba(234,88,12,.08);color:#c2410c">✗ ' + fails + ' to review</span>';
+  html += '</div>';
+  html += '<span style="font-size:.75rem;color:var(--muted)">' + data.score + '% · ' + dateStr + '</span>';
+  html += '</div>';
+  html += '<div style="display:flex;flex-direction:column;gap:.35rem">';
+  data.questions.forEach(function(q) {
+    var isPass = q.result === 'pass';
+    var bg     = isPass ? 'rgba(29,169,138,.05)' : 'rgba(234,88,12,.04)';
+    var border = isPass ? 'rgba(29,169,138,.2)' : 'rgba(234,88,12,.18)';
+    var icon   = isPass ? '✓' : '✗';
+    var icolor = isPass ? '#1DA98A' : '#ea580c';
+    var label  = isPass ? 'Correct' : 'Review this topic';
+    var lcolor = isPass ? '#6b7280' : '#c2410c';
+    html += '<div style="display:flex;gap:.75rem;align-items:center;padding:.5rem .75rem;border-radius:8px;background:' + bg + ';border:1px solid ' + border + '">';
+    html += '<span style="color:' + icolor + ';font-weight:700;font-size:.85rem;width:14px;flex-shrink:0">' + icon + '</span>';
+    html += '<div style="flex:1">';
+    html += '<div style="font-size:.82rem;font-weight:500;color:var(--text)">' + q.topic + '</div>';
+    html += '<div style="font-size:.72rem;color:' + lcolor + ';margin-top:1px">' + label + '</div>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+  if (failTopics.length > 0) {
+    html += '<div style="margin-top:.875rem;padding:.75rem 1rem;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.25);border-radius:8px;font-size:.78rem;color:var(--text);line-height:1.55">';
+    html += '<strong style="color:var(--navy)">📚 Study focus before Level 2:</strong> ' + failTopics.join(', ');
+    html += '</div>';
+  } else {
+    html += '<div style="margin-top:.875rem;padding:.75rem 1rem;background:rgba(29,169,138,.06);border:1px solid rgba(29,169,138,.2);border-radius:8px;font-size:.78rem;color:#0F6E56;line-height:1.55">';
+    html += '🏆 Perfect score on all topics — you are ready for Level 2!';
+    html += '</div>';
+  }
+
+  body.innerHTML = html;
+  modal.style.display = 'flex';
+}
+
+function closeBreakdown() {
+  var modal = document.getElementById('breakdown-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function renderDashboardLessons() {
     const LESSON_NAMES = [
       'Dashboard & navigation',
       'Organisation setup',
@@ -1464,7 +1538,8 @@ function initLevelDashboards() {
       try { var pp = JSON.parse(localStorage.getItem('ll_progress')||'{}'); cert = pp.certificate || null; } catch(e){}
       if (cert) {
         l1CertEl.innerHTML = '<button onclick="window.CertEngine && CertEngine.download(JSON.parse(localStorage.getItem(\'ll_progress\')||\'{}\').certificate)" ' +
-          'style="background:#D4A843;color:#0B1F3A;border:none;padding:6px 14px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;">⬇ Download</button>';
+          'style="background:#D4A843;color:#0B1F3A;border:none;padding:6px 14px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;margin-right:4px;">⬇ Download</button>' +
+          '<button onclick="openBreakdown(\'l1\')" style="background:transparent;color:var(--teal);border:1.5px solid var(--teal);padding:5px 12px;border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;">📊 Breakdown</button>';
       } else {
         l1CertEl.textContent = '✓ Earned';
       }
@@ -1683,107 +1758,17 @@ async function init() {
   initLevelDashboards();
 }
 </script>
-<script src="/ll-chatbot.js">
-  // ── Retry pending cert save (fires if cert save failed during assessment) ──
-  // ── Auto-load cert from Supabase on every dashboard visit ────
-  (async function loadCertAndRetry() {
-    try {
-      var email = '';
-      try {
-        if (window.LLAuth) { var _lu = LLAuth.getUser(); email = (_lu && _lu.email) || ''; }
-      } catch(e) {}
-      if (!email) { try { email = JSON.parse(localStorage.getItem('ll_session')||'{}').user?.email || ''; } catch(e) {} }
-      if (!email) { try { email = JSON.parse(localStorage.getItem('ll_user')||'{}').email || ''; } catch(e) {} }
 
-      if (email) {
-        // Load cert from server — this is the authoritative source
-        var _cr = await fetch('/.netlify/functions/supabase-progress', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ action: 'load-cert', email: email })
-        });
-        var _cd = await _cr.json();
-        if (_cd.ok && _cd.found && _cd.certs && _cd.certs.length > 0) {
-          var _pr = {};
-          try { _pr = JSON.parse(localStorage.getItem('ll_progress')||'{}'); } catch(e2) {}
-          var changed = false;
-          _cd.certs.forEach(function(cert) {
-            // Always trust server values — server is authoritative
-            var lvScore = cert.level + 'Score';
-            if (cert.score) {
-              // Overwrite stale/missing local score with server value
-              _pr[lvScore] = cert.score;
-              _pr.lastScore = Math.max(_pr.lastScore || 0, cert.score);
-              changed = true;
-            }
-            if (!_pr.completedLevels) _pr.completedLevels = [];
-            if (!_pr.completedLevels.includes(cert.level)) {
-              _pr.completedLevels.push(cert.level);
-              changed = true;
-            }
-            // Always store cert object (overwrite null or lower level)
-            if (!_pr.certificate ||
-                (cert.level === 'l3') ||
-                (cert.level === 'l2' && (_pr.certificate.level||'l1') === 'l1') ||
-                (cert.level === _pr.certificate.level)) {
-              _pr.certificate = cert;
-              changed = true;
-            }
-          });
-          // Force changed=true so render always fires with server data
-          changed = true;
-          if (changed) {
-            localStorage.setItem('ll_progress', JSON.stringify(_pr));
-            // Re-render dashboard with updated data
-            if (typeof initLevelDashboards === 'function') initLevelDashboards();
-          }
-        }
-      }
-    } catch(e) {
-      console.warn('[Dashboard] loadCertAndRetry failed:', e.message);
-    }
-
-    // Also retry pending cert saves
-    try {
-      var pending = localStorage.getItem('ll_pending_cert_save');
-      if (!pending) return;
-      var certPayload = JSON.parse(pending);
-      if (!certPayload || !certPayload.certId) return;
-
-      // Try to get email
-      var email = '';
-      try {
-        if (window.LLAuth && typeof LLAuth.getUser === 'function') {
-          var u = LLAuth.getUser();
-          email = (u && u.email) || '';
-        }
-      } catch(e) {}
-      if (!email) {
-        try { email = JSON.parse(localStorage.getItem('ll_session')||'{}').user?.email || ''; } catch(e) {}
-      }
-      if (!email) {
-        try { email = JSON.parse(localStorage.getItem('ll_user')||'{}').email || ''; } catch(e) {}
-      }
-      if (!email) return; // still no email — wait for next load
-
-      var res = await fetch('/.netlify/functions/supabase-progress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'save-cert', email: email, data: certPayload }),
-      });
-      var data = await res.json();
-      if (data.ok) {
-        console.log('[Dashboard] Pending cert save succeeded:', certPayload.certId);
-        localStorage.removeItem('ll_pending_cert_save');
-        // Re-render now cert is saved
-        if (typeof initLevelDashboards === 'function') initLevelDashboards();
-      }
-    } catch(e) {
-      console.warn('[Dashboard] Cert retry failed:', e.message);
-    }
-  })();
-
-</script>
+<!-- ── BREAKDOWN MODAL ─────────────────────────────────── -->
+<div id="breakdown-modal" style="display:none;position:fixed;inset:0;background:rgba(11,31,58,.6);z-index:1000;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:520px;margin:auto;overflow:hidden">
+    <div style="background:#0B1F3A;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between">
+      <span id="breakdown-modal-title" style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#fff">Assessment breakdown</span>
+      <button onclick="closeBreakdown()" style="background:transparent;border:none;color:rgba(255,255,255,.5);font-size:1.4rem;cursor:pointer;line-height:1;padding:0">&times;</button>
+    </div>
+    <div id="breakdown-modal-body" style="padding:1.5rem;max-height:70vh;overflow-y:auto"></div>
+  </div>
+</div>
 </body>
 </html
 function downloadCertFromOb() {
