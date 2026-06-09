@@ -327,6 +327,97 @@ exports.handler = async function(event) {
 
       await supaFetch('/rest/v1/certificates', 'POST', row);
 
+      // Send breakdown email (pass or fail)
+      const BREVO_KEY = process.env.BREVO_API_KEY || '';
+      if (BREVO_KEY && cleanEmail) {
+        const isPassed   = (cert.score || 0) >= 70;
+        const bdData     = data.breakdown || null;  // passed in from test-logic.js
+        const trackLabel = (cert.level || '').indexOf('qb') > -1 ? 'QuickBooks' : 'Xero';
+        const lvlLabel   = (cert.level || 'l1').replace('qb_','').replace('l1','Level 1').replace('l2','Level 2').replace('l3','Level 3');
+        const gapPts     = Math.max(0, 70 - (cert.score || 0));
+
+        // Build breakdown rows HTML
+        var bdRowsHtml = '';
+        var failTopics = [];
+        if (bdData && Array.isArray(bdData.questions)) {
+          const passCount = bdData.questions.filter(function(q){ return q.result==='pass'; }).length;
+          const failCount = bdData.questions.filter(function(q){ return q.result==='fail'; }).length;
+          bdRowsHtml += '<div style="display:flex;gap:8px;margin-bottom:12px">';
+          bdRowsHtml += '<span style="font-size:13px;font-weight:600;padding:3px 10px;border-radius:100px;background:#E1F5EE;color:#0F6E56">✓ ' + passCount + ' correct</span>';
+          bdRowsHtml += '<span style="font-size:13px;font-weight:600;padding:3px 10px;border-radius:100px;background:#FEF3EB;color:#c2410c">✗ ' + failCount + ' to review</span>';
+          bdRowsHtml += '</div>';
+          bdData.questions.forEach(function(q) {
+            var isPass  = q.result === 'pass';
+            var icon    = isPass ? '✓' : '✗';
+            var icolor  = isPass ? '#1DA98A' : '#ea580c';
+            var bg      = isPass ? '#f0fdf8' : '#fff7f3';
+            var border  = isPass ? '#9FE1CB' : '#FDBA94';
+            bdRowsHtml += '<div style="display:flex;gap:10px;align-items:center;padding:7px 10px;border-radius:7px;background:' + bg + ';border:1px solid ' + border + ';margin-bottom:4px">';
+            bdRowsHtml += '<span style="color:' + icolor + ';font-weight:700;width:14px;font-size:13px">' + icon + '</span>';
+            bdRowsHtml += '<span style="font-size:13px;color:#374151">' + q.topic + '</span>';
+            bdRowsHtml += '</div>';
+            if (!isPass && failTopics.indexOf(q.topic) === -1) failTopics.push(q.topic);
+          });
+          if (failTopics.length > 0) {
+            bdRowsHtml += '<div style="margin-top:10px;padding:10px 14px;background:#FAEEDA;border-radius:8px;font-size:12px;color:#633806;line-height:1.5">';
+            bdRowsHtml += '<strong>Focus before ' + (isPassed ? 'Level 2' : 'your retake') + ':</strong> ' + failTopics.join(', ');
+            bdRowsHtml += '</div>';
+          }
+        }
+
+        const emailHtml = isPassed
+          ? [
+              '<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">',
+              '<div style="background:#0B1F3A;padding:24px 28px"><span style="font-size:18px;font-weight:900;color:#fff">Ledger<span style="color:#ea580c">Learn</span> Pro</span></div>',
+              '<div style="padding:28px">',
+              '<h2 style="color:#0B1F3A;font-size:20px;margin:0 0 4px">You passed! 🏆</h2>',
+              '<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:0 0 20px">',
+              'Congratulations ' + (cert.candidateName || '') + ' — you scored <strong>' + cert.score + '%</strong> on your ' + trackLabel + ' ' + lvlLabel + ' assessment.',
+              '</p>',
+              bdRowsHtml ? '<div style="background:#f8f9fa;border-radius:10px;padding:16px 18px;margin-bottom:20px"><p style="font-size:13px;font-weight:700;color:#0B1F3A;margin:0 0 10px">Your assessment breakdown</p>' + bdRowsHtml + '</div>' : '',
+              '<div style="text-align:center;margin:24px 0">',
+              '<a href="https://ledgerlearn.pro/dashboard" style="display:inline-block;background:#1DA98A;color:#fff;padding:14px 30px;border-radius:9px;font-weight:700;font-size:15px;text-decoration:none">View dashboard & download certificate →</a>',
+              '</div>',
+              '<p style="font-size:12px;color:#9ca3af">LedgerLearn Pro · ledgerlearn.pro</p>',
+              '</div></div>',
+            ].join('')
+          : [
+              '<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">',
+              '<div style="background:#0B1F3A;padding:24px 28px"><span style="font-size:18px;font-weight:900;color:#fff">Ledger<span style="color:#ea580c">Learn</span> Pro</span></div>',
+              '<div style="padding:28px">',
+              '<h2 style="color:#0B1F3A;font-size:20px;margin:0 0 4px">Keep going 📚</h2>',
+              '<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:0 0 4px">',
+              'Hi ' + (cert.candidateName || 'there') + ',',
+              '</p>',
+              '<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:0 0 20px">',
+              'You scored <strong>' + cert.score + '%</strong> on your ' + trackLabel + ' ' + lvlLabel + ' assessment — the pass mark is 70%. You are only <strong>' + gapPts + ' points away</strong>. Here is exactly what to review before your retake.',
+              '</p>',
+              bdRowsHtml ? '<div style="background:#f8f9fa;border-radius:10px;padding:16px 18px;margin-bottom:20px"><p style="font-size:13px;font-weight:700;color:#0B1F3A;margin:0 0 10px">Your assessment breakdown</p>' + bdRowsHtml + '</div>' : '',
+              '<div style="text-align:center;margin:24px 0">',
+              '<a href="https://ledgerlearn.pro/learn" style="display:inline-block;background:#ea580c;color:#fff;padding:14px 30px;border-radius:9px;font-weight:700;font-size:15px;text-decoration:none">Review lessons and retake →</a>',
+              '</div>',
+              '<p style="font-size:12px;color:#9ca3af">LedgerLearn Pro · ledgerlearn.pro</p>',
+              '</div></div>',
+            ].join('');
+
+        try {
+          await fetch('https://api.brevo.com/v3/smtp/email', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'api-key': BREVO_KEY },
+            body:    JSON.stringify({
+              to:          [{ email: cleanEmail, name: cert.candidateName || cleanEmail.split('@')[0] }],
+              sender:      { name: 'LedgerLearn Pro', email: 'godigitsall@gmail.com' },
+              subject:     isPassed
+                ? 'You passed ' + trackLabel + ' ' + lvlLabel + ' — here is your breakdown'
+                : 'Your ' + trackLabel + ' ' + lvlLabel + ' result — study guide for your retake',
+              htmlContent: emailHtml,
+            })
+          });
+        } catch(emailErr) {
+          console.warn('[save-cert] breakdown email error:', emailErr.message);
+        }
+      }
+
       return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true }) };
     } catch(e) {
       return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Cert save failed: ' + e.message }) };
