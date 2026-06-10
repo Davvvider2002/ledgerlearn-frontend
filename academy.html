@@ -28,6 +28,52 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);}
 .nav-link.active{color:#c4b5fd;}
 .nav-cta{background:var(--gold);color:var(--navy);padding:6px 16px;border-radius:6px;font-size:.8rem;font-weight:700;text-decoration:none;}
 
+/* CONVERSION SECTION */
+.conversion-section{background:#faf9f7;padding:5rem 2rem;border-bottom:1px solid var(--border);}
+.conv-inner{max-width:860px;margin:0 auto;}
+.conv-eyebrow{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:.75rem;}
+.conv-title{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;color:var(--navy);line-height:1.2;margin-bottom:1rem;}
+.conv-sub{font-size:1.05rem;color:#4b5563;line-height:1.7;max-width:680px;margin-bottom:3rem;}
+.conv-gap-row{display:grid;grid-template-columns:1fr auto 1fr;gap:1.5rem;align-items:center;margin-bottom:3.5rem;}
+@media(max-width:640px){.conv-gap-row{grid-template-columns:1fr;}.conv-gap-arrow{display:none;}}
+.conv-gap-card{background:#fff;border-radius:14px;padding:1.5rem;border:1.5px solid var(--border);}
+.conv-gap-card.conv-gap-before{border-left:4px solid #e5e7eb;}
+.conv-gap-card.conv-gap-after{border-left:4px solid var(--teal);}
+.conv-gap-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.875rem;}
+.conv-gap-after .conv-gap-label{color:var(--teal);}
+.conv-gap-card ul{list-style:none;display:flex;flex-direction:column;gap:.5rem;}
+.conv-gap-card ul li{font-size:.875rem;color:#374151;line-height:1.5;padding-left:1rem;position:relative;}
+.conv-gap-card ul li::before{content:'·';position:absolute;left:0;color:var(--muted);}
+.conv-gap-after ul li::before{content:'✓';color:var(--teal);font-weight:700;}
+.conv-gap-arrow{font-size:1.5rem;color:var(--teal);text-align:center;}
+.conv-modules-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:1.25rem;}
+.conv-modules{display:flex;flex-direction:column;gap:1rem;margin-bottom:3rem;}
+.conv-module{background:#fff;border-radius:14px;padding:1.5rem;border:1.5px solid var(--border);border-left:4px solid var(--purple);}
+.conv-module-num{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--purple);margin-bottom:.3rem;}
+.conv-module-name{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;color:var(--navy);margin-bottom:.625rem;}
+.conv-module-desc{font-size:.875rem;color:#4b5563;line-height:1.65;margin-bottom:.75rem;}
+.conv-module-outcome{font-size:.78rem;font-weight:600;color:var(--teal);padding:.4rem .75rem;background:rgba(29,169,138,.08);border-radius:6px;display:inline-block;}
+.conv-plus-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:3rem;}
+@media(max-width:560px){.conv-plus-row{grid-template-columns:1fr;}}
+.conv-plus-item{background:#fff;border-radius:12px;padding:1.25rem;border:1.5px solid var(--border);display:flex;gap:1rem;align-items:flex-start;}
+.conv-plus-icon{font-size:1.5rem;flex-shrink:0;}
+.conv-plus-text{font-size:.82rem;color:#4b5563;line-height:1.6;}
+.conv-plus-text strong{color:var(--navy);display:block;margin-bottom:.2rem;}
+.conv-who{background:var(--navy);border-radius:16px;padding:2rem;margin-bottom:2.5rem;}
+.conv-who-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:1.25rem;}
+.conv-who-grid{display:grid;grid-template-columns:1fr 1fr;gap:.625rem;}
+@media(max-width:560px){.conv-who-grid{grid-template-columns:1fr;}}
+.conv-who-item{font-size:.82rem;color:rgba(255,255,255,.7);line-height:1.5;}
+.conv-offer-box{background:linear-gradient(135deg,#1a0a3a,#0B1F3A);border-radius:20px;padding:2.5rem;text-align:center;border:2px solid rgba(212,168,67,.4);}
+.conv-offer-badge{display:inline-block;background:rgba(212,168,67,.2);color:var(--gold);border:1px solid rgba(212,168,67,.4);padding:5px 16px;border-radius:100px;font-size:.75rem;font-weight:700;letter-spacing:.05em;margin-bottom:1.25rem;}
+.conv-offer-price{margin-bottom:.4rem;}
+.conv-offer-num{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;color:var(--gold);}
+.conv-offer-sub{font-size:1.1rem;color:rgba(255,255,255,.6);vertical-align:middle;}
+.conv-offer-then{font-size:.9rem;color:rgba(255,255,255,.5);margin-bottom:.5rem;}
+.conv-offer-note{font-size:.78rem;color:rgba(212,168,67,.7);margin-bottom:1.75rem;line-height:1.5;}
+.conv-offer-btn{background:var(--gold);color:var(--navy);border:none;padding:16px 40px;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:.875rem;display:block;width:100%;max-width:360px;margin-left:auto;margin-right:auto;}
+.conv-offer-btn:hover{background:#c49a30;}
+.conv-offer-guarantee{font-size:.75rem;color:rgba(255,255,255,.35);}
 /* HERO */
 .hero{background:linear-gradient(135deg,#1a0a3a,var(--navy));padding:4rem 2rem 3.5rem;border-bottom:1px solid rgba(124,58,237,.2);}
 .hero-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:3rem;align-items:center;}
@@ -142,15 +188,15 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
       <h1 class="hero-title">Go beyond certification.<br><span>Become a respected<br>professional.</span></h1>
       <p class="hero-sub">Monthly live sessions, a growing resource library, ERP consulting project referrals, and the backing of a 130k+ accounting professional community.</p>
       <div class="hero-ctas">
-        <button class="btn-join" onclick="openJoinModal()">Join Academy &mdash; <span id="acad-price-hero">$99</span>/mo &rarr;</button>
+        <button class="btn-join" onclick="openJoinModal()">Join Academy &mdash; <span id="acad-price-hero">$9</span> first month, then $29/mo &rarr;</button>
         <button class="btn-learn" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Learn more &#x2193;</button>
       </div>
-      <div class="hero-note">Cancel anytime &middot; 14-day free trial &middot; All marketplace products included</div>
+      <div class="hero-note"><span style="background:#D4A843;color:#0B1F3A;padding:2px 8px;border-radius:4px;font-weight:700;font-size:.75rem;margin-right:6px">OFFER</span>First month $9 &rarr; then $29/mo &middot; Offer closes 16 June &middot; Cancel anytime</div>
     </div>
     <div class="hero-card">
       <div class="hc-stat"><div class="hc-val">130k+</div><div class="hc-label">Community members</div></div>
-      <div class="hc-stat"><div class="hc-val"><span id="acad-price-monthly-card">$99</span></div><div class="hc-label">/month</div></div>
-      <div class="hc-stat" style="margin-bottom:0;"><div class="hc-val"><span id="acad-price-annual-card">$999</span></div><div class="hc-label" id="acad-label-annual-card">/year (save 30%)</div></div>
+      <div class="hc-stat"><div class="hc-val"><span id="acad-price-monthly-card">$9</span></div><div class="hc-label">first month</div></div>
+      <div class="hc-stat" style="margin-bottom:0;"><div class="hc-val"><span id="acad-price-annual-card">$29</span></div><div class="hc-label" id="acad-label-annual-card">/month after0%)</div></div>
     </div>
   </div>
 </div>
@@ -164,7 +210,116 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
 </div>
 
 <!-- FEATURES -->
-<div class="features-section" id="features">
+<div class="features-section" 
+<!-- ══════════════════════════════════════════════
+     CONVERSION SECTION — The transformation story
+     ══════════════════════════════════════════════ -->
+<section class="conversion-section">
+  <div class="conv-inner">
+
+    <!-- Headline -->
+    <div class="conv-eyebrow">What this is really about</div>
+    <h2 class="conv-title">From bookkeeper to consultant.<br>From hourly billing to package fees.</h2>
+    <p class="conv-sub">Most bookkeepers are brilliant at their work and underpaid for it. ERP.SaaS Academy exists for one reason — to help you make the transition from employee or hourly contractor to sought-after consulting professional who earns two to three times more for fewer hours.</p>
+
+    <!-- The gap -->
+    <div class="conv-gap-row">
+      <div class="conv-gap-card conv-gap-before">
+        <div class="conv-gap-label">Where you are now</div>
+        <ul>
+          <li>Charging by the hour and capping your income</li>
+          <li>Taking whatever clients you can get</li>
+          <li>Doing the work without a clear consulting offer</li>
+          <li>Unsure how to price your real value</li>
+          <li>No referral system — every client is from scratch</li>
+        </ul>
+      </div>
+      <div class="conv-gap-arrow">&#x2192;</div>
+      <div class="conv-gap-card conv-gap-after">
+        <div class="conv-gap-label">Where Academy takes you</div>
+        <ul>
+          <li>Retainer and package pricing that reflects your expertise</li>
+          <li>Positioning that attracts the right clients</li>
+          <li>A consulting offer you can explain in one sentence</li>
+          <li>Proposals that close — without feeling like you are selling</li>
+          <li>Clients who refer you because of how you deliver</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- What is inside -->
+    <div class="conv-modules-title">What is inside the Academy</div>
+    <div class="conv-modules">
+
+      <div class="conv-module">
+        <div class="conv-module-num">Module 1</div>
+        <div class="conv-module-name">Landing your first consulting client</div>
+        <p class="conv-module-desc">How to position yourself as a consultant rather than a bookkeeper-for-hire. The exact conversations to have, how to qualify the right clients, and how to close without ever feeling like you are selling. You will leave this module with a clear offer and the confidence to present it.</p>
+        <div class="conv-module-outcome">&#x2713; Outcome: Your first consulting conversation within 30 days</div>
+      </div>
+
+      <div class="conv-module">
+        <div class="conv-module-num">Module 2</div>
+        <div class="conv-module-name">Pricing and proposals that reflect your value</div>
+        <p class="conv-module-desc">How to move permanently away from hourly billing and structure packages your clients understand and want to buy. Includes real proposal templates, pricing psychology, and how to handle the "that is more than I expected" conversation without discounting.</p>
+        <div class="conv-module-outcome">&#x2713; Outcome: A packaged offer priced at 2x your current rate</div>
+      </div>
+
+      <div class="conv-module">
+        <div class="conv-module-num">Module 3</div>
+        <div class="conv-module-name">Delivering work that generates referrals</div>
+        <p class="conv-module-desc">How to deliver consulting engagements so well that clients return, expand their scope, and refer you without being asked. Includes the project structure, check-in cadence, and the specific moments where referrals are earned — not requested.</p>
+        <div class="conv-module-outcome">&#x2713; Outcome: At least one client referral in your first quarter</div>
+      </div>
+
+    </div>
+
+    <!-- Plus -->
+    <div class="conv-plus-row">
+      <div class="conv-plus-item">
+        <div class="conv-plus-icon">&#x1F4DE;</div>
+        <div class="conv-plus-text"><strong>Live Q&amp;A calls</strong><br>Regular sessions with David where you ask anything — pricing decisions, client situations, proposal reviews, whatever is in front of you right now.</div>
+      </div>
+      <div class="conv-plus-item">
+        <div class="conv-plus-icon">&#x1F465;</div>
+        <div class="conv-plus-text"><strong>Private community</strong><br>A Skool-based community of bookkeepers making the same transition. Peer accountability, shared wins, real numbers discussed openly.</div>
+      </div>
+      <div class="conv-plus-item">
+        <div class="conv-plus-icon">&#x1F4BC;</div>
+        <div class="conv-plus-text"><strong>Consulting project referrals</strong><br>As a member of the LedgerLearn community of 135,000+ practitioners, ERP implementation projects and consulting opportunities are referred to Academy members first.</div>
+      </div>
+      <div class="conv-plus-item">
+        <div class="conv-plus-icon">&#x1F4E6;</div>
+        <div class="conv-plus-text"><strong>All marketplace products included</strong><br>Every AI toolkit, ERP template, and practice management resource in the LedgerLearn marketplace — included at no extra cost with your membership.</div>
+      </div>
+    </div>
+
+    <!-- Who this is for -->
+    <div class="conv-who">
+      <div class="conv-who-title">This is for you if</div>
+      <div class="conv-who-grid">
+        <div class="conv-who-item">&#x2713; You are already working as a bookkeeper or accountant</div>
+        <div class="conv-who-item">&#x2713; You know your work delivers real value but your fees do not reflect it</div>
+        <div class="conv-who-item">&#x2713; You want to transition into ERP or SaaS consulting</div>
+        <div class="conv-who-item">&#x2713; You are ready to build a practice, not just a job</div>
+        <div class="conv-who-item">&#x2713; You want a community of people doing the same thing</div>
+        <div class="conv-who-item">&#x2713; You are willing to do the work, not just read about it</div>
+      </div>
+    </div>
+
+    <!-- Offer box -->
+    <div class="conv-offer-box">
+      <div class="conv-offer-badge">&#x23F0; Limited offer &mdash; closes 16 June 2026</div>
+      <div class="conv-offer-price"><span class="conv-offer-num">$9</span> <span class="conv-offer-sub">for your first month</span></div>
+      <div class="conv-offer-then">Then $29/month &mdash; cancel anytime &mdash; no lock-in</div>
+      <div class="conv-offer-note">After 16 June this returns to $99/month. Your $9 locks in your founding member rate.</div>
+      <button class="conv-offer-btn" onclick="openJoinModal()">Join ERP.SaaS Academy &rarr;</button>
+      <div class="conv-offer-guarantee">&#x1F512; Secure payment via PayPal &middot; Cancel before day 30 and pay nothing more</div>
+    </div>
+
+  </div>
+</section>
+id="features">
   <div class="sec-eyebrow">What you get</div>
   <h2 class="sec-title">Everything you need to grow.</h2>
   <p class="sec-sub">Academy membership is a single subscription that replaces dozens of separate purchases.</p>
@@ -217,7 +372,7 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
       <!-- Academy -->
       <div class="pricing-card featured">
         <div class="pc-tier purple">Academy membership</div>
-        <div class="pc-price"><span id="acad-price-pc">$29</span> <span class="period" id="acad-price-pc-annual">/month &middot; or $999/year</span></div>
+        <div class="pc-price"><span id="acad-price-pc" style="color:#D4A843">$9</span> <span class="period" id="acad-price-pc-annual">first month &rarr; then $29/mo · Offer ends 16 Jun</span></div>
         <div class="pc-desc" style="color:rgba(255,255,255,.5);">Everything in Free, plus the full Academy suite.</div>
         <ul class="pc-features">
           <li><span class="check">&#x2713;</span> Everything in Free</li>
@@ -265,8 +420,8 @@ footer a{color:rgba(255,255,255,.4);text-decoration:none;}
     <div class="form-field">
       <label>Membership plan</label>
       <select id="join-tier">
-        <option value="monthly" id="acad-opt-monthly">Monthly &mdash; $99/month</option>
-        <option value="annual" id="acad-opt-annual">Annual &mdash; $999/year (save 43%)</option>
+        <option value="monthly" id="acad-opt-monthly">Monthly &mdash; $9 first month, then $29/month</option>
+        <option value="annual" id="acad-opt-annual">Annual &mdash; $299/year (save $50)</option>
       </select>
     </div>
     <button class="btn-modal-join" id="join-btn" onclick="initiateJoin()">Continue to payment &rarr;</button>
@@ -302,7 +457,7 @@ async function loadAcademyPricing() {
     var la = d.labelAnnual || ('Save ' + pctSave + '%');
 
     function setText(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
-    setText('acad-price-hero',         '$' + pm);
+    setText('acad-price-hero',         '$9 first month, then $' + pm + '/mo');
     setText('acad-price-monthly-card', '$' + pm);
     setText('acad-price-annual-card',  '$' + pa);
     setText('acad-price-pc',           '$' + pm);
