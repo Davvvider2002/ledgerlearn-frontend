@@ -142,8 +142,9 @@ exports.handler = async function(event) {
       academyLive:        academyLive,
       paypalPlanId:       cfg.paypal_plan_academy        || cfg.paypal_academy || paypalAcademyPlan || 'P-0R916708HA5606900NHWLPPQ',
       paypalPlanAnnualId: cfg.paypal_plan_academy_annual || 'P-3FY04151KC1394702NIQBYWI',
-      priceMonthly:       cfg.academy_price_monthly      || 99,
-      priceAnnual:        cfg.academy_price_annual       || 999,
+      priceMonthly:       cfg.academy_price_monthly       || 29,
+      priceIntro:         cfg.academy_price_intro         || 9,
+      priceAnnual:        cfg.academy_price_annual       || 299,
       labelMonthly:       cfg.academy_label_monthly      || 'Cancel anytime',
       labelAnnual:        cfg.academy_label_annual       || 'Save 16%',
     });
