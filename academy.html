@@ -475,6 +475,7 @@ async function loadAcademyPricing() {
 
     window._academyPrices = {
       monthly: pm, annual: pa,
+      planIdIntro:   d.paypalPlanIntroId  || '',
       planIdMonthly: d.paypalPlanId       || 'P-0R916708HA5606900NHWLPPQ',
       planIdAnnual:  d.paypalPlanAnnualId || 'P-3FY04151KC1394702NIQBYWI'
     };
@@ -607,8 +608,9 @@ async function initiateJoin() {
       btn.disabled = false; return;
     }
 
-    // Use plan ID from the pre-check above or re-derive from statusData
-    var planId = planIdCheck;
+    // If intro plan is configured and tier is monthly, use intro plan
+    var introId = prices.planIdIntro || statusData.paypalPlanIntroId || '';
+    var planId  = (tier !== 'annual' && introId) ? introId : planIdCheck;
 
     if (!planId) {
       statusEl.innerHTML = 'PayPal plan ID not configured. <a href="mailto:hello@ledgerlearn.pro" style="color:var(--purple)">Email us to join</a> or set the plan ID in Admin → Platform Config.';
