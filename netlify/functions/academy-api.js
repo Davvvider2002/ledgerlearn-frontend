@@ -140,6 +140,7 @@ exports.handler = async function(event) {
     return json(200, {
       ok:                 true,
       academyLive:        academyLive,
+      paypalPlanIntroId:  cfg.paypal_plan_academy_intro   || '',
       paypalPlanId:       cfg.paypal_plan_academy        || cfg.paypal_academy || paypalAcademyPlan || 'P-0R916708HA5606900NHWLPPQ',
       paypalPlanAnnualId: cfg.paypal_plan_academy_annual || 'P-3FY04151KC1394702NIQBYWI',
       priceMonthly:       cfg.academy_price_monthly       || 29,
