@@ -898,39 +898,13 @@ function handleStageClick(stage) {
     }
 
   } else if (stage === 4) {
-    openErpModal(refCode);
-    if (cta) cta.innerHTML = "<a href=\"/academy\" class=\"journey-btn journey-btn-gold\">View ERP Academy \u2192</a>";
+    window.location.href = '/academy';
   }
 }
 
 
 function openErpModal(refCode) {
-  var existing = document.getElementById("erp-modal-overlay");
-  if (existing) { existing.style.display = "flex"; fetchErpPrices(); return; }
-  var overlay = document.createElement("div");
-  overlay.id = "erp-modal-overlay";
-  overlay.style.cssText = "position:fixed;inset:0;background:rgba(11,31,58,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem";
-  overlay.innerHTML =
-    "<div style=\"background:#fff;border-radius:16px;max-width:520px;width:100%;padding:2.5rem;position:relative;color:var(--navy)\">" +
-    "<button onclick=\"document.getElementById('erp-modal-overlay').style.display='none'\" style=\"position:absolute;top:1rem;right:1rem;background:transparent;border:none;font-size:1.5rem;cursor:pointer;color:#6b7280\">\u00d7</button>" +
-    "<div style=\"font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);margin-bottom:.4rem\">Stage 4</div>" +
-    "<h2 style=\"font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:.5rem;color:var(--navy)\">ERP.SaaS Academy</h2>" +
-    "<p style=\"font-size:.88rem;color:#6b7280;line-height:1.6;margin-bottom:1.5rem\">Join ERP.SaaS Academy \u2014 live sessions, ERP implementation guides, and a community of finance consultants earning $5,000+ per project.</p>" +
-    "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem\">" +
-    "<div style=\"background:#f0f2f5;border-radius:8px;padding:.875rem\"><div style=\"font-weight:700;font-size:.88rem;margin-bottom:.25rem\">Monthly</div><div id=\"erp-price-monthly\" style=\"font-size:1.4rem;font-weight:800;color:var(--navy)\">$29<span style=\"font-size:.8rem;font-weight:400;color:#6b7280\">/mo</span></div><div id=\"erp-label-monthly\" style=\"font-size:.72rem;color:#6b7280;margin-top:.25rem\">Cancel anytime</div></div>" +
-    "<div style=\"background:var(--navy);border-radius:8px;padding:.875rem\"><div style=\"font-weight:700;font-size:.88rem;margin-bottom:.25rem;color:#fff\">Annual</div><div id=\"erp-price-annual\" style=\"font-size:1.4rem;font-weight:800;color:var(--gold)\">$199<span style=\"font-size:.8rem;font-weight:400;color:rgba(255,255,255,.5)\">/yr</span></div><div id=\"erp-label-annual\" style=\"font-size:.72rem;color:rgba(255,255,255,.5);margin-top:.25rem\">Save 16%</div></div>" +
-    "</div>" +
-    "<div style=\"margin-bottom:1rem\"><label style=\"font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;display:block;margin-bottom:.35rem\">Your email</label>" +
-    "<input id=\"erp-modal-email\" type=\"email\" placeholder=\"you@example.com\" style=\"width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;font-size:.88rem;font-family:inherit;outline:none\"></div>" +
-    "<div style=\"display:flex;gap:.75rem;margin-bottom:1rem\">" +
-    "<button id=\"erp-btn-monthly\" data-tier=\"monthly\" onclick=\"joinErpAcademy(this.dataset.tier)\" style=\"flex:1;background:var(--teal);color:#fff;border:none;padding:12px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit\">Join Monthly \u2014 $99/mo</button>" +
-    "<button id=\"erp-btn-annual\" data-tier=\"annual\" onclick=\"joinErpAcademy(this.dataset.tier)\" style=\"flex:1;background:var(--gold);color:var(--navy);border:none;padding:12px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit\">Join Annual \u2014 $999/yr</button>" +
-    "</div>" +
-    "<div id=\"erp-modal-status\" style=\"font-size:.8rem;min-height:1.2rem\"></div>" +
-    "</div>";
-  document.body.appendChild(overlay);
-  // Fetch live prices
-  fetchErpPrices();
+  window.location.href = '/academy';
 }
 
 function fetchErpPrices() {
